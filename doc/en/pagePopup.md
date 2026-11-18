@@ -41,7 +41,7 @@ Each panel carries a set of fields under
 | `icon` / `iconColor` | string / json | empty | Icon in front of the headline; with `largeIcon` the big icon. |
 | `largeIcon` | boolean | false | Show the message with a big icon, see [Big icon](#6-big-icon-from-tft-620). |
 | `buttonLeftIcon` / `buttonRightIcon` | string | empty | Only with `largeIcon`: icon on the left/right button. |
-| `textSize` | number 1–5 | 3 | Font size, and with it how many lines fit. |
+| `textSize` | number 0–5 | 3 | Font size, and with it how many lines fit. |
 | `buzzer` | boolean | false | One beep when the message appears. |
 | `alwaysOn` | boolean | **true** | The popup stays instead of giving way to the screensaver. |
 
@@ -51,7 +51,6 @@ On this path:
   `sendTo` path.
 - **The buzzer can only be on or off here.** A custom Tasmota pattern can only be passed through `sendTo` —
   and it only sounds at all when `cmd.isBuzzerAllowed` is set on the panel.
-- **`textSize` only accepts 1 to 5 as a state.** Size 0 is taken by `sendTo` only.
 
 ## 2. Way 2: `sendTo`
 

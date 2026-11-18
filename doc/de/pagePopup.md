@@ -42,7 +42,7 @@ Meldung ab.
 | `icon` / `iconColor` | string / json | leer | Symbol vor der Überschrift; mit `largeIcon` das große Symbol. |
 | `largeIcon` | boolean | false | Meldung mit großem Symbol zeigen, siehe [Großes Symbol](#6-großes-symbol-ab-tft-620). |
 | `buttonLeftIcon` / `buttonRightIcon` | string | leer | Nur mit `largeIcon`: Symbol auf dem linken/rechten Knopf. |
-| `textSize` | number 1–5 | 3 | Schriftgröße und damit, wie viele Zeilen passen. |
+| `textSize` | number 0–5 | 3 | Schriftgröße und damit, wie viele Zeilen passen. |
 | `buzzer` | boolean | false | Einmaliger Ton beim Anzeigen. |
 | `alwaysOn` | boolean | **true** | Popup bleibt stehen, statt in den Bildschirmschoner zu laufen. |
 
@@ -52,7 +52,6 @@ Auf diesem Weg gilt:
   `sendTo`-Weg.
 - **Der Summer kann hier nur an oder aus sein.** Ein eigenes Tasmota-Muster lässt sich nur über `sendTo`
   mitgeben — und gesummt wird ohnehin nur, wenn am Panel `cmd.isBuzzerAllowed` gesetzt ist.
-- **`textSize` kennt am Datenpunkt nur 1 bis 5.** Die Größe 0 nimmt nur `sendTo` entgegen.
 
 ## 2. Weg 2: `sendTo`
 

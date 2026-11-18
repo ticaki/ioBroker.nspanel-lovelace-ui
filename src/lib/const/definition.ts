@@ -998,7 +998,7 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: 3,
-                            min: 1,
+                            min: 0,
                             max: 5,
                             step: 1,
                         },
