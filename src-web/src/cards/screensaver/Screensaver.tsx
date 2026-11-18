@@ -7,8 +7,9 @@ import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import {
     INDICATOR_LONG_PRESS_MS,
-    indicatorLongPress,
+    LONG_PRESS_BLINK_MS,
     indicatorRelease,
+    longPressBlinkColor,
     longPressStillPossible,
     nextTap,
     swipeAction,
@@ -101,6 +102,15 @@ interface PointerStart {
     y: number;
 }
 
+/** state of the screensaver card */
+interface ScreensaverState {
+    /**
+     * phase of the blinking clock while a held indicator tile is armed for the long press
+     * ({@link longPressBlinkColor}), undefined: not armed, the clock has its colour
+     */
+    blinkPhase: number | undefined;
+}
+
 /** Top of a text box whose capital letters start at `capTop` */
 function textTop(capTop: number, fontSize: number): number {
     return Math.round(capTop - fontSize * CAP_TOP);
@@ -117,48 +127,68 @@ function textTop(capTop: number, fontSize: number): number {
  * Positions and sizes are measured on the pictures of the Nextion emulator
  * (`doc/web-panel/MISSING_PICTURES.md`).
  */
-export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
+export class Screensaver extends React.Component<CardProps<ScreensaverModel>, ScreensaverState> {
+    state: ScreensaverState = { blinkPhase: undefined };
     private tap: TapState = { tapCount: 0 };
     private pointerStart: PointerStart | undefined;
     /** timer of the long press of a held indicator tile ({@link INDICATOR_LONG_PRESS_MS}) */
     private longPressTimer: ReturnType<typeof setTimeout> | undefined;
     /** where the held indicator tile was touched - a clear movement cancels the long press */
     private longPressStart: PointerStart | undefined;
-    /** the long press of the current touch was sent: its release sends nothing more */
-    private longPressFired = false;
+    /** id of the held indicator tile (empty when it has none), undefined: no tile held */
+    private heldIndicator: string | undefined;
+    /** the hold time of the current touch is over: its release sends the long press */
+    private longPressArmed = false;
+    /** timer of the blinking clock while the long press is armed ({@link LONG_PRESS_BLINK_MS}) */
+    private blinkTimer: ReturnType<typeof setInterval> | undefined;
 
     componentWillUnmount(): void {
-        this.clearLongPress();
+        this.clearLongPress(false);
     }
 
-    private clearLongPress(): void {
+    /**
+     * Forgets the held tile: stops the long press timer and the blinking, the clock gets its colour back.
+     *
+     * @param redraw false while unmounting - no state change then
+     */
+    private clearLongPress(redraw = true): void {
         if (this.longPressTimer !== undefined) {
             clearTimeout(this.longPressTimer);
             this.longPressTimer = undefined;
         }
+        if (this.blinkTimer !== undefined) {
+            clearInterval(this.blinkTimer);
+            this.blinkTimer = undefined;
+        }
         this.longPressStart = undefined;
+        this.heldIndicator = undefined;
+        this.longPressArmed = false;
+        if (redraw && this.state.blinkPhase !== undefined) {
+            this.setState({ blinkPhase: undefined });
+        }
     }
 
     /**
      * A touch on an indicator tile starts the long press timer like the HMI (`tmLP`): after
-     * {@link INDICATOR_LONG_PRESS_MS} `event,buttonPress3,<id>,button,<taps>` goes out while the finger is still down.
+     * {@link INDICATOR_LONG_PRESS_MS} the long press is armed and the clock blinks red/yellow
+     * ({@link LONG_PRESS_BLINK_MS} per phase) until the finger is lifted; the release sends
+     * `event,buttonPress3,<id>,button,<taps>` ({@link indicatorRelease}).
      *
      * @param entityId id of the indicator entity (empty when none)
      * @param e the pointer event of the touch
      */
     private indicatorDown(entityId: string, e: React.PointerEvent): void {
         this.clearLongPress();
-        this.longPressFired = false;
+        this.heldIndicator = entityId;
         this.longPressStart = { x: e.clientX, y: e.clientY };
         this.longPressTimer = setTimeout(() => {
             this.longPressTimer = undefined;
             this.longPressStart = undefined;
-            this.longPressFired = true;
-            const { tap, event } = indicatorLongPress(this.tap, entityId);
-            this.tap = tap;
-            if (event) {
-                this.props.send(event);
-            }
+            this.longPressArmed = true;
+            this.setState({ blinkPhase: 0 });
+            this.blinkTimer = setInterval(() => {
+                this.setState(prev => ({ blinkPhase: (prev.blinkPhase ?? 0) + 1 }));
+            }, LONG_PRESS_BLINK_MS);
         }, INDICATOR_LONG_PRESS_MS);
     }
 
@@ -170,6 +200,17 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         }
     };
 
+    /**
+     * css colour of the clock: red/yellow while the long press of a held indicator tile is armed, otherwise its
+     * `color~` field
+     *
+     * @param value the `color~` field of the clock
+     */
+    private timeColor(value: number | undefined): string {
+        const phase = this.state.blinkPhase;
+        return phase === undefined ? this.color(value) : color565ToCss(longPressBlinkColor(phase));
+    }
+
     /** css colour of a `color~` field, the text colour of `dimmode` when the field is missing */
     private color(value: number | undefined): string {
         return color565ToCss(value ?? this.props.global.dim.text);
@@ -180,14 +221,17 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     };
 
     private readonly onPointerUp = (e: React.PointerEvent): void => {
-        const start = this.pointerStart;
-        this.pointerStart = undefined;
-        // the release of a held indicator tile outside of it (mouse): the timer stops, a sent long press ends it
+        // the release of a held indicator tile outside of it (mouse): the timer stops, an armed long press is sent
+        // like the HMI does (tc0 'up' gets every release)
+        const held = this.longPressArmed ? this.heldIndicator : undefined;
         this.clearLongPress();
-        if (this.longPressFired) {
-            this.longPressFired = false;
+        if (held !== undefined) {
+            this.indicatorTap(held, e, true);
+            this.pointerStart = undefined;
             return;
         }
+        const start = this.pointerStart;
+        this.pointerStart = undefined;
         if (!start) {
             return;
         }
@@ -207,30 +251,33 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
 
     /**
      * The release of a touch that started on an indicator icon: the tile tap counts with the taps of the background
-     * and sends `<id>,button,<taps>`, a swipe from the tile is a swipe ({@link indicatorRelease}); the wake-up
-     * happens in the store with the press.
+     * and sends `<id>,button,<taps>`, after the hold time the long press `event,buttonPress3,<id>,button,<taps>`, a
+     * swipe from the tile is a swipe ({@link indicatorRelease}); the wake-up happens in the store with the press.
      *
      * @param entityId id of the indicator entity (empty when none)
      * @param e the pointer event of the release
+     * @param long true when the long press was armed
      */
-    private indicatorTap(entityId: string, e: React.PointerEvent): void {
+    private indicatorTap(entityId: string, e: React.PointerEvent, long: boolean): void {
         const start = this.pointerStart;
-        const { tap, press } = indicatorRelease(
+        const { tap, send } = indicatorRelease(
             this.tap,
             entityId,
             start ? e.clientX - start.x : 0,
             start ? e.clientY - start.y : 0,
+            long,
         );
         this.tap = tap;
-        if (press) {
-            this.props.press(...press);
+        if (send?.kind === 'press') {
+            this.props.press(...send.press);
+        } else if (send?.kind === 'event') {
+            this.props.send(send.event);
         }
     }
 
     private readonly onPointerCancel = (): void => {
         this.pointerStart = undefined;
         this.clearLongPress();
-        this.longPressFired = false;
     };
 
     private renderIcon(entity: Entity6, size: number, style?: React.CSSProperties): React.JSX.Element | null {
@@ -313,7 +360,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     whiteSpace: 'nowrap',
                 }}
             >
-                <span style={{ fontSize, fontWeight, lineHeight: 1, color: this.color(colors?.time) }}>{time}</span>
+                <span style={{ fontSize, fontWeight, lineHeight: 1, color: this.timeColor(colors?.time) }}>{time}</span>
                 {ampm !== '' && !ampmBelow ? (
                     <span
                         style={{
@@ -854,8 +901,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     /**
-     * An indicator: a tap on its box sends `event,buttonPress2,<id>,button,<taps>`, holding it
-     * `event,buttonPress3,<id>,button,<taps>` (then the release sends nothing).
+     * An indicator: a tap on its box sends `event,buttonPress2,<id>,button,<taps>`, a release after holding it for
+     * {@link INDICATOR_LONG_PRESS_MS} `event,buttonPress3,<id>,button,<taps>` - both on release.
      *
      * @param entity the indicator
      * @param index position in the indicator area
@@ -878,13 +925,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 onPointerDown={(e): void => this.indicatorDown(entity.id, e)}
                 onPointerUp={(e): void => {
                     e.stopPropagation();
+                    const long = this.longPressArmed;
                     this.clearLongPress();
-                    if (this.longPressFired) {
-                        // the long press went out while the finger was down - the release sends nothing
-                        this.longPressFired = false;
-                    } else {
-                        this.indicatorTap(entity.id, e);
-                    }
+                    this.indicatorTap(entity.id, e, long);
                     this.pointerStart = undefined;
                 }}
                 style={{
