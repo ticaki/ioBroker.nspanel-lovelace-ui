@@ -41,7 +41,7 @@ Each panel carries a set of fields under
 | `buttonLeft` / `buttonMid` / `buttonRight` (+ `colorButton…`) | string / json | empty / white | Label and colour of the three buttons. |
 | `icon` / `iconColor` | string / json | empty | Icon in front of the headline; with `largeIcon` the big icon. |
 | `largeIcon` | boolean | false | Show the message with a big icon, see [Big icon](#6-big-icon-from-tft-620). |
-| `buttonLeftIcon` / `buttonRightIcon` | string | empty | Only with `largeIcon`: icon on the left/right button. |
+| `buttonLeftIcon` / `buttonRightIcon` | string | empty | Only with `largeIcon`: icon on the left/right button. Left is "No / Next", right is "Yes / OK" – so the tick goes on the right. |
 | `textSize` | number 0–5, 8 | 3 | Font, and with it how many lines fit, see [Fonts (textSize)](#7-fonts-textsize). `6`/`7` count as `3`. |
 | `buzzer` | boolean | false | One beep when the message appears. |
 | `alwaysOn` | boolean | **true** | The popup stays instead of giving way to the screensaver. |
@@ -180,14 +180,20 @@ classic way.
 | **`icon`** / **`iconColor`** | The big icon and its colour (default white). The panel only has the icons of the list below; the web panel shows any. Without a valid icon the info icon `information-outline` appears. |
 | **`text`** / **`colorText`** | The text line. Text that is too long is cut with `...`, it does not page. `headline` is not shown here. |
 | **`textSize`** | `3` (default) = 48 px and `2` (also `1`) = 32 px, **one** line each; `0` = 24 px in **two** lines. `4`, `5` and `8` count as `3`. The upright us-p shows more lines. |
-| **`buttonLeftIcon`** / **`colorButtonLeft`** | Left button: icon and background colour. Acts like the left button of section 4. |
-| **`buttonRightIcon`** / **`colorButtonRight`** | Right button: icon and background colour. Acts like the right button of section 4. |
+| **`buttonLeftIcon`** / **`colorButtonLeft`** | Left button: icon and background colour. Acts like the left button of section 4 – **"No / Next"**: feedback in `.buttonLeft`, an `acknowledge` message is **not** acknowledged. Fitting: `close-thick` or `alarm-snooze`. |
+| **`buttonRightIcon`** / **`colorButtonRight`** | Right button: icon and background colour. Acts like the right button of section 4 – **"Yes / OK"**: feedback in `.buttonRight`, the message is acknowledged. Fitting: `check-bold`. |
 
 Without a button icon a button follows the labels of section 4: if `buttonLeft` has a text, the left button shows
 `close-thick`; if `buttonRight` has one (with `acknowledge` automatically `ok`), the right one shows `check-bold`. If
 more messages are waiting, the left button shows `arrow-right-bold` ("next"). Otherwise the button is left out.
 Button icons that fit: OK `check-bold`, confirm `check-circle-outline`, later `alarm-snooze`, open `door-open` or
 `lock-open-variant-outline`, decline `close-thick`.
+
+> **Tick on the right.** The buttons keep their role from section 4, whatever icon they show: the **left** one is
+> "No / Next" – it writes the `id` to `.buttonLeft`, and an `acknowledge` message is **not** acknowledged but put at
+> the end of the queue; if it is the only one, it reappears at once. The **right** one is "Yes / OK" – it writes to
+> `.buttonRight` and acknowledges the message. So a tick (`check-bold`) belongs on the right; on the left
+> `close-thick` or `alarm-snooze` fit. The default icons are already arranged this way.
 
 ```javascript
 sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
@@ -197,10 +203,10 @@ sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
     largeIcon: true,
     icon: 'weather-lightning-rainy',
     iconColor: '#ff8000',
-    buttonLeftIcon: 'check-bold',
-    colorButtonLeft: '#208020',
-    buttonRightIcon: 'alarm-snooze',
-    colorButtonRight: '#304850',
+    buttonLeftIcon: 'alarm-snooze',     // left: remind me later
+    colorButtonLeft: '#304850',
+    buttonRightIcon: 'check-bold',      // right: acknowledge
+    colorButtonRight: '#208020',
     type: 'acknowledge',
 });
 ```
@@ -253,3 +259,7 @@ icon is reported as well and replaced by the default icon.
 
 **With the big icon, headline and middle button are missing.** `headline` and `buttonMid` are not shown there.
 If you also serve older panels, fill in `headline` anyway.
+
+**The tick belongs on the right button.** Left is "No / Next": an `acknowledge` message is not acknowledged there but
+put at the end of the queue – if it is the only one, it is back at once. Put the tick on the left and you get a popup
+that seemingly cannot be dismissed. Only the right button acknowledges.

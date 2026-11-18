@@ -42,7 +42,7 @@ Meldung ab.
 | `buttonLeft` / `buttonMid` / `buttonRight` (+ `colorButton…`) | string / json | leer / weiß | Beschriftung und Farbe der drei Knöpfe. |
 | `icon` / `iconColor` | string / json | leer | Symbol vor der Überschrift; mit `largeIcon` das große Symbol. |
 | `largeIcon` | boolean | false | Meldung mit großem Symbol zeigen, siehe [Großes Symbol](#6-großes-symbol-ab-tft-620). |
-| `buttonLeftIcon` / `buttonRightIcon` | string | leer | Nur mit `largeIcon`: Symbol auf dem linken/rechten Knopf. |
+| `buttonLeftIcon` / `buttonRightIcon` | string | leer | Nur mit `largeIcon`: Symbol auf dem linken/rechten Knopf. Links ist „Nein / Weiter“, rechts „Ja / OK“ – den Haken also rechts. |
 | `textSize` | number 0–5, 8 | 3 | Schrift und damit, wie viele Zeilen passen, siehe [Schriften (textSize)](#7-schriften-textsize). `6`/`7` gelten als `3`. |
 | `buzzer` | boolean | false | Einmaliger Ton beim Anzeigen. |
 | `alwaysOn` | boolean | **true** | Popup bleibt stehen, statt in den Bildschirmschoner zu laufen. |
@@ -181,14 +181,21 @@ dieselbe Meldung klassisch.
 | **`icon`** / **`iconColor`** | Das große Symbol und seine Farbe (Vorgabe weiß). Das Panel hat nur die Symbole der Liste unten; das Web-Panel zeigt jedes. Ohne gültiges Symbol erscheint das Info-Symbol `information-outline`. |
 | **`text`** / **`colorText`** | Die Textzeile. Zu langer Text wird mit `...` gekürzt, er blättert nicht. `headline` erscheint hier nicht. |
 | **`textSize`** | `3` (Vorgabe) = 48 px und `2` (auch `1`) = 32 px, je **eine** Zeile; `0` = 24 px in **zwei** Zeilen. `4`, `5` und `8` gelten als `3`. Das hochkant gebaute us-p zeigt mehr Zeilen. |
-| **`buttonLeftIcon`** / **`colorButtonLeft`** | Linker Knopf: Symbol und Hintergrundfarbe. Wirkt wie der linke Knopf aus Abschnitt 4. |
-| **`buttonRightIcon`** / **`colorButtonRight`** | Rechter Knopf: Symbol und Hintergrundfarbe. Wirkt wie der rechte Knopf aus Abschnitt 4. |
+| **`buttonLeftIcon`** / **`colorButtonLeft`** | Linker Knopf: Symbol und Hintergrundfarbe. Wirkt wie der linke Knopf aus Abschnitt 4 – **„Nein / Weiter“**: Rückmeldung in `.buttonLeft`, eine `acknowledge`-Meldung wird **nicht** quittiert. Passend: `close-thick` oder `alarm-snooze`. |
+| **`buttonRightIcon`** / **`colorButtonRight`** | Rechter Knopf: Symbol und Hintergrundfarbe. Wirkt wie der rechte Knopf aus Abschnitt 4 – **„Ja / OK“**: Rückmeldung in `.buttonRight`, die Meldung ist quittiert. Passend: `check-bold`. |
 
 Ohne Knopf-Symbol richtet sich ein Knopf nach der Beschriftung von Abschnitt 4: Steht in `buttonLeft` ein Text,
 zeigt der linke Knopf `close-thick`; steht in `buttonRight` einer (bei `acknowledge` automatisch `ok`), zeigt der
 rechte `check-bold`. Warten mehrere Meldungen, zeigt der linke Knopf `arrow-right-bold` („weiter“). Sonst bleibt der
 Knopf weg. Passende Knopf-Symbole: OK `check-bold`, Bestätigen `check-circle-outline`, Später `alarm-snooze`, Öffnen
 `door-open` oder `lock-open-variant-outline`, Ablehnen `close-thick`.
+
+> **Haken nach rechts.** Die Knöpfe behalten ihre Rolle aus Abschnitt 4, egal welches Symbol darauf steht: Der
+> **linke** ist „Nein / Weiter“ – er schreibt die `id` nach `.buttonLeft`, eine `acknowledge`-Meldung wird dabei
+> **nicht** quittiert, sondern hinten an die Warteschlange gestellt; ist sie die einzige, erscheint sie sofort wieder.
+> Der **rechte** ist „Ja / OK“ – er schreibt nach `.buttonRight` und quittiert die Meldung. Ein Haken (`check-bold`)
+> gehört deshalb nach rechts, links passt `close-thick` oder `alarm-snooze`. Die Standard-Symbole sind schon so
+> verteilt.
 
 ```javascript
 sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
@@ -198,10 +205,10 @@ sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
     largeIcon: true,
     icon: 'weather-lightning-rainy',
     iconColor: '#ff8000',
-    buttonLeftIcon: 'check-bold',
-    colorButtonLeft: '#208020',
-    buttonRightIcon: 'alarm-snooze',
-    colorButtonRight: '#304850',
+    buttonLeftIcon: 'alarm-snooze',     // links: später noch einmal
+    colorButtonLeft: '#304850',
+    buttonRightIcon: 'check-bold',      // rechts: quittieren
+    colorButtonRight: '#208020',
     type: 'acknowledge',
 });
 ```
@@ -254,3 +261,7 @@ unbekanntes Knopf-Symbol meldet er ebenfalls und nimmt stattdessen das Standard-
 
 **Mit großem Symbol fehlen Überschrift und mittlerer Knopf.** `headline` und `buttonMid` werden dort nicht gezeigt.
 Wer auch ältere Panels bedient, füllt `headline` trotzdem aus.
+
+**Der Haken gehört auf den rechten Knopf.** Links ist „Nein / Weiter“: Eine `acknowledge`-Meldung wird dort nicht
+quittiert, sondern hinten an die Warteschlange gestellt – ist sie die einzige, steht sie sofort wieder da. Wer den
+Haken links hinlegt, bekommt ein Popup, das sich scheinbar nicht wegdrücken lässt. Quittiert wird nur rechts.
