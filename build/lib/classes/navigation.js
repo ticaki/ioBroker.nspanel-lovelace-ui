@@ -31,6 +31,7 @@ var import_tools = require("../const/tools");
 var import_definition = require("../const/definition");
 var import_default_pages = require("../const/default-pages");
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_navigation_locked = require("./navigation-locked");
 const SCREENSAVER_NAV_INDEX = -2;
 const SCREENSAVER_NAV_ICON = "power-sleep";
 function isNavigationItemConfigArray(a) {
@@ -244,6 +245,8 @@ class Navigation extends import_library.BaseClass {
               return;
             }
             this.go(d);
+          } else {
+            await this.showLockedPage(item.page.name);
           }
           return;
         }
@@ -255,6 +258,21 @@ class Navigation extends import_library.BaseClass {
   }
   getDatabase() {
     return this.database;
+  }
+  /**
+   * A targeted navigation to a locked page (`hidden` while the panel hides pages): the page stays closed,
+   * the panel shows the notification "page locked" instead.
+   *
+   * @param name Name of the locked page.
+   */
+  async showLockedPage(name) {
+    this.log.debug(`Navigation to "${name}" is locked (hidden + hideCards).`);
+    const text = this.library.getTranslation(import_navigation_locked.LOCKED_PAGE_TEXT_KEY);
+    await this.panel.statesControler.setInternalState(
+      `${this.panel.name}/cmd/popupNotificationCustom`,
+      JSON.stringify((0, import_navigation_locked.lockedPageNotification)(text, this.panel.info.nspanel.model)),
+      false
+    );
   }
   /**
    * Logs a link to a node without page once per origin and target.

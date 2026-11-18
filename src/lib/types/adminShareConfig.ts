@@ -212,6 +212,11 @@ export interface NavigationMapEntry {
      */
     generated?: boolean;
     /**
+     * The page has `hidden: true`: locked while the panel hides pages (`hideCards`) - swiping skips it, a
+     * targeted navigation shows the popup "page locked". The admin marks it with a closed eye.
+     */
+    hidden?: boolean;
+    /**
      * Links the script configuration gives the page, before any override. Only set for pages with
      * `origin === 'script'` or `'global'` - they are the ones an override can be made for.
      */

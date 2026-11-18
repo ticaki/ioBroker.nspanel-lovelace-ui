@@ -3103,6 +3103,9 @@ ${this.info.tasmota.onlineVersion}`;
       if ((_c = this.options.generatedPageIds) == null ? void 0 : _c.includes(nav.page.name)) {
         navMap.generated = true;
       }
+      if (nav.page.hidden) {
+        navMap.hidden = true;
+      }
       if (origin === "script" || origin === "global") {
         const scriptLinks = (_d = this.options.scriptNavigationLinks) == null ? void 0 : _d[nav.page.name];
         if (scriptLinks) {

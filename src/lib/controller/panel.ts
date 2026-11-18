@@ -3498,6 +3498,9 @@ export class Panel extends BaseClass {
             if (this.options.generatedPageIds?.includes(nav.page.name)) {
                 navMap.generated = true;
             }
+            if (nav.page.hidden) {
+                navMap.hidden = true;
+            }
             // Script pages carry what the script says and what the admin changed on top of it
             if (origin === 'script' || origin === 'global') {
                 const scriptLinks = this.options.scriptNavigationLinks?.[nav.page.name];

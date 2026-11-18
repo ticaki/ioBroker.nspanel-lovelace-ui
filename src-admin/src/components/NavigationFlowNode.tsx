@@ -3,6 +3,7 @@ import { Box, Typography } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import RemoveIcon from '@mui/icons-material/Remove';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import { I18n } from '@iobroker/gui-components';
 import type { NavigationLinkKind } from '../../../src/lib/types/navigationEdit';
@@ -56,6 +57,21 @@ export class GeneratedPageMarker extends React.PureComponent {
             <LockOutlinedIcon
                 className="node-marker-icon"
                 titleAccess={I18n.t('nav_edit_generated_page')}
+            />
+        );
+    }
+}
+
+/**
+ * Closed eye drawn on a hidden page: it is locked while the panel hides pages (hideCards) - swiping
+ * skips it, a targeted navigation shows the popup "page locked".
+ */
+export class HiddenPageMarker extends React.PureComponent {
+    render(): React.ReactElement {
+        return (
+            <VisibilityOffIcon
+                className="node-marker-icon"
+                titleAccess={I18n.t('page_hidden_locked')}
             />
         );
     }
@@ -208,6 +224,7 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
         const vars = NODE_STYLE_VAR[style];
         const isPage = style !== 'stateRef';
         const generated = isPage && !!data.generated;
+        const hidden = isPage && !!entry?.hidden;
         const editing = !!data.editing && isPage;
         const editable = editing && !!data.editable && !generated;
         const classes = ['node-box'];
@@ -267,6 +284,11 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
                 {generated ? (
                     <span className="node-marker node-marker-generated">
                         <GeneratedPageMarker />
+                    </span>
+                ) : null}
+                {hidden ? (
+                    <span className="node-marker node-marker-hidden">
+                        <HiddenPageMarker />
                     </span>
                 ) : null}
                 {this.renderCollapseButton()}

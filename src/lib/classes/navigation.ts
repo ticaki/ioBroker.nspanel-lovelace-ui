@@ -7,6 +7,7 @@ import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import { genericStateObjects } from '../const/definition';
 import { mainPageName } from '../const/default-pages';
 import { navigationErrorPageName, screensaverTargetPage } from '../types/adminShareConfig';
+import { LOCKED_PAGE_TEXT_KEY, lockedPageNotification } from './navigation-locked';
 
 /** index of the reserved target in the links of the database: it is no node of the navigation */
 export const SCREENSAVER_NAV_INDEX = -2;
@@ -296,6 +297,8 @@ export class Navigation extends BaseClass {
                             return;
                         }
                         this.go(d);
+                    } else {
+                        await this.showLockedPage(item.page.name);
                     }
                     return;
                 }
@@ -307,6 +310,22 @@ export class Navigation extends BaseClass {
     }
     getDatabase(): NavigationItem[] {
         return this.database;
+    }
+
+    /**
+     * A targeted navigation to a locked page (`hidden` while the panel hides pages): the page stays closed,
+     * the panel shows the notification "page locked" instead.
+     *
+     * @param name Name of the locked page.
+     */
+    private async showLockedPage(name: string): Promise<void> {
+        this.log.debug(`Navigation to "${name}" is locked (hidden + hideCards).`);
+        const text = this.library.getTranslation(LOCKED_PAGE_TEXT_KEY);
+        await this.panel.statesControler.setInternalState(
+            `${this.panel.name}/cmd/popupNotificationCustom`,
+            JSON.stringify(lockedPageNotification(text, this.panel.info.nspanel.model)),
+            false,
+        );
     }
 
     /**
