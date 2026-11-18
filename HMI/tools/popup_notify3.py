@@ -52,6 +52,18 @@ What the script does:
    button b2 of the copy sent button2 and is changed to button3, button2 is deliberately not used.
    The CRC acknowledge of load (recvCrc, event,ack) and the send blocks stay as in the copy.
 6. pageStartup.tRelease 6.1.1 -> 6.2.0.
+7. sleepValue fix (popupNotify3 and popupNotify, same code in both): the global counter sleepValue (tmSleep counts it
+   up every second and clicks b0 at sleepTimeout) was never reset when the popup page was opened or reloaded, and
+   vaOldSleepT (local, 0 after a page load) was only set in entityUpdateDetail. A pageType to the same popup
+   restored sleepTimeout=vaOldSleepT.val, reloaded the page (vaOldSleepT 0), the next entityUpdateDetail saved 0 as
+   the old timeout and the leftover sleepValue fired bExit about a second later; afterwards the screensaver timeout
+   stayed 0. A second entityUpdateDetail without pageType saved the popup timeout as the old one. Now:
+     load               sleepValue=0, vaOldSleepT.val=sleepTimeout (the screensaver timeout of the page before)
+     entityUpdateDetail no longer saves vaOldSleepT; sleepValue=0 behind the new sleepTimeout (every update gets the
+                        full time)
+     pageType           sleepValue=0 behind sleepTimeout=vaOldSleepT.val
+   b0/b1/b2(/b3) down restore sleepTimeout=vaOldSleepT.val as before (the timeout clicks b0, exitPopup too).
+   The other popups are not changed.
 """
 import json
 import os
@@ -279,7 +291,7 @@ def update_lines(ind):
         *button('b1', 7, 8),
         *button('b2', 9, 10),
         f'{i}//preserve old sleepTimeout',
-        f'{i}vaOldSleepT.val=sleepTimeout',
+        f'{i}vaOldSleepT.val=sleepTimeout',  # removed again by fix_sleep (same code as popupNotify)
         f'{i}// sleep timeout',
         *color(11, 'sleepTimeout'),
         f'{ind}}}',
@@ -398,6 +410,78 @@ def build_page(page):
     return ids
 
 
+SLEEP_LOAD = [
+    '// sleepValue fix: full timeout from the start, keep the screensaver timeout of the page before',
+    'sleepValue=0',
+    'vaOldSleepT.val=sleepTimeout',
+]
+
+
+def fix_sleep(page):
+    """sleepValue fix (docstring point 7) on popupNotify3 or popupNotify; returns a short description"""
+    name = page.objs[0].name
+    # every line of the page that writes sleepTimeout, sleepValue or vaOldSleepT must be one of the known places
+    restore = 'sleepTimeout=vaOldSleepT.val'
+    writes = []
+    for o in page.objs:
+        for item in o.items:
+            if item[0] != 'code':
+                continue
+            for line in item[2]:
+                t = line.strip()
+                if re.match(r'(sleepTimeout|sleepValue|vaOldSleepT\.val)\s*(=|\+=)', t) or \
+                        re.match(r'covx \S+,(sleepTimeout|sleepValue|vaOldSleepT\.val),', t):
+                    writes.append((o.name, item[1], t))
+    buttons = {o.name for o in page.objs if o.name in ('b0', 'b1', 'b2', 'b3')}
+    expected = sorted([(b, 'down', restore) for b in buttons] + [
+        ('tc0', 'down', 'sleepValue=0'),
+        ('tmSleep', 'timer', 'sleepValue+=1'),
+        ('tmSleep', 'timer', 'sleepValue=0'),
+        ('tmSerial', 'timer', 'vaOldSleepT.val=sleepTimeout'),
+        ('tmSerial', 'timer', 'sleepTimeout=sys0'),
+        ('tmSerial', 'timer', 'covx tTmp.txt,sleepTimeout,0,0'),
+        ('tmSerial', 'timer', restore),
+    ])
+    if sorted(writes) != expected:
+        raise SystemExit(f'{name}: unexpected sleep timeout code: {sorted(set(writes) ^ set(expected))}')
+    for b in buttons:
+        if page.obj(b).code('down')[0].strip() != restore:
+            raise SystemExit(f'{name}.{b}: does not restore sleepTimeout first')
+    timer = page.obj('tmSleep').code('timer')
+    if [x.strip() for x in timer] != ['if(sleepTimeout!=0)', '{', 'sleepValue+=1', 'if(sleepTimeout<=sleepValue)',
+                                      '{', 'sleepValue=0', 'click b0,1', 'click b0,0', '}', '}']:
+        raise SystemExit(f'{name}.tmSleep: unexpected code {timer}')
+
+    lines = page.obj('tmSerial').code('timer')
+    a, b = block(lines, find(lines, 'if(tInstruction.txt=="entityUpdateDetail")'))
+    i = find(lines, 'vaOldSleepT.val=sleepTimeout', a)
+    if i >= b or lines[i - 1].strip() != '//preserve old sleepTimeout':
+        raise SystemExit(f'{name}: vaOldSleepT not saved in entityUpdateDetail as expected')
+    del lines[i - 1:i + 1]
+    b -= 2
+    i = find(lines, 'sleepTimeout=sys0', a)
+    if i >= b or [x.strip() for x in lines[i - 3:i]] != ['// sleep timeout', 'spstr strCommand.txt,tTmp.txt,"~",'
+                                                         + ('11' if name == NAME else '12'),
+                                                         'covx tTmp.txt,sys0,0,0']:
+        raise SystemExit(f'{name}: unexpected sleep timeout in entityUpdateDetail: {lines[i - 3:i + 1]}')
+    ind = lines[i][:len(lines[i]) - len(lines[i].lstrip())]
+    lines[i + 1:i + 1] = [f'{ind}sleepValue=0']
+
+    a, b = block(lines, find(lines, 'if(tInstruction.txt=="pageType")'))
+    i = find(lines, restore, a)
+    if i != a + 2 or lines[a + 1].strip() != '{':
+        raise SystemExit(f'{name}: pageType does not start with {restore}')
+    ind = lines[i][:len(lines[i]) - len(lines[i].lstrip())]
+    lines[i + 1:i + 1] = [f'{ind}sleepValue=0']
+
+    load = page.objs[0].code('load')
+    end = find(load, ACK_END)
+    if load[end + 1] != '}':
+        raise SystemExit(f'{name}: unexpected acknowledge block in load')
+    load[end + 2:end + 2] = SLEEP_LOAD
+    return f'{name}: load +sleepValue=0/vaOldSleepT, entityUpdateDetail -vaOldSleepT +sleepValue=0, pageType +sleepValue=0'
+
+
 def patch_release(page):
     o = page.obj('tRelease')
     if o.get('txt') != OLD_RELEASE:
@@ -430,6 +514,10 @@ def main(source, target):
     before = ram(page)
     ids = build_page(page)
     after = ram(page)
+    fixed = [fix_sleep(page)]
+    if 'popupNotify' not in pages:
+        raise SystemExit('no page popupNotify')
+    fixed.append(fix_sleep(pages['popupNotify'][1]))
 
     switched, without = [], []
     for name, (sec, p) in pages.items():
@@ -444,7 +532,7 @@ def main(source, target):
             without.append(name)
         if name == 'pageStartup':
             patch_release(p)
-        if n or name in ('pageStartup', OLD_NAME):
+        if n or name in ('pageStartup', OLD_NAME, 'popupNotify'):
             changes[sec] = p.bytes()
             Page(changes[sec])  # round trip
 
@@ -462,6 +550,7 @@ def main(source, target):
     print(f'pages without popupNotify branch: {", ".join(sorted(without))}')
     print(f'{FONT_SECTION}: {FONT_NAME}, height {HEIGHT}, {len(cps) + 1} characters, '
           f'{len(hmi.files[FONT_SECTION])} -> {len(font)} bytes')
+    print('sleepValue fix:', '; '.join(fixed))
     print(f'tRelease {OLD_RELEASE} -> {NEW_RELEASE}')
     print(f'changed sections: {", ".join(sorted(changes))}')
     print(f'{target}: {len(hmi.d)} -> {len(out)} bytes')
