@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     AUTH_CHECK_PATH,
     forgetLegacySession,
+    helloBuild,
     isUnknownModelHello,
     UNKNOWN_MODEL_REASON,
     websocketUrl,
@@ -336,5 +337,115 @@ describe('WsTransport', () => {
         });
         expect(h.events).toEqual(['bye:shutdown', 'hello:eu:1.0.0:clone']);
         h.transport.disconnect();
+    });
+    describe('build check', () => {
+        const hello = {
+            t: 'hello',
+            model: 'eu',
+            topic: 't',
+            name: 'n',
+            friendlyName: 'f',
+            tftVersion: '1.0.0',
+            kind: 'clone',
+        };
+
+        function memoryStorage(): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
+            const data = new Map<string, string>();
+            return {
+                getItem: (key: string): string | null => data.get(key) ?? null,
+                setItem: (key: string, value: string): void => {
+                    data.set(key, value);
+                },
+                removeItem: (key: string): void => {
+                    data.delete(key);
+                },
+            };
+        }
+
+        function makeBuild(
+            buildId: string | undefined,
+            storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null,
+        ): { transport: WsTransport; reloads: string[]; events: string[] } {
+            const reloads: string[] = [];
+            const events: string[] = [];
+            const transport = new WsTransport('nspanel1', {
+                location,
+                fetch: (): Promise<{ status: number }> => Promise.resolve({ status: 204 }),
+                reload: (): void => {
+                    reloads.push('reload');
+                },
+                buildId,
+                storage,
+            });
+            transport.onHello(h => events.push(`hello:${h.build ?? '-'}`));
+            return { transport, reloads, events };
+        }
+
+        it('reloads once when the adapter serves another bundle, no reconnect afterwards', () => {
+            const storage = memoryStorage();
+            const first = makeBuild('old', storage);
+            first.transport.connect();
+            const ws = FakeWebSocket.instances[0];
+            ws.open();
+            ws.message({ ...hello, build: 'new' });
+            expect(first.reloads).toEqual(['reload']);
+            expect(first.events).toEqual([]);
+            expect(ws.readyState).toBe(FakeWebSocket.CLOSED);
+            vi.advanceTimersByTime(60_000);
+            expect(FakeWebSocket.instances).toHaveLength(1);
+
+            // the reloaded page is still the old bundle (cache) - it keeps running
+            const second = makeBuild('old', storage);
+            second.transport.connect();
+            const ws2 = FakeWebSocket.instances[1];
+            ws2.open();
+            ws2.message({ ...hello, build: 'new' });
+            expect(second.reloads).toEqual([]);
+            expect(second.events).toEqual(['hello:new']);
+            second.transport.disconnect();
+        });
+
+        it('reloads also for a model this bundle does not know yet', () => {
+            const h = makeBuild('old', memoryStorage());
+            const byes: string[] = [];
+            h.transport.onBye(r => byes.push(r));
+            h.transport.connect();
+            FakeWebSocket.instances[0].open();
+            FakeWebSocket.instances[0].message({ ...hello, model: 'future-model', build: 'new' });
+            expect(h.reloads).toEqual(['reload']);
+            expect(byes).toEqual([]);
+            // only hello frames carry a build
+            expect(helloBuild({ t: 'cmd', build: 'x' })).toBeUndefined();
+            expect(helloBuild({ t: 'hello', build: 5 })).toBeUndefined();
+            expect(helloBuild({ t: 'hello', build: 'x' })).toBe('x');
+        });
+
+        it('keeps running with the same build, without a build from the adapter or without storage', () => {
+            const same = makeBuild('abc', memoryStorage());
+            same.transport.connect();
+            FakeWebSocket.instances[0].open();
+            FakeWebSocket.instances[0].message({ ...hello, build: 'abc' });
+            // older adapter: no build field
+            FakeWebSocket.instances[0].message(hello);
+            expect(same.reloads).toEqual([]);
+            expect(same.events).toEqual(['hello:abc', 'hello:-']);
+            same.transport.disconnect();
+
+            const blocked = makeBuild('abc', null);
+            blocked.transport.connect();
+            FakeWebSocket.instances[1].open();
+            FakeWebSocket.instances[1].message({ ...hello, build: 'other' });
+            expect(blocked.reloads).toEqual([]);
+            expect(blocked.events).toEqual(['hello:other']);
+            blocked.transport.disconnect();
+
+            // page without build id (vite dev server)
+            const dev = makeBuild(undefined, memoryStorage());
+            dev.transport.connect();
+            FakeWebSocket.instances[2].open();
+            FakeWebSocket.instances[2].message({ ...hello, build: 'other' });
+            expect(dev.reloads).toEqual([]);
+            dev.transport.disconnect();
+        });
     });
 });

@@ -20,6 +20,11 @@ export type HelloFrame = {
     kind: WebPanelKind;
     /** show the two virtual hardware buttons below the display (always true for a clone) */
     buttons: boolean;
+    /**
+     * build id of the served web bundle (meta {@link WEB_BUILD_META} of www/index.html) - a browser
+     * running another bundle reloads once; missing when it cannot be read
+     */
+    build?: string;
 };
 
 export type ServerFrame =
@@ -35,6 +40,26 @@ export type ClientFrame =
     | { t: 'ack'; seq?: number }
     /** event of the display - becomes tele/RESULT {"CustomRecv": p} */
     | { t: 'recv'; p: string };
+
+/** name of the meta tag the frontend build writes its build id into (`webBuildId` in src-web/vite.config.ts) */
+export const WEB_BUILD_META = 'nspanel-web-build';
+
+/**
+ * Build id of the web bundle from its index.html.
+ *
+ * @param html content of www/index.html
+ * @returns the id, undefined without the meta tag (frontend built by an older version)
+ */
+export function parseWebBuildId(html: string): string | undefined {
+    for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+        if (!new RegExp(`\\bname\\s*=\\s*["']${WEB_BUILD_META}["']`, 'i').test(tag)) {
+            continue;
+        }
+        const content = /\bcontent\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1]?.trim();
+        return content ? content : undefined;
+    }
+    return undefined;
+}
 
 /**
  * Parse a raw WebSocket message into a client frame.

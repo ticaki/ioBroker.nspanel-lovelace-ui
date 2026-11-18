@@ -192,11 +192,38 @@ class WebServer extends import_library.BaseClass {
   wss;
   pingInterval;
   alive = /* @__PURE__ */ new WeakMap();
+  /** build id of www/index.html, read again when the file changes */
+  buildCache;
+  buildProvider = () => this.webBuildId();
   constructor(adapter, manager, options) {
     super(adapter, "WebServer");
     this.manager = manager;
     this.options = options;
     this.guard = new PinGuard(options.secret, options.pin);
+    manager.webBuild = this.buildProvider;
+  }
+  /**
+   * Build id of the served frontend (meta tag of www/index.html), sent in `hello` so a browser
+   * that kept an older bundle open reloads.
+   *
+   * @returns the id, undefined if index.html is missing or has none
+   */
+  webBuildId() {
+    var _a;
+    const file = this.resolveStatic("/index.html");
+    if (!file) {
+      this.buildCache = void 0;
+      return void 0;
+    }
+    try {
+      const { mtimeMs } = fs.statSync(file);
+      if (((_a = this.buildCache) == null ? void 0 : _a.mtimeMs) !== mtimeMs) {
+        this.buildCache = { mtimeMs, id: (0, import_web_protocol.parseWebBuildId)(fs.readFileSync(file, "utf8")) };
+      }
+      return this.buildCache.id;
+    } catch {
+      return void 0;
+    }
   }
   /** true if the server speaks HTTPS (and WSS) */
   get secure() {
@@ -299,6 +326,9 @@ class WebServer extends import_library.BaseClass {
     }
   }
   async delete() {
+    if (this.manager.webBuild === this.buildProvider) {
+      this.manager.webBuild = void 0;
+    }
     await this.stop();
     await super.delete();
   }

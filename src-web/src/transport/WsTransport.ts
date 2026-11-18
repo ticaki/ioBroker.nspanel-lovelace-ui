@@ -1,5 +1,6 @@
 import type { ClientFrame, ConnectionStatus, HelloFrame } from '../protocol/types';
 import { isPanelModel, isServerFrame } from '../protocol/types';
+import { type BuildStorage, pageBuildId, sessionStore, shouldReloadForBuild } from './buildCheck';
 
 /**
  * `bye` reason the transport reports itself when the adapter announces a model this frontend does not know
@@ -25,8 +26,12 @@ export interface WsTransportOptions {
     location?: LocationLike;
     /** `GET /auth/check` - replaceable for tests, defaults to the global `fetch` */
     fetch?: (url: string, init: RequestInit) => Promise<{ status: number }>;
-    /** reloads the page so the server can show the PIN page, defaults to `location.reload()` */
+    /** reloads the page (PIN page, newer bundle of the adapter), defaults to `location.reload()` */
     reload?: () => void;
+    /** build id of this page, defaults to the meta tag of index.html (see `pageBuildId`) */
+    buildId?: string;
+    /** reload guard storage, defaults to `sessionStorage`; `null` = no storage (blocked) */
+    storage?: BuildStorage | null;
 }
 
 /**
@@ -41,6 +46,19 @@ export function isUnknownModelHello(value: unknown): boolean {
         (value as { t?: unknown }).t === 'hello' &&
         !isPanelModel((value as { model?: unknown }).model)
     );
+}
+
+/**
+ * Build id of the served bundle from a `hello` frame.
+ *
+ * @param value the parsed frame
+ * @returns the id, undefined for another frame or a `hello` without one (older adapter)
+ */
+export function helloBuild(value: unknown): string | undefined {
+    if (!value || typeof value !== 'object' || !('t' in value) || value.t !== 'hello' || !('build' in value)) {
+        return undefined;
+    }
+    return typeof value.build === 'string' ? value.build : undefined;
 }
 
 /** Removes the session id of older frontends, nothing else is stored */
@@ -69,6 +87,8 @@ export class WsTransport implements PanelTransport {
     private readonly url: string;
     private readonly fetchFn: WsTransportOptions['fetch'];
     private readonly reload: () => void;
+    private readonly buildId: string | undefined;
+    private readonly storage: BuildStorage | undefined;
     private socket: WebSocket | undefined;
     private reconnectDelay = RECONNECT_MIN_MS;
     private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -88,6 +108,8 @@ export class WsTransport implements PanelTransport {
         this.url = websocketUrl(topic, options.location ?? window.location);
         this.fetchFn = options.fetch ?? (typeof fetch === 'function' ? (url, init) => fetch(url, init) : undefined);
         this.reload = options.reload ?? ((): void => window.location.reload());
+        this.buildId = 'buildId' in options ? options.buildId : pageBuildId();
+        this.storage = options.storage === null ? undefined : (options.storage ?? sessionStore());
     }
 
     /** reason of the `bye` frame that ended the connection, undefined while it is alive */
@@ -178,6 +200,15 @@ export class WsTransport implements PanelTransport {
         try {
             parsed = JSON.parse(data);
         } catch {
+            return;
+        }
+        if (shouldReloadForBuild(helloBuild(parsed), this.buildId, this.storage)) {
+            // the adapter serves another bundle (update while this page stayed open) - load it, before the
+            // model check: a newer adapter may announce a model only the new bundle knows
+            this.stopped = true;
+            this.clearReconnectTimer();
+            this.socket?.close();
+            this.reload();
             return;
         }
         if (isUnknownModelHello(parsed)) {

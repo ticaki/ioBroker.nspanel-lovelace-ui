@@ -18,9 +18,23 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var web_protocol_exports = {};
 __export(web_protocol_exports, {
-  parseClientFrame: () => parseClientFrame
+  WEB_BUILD_META: () => WEB_BUILD_META,
+  parseClientFrame: () => parseClientFrame,
+  parseWebBuildId: () => parseWebBuildId
 });
 module.exports = __toCommonJS(web_protocol_exports);
+const WEB_BUILD_META = "nspanel-web-build";
+function parseWebBuildId(html) {
+  var _a, _b, _c;
+  for (const tag of (_a = html.match(/<meta\b[^>]*>/gi)) != null ? _a : []) {
+    if (!new RegExp(`\\bname\\s*=\\s*["']${WEB_BUILD_META}["']`, "i").test(tag)) {
+      continue;
+    }
+    const content = (_c = (_b = /\bcontent\s*=\s*["']([^"']*)["']/i.exec(tag)) == null ? void 0 : _b[1]) == null ? void 0 : _c.trim();
+    return content ? content : void 0;
+  }
+  return void 0;
+}
 function parseClientFrame(raw) {
   let data;
   try {
@@ -42,6 +56,8 @@ function parseClientFrame(raw) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  parseClientFrame
+  WEB_BUILD_META,
+  parseClientFrame,
+  parseWebBuildId
 });
 //# sourceMappingURL=web-protocol.js.map

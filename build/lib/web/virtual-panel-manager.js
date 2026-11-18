@@ -68,6 +68,8 @@ class VirtualPanelManager extends import_library.BaseClass {
   entries = /* @__PURE__ */ new Map();
   /** topics already reported as not running - the browser retries every second, the log hears it once */
   notRunningReported = /* @__PURE__ */ new Set();
+  /** build id of the served web bundle for the `hello`, set by the web server */
+  webBuild;
   constructor(adapter, controller) {
     super(adapter, "WebPanels");
     this.controller = controller;
@@ -126,7 +128,7 @@ class VirtualPanelManager extends import_library.BaseClass {
    * with `bye`, or just closed so it tries again when the panel is not running right now)
    */
   async attach(topicOrId, client) {
-    var _a;
+    var _a, _b;
     if (this.unload || this.adapter.unload) {
       client.send({ t: "bye", reason: "shutdown" });
       client.close("shutdown");
@@ -182,6 +184,7 @@ class VirtualPanelManager extends import_library.BaseClass {
     entry.clients.add(client);
     entry.channel.setReceiverConnected(entry.clients.size > 0);
     this.notRunningReported.delete(target.topic);
+    const build = (_a = this.webBuild) == null ? void 0 : _a.call(this);
     client.send({
       t: "hello",
       model: panel.info.nspanel.model,
@@ -192,8 +195,9 @@ class VirtualPanelManager extends import_library.BaseClass {
       kind: entry.kind,
       buttons: entry.kind === "clone" ? true : (0, import_tools.webButtonsVisible)(
         panel.info.nspanel.model,
-        (_a = this.adapter.config.panels.find((p) => p.topic === entry.topic)) == null ? void 0 : _a.webButtons
-      )
+        (_b = this.adapter.config.panels.find((p) => p.topic === entry.topic)) == null ? void 0 : _b.webButtons
+      ),
+      ...build ? { build } : {}
     });
     this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);
     return entry;

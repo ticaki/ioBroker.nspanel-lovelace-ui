@@ -1,4 +1,5 @@
 import React from 'react';
+import { PressTracker } from '../../components/pressTracker';
 import type { RGB } from '../../protocol/color';
 
 /** Diameter the HMI uses for the wheel; `Color.pos_to_color` of the adapter assumes a radius of 80 */
@@ -114,8 +115,21 @@ function rgbToHueSat(color: RGB): { hue: number; sat: number } {
  */
 export class ColorWheel extends React.Component<ColorWheelProps> {
     private readonly root = React.createRef<HTMLDivElement>();
+    /** only a release after a press on the wheel picks a colour, see {@link PressTracker} */
+    private readonly press = new PressTracker();
+
+    private readonly onPointerDown = (e: React.PointerEvent<HTMLDivElement>): void => {
+        this.press.down(e.pointerId);
+    };
+
+    private readonly onPointerCancel = (e: React.PointerEvent<HTMLDivElement>): void => {
+        this.press.cancel(e.pointerId);
+    };
 
     private readonly onPointerUp = (e: React.PointerEvent<HTMLDivElement>): void => {
+        if (!this.press.up(e.pointerId)) {
+            return;
+        }
         const el = this.root.current;
         if (!el) {
             return;
@@ -139,7 +153,10 @@ export class ColorWheel extends React.Component<ColorWheelProps> {
             <div
                 ref={this.root}
                 data-colorwheel=""
+                onPointerDown={this.onPointerDown}
                 onPointerUp={this.onPointerUp}
+                onPointerCancel={this.onPointerCancel}
+                onPointerLeave={this.onPointerCancel}
                 style={{
                     position: 'relative',
                     width: size,

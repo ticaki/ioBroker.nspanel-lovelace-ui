@@ -1,5 +1,8 @@
 import { expect } from 'chai';
+import * as fs from 'node:fs';
 import * as https from 'node:https';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import * as net from 'node:net';
 import {
     PIN_ATTEMPTS_PER_MINUTE,
@@ -587,5 +590,43 @@ describe('lib/web/web-server - FIDO2 routes', () => {
         } finally {
             await s.stop();
         }
+    });
+});
+
+describe('lib/web/web-server - build id of the frontend', () => {
+    let dir: string;
+    beforeEach(() => {
+        dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nspanel-www-'));
+    });
+    afterEach(() => {
+        fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    it('reads it from www/index.html, again after the file changed, and hands it to the manager', async () => {
+        const manager = { listPanels: () => [], hasPanel: () => false } as unknown as VirtualPanelManager;
+        const ws = new WebServer(fakeAdapter() as any, manager, {
+            port: 0,
+            bind: '127.0.0.1',
+            wwwPath: dir,
+            pin: '',
+            secret: SECRET,
+        });
+        expect(ws.webBuildId()).to.equal(undefined);
+        const file = path.join(dir, 'index.html');
+        fs.writeFileSync(file, '<head><meta name="nspanel-web-build" content="one"></head>');
+        expect(ws.webBuildId()).to.equal('one');
+        expect(manager.webBuild?.()).to.equal('one');
+        fs.writeFileSync(file, '<head><meta name="nspanel-web-build" content="two"></head>');
+        // a new mtime makes it read the file again
+        const later = new Date(Date.now() + 5000);
+        fs.utimesSync(file, later, later);
+        expect(ws.webBuildId()).to.equal('two');
+        // a frontend of an older build has no meta tag
+        fs.writeFileSync(file, '<head><title>NSPanel</title></head>');
+        const evenLater = new Date(Date.now() + 10_000);
+        fs.utimesSync(file, evenLater, evenLater);
+        expect(ws.webBuildId()).to.equal(undefined);
+        await ws.delete();
+        expect(manager.webBuild).to.equal(undefined);
     });
 });

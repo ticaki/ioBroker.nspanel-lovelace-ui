@@ -404,6 +404,31 @@ describe('lib/web/virtual-panel-manager - virtual hardware buttons in hello', ()
     });
 });
 
+describe('lib/web/virtual-panel-manager - build id in hello', () => {
+    it('sends the build id of the served bundle, nothing when it is unknown', async () => {
+        const { ctrl, manager } = setup();
+        const channel = manager.channelFor(WEB_TOPIC);
+        await ctrl.createPanel(
+            { name: WEB_ID, friendlyName: 'Webtest', topic: WEB_TOPIC, kind: 'web', model: 'web-p' },
+            channel,
+        );
+        const a = client();
+        await manager.attach(WEB_TOPIC, a);
+        expect(a.frames[0]).to.include({ t: 'hello' });
+        expect(a.frames[0]).to.not.have.property('build');
+
+        manager.webBuild = () => 'abc123';
+        const b = client();
+        await manager.attach(WEB_TOPIC, b);
+        expect(b.frames[0]).to.include({ t: 'hello', build: 'abc123' });
+
+        manager.webBuild = () => undefined;
+        const c = client();
+        await manager.attach(WEB_TOPIC, c);
+        expect(c.frames[0]).to.not.have.property('build');
+    });
+});
+
 describe('lib/web/virtual-panel-manager - standalone web panel that is not running', () => {
     it('is reported once per topic, independent of other topics, again after a browser could connect', async () => {
         const { adapter, ctrl, manager, real } = setup();

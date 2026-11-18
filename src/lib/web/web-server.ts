@@ -7,7 +7,7 @@ import type { Socket } from 'node:net';
 import { WebSocketServer, type RawData, type WebSocket } from 'ws';
 import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 import type { WebClient, VirtualPanelManager, WebPanelEntry } from './virtual-panel-manager';
-import { parseClientFrame, type ServerFrame } from './web-protocol';
+import { parseClientFrame, parseWebBuildId, type ServerFrame } from './web-protocol';
 import { relyingPartyFromHost, type FidoService } from './fido';
 
 /** Dead browsers are detected by a ping every ... ms */
@@ -255,12 +255,39 @@ export class WebServer extends BaseClass {
     private wss: WebSocketServer | undefined;
     private pingInterval: ioBroker.Interval | undefined;
     private readonly alive: WeakMap<WebSocket, boolean> = new WeakMap();
+    /** build id of www/index.html, read again when the file changes */
+    private buildCache: { mtimeMs: number; id: string | undefined } | undefined;
+    private readonly buildProvider = (): string | undefined => this.webBuildId();
 
     constructor(adapter: AdapterClassDefinition, manager: VirtualPanelManager, options: WebServerOptions) {
         super(adapter, 'WebServer');
         this.manager = manager;
         this.options = options;
         this.guard = new PinGuard(options.secret, options.pin);
+        manager.webBuild = this.buildProvider;
+    }
+
+    /**
+     * Build id of the served frontend (meta tag of www/index.html), sent in `hello` so a browser
+     * that kept an older bundle open reloads.
+     *
+     * @returns the id, undefined if index.html is missing or has none
+     */
+    webBuildId(): string | undefined {
+        const file = this.resolveStatic('/index.html');
+        if (!file) {
+            this.buildCache = undefined;
+            return undefined;
+        }
+        try {
+            const { mtimeMs } = fs.statSync(file);
+            if (this.buildCache?.mtimeMs !== mtimeMs) {
+                this.buildCache = { mtimeMs, id: parseWebBuildId(fs.readFileSync(file, 'utf8')) };
+            }
+            return this.buildCache.id;
+        } catch {
+            return undefined;
+        }
     }
 
     /** true if the server speaks HTTPS (and WSS) */
@@ -369,6 +396,9 @@ export class WebServer extends BaseClass {
     }
 
     async delete(): Promise<void> {
+        if (this.manager.webBuild === this.buildProvider) {
+            this.manager.webBuild = undefined;
+        }
         await this.stop();
         await super.delete();
     }
