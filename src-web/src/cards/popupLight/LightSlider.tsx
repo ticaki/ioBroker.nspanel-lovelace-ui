@@ -11,8 +11,13 @@ const KNOB_BAR_COLOR = '#8a8a8a';
 const EMPTY_COLOR = '#222222';
 
 export interface LightSliderProps {
-    /** 0..100, 0 at the bottom */
+    /** 0..100, 0 at the bottom (at the top with {@link LightSliderProps.inverted}) */
     value: number;
+    /**
+     * 100 at the bottom and 0 at the top, for the received and the sent value - like the colour
+     * temperature slider of the HMI (`hTempSlider.val=100-sys0`, sends `100-hTempSlider.val`)
+     */
+    inverted?: boolean;
     /** colour of the filled part below the knob (brightness slider) */
     fill?: string;
     /** css background of the whole slider instead of a fill (colour temperature gradient) */
@@ -26,7 +31,8 @@ export interface LightSliderProps {
 }
 
 interface LightSliderState {
-    dragValue: number | undefined;
+    /** knob position while dragging, 0 at the bottom */
+    dragPosition: number | undefined;
 }
 
 /**
@@ -41,18 +47,23 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
 
     constructor(props: LightSliderProps) {
         super(props);
-        this.state = { dragValue: undefined };
+        this.state = { dragPosition: undefined };
     }
 
     private get height(): number {
         return this.props.height ?? LIGHT_SLIDER_HEIGHT;
     }
 
-    /** value from a pointer position; the knob centre travels between KNOB_HEIGHT/2 and height - KNOB_HEIGHT/2 */
-    private valueAt(clientY: number): number {
+    /** maps a value to the knob position (0 at the bottom) and back, the mapping is its own inverse */
+    private flip(v: number): number {
+        return this.props.inverted ? 100 - v : v;
+    }
+
+    /** knob position (0 at the bottom) from a pointer position; the knob centre travels between KNOB_HEIGHT/2 and height - KNOB_HEIGHT/2 */
+    private positionAt(clientY: number): number {
         const el = this.root.current;
         if (!el) {
-            return this.props.value;
+            return this.flip(this.props.value);
         }
         const rect = el.getBoundingClientRect();
         const scale = rect.height / this.height;
@@ -69,16 +80,16 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
         e.preventDefault();
         this.pointerId = e.pointerId;
         e.currentTarget.setPointerCapture(e.pointerId);
-        this.setState({ dragValue: this.valueAt(e.clientY) });
+        this.setState({ dragPosition: this.positionAt(e.clientY) });
     };
 
     private readonly onPointerMove = (e: React.PointerEvent<HTMLDivElement>): void => {
         if (this.pointerId !== e.pointerId) {
             return;
         }
-        const v = this.valueAt(e.clientY);
-        if (v !== this.state.dragValue) {
-            this.setState({ dragValue: v });
+        const p = this.positionAt(e.clientY);
+        if (p !== this.state.dragPosition) {
+            this.setState({ dragPosition: p });
         }
     };
 
@@ -90,9 +101,9 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
         if (e.currentTarget.hasPointerCapture(e.pointerId)) {
             e.currentTarget.releasePointerCapture(e.pointerId);
         }
-        const v = this.valueAt(e.clientY);
-        this.setState({ dragValue: undefined });
-        this.props.onCommit(v);
+        const p = this.positionAt(e.clientY);
+        this.setState({ dragPosition: undefined });
+        this.props.onCommit(this.flip(p));
     };
 
     private readonly onPointerCancel = (e: React.PointerEvent<HTMLDivElement>): void => {
@@ -100,13 +111,14 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
             return;
         }
         this.pointerId = undefined;
-        this.setState({ dragValue: undefined });
+        this.setState({ dragPosition: undefined });
     };
 
     render(): React.JSX.Element {
         const { fill = KNOB_COLOR, track, name } = this.props;
-        const value = Math.max(0, Math.min(100, this.state.dragValue ?? this.props.value));
-        const centre = KNOB_HEIGHT / 2 + (1 - value / 100) * (this.height - KNOB_HEIGHT);
+        const position = Math.max(0, Math.min(100, this.state.dragPosition ?? this.flip(this.props.value)));
+        const value = this.flip(position);
+        const centre = KNOB_HEIGHT / 2 + (1 - position / 100) * (this.height - KNOB_HEIGHT);
         return (
             <div
                 ref={this.root}

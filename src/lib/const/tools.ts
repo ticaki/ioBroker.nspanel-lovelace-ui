@@ -227,9 +227,9 @@ export async function setSliderCTFromValue(
         }
     } else if (i.value && i.value.common && i.value.common.min !== undefined && i.value.common.max !== undefined) {
         if (mode === 'mired') {
-            r = Math.round(Color.scale(r, 0, 100, i.value.common.max, i.value.common.min));
-        } else {
             r = Math.round(Color.scale(r, 0, 100, i.value.common.min, i.value.common.max));
+        } else {
+            r = Math.round(Color.scale(r, 0, 100, i.value.common.max, i.value.common.min));
         }
     } else {
         if (mode === 'mired') {

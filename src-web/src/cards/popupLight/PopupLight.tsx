@@ -66,9 +66,10 @@ export function lightGeometry(model: PanelModel): LightGeometry {
     };
 }
 /**
- * Colour temperature slider: 0 (cold) at the bottom, 100 (warm) at the top like
- * `getSliderCTFromValue`; the picture of the HMI runs from a cool grey-blue at the top
- * to orange and red at the bottom.
+ * Colour temperature slider like `hTempSlider` of the HMI: the picture runs from a cool
+ * grey-blue at the top to orange and red at the bottom, the value is inverted
+ * (`hTempSlider.val=100-sys0`, sends `100-hTempSlider.val`), so the adapter's 0 (cold,
+ * `getSliderCTFromValue`) is at the top and 100 (warm) at the bottom.
  */
 const CT_TRACK = 'linear-gradient(180deg, #aeb6c8 0%, #c4b9ac 35%, #cf9a5c 65%, #d46a10 88%, #e02000 100%)';
 
@@ -220,6 +221,7 @@ export class PopupLight extends React.Component<CardProps<PopupLightModel>, Popu
                         height={g.sliderHeight}
                         value={model.colorTemp ?? 0}
                         track={CT_TRACK}
+                        inverted
                         onCommit={(v): void => press(id, 'colorTempSlider', v)}
                     />
                 </div>,

@@ -272,9 +272,9 @@ async function setSliderCTFromValue(i, value) {
     }
   } else if (i.value && i.value.common && i.value.common.min !== void 0 && i.value.common.max !== void 0) {
     if (mode === "mired") {
-      r = Math.round(import_Color.Color.scale(r, 0, 100, i.value.common.max, i.value.common.min));
-    } else {
       r = Math.round(import_Color.Color.scale(r, 0, 100, i.value.common.min, i.value.common.max));
+    } else {
+      r = Math.round(import_Color.Color.scale(r, 0, 100, i.value.common.max, i.value.common.min));
     }
   } else {
     if (mode === "mired") {
