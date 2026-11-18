@@ -22,7 +22,21 @@ anstehender Termin, Internet weg.
   bricht an Leerzeichen um, trennt Zeilen mit **CR LF** (nur CR reicht nicht) und kürzt auf die erlaubte Zeilenzahl.
 - **EU / us-l (480×320):** bis zu 2 Buttons als senkrechte Spalten links und rechts (80 px breit, y 60–264, die rechte
   beginnt unter dem Kreuz). Auf den Buttons ein MDI-Icon in 80 px aus der vorhandenen Bold-80-Font. Die Textzeile
-  läuft unter den Spalten über die ganze Breite (x 8–472, bei 48 px etwa 22–25 Zeichen).
+  läuft unter den Spalten über die ganze sichtbare Breite (434 px, bei 48 px etwa 20–23 Zeichen).
+- **Sichtbarer Bereich:** Der Rahmen des Panels verdeckt rechts etwa 30 px. Sichtbar ist bei EU x 0–449, bei us-l
+  derselbe Bereich 15 px weiter rechts (x 15–464) – so liegen auch alle anderen Seiten (Screensaver-Texte 0–449,
+  Karten mit bPrev/bNext 9–440, Popup-Kreuz bis 446; us-l jeweils +15). Geometrie EU (us-l: x +15):
+
+  | Objekt | x | y |
+  |---|---|---|
+  | Spalte links `b1` | 8–87 | 60–264 |
+  | Spalte rechts `b2` | 362–441 | 60–264 |
+  | Kreuz `b0` (66×80) | 381–446 (endet wie das Kreuz von `popupNotify`) | 0–79 |
+  | Icon `tIcon` (255×255) | 97–351 (mittig im sichtbaren Bereich) | 0–254 |
+  | Text `tText` (434×48) | 8–441 | 272–319 |
+
+  us-p (320×480) hat keinen solchen Versatz (die Seiten nutzen die volle Breite symmetrisch) und bleibt unverändert.
+  Das Web-Panel hat keinen Rahmen und nutzt weiter die volle Fläche.
 - **us-p (320×480):** Buttons unten nebeneinander, je Icon (48 px) + kurzer Text (32 px). Darüber der Text: mit Buttons
   2 Zeilen, ohne Buttons bis zu 4 (bei 48 px etwa 16 Zeichen pro Zeile).
 - Ohne Buttons bleibt das Icon gleich groß, die Seitenspalten bleiben leer.
@@ -65,7 +79,8 @@ anstehender Termin, Internet weg.
 - Ereignisse wie `popupNotify`: links `buttonPress2,<id>,notifyAction,button1`, rechts `…,button3` (`button2` ist bei
   `popupNotify` der mittlere und bleibt frei), Kreuz/Timeout `buttonPress2,popupNotify3,bExit`. Nach einem Button
   stellt die Seite den alten Screensaver-Timeout wieder her und schließt sich danach selbst, falls der Adapter nichts tut.
-- Kreuz `b0` ist 80 px hoch (Nextion zeichnet keinen Text in zu niedrigen Boxen) und ragt 20 px in die rechte Spalte.
+- Kreuz `b0` ist 80 px hoch (Nextion zeichnet keinen Text in zu niedrigen Boxen) und ragt 20 px in die rechte Spalte
+  (EU x 381–441, y 60–79); das Icon berührt es nicht.
 - Buttons eckig (keine passende Rundungs-Font).
 
 ## Offen

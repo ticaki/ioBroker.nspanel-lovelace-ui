@@ -181,9 +181,9 @@ module.exports = ctx => {
                 expect(f[6]).to.equal('0');
                 const lines = f[4].split('\r\n');
                 expect(lines).to.have.length(2);
-                // the adapter wraps at spaces, every line fits the 464 px of the text field
+                // the adapter wraps at spaces, every line fits the 434 px of the text field
                 for (const line of lines) {
-                    expect(textWidth(line, 0, 'eu')).to.be.at.most(464);
+                    expect(textWidth(line, 0, 'eu')).to.be.at.most(434);
                 }
                 expect(lines[0].startsWith('The toilet is occupied')).to.equal(true);
                 expect(f.slice(7, 11)).to.deep.equal(['', '', '', '']);

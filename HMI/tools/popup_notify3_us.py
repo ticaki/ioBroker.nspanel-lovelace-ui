@@ -24,7 +24,10 @@ Unlike EU there is no prepared base: the script adds the page and the font itsel
    popupNotify3 and popupNotify, the popupNotify3 branch behind every popupNotify branch of a pageType switch,
    pageStartup.tRelease 6.1.1 -> 6.2.0.
 3. Layout by the page size of popupNotify:
-   480 x 320 (us-l): popup_notify3.layout_eu, identical to EU.
+   480 x 320 (us-l): popup_notify3.layout_eu shifted 15 px to the right (layout_usl): the visible area of us-l is
+     x 15..464 instead of 0..449 (every page of us-l lies 15 px further right than on EU, see point 4 there).
+   us-p has no such offset: the pages use the full width symmetrically (cards bPrev 9 .. bNext 310, screensaver
+     texts 0..319, popupNotify 3..317), layout_usp keeps its 8 px margins.
    320 x 480 (us-p): layout_usp - the cross gets its own strip above the icon (font 3, 48 px box): the 255 px icon
    box would otherwise cover the cross box and erase it on every redraw (tIcon is drawn after b0).
      b0     cross E155 font 3, x 256..319, y 0..47, light gray
@@ -46,8 +49,9 @@ sys.path.insert(0, HERE)
 from hmi import Hmi  # noqa: E402
 from pagefile import Page  # noqa: E402
 from popup_notify3 import (BUTTON_FONT, BUTTON_FONT_SECTION, CLOSE, FONT_ID, FONT_SECTION, HEIGHT,  # noqa: E402
-                           ENTITIES_PAGE, LIGHT_GRAY, NAME, OVERLAP_PAGE, TEXT_FONT, WHITE, add_page_switch, build_page,
-                           fix_entities_overlap, fix_overlap, fix_sleep, font_ids, layout_eu, patch_release, ram)
+                           ENTITIES_PAGE, LIGHT_GRAY, NAME, OVERLAP_PAGE, TEXT_FONT, VISIBLE_SHIFT_USL, WHITE,
+                           add_page_switch, build_page, fix_entities_overlap, fix_overlap, fix_sleep, font_ids,
+                           layout_eu, patch_release, ram)
 from screensaver5 import insert_entry  # noqa: E402
 from zilib import Zi  # noqa: E402
 
@@ -95,7 +99,12 @@ def layout_usp(page):
     text.set('isbr', 1)
 
 
-LAYOUTS = {(480, 320): ('us-l', layout_eu), (320, 480): ('us-p', layout_usp)}
+def layout_usl(page):
+    """geometry of popupNotify3 on us-l: the EU layout shifted to the visible area of us-l, docstring point 3"""
+    layout_eu(page, VISIBLE_SHIFT_USL)
+
+
+LAYOUTS = {(480, 320): ('us-l', layout_usl), (320, 480): ('us-p', layout_usp)}
 
 
 def corners_placeholder(hmi, eu, fonts, eu_fonts):

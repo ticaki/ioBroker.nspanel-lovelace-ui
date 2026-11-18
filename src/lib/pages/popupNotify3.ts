@@ -113,13 +113,16 @@ export interface Notify3TextLayout {
     lines: Readonly<Record<Notify3Font, number>>;
 }
 
-const LANDSCAPE: Notify3TextLayout = { width: 464, lines: { 0: 2, 2: 1, 3: 1 } };
+// eu HMI 6.2.0: tText x 8..441 (w 434) inside the visible area x 0..449 (the frame covers the right ~30 px);
+// us-l the same 15 px further right (x 23..456)
+const LANDSCAPE: Notify3TextLayout = { width: 434, lines: { 0: 2, 2: 1, 3: 1 } };
 // us-p HMI 6.2.0: tText x 8..311, y 304..399 (h 96) - 2 lines at 48 px, 3 at 32 px, 4 at 24 px
 const PORTRAIT: Notify3TextLayout = { width: 304, lines: { 0: 4, 2: 3, 3: 2 } };
 
 /**
- * Text field of popupNotify3 per model (eu/us-l: x 8..471, Font 3/2 one line, font 0 two lines). The web models
- * use the font tables of their template (text-width.ts); web-l has a wider stage (640 px, x 8..631).
+ * Text field of popupNotify3 per model (eu/us-l: 434 px, font 3/2 one line, font 0 two lines). The web models
+ * use the font tables of their template (text-width.ts); the web panel has no frame: web-l uses its wider stage
+ * (640 px, x 8..631), web-p the width of us-p.
  */
 export const NOTIFY3_TEXT: Readonly<Record<NSpanelModel, Notify3TextLayout>> = {
     eu: LANDSCAPE,

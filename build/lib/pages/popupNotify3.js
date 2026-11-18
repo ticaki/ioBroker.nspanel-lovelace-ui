@@ -110,7 +110,7 @@ const BUTTON_FONT = 4;
 const NOTIFY3_DEFAULT_ICON_LEFT = "close-thick";
 const NOTIFY3_DEFAULT_ICON_RIGHT = "check-bold";
 const NOTIFY3_DEFAULT_ICON_NEXT = "arrow-right-bold";
-const LANDSCAPE = { width: 464, lines: { 0: 2, 2: 1, 3: 1 } };
+const LANDSCAPE = { width: 434, lines: { 0: 2, 2: 1, 3: 1 } };
 const PORTRAIT = { width: 304, lines: { 0: 4, 2: 3, 3: 2 } };
 const NOTIFY3_TEXT = {
   eu: LANDSCAPE,

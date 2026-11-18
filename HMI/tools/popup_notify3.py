@@ -22,18 +22,26 @@ What the script does:
    scaled grid), 3 bit alpha, zilib.encode (zi v6 mode 3).
    272 px (README) is not possible: the font height (header 0x07) and the glyph width (u8 in the character table)
    are single bytes - 255 is the largest square glyph.
-4. Layout of popupNotify3 (480 x 320), objects of the copy, by name:
-     tIcon   font 9, x 96..383, y 0..254 (h 255), centered, ycen top, color from the message
-     b0      close cross E155 from font 4 (Bold 80, ink ~39 px), x 414..479, y 0..79, ycen top, light gray (50712);
-             its box (80 high, a text needs the full font height) reaches 20 px into the right column: b0 has the
-             lower id (drawn first, the column gets the touch), only its own press redraws it
-     b1/b2   left x 8..87 / right x 392..471, y 60..264 (h 205), icon from font 4 centered, white, bco from the
-             message, without icon invisible; square corners (the corner font 8.zi 'corners1' has fixed 98 px
-             glyphs for a 100 px slider and is only used in commented code - no simple rounding for 80 px)
-     tText   x 8..471, y 272..319 (h 48), isbr 1, centered, ycen top, font 3 (48 px) unless the message sets one;
-             font 3 (48 px) and 2 (32 px) one line, font 0 (24 px) two lines; a longer text wraps below the box
-             and is cut off there, the first line stays visible (ycen top). Overlaps neither the icon (ends at y 254)
-             nor the columns (end at y 264) - a two line 32 px text used to reach into them
+4. Layout of popupNotify3 (480 x 320), objects of the copy, by name. The frame of the EU panel covers the right
+   ~30 px: the visible area is x 0..449 (the screensaver texts tDate/tNotifyHead/tNotifyText fill 0..449 centered,
+   pageSplash/popupTimer end at 449, the cards are symmetric to it with bPrev 9.. / bNext ..440, the popups end
+   with the cross at 446). us-l is the same area 15 px further right (x 15..464, every page +15: popupNotify b0
+   412..461, cardEntities bPrev/bNext 24..455). layout_eu takes this shift (dx 0 EU, 15 us-l); x below for EU:
+     tIcon   font 9, x 97..351 (w 255, centered in 0..449), y 0..254 (h 255), centered, ycen top, color from the
+             message
+     b0      close cross E155 from font 4 (Bold 80, glyph 66 wide, ink ~39 px), x 381..446 (ends like the cross b0
+             of popupNotify), y 0..79, ycen top, light gray (50712); its box (80 high, a text needs the full font
+             height) reaches 20 px into the right column (x 381..441, y 60..79): b0 has the lower id (drawn first,
+             the column gets the touch), only its own press redraws it; it does not touch the icon (ends at 351)
+     b1/b2   left x 8..87 / right x 362..441 (8 px to the visible edges), y 60..264 (h 205), icon from font 4
+             centered, white, bco from the message, without icon invisible; square corners (the corner font 8.zi
+             'corners1' has fixed 98 px glyphs for a 100 px slider and is only used in commented code - no simple
+             rounding for 80 px)
+     tText   x 8..441 (w 434, like the columns), y 272..319 (h 48), isbr 1, centered, ycen top, font 3 (48 px)
+             unless the message sets one; font 3 (48 px) and 2 (32 px) one line, font 0 (24 px) two lines; a longer
+             text wraps below the box and is cut off there, the first line stays visible (ycen top). Overlaps
+             neither the icon (ends at y 254) nor the columns (end at y 264) - a two line 32 px text used to reach
+             into them
    Removed objects: p0 (full screen picture, hidden at load), tHeading, tTextAlt, b3 - the code of the page addresses
    objects by name only (checked: no b[..]), the ids of the others close up.
    Buffers (RAM ceil((maxl+1)/4)*4): strCommand 1000 -> 511, tText 500 -> 199, tIcon 250 -> 3, tSend 200 -> 79,
@@ -332,19 +340,22 @@ def load_lines(old):
     ]
 
 
-def layout_eu(page):
-    """geometry of popupNotify3 on 480 x 320 (EU, us-l), docstring point 4"""
+VISIBLE_SHIFT_USL = 15  # us-l: the visible area lies 15 px further right than on EU (docstring point 4)
+
+
+def layout_eu(page, dx=0):
+    """geometry of popupNotify3 on 480 x 320, docstring point 4; dx: shift of the visible area (EU 0, us-l 15)"""
     b0 = page.obj('b0')
     b0.set('txt', CLOSE)
     b0.set('font', BUTTON_FONT)
-    b0.geometry(414, 0, 66, 80)
+    b0.geometry(381 + dx, 0, 66, 80)
     b0.set('ycen', 0)
     b0.set('pco', LIGHT_GRAY)
     b0.set('pco2', LIGHT_GRAY)
 
-    for name, x in (('b1', 8), ('b2', 392)):
+    for name, x in (('b1', 8), ('b2', 362)):
         b = page.obj(name)
-        b.geometry(x, 60, 80, 205)
+        b.geometry(x + dx, 60, 80, 205)
         b.set('font', BUTTON_FONT)
         b.set('txt', '')
         b.set('xcen', 1)
@@ -353,7 +364,7 @@ def layout_eu(page):
         b.set('pco2', WHITE)
 
     icon = page.obj('tIcon')
-    icon.geometry(96, 0, 288, HEIGHT)
+    icon.geometry(97 + dx, 0, HEIGHT, HEIGHT)
     icon.set('font', FONT_ID)
     icon.set('xcen', 1)
     icon.set('ycen', 0)
@@ -361,11 +372,19 @@ def layout_eu(page):
     icon.set('txt', '')
 
     text = page.obj('tText')
-    text.geometry(8, 272, 464, 48)
+    text.geometry(8 + dx, 272, 434, 48)
     text.set('font', TEXT_FONT)
     text.set('xcen', 1)
     text.set('ycen', 0)
     text.set('isbr', 1)
+
+    # no two objects with exactly the same rectangle (editor warning "Component overlap"), the icon free of b0
+    shown = [page.obj(n) for n in ('b0', 'b1', 'b2', 'tIcon', 'tText')]
+    for o in shown:
+        if any(other is not o and other.has('x') and rect(other) == rect(o) for other in page.objs[1:]):
+            raise SystemExit(f'{o.name}: same rectangle as another object')
+    if 'b0' in overlapping(icon, shown):
+        raise SystemExit('tIcon overlaps b0')
 
 
 def build_page(page, old_name=OLD_NAME, layout=layout_eu):

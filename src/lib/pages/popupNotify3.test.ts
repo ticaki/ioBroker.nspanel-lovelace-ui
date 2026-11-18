@@ -130,12 +130,12 @@ describe('lib/pages/popupNotify3', () => {
     describe('notify3Text', () => {
         const long = 'Die Waschmaschine ist fertig und kann ausgeräumt werden';
 
-        it('font 3 and 2: one line cut to 464 px with ellipsis', () => {
+        it('font 3 and 2: one line cut to 434 px with ellipsis', () => {
             for (const font of [3, 2] as const) {
                 const text = notify3Text(long, font, 'eu');
                 expect(text).not.to.contain('\r\n');
                 expect(text.endsWith('...')).to.equal(true);
-                expect(textWidth(text, font, 'eu')).to.be.at.most(464);
+                expect(textWidth(text, font, 'eu')).to.be.at.most(434);
             }
             expect(notify3Text('Unwetter', 3, 'eu')).to.equal('Unwetter');
         });
@@ -145,12 +145,12 @@ describe('lib/pages/popupNotify3', () => {
             expect(notify3Text('WC/r/nbesetzt', 3, 'eu')).to.equal('WC besetzt');
         });
 
-        it('font 0: two lines of at most 464 px joined with CR LF', () => {
+        it('font 0: two lines of at most 434 px joined with CR LF', () => {
             const text = notify3Text(`${long} ${long}`, 0, 'eu');
             const lines = text.split('\r\n');
             expect(lines).to.have.length(2);
             for (const line of lines) {
-                expect(textWidth(line, 0, 'eu')).to.be.at.most(464);
+                expect(textWidth(line, 0, 'eu')).to.be.at.most(434);
             }
             expect(lines[1].endsWith('...')).to.equal(true);
             expect(text).not.to.match(/[^\r]\n/);
