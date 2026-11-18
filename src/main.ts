@@ -65,6 +65,13 @@ import {
 } from './lib/configuration/navigation-overrides';
 import { applyAdminButtons } from './lib/configuration/panel-buttons';
 import { checkScriptConfigTopics, findPanelEntry, isNoScriptPanel } from './lib/configuration/no-script';
+import { buildPageDump } from './lib/configuration/page-dump';
+import {
+    SENDTO_PAGE_DUMP_COMMAND,
+    SENDTO_PAGE_DUMP_LIST_COMMAND,
+    isPageDumpRequest,
+    type PageDumpListEntry,
+} from './lib/types/pageDump';
 import {
     applyPendingScriptConversions,
     isPendingScriptConversion,
@@ -1504,6 +1511,14 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                     break;
                 }
+                case SENDTO_PAGE_DUMP_LIST_COMMAND: {
+                    this.answerMessage(obj, { result: this.pageDumpList() });
+                    break;
+                }
+                case SENDTO_PAGE_DUMP_COMMAND: {
+                    this.answerMessage(obj, await this.pageDump(obj.message));
+                    break;
+                }
                 case 'getWeatherEntity': {
                     const adapterObj = await this.getObjectViewAsync('system', 'instance', {
                         startkey: 'system.adapter.',
@@ -2901,6 +2916,69 @@ class NspanelLovelaceUi extends utils.Adapter {
      * @param obj - die sendTo-Nachricht
      * @param payload - die Antwort für den Admin
      */
+    /**
+     * Admin tab developer: all pages and screensavers of all panels for the page dump (web clones left out, they
+     * are the same panel as their hardware panel).
+     *
+     * @returns one entry per page
+     */
+    private pageDumpList(): PageDumpListEntry[] {
+        const out: PageDumpListEntry[] = [];
+        for (const panel of this.controller?.panels ?? []) {
+            if (!panel || panel.isClone) {
+                continue;
+            }
+            const panelName = panel.friendlyName || panel.name;
+            for (const p of panel.getPageDumpPages()) {
+                out.push({ panelTopic: panel.topic, panelName, ...p });
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Admin tab developer: dump of one page or screensaver - stored and runtime configuration, secrets removed.
+     *
+     * @param message the request (panelTopic, page, kind)
+     * @returns `{ result: <dump> }` or `{ error: <i18n key> }`
+     */
+    private async pageDump(message: unknown): Promise<Record<string, unknown>> {
+        if (!isPageDumpRequest(message)) {
+            return { error: 'pageDumpNotFound' };
+        }
+        const panel = this.controller?.panels.find(p => p && !p.isClone && p.topic === message.panelTopic);
+        const runtime = panel?.getPageDumpRuntime(message.kind, message.page);
+        if (!panel || !runtime) {
+            return { error: 'pageDumpNotFound' };
+        }
+        let scriptConfigRaw: unknown = undefined;
+        let globalConfigRaw: unknown = undefined;
+        try {
+            const meta = await this.getForeignObjectAsync(this.namespace);
+            scriptConfigRaw = meta?.native?.scriptConfigRaw;
+            globalConfigRaw = meta?.native?.globalConfigRaw;
+        } catch (e) {
+            this.log.warn(`Page dump: cannot read the script configuration: ${String(e)}`);
+        }
+        return {
+            result: buildPageDump({
+                panel: {
+                    topic: panel.topic,
+                    name: panel.friendlyName || panel.name,
+                    model: panel.info.nspanel.model,
+                    kind: panel.options.kind === 'web' ? 'web' : 'tasmota',
+                    noScript: isNoScriptPanel(this.config.panels, panel.topic),
+                },
+                runtime,
+                native: this.config,
+                scriptConfigRaw,
+                globalConfigRaw,
+                adapterVersion: this.version,
+                now: new Date(),
+            }),
+        };
+    }
+
     private answerMessage(obj: ioBroker.Message, payload: Record<string, unknown>): void {
         if (obj.callback) {
             this.sendTo(obj.from, obj.command, payload, obj.callback);

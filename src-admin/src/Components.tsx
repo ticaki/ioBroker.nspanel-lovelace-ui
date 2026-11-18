@@ -10,6 +10,7 @@ import PageMQTTSetting from './PageMQTTSetting';
 import PagePanelOverview from './PagePanelOverview';
 import WebFidoKeys from './WebFidoKeys';
 import CustomTftUpload from './CustomTftUpload';
+import PageDump from './PageDump';
 import { ChannelConfigDialogJsonConfig } from './components/ChannelConfigDialog';
 import { installLabelHover } from './labelHover';
 import { withDocLanguage } from './components/DocHelp';
@@ -30,5 +31,6 @@ export default {
     PagePanelOverview: withDocLanguage(PagePanelOverview),
     WebFidoKeys: withDocLanguage(WebFidoKeys),
     CustomTftUpload: withDocLanguage(CustomTftUpload),
+    PageDump: withDocLanguage(PageDump),
     ChannelConfigDialog: withDocLanguage(ChannelConfigDialogJsonConfig),
 };

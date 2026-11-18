@@ -47,6 +47,8 @@ var fs = __toESM(require("node:fs"));
 var import_navigation_overrides = require("./lib/configuration/navigation-overrides");
 var import_panel_buttons = require("./lib/configuration/panel-buttons");
 var import_no_script = require("./lib/configuration/no-script");
+var import_page_dump = require("./lib/configuration/page-dump");
+var import_pageDump = require("./lib/types/pageDump");
 var import_script_to_admin_runner = require("./lib/configuration/script-to-admin-runner");
 var import_admin_page_item = require("./lib/configuration/admin-page-item");
 var import_node_path = __toESM(require("node:path"));
@@ -1246,6 +1248,14 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, { result: nav }, obj.callback);
           }
+          break;
+        }
+        case import_pageDump.SENDTO_PAGE_DUMP_LIST_COMMAND: {
+          this.answerMessage(obj, { result: this.pageDumpList() });
+          break;
+        }
+        case import_pageDump.SENDTO_PAGE_DUMP_COMMAND: {
+          this.answerMessage(obj, await this.pageDump(obj.message));
           break;
         }
         case "getWeatherEntity": {
@@ -2478,6 +2488,69 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param obj - die sendTo-Nachricht
    * @param payload - die Antwort für den Admin
    */
+  /**
+   * Admin tab developer: all pages and screensavers of all panels for the page dump (web clones left out, they
+   * are the same panel as their hardware panel).
+   *
+   * @returns one entry per page
+   */
+  pageDumpList() {
+    var _a, _b;
+    const out = [];
+    for (const panel of (_b = (_a = this.controller) == null ? void 0 : _a.panels) != null ? _b : []) {
+      if (!panel || panel.isClone) {
+        continue;
+      }
+      const panelName = panel.friendlyName || panel.name;
+      for (const p of panel.getPageDumpPages()) {
+        out.push({ panelTopic: panel.topic, panelName, ...p });
+      }
+    }
+    return out;
+  }
+  /**
+   * Admin tab developer: dump of one page or screensaver - stored and runtime configuration, secrets removed.
+   *
+   * @param message the request (panelTopic, page, kind)
+   * @returns `{ result: <dump> }` or `{ error: <i18n key> }`
+   */
+  async pageDump(message) {
+    var _a, _b, _c;
+    if (!(0, import_pageDump.isPageDumpRequest)(message)) {
+      return { error: "pageDumpNotFound" };
+    }
+    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((p) => p && !p.isClone && p.topic === message.panelTopic);
+    const runtime = panel == null ? void 0 : panel.getPageDumpRuntime(message.kind, message.page);
+    if (!panel || !runtime) {
+      return { error: "pageDumpNotFound" };
+    }
+    let scriptConfigRaw = void 0;
+    let globalConfigRaw = void 0;
+    try {
+      const meta = await this.getForeignObjectAsync(this.namespace);
+      scriptConfigRaw = (_b = meta == null ? void 0 : meta.native) == null ? void 0 : _b.scriptConfigRaw;
+      globalConfigRaw = (_c = meta == null ? void 0 : meta.native) == null ? void 0 : _c.globalConfigRaw;
+    } catch (e) {
+      this.log.warn(`Page dump: cannot read the script configuration: ${String(e)}`);
+    }
+    return {
+      result: (0, import_page_dump.buildPageDump)({
+        panel: {
+          topic: panel.topic,
+          name: panel.friendlyName || panel.name,
+          model: panel.info.nspanel.model,
+          kind: panel.options.kind === "web" ? "web" : "tasmota",
+          noScript: (0, import_no_script.isNoScriptPanel)(this.config.panels, panel.topic)
+        },
+        runtime,
+        native: this.config,
+        scriptConfigRaw,
+        globalConfigRaw,
+        adapterVersion: this.version,
+        now: /* @__PURE__ */ new Date()
+      })
+    };
+  }
   answerMessage(obj, payload) {
     if (obj.callback) {
       this.sendTo(obj.from, obj.command, payload, obj.callback);

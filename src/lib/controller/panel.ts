@@ -49,6 +49,8 @@ import { collectNavigationTargets } from '../configuration/page-targets';
 import { collectPageStates, emptyStateNode, mergeStateInfo, type PageStateNode } from '../configuration/page-states';
 import { mainPageName } from '../const/default-pages';
 import { isNoScriptPanel } from '../configuration/no-script';
+import type { PanelPageDumpRuntime } from '../configuration/page-dump';
+import type { PageDumpKind } from '../types/pageDump';
 import { isEmulatorDriverVersion, parseDriverVersion } from '../const/berry-driver';
 import { POPUP_NOTIFY3 } from '../pages/popupNotify3';
 import type { NSPanel } from '../types/NSPanel';
@@ -3388,6 +3390,99 @@ export class Panel extends BaseClass {
             return main ? main.uniqueName : undefined;
         }
         return undefined;
+    }
+
+    /**
+     * Pages of the panel for the page dump of the admin (tab developer): the screensaver first, then every page
+     * of the navigation.
+     *
+     * @returns name, kind and card of each page
+     */
+    getPageDumpPages(): { page: string; kind: PageDumpKind; card: string }[] {
+        const out: { page: string; kind: PageDumpKind; card: string }[] = [];
+        if (this.screenSaver) {
+            out.push({ page: this.screenSaver.name, kind: 'screensaver', card: this.screenSaver.card });
+        }
+        for (const nav of this.navigation?.getDatabase() ?? []) {
+            if (nav?.page) {
+                out.push({ page: nav.page.name, kind: 'page', card: nav.page.card });
+            }
+        }
+        return out;
+    }
+
+    /**
+     * @param pageName name of the page (or of the screensaver page)
+     * @returns where the page comes from; placeholder pages of a panel without script count as system pages
+     */
+    private pageDumpOrigin(pageName: string): adminShareConfig.PageOrigin {
+        const origin = this.pageOrigins.get(pageName) ?? 'script';
+        return origin === 'script' && this.options.withoutScript ? 'system' : origin;
+    }
+
+    /**
+     * The runtime configuration of a page or of the screensaver for the page dump of the admin (tab developer).
+     *
+     * @param kind page or screensaver
+     * @param pageName name of the page
+     * @returns the configuration the page works with, undefined when the panel has no such page
+     */
+    getPageDumpRuntime(kind: PageDumpKind, pageName: string): PanelPageDumpRuntime | undefined {
+        if (kind === 'screensaver') {
+            const scs = this.screenSaver;
+            if (!scs || scs.name !== pageName) {
+                return undefined;
+            }
+            return {
+                name: scs.name,
+                kind,
+                card: scs.card,
+                origin: this.pageDumpOrigin(scs.name),
+                mode: scs.mode,
+                config: scs.config,
+                pageItems: scs.pageItemConfig,
+            };
+        }
+        const db = this.navigation?.getDatabase() ?? [];
+        const nav = db.find(n => n?.page?.name === pageName);
+        if (!nav) {
+            return undefined;
+        }
+        const page = nav.page;
+        const nameOf = (index: number | undefined): string | undefined => {
+            if (typeof index !== 'number') {
+                return undefined;
+            }
+            if (index === SCREENSAVER_NAV_INDEX) {
+                return adminShareConfig.screensaverTargetPage;
+            }
+            const n = db[index];
+            return n?.page ? n.page.name : undefined;
+        };
+        const origin = this.pageDumpOrigin(page.name);
+        const out: PanelPageDumpRuntime = {
+            name: page.name,
+            kind,
+            card: page.card,
+            origin,
+            hidden: page.hidden,
+            alwaysOn: page.alwaysOn,
+            navigation: {
+                prev: nameOf(nav.left.single),
+                next: nameOf(nav.right.single),
+                parent: nameOf(nav.left.double),
+                home: nameOf(nav.right.double),
+            },
+            config: page.config,
+            pageItems: page.pageItemConfig,
+        };
+        if (origin === 'admin') {
+            out.adminPageName = this.getAdminPageName(page.name);
+        }
+        if (this.options.generatedPageIds?.includes(page.name)) {
+            out.generated = true;
+        }
+        return out;
     }
 
     async getNavigationArrayForFlow(): Promise<PanelListEntry> {
