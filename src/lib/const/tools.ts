@@ -166,83 +166,73 @@ export async function getTemperaturColorFromValue(
     return null;
 }
 
+/** range of the colour temperature without minScale/maxScale and without common.min/max of the state */
+const CT_DEFAULT_RANGE = { kelvin: { min: 2200, max: 6500 }, mired: { min: 153, max: 500 } } as const;
+
+/**
+ * Value range of the colour temperature slider: the state values at slider 0 (cold) and 100 (warm).
+ * The range is minScale/maxScale when both are numbers, else common.min/max of the state when both are
+ * set, else 2200-6500 K / 153-500 mired. kelvin: the high value is cold, mired: the high value is warm.
+ *
+ * @param i the ct item
+ * @returns the state values at slider 0 and 100
+ */
+async function getSliderCTRange(
+    i: NonNullable<ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>>,
+): Promise<{ cold: number; warm: number }> {
+    const mired = i.mode !== undefined && (await i.mode.getString()) === 'mired';
+    let range: { min: number; max: number } = mired ? CT_DEFAULT_RANGE.mired : CT_DEFAULT_RANGE.kelvin;
+    const minScale = i.minScale !== undefined ? await i.minScale.getNumber() : null;
+    const maxScale = i.maxScale !== undefined ? await i.maxScale.getNumber() : null;
+    const common = i.value?.common;
+    if (minScale !== null && maxScale !== null) {
+        range = { min: minScale, max: maxScale };
+    } else if (common && typeof common.min === 'number' && typeof common.max === 'number') {
+        range = { min: common.min, max: common.max };
+    }
+    return mired ? { cold: range.min, warm: range.max } : { cold: range.max, warm: range.min };
+}
+
+/**
+ * Slider value 0 (cold) .. 100 (warm) of the colour temperature, limited to 0..100.
+ *
+ * @param i the ct item
+ * @returns the slider value as string or null without value
+ */
 export async function getSliderCTFromValue(
     i: ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>,
 ): Promise<string | null> {
-    if (!i) {
+    if (!i || !i.value) {
         return null;
     }
-    const nval = i.value && (await i.value.getNumber());
-    const mode = i.mode && (await i.mode.getString());
-    let r = 3500;
-    if (nval !== null && nval !== undefined) {
-        if (i.minScale !== undefined && i.maxScale !== undefined) {
-            const min = await i.minScale.getNumber();
-            const max = await i.maxScale.getNumber();
-            if (min !== null && max !== null) {
-                if (mode === 'mired') {
-                    r = Math.round(Color.scale(nval, min, max, 0, 100));
-                } else {
-                    r = Math.round(Color.scale(nval, min, max, 100, 0));
-                }
-            }
-        } else if (i.value && i.value.common && i.value.common.min !== undefined && i.value.common.max !== undefined) {
-            if (mode === 'mired') {
-                r = Math.round(Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
-            } else {
-                r = Math.round(Color.scale(nval, i.value.common.min, i.value.common.max, 100, 0));
-            }
-        } else {
-            if (mode === 'mired') {
-                r = Math.round(Color.scale(nval, 153, 500, 0, 100));
-            } else {
-                r = Math.round(Color.scale(nval, 2200, 6500, 100, 0));
-            }
-        }
-
-        return r !== null ? String(r) : null;
+    const nval = await i.value.getNumber();
+    if (nval === null || nval === undefined) {
+        return null;
     }
-    return null;
+    const { cold, warm } = await getSliderCTRange(i);
+    const r = Math.round(Color.scale(nval, cold, warm, 0, 100));
+    if (!Number.isFinite(r)) {
+        return null;
+    }
+    return String(Math.max(0, Math.min(100, r)));
 }
+
+/**
+ * Writes the colour temperature for a slider value 0 (cold) .. 100 (warm), limited to 0..100.
+ *
+ * @param i the ct item
+ * @param value the slider value
+ */
 export async function setSliderCTFromValue(
     i: ChangeTypeOfKeys<NSPanel.ScaledNumberType, Dataitem | undefined>,
     value: number,
 ): Promise<void> {
-    if (!i || !i.value) {
+    if (!i || !i.value || !Number.isFinite(value)) {
         return;
     }
-    const mode = i.mode && (await i.mode.getString());
-    //value = 100 - value;
-    let r = value;
-
-    if (i.minScale !== undefined && i.maxScale !== undefined) {
-        const min = await i.minScale.getNumber();
-        const max = await i.maxScale.getNumber();
-        if (min !== null && max !== null) {
-            if (mode === 'mired') {
-                r = Math.round(Color.scale(r, 0, 100, min, max));
-            } else {
-                r = Math.round(Color.scale(r, 0, 100, max, min));
-            }
-        }
-    } else if (i.value && i.value.common && i.value.common.min !== undefined && i.value.common.max !== undefined) {
-        if (mode === 'mired') {
-            r = Math.round(Color.scale(r, 0, 100, i.value.common.min, i.value.common.max));
-        } else {
-            r = Math.round(Color.scale(r, 0, 100, i.value.common.max, i.value.common.min));
-        }
-    } else {
-        if (mode === 'mired') {
-            r = Math.round(Color.scale(r, 0, 100, 153, 500));
-        } else {
-            r = Math.round(Color.scale(r, 0, 100, 6500, 2200));
-        }
-    }
-    if (i.set && i.set.writeable) {
-        await i.value.setState(r);
-    } else {
-        await i.value.setState(r);
-    }
+    const { cold, warm } = await getSliderCTRange(i);
+    const slider = Math.max(0, Math.min(100, value));
+    await i.value.setState(Math.round(Color.scale(slider, 0, 100, cold, warm)));
 }
 
 export async function setScaledNumber(
