@@ -39,6 +39,11 @@ declare global {
             webCertChained: string;
             /** FIDO2/WebAuthn security keys as login alternative to the PIN (needs webSecure) */
             webFido: boolean;
+            /**
+             * collective switch for web panel extensions: false = a web panel shows only what the hardware panel can,
+             * true = it may use more (currently used by popupNotify3: every MDI icon as big icon and button icon)
+             */
+            webAllowExtensions: boolean;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             timezone: string;
             useBetaTFT: boolean;

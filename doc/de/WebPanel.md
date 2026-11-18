@@ -36,6 +36,7 @@ welcher Adresse die Panels erreichbar sind.
 | **Bind-Adresse** | Netzwerkschnittstelle, auf der der Server lauscht. `0.0.0.0` (Vorgabe) = alle. |
 | **Hostname für die Links** | Nur für die Links im Admin, die Adressvorschau und die Meldung im Log. Leer = der Adapter ermittelt ihn selbst. Bei HTTPS den Namen aus dem Zertifikat eintragen. |
 | **PIN**, **HTTPS**, **FIDO2** | siehe [Abschnitt 6](#6-zugang-schützen-pin-https-sicherheitsschlüssel) |
+| **Web-Panel: Erweiterungen gegenüber dem Hardware-Panel erlauben** | **Ab Werk aus:** Ein Web-Panel zeigt nur, was auch das Hardware-Panel kann — z. B. zeigt die große Benachrichtigung (popupNotify3) auch dort nur ihre eigenen Icons, jedes andere wird zu `information-outline`. An: Das Web-Panel nutzt zusätzliche Möglichkeiten, derzeit alle MDI-Icons in der großen Benachrichtigung. |
 
 Jedes Panel hat eine eigene Adresse, gebildet aus seinem **Topic**:
 

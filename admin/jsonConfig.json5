@@ -1270,6 +1270,20 @@
                     "hidden": "!data.webFido",
                     "newLine": true,
                     "xs": 12
+                },
+                // collective switch: the web panels may do more than the hardware panel (today: all icons in popupNotify3)
+                "webAllowExtensions": {
+                    "type": "checkbox",
+                    "label": "webAllowExtensions",
+                    "help": "webAllowExtensionsHelp",
+                    "default": false,
+                    "disabled": "!data.webEnabled",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
                 }
             }
         },

@@ -162,6 +162,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) navigation: a locked (hidden) page shows a popup "page locked" instead of silently doing nothing, the arrows go on from the page shown; admin marks hidden pages with a closed eye
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
 - (ticaki) notification popup: new option `largeIcon` - shows the message with a big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`) on panels with TFT 6.2.0+ and on web panels; older TFTs show it the classic way, without `largeIcon` nothing changes
+- (ticaki) admin: icon tab can filter the icons of the large notification (popupNotify3)
+- (ticaki) web panel: shows only what the panel can by default, new option to allow web panel extensions (e.g. all icons in the large notification)
 - (ticaki) notification popup: state `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font); unknown values fall back to 3 - see the new section "Fonts" in the popup documentation
 - (ticaki) Web panel: a browser that kept the page open over an adapter update reloads itself once and gets the new frontend
 - (ticaki) Web panel: the long press of a screensaver indicator no longer operates the popup it opens (releasing the finger moved the shutter or picked a color)

@@ -169,6 +169,7 @@
             <button type="button" data-filter="all" aria-pressed="true" data-t="all"></button>
             <button type="button" data-filter="new" aria-pressed="false" data-t="new"></button>
             <button type="button" data-filter="own" aria-pressed="false" data-t="own"></button>
+            <button type="button" data-filter="notify3" aria-pressed="false" data-t="notify3" data-t-title="notify3_hint"></button>
         </div>
         <span class="count" id="count"></span>
     </div>
@@ -185,6 +186,8 @@
             all: 'All',
             new: 'New in HMI 6',
             own: 'Own icons',
+            notify3: 'Large notification',
+            notify3_hint: 'Only these icons can be shown large in the notification (popupNotify3), any other icon falls back to information-outline',
             count: n => `${n} icons`,
             copied: n => `copied: ${n}`,
             alias: 'same glyph as',
@@ -200,6 +203,8 @@
             all: 'Alle',
             new: 'Neu in HMI 6',
             own: 'Eigene Icons',
+            notify3: 'Große Benachrichtigung',
+            notify3_hint: 'Nur diese Icons können in der Benachrichtigung (popupNotify3) groß dargestellt werden, jedes andere Icon fällt auf information-outline zurück',
             count: n => `${n} Icons`,
             copied: n => `kopiert: ${n}`,
             alias: 'gleicher Glyph wie',
@@ -214,6 +219,9 @@
     document.documentElement.lang = lang;
     document.querySelectorAll('[data-t]').forEach(el => {
         el.textContent = t[el.dataset.t];
+    });
+    document.querySelectorAll('[data-t-title]').forEach(el => {
+        el.title = t[el.dataset.tTitle];
     });
     document.getElementById('backToDocs').href = `../${lang}/Home.html`;
     const search = document.getElementById('search');
@@ -304,6 +312,7 @@
                 key: `${i.n} ${others.join(' ')} ${i.h}`.toLowerCase(),
                 isNew: parseInt(i.h, 16) >= FIRST_NEW_GLYPH,
                 own: !!i.c,
+                notify3: !!i.l,
             };
         });
         busy.classList.remove('show');
@@ -329,7 +338,8 @@
         const q = search.value.trim().toLowerCase().replace(/^u\+/, '');
         matches = cards.filter(
             c =>
-                (filter === 'all' || (filter === 'new' && c.isNew) || (filter === 'own' && c.own)) &&
+                (filter === 'all' || (filter === 'new' && c.isNew) || (filter === 'own' && c.own) ||
+                    (filter === 'notify3' && c.notify3)) &&
                 (!q || c.key.includes(q)),
         );
         rendered = 0;

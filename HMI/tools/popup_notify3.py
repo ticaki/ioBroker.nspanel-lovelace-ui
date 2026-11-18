@@ -99,28 +99,9 @@ from zilib import Zi, encode  # noqa: E402
 OLD_NAME, NAME = 'page0', 'popupNotify3'
 OLD_RELEASE, NEW_RELEASE = '6.1.1', '6.2.0'
 
-ICONS = [
-    # general
-    'alert', 'information-outline', 'doorbell', 'package-variant-closed', 'mailbox-up', 'phone-ring', 'shield-alert',
-    'alarm-light', 'window-open-variant', 'door-open', 'garage-open', 'ev-station', 'power-socket-de',
-    'battery-alert-variant-outline',
-    # appointments
-    'calendar', 'calendar-alert', 'calendar-clock', 'bell-ring', 'trash-can',
-    # offline
-    'wifi-off', 'web-off', 'cloud-off-outline', 'lan-disconnect',
-    # occupied
-    'cancel', 'toilet', 'door-closed-lock',
-    # weather
-    'weather-rainy', 'weather-lightning', 'weather-lightning-rainy', 'weather-hail', 'weather-pouring',
-    'weather-snowy-heavy', 'weather-windy', 'weather-tornado', 'home-flood', 'snowflake-alert', 'sun-thermometer',
-    'weather-fog',
-    # appliances done / failed
-    'washing-machine', 'tumble-dryer', 'dishwasher',
-    'washing-machine-alert', 'tumble-dryer-alert', 'dishwasher-alert', 'fridge-alert', 'water-boiler-alert',
-    'robot-vacuum-alert', 'radiator-off',
-    # danger
-    'water-alert', 'smoke-detector-alert', 'fire-alert',
-]
+# the icons of font 9 - single source shared with the adapter and the admin icon tab
+with open(os.path.join(ROOT, 'templates', 'popup-notify3-icons.json'), encoding='utf-8') as _f:
+    ICONS = json.load(_f)
 
 # font: height and glyph width are single bytes
 FONT_SECTION = '9.zi'

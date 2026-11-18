@@ -36,6 +36,7 @@ which the panels can be reached.
 | **Bind address** | Network interface the server listens on. `0.0.0.0` (default) = all. |
 | **Host name for the links** | Only used for the links in the admin, the address preview and the log message. Empty = the adapter detects it. With HTTPS enter the name from the certificate. |
 | **PIN**, **HTTPS**, **FIDO2** | see [section 6](#6-protecting-access-pin-https-security-key) |
+| **Web panel: allow extensions over the hardware panel** | **Off by default:** a web panel shows only what the hardware panel can — e.g. the large notification (popupNotify3) shows only its own icons there too, any other icon becomes `information-outline`. On: the web panel uses additional possibilities, currently every MDI icon in the large notification. |
 
 Every panel has its own address, built from its **topic**:
 

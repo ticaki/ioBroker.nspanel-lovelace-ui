@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var popupNotify3_exports = {};
 __export(popupNotify3_exports, {
@@ -39,72 +49,14 @@ __export(popupNotify3_exports, {
 });
 module.exports = __toCommonJS(popupNotify3_exports);
 var import_Color = require("../const/Color");
+var import_popup_notify3_icons = __toESM(require("../../../templates/popup-notify3-icons.json"));
 var import_icon_mapping = require("../const/icon_mapping");
 var import_text_width = require("../const/text-width");
 var import_tools = require("../const/tools");
 const POPUP_NOTIFY3 = "popupNotify3";
 const POPUP_NOTIFY3_MIN_VERSION = "6.2.0";
 const POPUP_NOTIFY3_MODELS = /* @__PURE__ */ new Set(["eu", "us-l", "us-p"]);
-const POPUP_NOTIFY3_ICONS = [
-  // general
-  "alert",
-  "information-outline",
-  "doorbell",
-  "package-variant-closed",
-  "mailbox-up",
-  "phone-ring",
-  "shield-alert",
-  "alarm-light",
-  "window-open-variant",
-  "door-open",
-  "garage-open",
-  "ev-station",
-  "power-socket-de",
-  "battery-alert-variant-outline",
-  // appointments
-  "calendar",
-  "calendar-alert",
-  "calendar-clock",
-  "bell-ring",
-  "trash-can",
-  // offline
-  "wifi-off",
-  "web-off",
-  "cloud-off-outline",
-  "lan-disconnect",
-  // occupied
-  "cancel",
-  "toilet",
-  "door-closed-lock",
-  // weather
-  "weather-rainy",
-  "weather-lightning",
-  "weather-lightning-rainy",
-  "weather-hail",
-  "weather-pouring",
-  "weather-snowy-heavy",
-  "weather-windy",
-  "weather-tornado",
-  "home-flood",
-  "snowflake-alert",
-  "sun-thermometer",
-  "weather-fog",
-  // appliances done / failed
-  "washing-machine",
-  "tumble-dryer",
-  "dishwasher",
-  "washing-machine-alert",
-  "tumble-dryer-alert",
-  "dishwasher-alert",
-  "fridge-alert",
-  "water-boiler-alert",
-  "robot-vacuum-alert",
-  "radiator-off",
-  // danger
-  "water-alert",
-  "smoke-detector-alert",
-  "fire-alert"
-];
+const POPUP_NOTIFY3_ICONS = import_popup_notify3_icons.default;
 const ICON_SET = new Set(POPUP_NOTIFY3_ICONS);
 const BUTTON_FONT = 4;
 const NOTIFY3_DEFAULT_ICON_LEFT = "close-thick";
@@ -130,9 +82,12 @@ function isKnownIcon(name) {
   return import_icon_mapping.Icons.iconMap.has(name);
 }
 const NOTIFY3_FALLBACK_ICON = "information-outline";
+function drawsAllIcons(target) {
+  return target.isVirtual && target.allowWebExtensions;
+}
 function notify3Icon(details, target) {
   const icon = typeof details.icon === "string" ? details.icon.trim() : "";
-  if (icon && isKnownIcon(icon) && (target.isVirtual || ICON_SET.has(icon))) {
+  if (icon && isKnownIcon(icon) && (drawsAllIcons(target) || ICON_SET.has(icon))) {
     return { icon };
   }
   return {
@@ -202,7 +157,7 @@ function buttonIcon(name, fallback, side, target, warnings) {
   }
   const glyph = isKnownIcon(wanted) ? import_icon_mapping.Icons.GetIcon(wanted) : "";
   const cp = glyph.codePointAt(0);
-  if (cp === void 0 || !target.isVirtual && !(0, import_text_width.hasGlyph)(cp, BUTTON_FONT, target.model)) {
+  if (cp === void 0 || !drawsAllIcons(target) && !(0, import_text_width.hasGlyph)(cp, BUTTON_FONT, target.model)) {
     warnings.push(
       `popupNotify3: unknown ${side} '${wanted}' - ${fallback ? `'${fallback}' used instead` : "button hidden"}`
     );

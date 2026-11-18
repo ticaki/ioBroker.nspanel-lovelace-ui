@@ -197,6 +197,7 @@ ${message.text}`;
     return {
       model: this.basePanel.info.nspanel.model,
       isVirtual: this.basePanel.isVirtual,
+      allowWebExtensions: this.basePanel.webExtensionsAllowed,
       displayVersion: this.basePanel.info.nspanel.displayVersion
     };
   }

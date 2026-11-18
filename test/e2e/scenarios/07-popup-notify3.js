@@ -209,7 +209,7 @@ module.exports = ctx => {
                 await toMainPage(ctx.web, HEADLINES.main);
             });
 
-            step('largeIcon: popupNotify3, every MDI icon', async () => {
+            step('largeIcon: popupNotify3, same icons as the panel by default', async () => {
                 const f = await show(
                     ctx.web,
                     {
@@ -224,7 +224,8 @@ module.exports = ctx => {
                     'popupNotify3',
                 );
                 expect(f).to.have.length(12);
-                expect(f[2]).to.equal(icon('lightbulb'));
+                // webAllowExtensions off (default): lightbulb is not in the big icon font
+                expect(f[2]).to.equal(icon('information-outline'));
                 expect(f[3]).to.equal(color565('#ffff00'));
                 expect(f[4]).to.equal('Light on');
                 // a button text without icon: the default icon

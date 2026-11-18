@@ -326,6 +326,13 @@ class Panel extends import_library.BaseClass {
     return this.options.kind === "web";
   }
   /**
+   * A web panel that may use extensions over the hardware panel (instance option webAllowExtensions), e.g.
+   * every MDI icon in popupNotify3. false for a hardware panel and when the option is off.
+   */
+  get webExtensionsAllowed() {
+    return this.isVirtual && this.adapter.config.webAllowExtensions === true;
+  }
+  /**
    * A web clone of a hardware panel: shares the states tree `panels.<name>` with it, so it
    * writes no `info.*`/`status` states and deletes nothing of the tree.
    */

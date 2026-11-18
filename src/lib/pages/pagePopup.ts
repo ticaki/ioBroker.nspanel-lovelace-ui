@@ -203,6 +203,7 @@ export class PagePopup extends Page {
         return {
             model: this.basePanel.info.nspanel.model,
             isVirtual: this.basePanel.isVirtual,
+            allowWebExtensions: this.basePanel.webExtensionsAllowed,
             displayVersion: this.basePanel.info.nspanel.displayVersion,
         };
     }

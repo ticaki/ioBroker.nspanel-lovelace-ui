@@ -209,6 +209,7 @@
     "webCertPrivate": "defaultPrivate",
     "webCertChained": "",
     "webFido": false,
+    "webAllowExtensions": false,
     "panels": [],
     "pageQRpwd1": "",
     "pageQRpwd2": "",

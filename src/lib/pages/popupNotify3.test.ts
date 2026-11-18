@@ -2,6 +2,8 @@
  * popupNotify3 (HMI 6.2.0): choice popupNotify / popupNotify3, payload, text fitting and the events of the page.
  */
 import { expect } from 'chai';
+import adminIcons from '../../../src-admin/src/icons.json';
+import popupNotify3IconsJson from '../../../templates/popup-notify3-icons.json';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
 import { textWidth } from '../const/text-width';
@@ -23,7 +25,7 @@ import type * as pages from '../types/pages';
 import type { NSpanelModel } from '../types/types';
 
 const noop = (): void => undefined;
-const EU: Notify3Target = { model: 'eu', isVirtual: false, displayVersion: '6.2.0' };
+const EU: Notify3Target = { model: 'eu', isVirtual: false, allowWebExtensions: false, displayVersion: '6.2.0' };
 
 function entry(over: Partial<pages.PagePopupDataDetails> = {}): pages.PagePopupDataDetails {
     return { id: 'n1', priority: 50, type: 'information', headline: 'H', text: 'Unwetter', buttonRight: '', ...over };
@@ -33,22 +35,51 @@ describe('lib/pages/popupNotify3', () => {
     describe('supportsPopupNotify3 / usePopupNotify3', () => {
         it('hardware: eu, us-l and us-p from TFT 6.2.0 on', () => {
             for (const model of ['eu', 'us-l', 'us-p'] as NSpanelModel[]) {
-                expect(supportsPopupNotify3({ model, isVirtual: false, displayVersion: '6.2.0' }), model).to.equal(
-                    true,
-                );
-                expect(supportsPopupNotify3({ model, isVirtual: false, displayVersion: '6.10.1' }), model).to.equal(
-                    true,
-                );
-                expect(supportsPopupNotify3({ model, isVirtual: false, displayVersion: '6.1.1' }), model).to.equal(
-                    false,
-                );
-                expect(supportsPopupNotify3({ model, isVirtual: false, displayVersion: '' }), model).to.equal(false);
+                expect(
+                    supportsPopupNotify3({
+                        model,
+                        isVirtual: false,
+                        allowWebExtensions: false,
+                        displayVersion: '6.2.0',
+                    }),
+                    model,
+                ).to.equal(true);
+                expect(
+                    supportsPopupNotify3({
+                        model,
+                        isVirtual: false,
+                        allowWebExtensions: false,
+                        displayVersion: '6.10.1',
+                    }),
+                    model,
+                ).to.equal(true);
+                expect(
+                    supportsPopupNotify3({
+                        model,
+                        isVirtual: false,
+                        allowWebExtensions: false,
+                        displayVersion: '6.1.1',
+                    }),
+                    model,
+                ).to.equal(false);
+                expect(
+                    supportsPopupNotify3({ model, isVirtual: false, allowWebExtensions: false, displayVersion: '' }),
+                    model,
+                ).to.equal(false);
             }
         });
 
         it('web panels and web clones always', () => {
             for (const model of ['eu', 'us-p', 'web-l', 'web-p'] as NSpanelModel[]) {
-                expect(supportsPopupNotify3({ model, isVirtual: true, displayVersion: '1.0.0' }), model).to.equal(true);
+                expect(
+                    supportsPopupNotify3({
+                        model,
+                        isVirtual: true,
+                        allowWebExtensions: false,
+                        displayVersion: '1.0.0',
+                    }),
+                    model,
+                ).to.equal(true);
             }
         });
 
@@ -95,18 +126,53 @@ describe('lib/pages/popupNotify3', () => {
                     "popupNotify3: icon 'lightbulb' not available for the large notification - showing information-outline",
             });
             expect(notify3Icon(entry({ largeIcon: true, icon: 'cancel' }), EU)).to.deep.equal({ icon: 'cancel' });
-            // the web panel draws every MDI icon, an unknown name gets the info icon there too
-            const web = { ...EU, isVirtual: true };
+            // a web panel with web extensions draws every MDI icon, an unknown name gets the info icon there too
+            const web = { ...EU, isVirtual: true, allowWebExtensions: true };
             expect(usePopupNotify3(entry({ largeIcon: true, icon: 'lightbulb' }), web)).to.deep.equal({ use: true });
+            expect(notify3Icon(entry({ largeIcon: true, icon: 'lightbulb' }), web)).to.deep.equal({
+                icon: 'lightbulb',
+            });
             expect(notify3Icon(entry({ largeIcon: true, icon: 'no-such-icon' as any }), web).icon).to.equal(
                 'information-outline',
             );
+        });
+
+        it('web panel without web extensions: the icons of the hardware panel only', () => {
+            for (const model of ['web-l', 'web-p', 'eu'] as NSpanelModel[]) {
+                const web: Notify3Target = {
+                    model,
+                    isVirtual: true,
+                    allowWebExtensions: false,
+                    displayVersion: '1.0.0',
+                };
+                expect(notify3Icon(entry({ largeIcon: true, icon: 'lightbulb' }), web), model).to.deep.equal({
+                    icon: 'information-outline',
+                    warning:
+                        "popupNotify3: icon 'lightbulb' not available for the large notification - showing information-outline",
+                });
+                expect(notify3Icon(entry({ largeIcon: true, icon: 'cancel' }), web), model).to.deep.equal({
+                    icon: 'cancel',
+                });
+            }
+            // the option alone does not change a hardware panel
+            expect(
+                notify3Icon(entry({ largeIcon: true, icon: 'lightbulb' }), { ...EU, allowWebExtensions: true }).icon,
+            ).to.equal('information-outline');
         });
 
         it('every icon of the list is a MDI icon', () => {
             expect(POPUP_NOTIFY3_ICONS).to.have.length(51);
             for (const icon of POPUP_NOTIFY3_ICONS) {
                 expect(Icons.iconMap.has(icon), icon).to.equal(true);
+            }
+        });
+
+        it('the list comes from templates/popup-notify3-icons.json and every icon is in the admin icon tab', () => {
+            expect(POPUP_NOTIFY3_ICONS).to.deep.equal(popupNotify3IconsJson);
+            expect(new Set(popupNotify3IconsJson).size, 'no duplicates').to.equal(popupNotify3IconsJson.length);
+            const adminNames = new Set(adminIcons.map(i => i.name));
+            for (const icon of popupNotify3IconsJson) {
+                expect(adminNames.has(icon), icon).to.equal(true);
             }
         });
     });
@@ -198,6 +264,23 @@ describe('lib/pages/popupNotify3', () => {
             expect(hidden.left).to.equal('');
             expect(hidden.warnings[0]).to.contain('button hidden');
         });
+
+        it('web panels check the button icons like the hardware panel, with and without web extensions', () => {
+            // the button font of the templates (eu for web-l, us-p for web-p) is used for the glyph check
+            for (const model of ['web-l', 'web-p'] as NSpanelModel[]) {
+                for (const allowWebExtensions of [false, true]) {
+                    const web: Notify3Target = { model, isVirtual: true, allowWebExtensions, displayVersion: '1.0.0' };
+                    expect(
+                        popupNotify3Buttons(entry({ buttonLeftIcon: 'alarm-snooze', buttonRightIcon: 'nope' }), 1, web),
+                        `${model} ${allowWebExtensions}`,
+                    ).to.deep.equal({
+                        left: 'alarm-snooze',
+                        right: '',
+                        warnings: ["popupNotify3: unknown buttonRightIcon 'nope' - button hidden"],
+                    });
+                }
+            }
+        });
     });
 
     describe('popupNotify3Message', () => {
@@ -263,7 +346,13 @@ type Sent = { sent: string[]; warnings: string[]; states: string[] };
 
 function popup(
     details: pages.PagePopupDataDetails[],
-    panel: Partial<{ model: NSpanelModel; displayVersion: string; isVirtual: boolean; lastCard: string }> = {},
+    panel: Partial<{
+        model: NSpanelModel;
+        displayVersion: string;
+        isVirtual: boolean;
+        webExtensionsAllowed: boolean;
+        lastCard: string;
+    }> = {},
 ): { page: PagePopup; calls: Sent; basePanel: any } {
     const calls: Sent = { sent: [], warnings: [], states: [] };
     const basePanel: any = {
@@ -273,6 +362,7 @@ function popup(
         blockTouchEventsForMs: 0,
         timeout: 15,
         isVirtual: panel.isVirtual ?? false,
+        webExtensionsAllowed: panel.webExtensionsAllowed ?? false,
         info: { nspanel: { model: panel.model ?? 'eu', displayVersion: panel.displayVersion ?? '6.2.0' } },
         controller: { panels: [] },
         setActivePage: async (): Promise<void> => undefined,
@@ -355,13 +445,22 @@ describe('lib/pages/pagePopup - popupNotify3', () => {
         expect(calls.warnings).to.have.length(1);
     });
 
-    it('web panel: popupNotify3 for every MDI icon', async () => {
-        const { page, calls } = popup([entry({ largeIcon: true, icon: 'lightbulb' })], {
-            isVirtual: true,
-            model: 'web-p',
-        });
-        page.sendType();
-        expect(calls.sent[0]).to.equal('pageType~popupNotify3');
+    it('web panel: popupNotify3 with the icons of the panel, every MDI icon only with web extensions', async () => {
+        for (const webExtensionsAllowed of [false, true]) {
+            const { page, calls } = popup([entry({ largeIcon: true, icon: 'lightbulb' })], {
+                isVirtual: true,
+                model: 'web-p',
+                webExtensionsAllowed,
+            });
+            page.sendType();
+            await page.update();
+            expect(calls.sent[0]).to.equal('pageType~popupNotify3');
+            const detail = calls.sent.filter(s => s.startsWith('entityUpdateDetail')).pop() ?? '';
+            expect(detail.split('~')[2]).to.equal(
+                Icons.GetIcon(webExtensionsAllowed ? 'lightbulb' : 'information-outline'),
+            );
+            expect(calls.warnings).to.have.length(webExtensionsAllowed ? 0 : 1);
+        }
     });
 
     it('button3 (right) and button1 (left) behave like popupNotify', async () => {

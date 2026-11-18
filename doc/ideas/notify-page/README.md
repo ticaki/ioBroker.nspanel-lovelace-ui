@@ -50,7 +50,8 @@ anstehender Termin, Internet weg.
 - Stil **MDI** (Material Design Icons) wie im übrigen Panel. Google Material Symbols wurden verglichen und verworfen:
   feiner, aber ohne die Warn-Varianten (`-alert`) und ohne Kloschüssel.
 - „Besetzt“ = Parkverbotsschild `cancel` (Ring mit Strich oben links → unten rechts), z. B. rot.
-- Startumfang (51), auf Nutzerwunsch erweiterbar:
+- Startumfang (51), auf Nutzerwunsch erweiterbar. Maßgebliche Liste (einzige Quelle für Adapter, Admin-Icon-Tab und
+  Generator): `templates/popup-notify3-icons.json`; die Aufzählung hier ist nur die Übersicht:
   - Allgemein: `alert`, `information-outline`, `doorbell`, `package-variant-closed`, `mailbox-up`, `phone-ring`,
     `shield-alert`, `alarm-light`, `window-open-variant`, `door-open`, `garage-open`, `ev-station`, `power-socket-de`,
     `battery-alert-variant-outline`

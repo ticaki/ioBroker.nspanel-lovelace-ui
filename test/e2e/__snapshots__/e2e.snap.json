@@ -1470,11 +1470,11 @@
       "0_userdata.0.e2e.window": false
     }
   },
-  "07 popupNotify3 › web panel › largeIcon: popupNotify3, every MDI icon": {
+  "07 popupNotify3 › web panel › largeIcon: popupNotify3, same icons as the panel by default": {
     "nspanel": {},
     "web": {
       "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
-      "entityUpdateDetail": "entityUpdateDetail~5~{U+E334}~65504~Light on~65535~3~~~{U+EE1D}~2016~0",
+      "entityUpdateDetail": "entityUpdateDetail~5~{U+E2FC}~65504~Light on~65535~3~~~{U+EE1D}~2016~0",
       "pageType": "pageType~cardGrid",
       "timeout": "timeout~15"
     },

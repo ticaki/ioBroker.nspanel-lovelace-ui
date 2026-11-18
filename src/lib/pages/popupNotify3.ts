@@ -14,6 +14,7 @@
  */
 import type { RGB } from '../const/Color';
 import { Color } from '../const/Color';
+import popupNotify3IconsJson from '../../../templates/popup-notify3-icons.json';
 import { Icons } from '../const/icon_mapping';
 import { fitText, hasGlyph, wrapText } from '../const/text-width';
 import { getPayloadRemoveTilde, isVersionGreaterOrEqual } from '../const/tools';
@@ -30,69 +31,11 @@ export const POPUP_NOTIFY3_MIN_VERSION = '6.2.0';
 export const POPUP_NOTIFY3_MODELS: ReadonlySet<NSpanelModel> = new Set<NSpanelModel>(['eu', 'us-l', 'us-p']);
 
 /**
- * The icons of the big icon font (font 9) of popupNotify3 - only these can be drawn on the panel
- * (list in doc/ideas/notify-page/README.md, generator HMI/tools/popup_notify3.py).
+ * The icons of the big icon font (font 9) of popupNotify3 - only these can be drawn on the panel.
+ * Single source: templates/popup-notify3-icons.json (also read by the admin icon tab and the generator
+ * HMI/tools/popup_notify3.py).
  */
-export const POPUP_NOTIFY3_ICONS: readonly string[] = [
-    // general
-    'alert',
-    'information-outline',
-    'doorbell',
-    'package-variant-closed',
-    'mailbox-up',
-    'phone-ring',
-    'shield-alert',
-    'alarm-light',
-    'window-open-variant',
-    'door-open',
-    'garage-open',
-    'ev-station',
-    'power-socket-de',
-    'battery-alert-variant-outline',
-    // appointments
-    'calendar',
-    'calendar-alert',
-    'calendar-clock',
-    'bell-ring',
-    'trash-can',
-    // offline
-    'wifi-off',
-    'web-off',
-    'cloud-off-outline',
-    'lan-disconnect',
-    // occupied
-    'cancel',
-    'toilet',
-    'door-closed-lock',
-    // weather
-    'weather-rainy',
-    'weather-lightning',
-    'weather-lightning-rainy',
-    'weather-hail',
-    'weather-pouring',
-    'weather-snowy-heavy',
-    'weather-windy',
-    'weather-tornado',
-    'home-flood',
-    'snowflake-alert',
-    'sun-thermometer',
-    'weather-fog',
-    // appliances done / failed
-    'washing-machine',
-    'tumble-dryer',
-    'dishwasher',
-    'washing-machine-alert',
-    'tumble-dryer-alert',
-    'dishwasher-alert',
-    'fridge-alert',
-    'water-boiler-alert',
-    'robot-vacuum-alert',
-    'radiator-off',
-    // danger
-    'water-alert',
-    'smoke-detector-alert',
-    'fire-alert',
-];
+export const POPUP_NOTIFY3_ICONS: readonly string[] = popupNotify3IconsJson;
 const ICON_SET: ReadonlySet<string> = new Set(POPUP_NOTIFY3_ICONS);
 
 /** font of the button icons (Noto Sans Bold 80 with the icons) */
@@ -140,6 +83,11 @@ export interface Notify3Target {
     model: NSpanelModel;
     /** web panel or web clone: draws the page in the browser, no TFT */
     isVirtual: boolean;
+    /**
+     * web panel extensions allowed (instance option webAllowExtensions): only then a web panel draws every MDI icon,
+     * else it follows the rules of the hardware panel
+     */
+    allowWebExtensions: boolean;
     /** TFT version of the display (info.nspanel.displayVersion) */
     displayVersion: string;
 }
@@ -176,15 +124,26 @@ function isKnownIcon(name: string): boolean {
 export const NOTIFY3_FALLBACK_ICON = 'information-outline';
 
 /**
- * The big icon of an entry: its `icon` if the display can draw it - a hardware panel only has the icons of
- * POPUP_NOTIFY3_ICONS, a web panel draws every MDI icon -, otherwise NOTIFY3_FALLBACK_ICON with a warning.
+ * Whether the display draws every MDI icon: only a web panel with web extensions allowed, every other display
+ * has the icons of the hardware fonts only.
+ *
+ * @param target the display
+ */
+function drawsAllIcons(target: Notify3Target): boolean {
+    return target.isVirtual && target.allowWebExtensions;
+}
+
+/**
+ * The big icon of an entry: its `icon` if the display can draw it - only the icons of POPUP_NOTIFY3_ICONS like the
+ * hardware panel, every MDI icon on a web panel with web extensions allowed -, otherwise NOTIFY3_FALLBACK_ICON with
+ * a warning.
  *
  * @param details the entry
  * @param target the display
  */
 export function notify3Icon(details: PagePopupDataDetails, target: Notify3Target): { icon: string; warning?: string } {
     const icon = typeof details.icon === 'string' ? details.icon.trim() : '';
-    if (icon && isKnownIcon(icon) && (target.isVirtual || ICON_SET.has(icon))) {
+    if (icon && isKnownIcon(icon) && (drawsAllIcons(target) || ICON_SET.has(icon))) {
         return { icon };
     }
     return {
@@ -306,7 +265,7 @@ function buttonIcon(
     }
     const glyph = isKnownIcon(wanted) ? Icons.GetIcon(wanted) : '';
     const cp = glyph.codePointAt(0);
-    if (cp === undefined || (!target.isVirtual && !hasGlyph(cp, BUTTON_FONT, target.model))) {
+    if (cp === undefined || (!drawsAllIcons(target) && !hasGlyph(cp, BUTTON_FONT, target.model))) {
         warnings.push(
             `popupNotify3: unknown ${side} '${wanted}' - ${fallback ? `'${fallback}' used instead` : 'button hidden'}`,
         );
