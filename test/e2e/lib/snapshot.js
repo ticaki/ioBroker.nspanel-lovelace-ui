@@ -10,7 +10,8 @@
  *
  * - `UPDATE_SNAPSHOTS=1 npm run test:e2e` records the file again; a step without entry fails with a hint.
  * - Volatile content is normalized: `time~` and `date~` are left out (also whether one arrived depends on the
- *   clock), the brightness of `dimmode~` (day / night) becomes `<dim>`. Icon glyphs are written as `{U+XXXX}`, so a
+ *   clock), the brightness of `dimmode~` (day / night) becomes `<dim>`, the hourly `dimmode~` (xx:00:00–xx:00:10) is
+ *   left out. Icon glyphs are written as `{U+XXXX}`, so a
  *   diff of the file is readable.
  * - The name of a snapshot is the title path below the suite `E2E`, so a step run alone (`--grep`) compares with
  *   the same entry. The test "has no stale entries" only checks a full run.
@@ -65,6 +66,24 @@ function normalizePayload(payload) {
 }
 
 /**
+ * The adapter sends `dimmode~` to every panel at the full hour (Controller.minuteLoop at `minute === 0`,
+ * src/lib/controller/controller.ts), whichever step runs at that moment. The loop is timed to xx:00:00.010, the
+ * payload then passes the send queue of the panel (one payload after the other, each waiting for its ack) - 10 s
+ * leave room for a busy queue and a slow machine, while a step's own dimmode (startup, dim settings) at exactly
+ * that time is unlikely. Every other dimmode stays in the snapshot.
+ */
+const HOURLY_DIMMODE_WINDOW_MS = 10_000;
+
+/**
+ * @param {number} ts time the payload arrived (Date.now())
+ * @returns {boolean} true if it arrived in the first seconds of a full hour
+ */
+function isHourlyDimmode(ts) {
+    const d = new Date(ts);
+    return d.getMinutes() === 0 && d.getSeconds() * 1000 + d.getMilliseconds() < HOURLY_DIMMODE_WINDOW_MS;
+}
+
+/**
  * Last payload per message type since `since`.
  *
  * @param {import('./payload-log').PayloadLog} panel virtual panel
@@ -74,11 +93,12 @@ function normalizePayload(payload) {
 function endState(panel, since) {
     /** @type {Record<string, string>} */
     const last = {};
-    for (const p of panel.payloads(since)) {
+    for (const { payload: p, ts } of panel.entries.slice(since)) {
         const cmd = p.split('~', 1)[0];
-        if (!SKIPPED.has(cmd)) {
-            last[cmd] = normalizePayload(p);
+        if (SKIPPED.has(cmd) || (cmd === 'dimmode' && isHourlyDimmode(ts))) {
+            continue;
         }
+        last[cmd] = normalizePayload(p);
     }
     return sortKeys(last);
 }

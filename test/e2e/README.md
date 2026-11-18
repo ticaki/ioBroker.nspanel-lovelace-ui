@@ -47,8 +47,26 @@ Laufzeit etwa 3 Minuten (der erste Lauf länger: `@iobroker/testing` installiert
 | Tasmota         | `STATUS0`, `POWER1/2`, `GetDriverVersion` (Generation 11) werden beantwortet                                     | –                                                                             |
 | Display-Timeout | aus; Tests senden `event,sleepReached` selbst. `autoSleep = true` simuliert `timeout~<s>`                        | –                                                                             |
 
-Beide sammeln alle Payloads (`PayloadLog`): `mark()` merkt die Position, `waitFor(prädikat, { since })` wartet auf
-eine passende Payload danach, `settle()` wartet, bis die Sendewarteschlange des Adapters leer ist.
+Beide sammeln alle Payloads (`PayloadLog`): `mark()` merkt die Position, `waitFor(prädikat, { since, timeout, what })`
+wartet auf eine passende Payload danach (Standard-Timeout 10 s, danach Fehler mit `what` und den letzten Payloads),
+`settle()` wartet, bis die Sendewarteschlange des Adapters leer ist.
+
+**Auf die erwartete Nachricht warten, nicht nur auf Ruhe.** `settle()` und die Ruhezeit des Snapshots sehen nur, dass
+gerade nichts kommt – eine Nachricht, die der Adapter etwas später schickt (Drosselung, State-Rundlauf), fehlt dann
+manchmal im Snapshot oder kommt erst nach dem nächsten Schritt (z. B. nach `bExit`). Jede Payload, die ein Schritt
+auslöst und die im Snapshot stehen soll, wartet der Schritt per `waitFor` mit Prädikat auf den konkreten Inhalt ab
+(nicht nur auf den Typ), bevor er die nächste Aktion schickt oder endet:
+
+```js
+const mark = await press(panel, buttonPress(lightId, 'brightnessSlider', 55));
+await ctx.waitForValue(IDS.lightDimmer, 55); // der State allein reicht nicht
+await panel.waitFor(p => detailOf(lightId)(p) && parseLightDetail(p).brightness === '55', {
+    since: mark,
+    what: 'entityUpdateDetail light brightness 55',
+});
+```
+
+Nicht pauschal länger warten (`settle(3000)`): das macht den Test langsamer und nur seltener rot.
 
 ## Neues Szenario anlegen
 
@@ -112,7 +130,9 @@ der Test-States `0_userdata.0.e2e.*`. Vor dem Abschluss wartet der Schritt 1,2 s
 Screensaver-Drosselung von 1 s).
 
 - Normalisiert: `time~` und `date~` fehlen ganz (Inhalt und Zeitpunkt hängen an der Uhr), die Helligkeiten von
-  `dimmode~` (Tag/Nacht) werden `<dim>`, Icon-Glyphen stehen als `{U+E50E}` im Snapshot.
+  `dimmode~` (Tag/Nacht) werden `<dim>`, Icon-Glyphen stehen als `{U+E50E}` im Snapshot. Ein `dimmode~`, das
+  zwischen xx:00:00 und xx:00:10 ankommt, fehlt: der Adapter schickt es zur vollen Stunde an alle Panels
+  (`minuteLoop`, `minute === 0`), egal welcher Schritt gerade läuft. Alle anderen `dimmode~` bleiben im Vergleich.
 - Name = Titelpfad unter `E2E` (`05 Screensaver ⇄ page › …`), ein einzelner Schritt per `--grep` vergleicht mit
   demselben Eintrag. „Snapshot › has no stale entries“ prüft nur bei einem vollen Lauf.
 - Fehlt ein Eintrag, schlägt der Schritt mit Hinweis fehl.
