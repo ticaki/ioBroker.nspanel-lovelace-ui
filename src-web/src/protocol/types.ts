@@ -106,6 +106,11 @@ export interface HelloFrame {
      * read it with {@link helloShowsButtons}
      */
     buttons?: boolean;
+    /**
+     * build id of the web bundle the adapter serves (meta `nspanel-web-build` of its index.html);
+     * missing with an older adapter or when the adapter cannot read it
+     */
+    build?: string;
 }
 
 /**

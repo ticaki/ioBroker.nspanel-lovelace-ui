@@ -108,6 +108,8 @@ export class VirtualPanelManager extends BaseClass {
     private entries: Map<string, WebPanelEntry> = new Map();
     /** topics already reported as not running - the browser retries every second, the log hears it once */
     private notRunningReported: Set<string> = new Set();
+    /** build id of the served web bundle for the `hello`, set by the web server */
+    webBuild: (() => string | undefined) | undefined;
 
     constructor(adapter: AdapterClassDefinition, controller: Controller) {
         super(adapter, 'WebPanels');
@@ -229,6 +231,7 @@ export class VirtualPanelManager extends BaseClass {
         entry.clients.add(client);
         entry.channel.setReceiverConnected(entry.clients.size > 0);
         this.notRunningReported.delete(target.topic);
+        const build = this.webBuild?.();
         client.send({
             t: 'hello',
             model: panel.info.nspanel.model,
@@ -244,6 +247,7 @@ export class VirtualPanelManager extends BaseClass {
                           panel.info.nspanel.model,
                           this.adapter.config.panels.find(p => p.topic === entry.topic)?.webButtons,
                       ),
+            ...(build ? { build } : {}),
         });
         this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);
         return entry;

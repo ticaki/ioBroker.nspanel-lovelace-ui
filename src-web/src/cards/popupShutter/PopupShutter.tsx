@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon } from '../../components/Icon';
+import { PressTracker } from '../../components/pressTracker';
 import { color565ToCss } from '../../protocol/color';
 import type { PanelModel } from '../../protocol/types';
 import { theme } from '../../style/theme';
@@ -183,6 +184,8 @@ class IconButton extends React.Component<IconButtonProps> {
  */
 export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> {
     private readonly windowRef = React.createRef<HTMLDivElement>();
+    /** only a release after a press on the window moves the shutter, see {@link PressTracker} */
+    private readonly windowPress = new PressTracker();
 
     private get id(): string {
         return popupEntityId(this.props.ctx, this.props.model.entityName);
@@ -203,6 +206,9 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
      * (`positionSlider` in `pageItem.ts` inverts it when `shutterClosedIsZero` is set).
      */
     private readonly onWindowTap = (e: React.PointerEvent<HTMLDivElement>): void => {
+        if (!this.windowPress.up(e.pointerId)) {
+            return;
+        }
         const el = this.windowRef.current;
         if (!el || this.props.model.position === undefined) {
             return;
@@ -210,6 +216,14 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
         const rect = el.getBoundingClientRect();
         const ratio = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
         this.props.press(this.id, 'positionSlider', Math.round(ratio * 100));
+    };
+
+    private readonly onWindowDown = (e: React.PointerEvent<HTMLDivElement>): void => {
+        this.windowPress.down(e.pointerId);
+    };
+
+    private readonly onWindowCancel = (e: React.PointerEvent<HTMLDivElement>): void => {
+        this.windowPress.cancel(e.pointerId);
     };
 
     private renderTriple(
@@ -372,7 +386,10 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                 ref={this.windowRef}
                 data-window=""
                 data-shutter={covered}
+                onPointerDown={canMove ? this.onWindowDown : undefined}
                 onPointerUp={canMove ? this.onWindowTap : undefined}
+                onPointerCancel={canMove ? this.onWindowCancel : undefined}
+                onPointerLeave={canMove ? this.onWindowCancel : undefined}
                 style={{
                     position: 'absolute',
                     left,
