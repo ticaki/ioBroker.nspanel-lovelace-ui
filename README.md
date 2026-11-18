@@ -160,14 +160,16 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) navigation: a locked (hidden) page shows a popup "page locked" instead of silently doing nothing, the arrows go on from the page shown; admin marks hidden pages with a closed eye
-- (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
 - (ticaki) notification popup: new option `largeIcon` - shows the message with a big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`) on panels with TFT 6.2.0+ and on web panels; older TFTs show it the classic way, without `largeIcon` nothing changes
 - (ticaki) admin: icon tab can filter the icons of the large notification (popupNotify3)
 - (ticaki) web panel: shows only what the panel can by default, new option to allow web panel extensions (e.g. all icons in the large notification)
 - (ticaki) notification popup: state `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font); unknown values fall back to 3 - see the new section "Fonts" in the popup documentation
+- (ticaki) screensaver: TFT 6.2.0 and web panel send the long press of an indicator only when the finger is lifted - after 500 ms the time blinks red/yellow as a sign to let go; letting go earlier is a short tap, a swipe drops both
+
+### 2.4.1 (2026-11-18)
+- (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
 - (ticaki) Web panel: a browser that kept the page open over an adapter update reloads itself once and gets the new frontend
 - (ticaki) Web panel: the long press of a screensaver indicator no longer operates the popup it opens (releasing the finger moved the shutter or picked a color)
-- (ticaki) screensaver: TFT 6.2.0 and web panel send the long press of an indicator only when the finger is lifted - after 500 ms the time blinks red/yellow as a sign to let go; letting go earlier is a short tap, a swipe drops both
 - (ticaki) admin developer: download the configuration of a single page with its page items (stored and runtime) for support
 - (ticaki) web panel: colour temperature slider of the light popup was inverted
 - (ticaki) colour temperature with min/max of the state was set mirrored
@@ -217,27 +219,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) fixes: status datapoint of new alarm/unlock pages, emulator detection, less info logging at startup
 - (tt-tom17) admin: QR, chart, trash and menu page editors reworked (clearer labels, menu preview like the panel, trash "Apply selection" fills the page completely), remaining fixed texts translated
 - (tt-tom17) pageQR: WPA2 is the default wifi encryption
-
-### 2.1.0 (2026-11-05)
-- (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel
-- (ticaki) popupTimer repaired: an internal timer shows its time in the list, stays at 00:00 with Finish until confirmed and can be controlled through SET and STATUS; external timers count in seconds (ms with unit ms), the alarm clock uses local time and On/Off; a `level.timer` item can use the timer of the screensaver of its panel
-- (ticaki) screensaver: new mode tiles with 5 values, 7 indicators (portrait panel: 4 values, 8 indicators), a larger clock, the info icon and two status bars; needs a TFT with the page screensaver5; the web panel draws the mode as well
-- (ticaki) screensaver: a blind can be used as element - it shows one of 5 position icons and its position in %; tapping it as indicator only runs the configured action, it never moves the blind
-- (ticaki) screensaver: new target "Screensaver" for page items and for prev, next, parent and home of a page (`///screensaver` in the script), new state `panels.<panel>.cmd.screenSaver.activate` shows it at once
-- (ticaki) screensaver: a mode this adapter version does not know (e.g. after a downgrade) falls back to `standard` with a warning instead of breaking the screensaver, the stored configuration stays unchanged
-- (ticaki) cardPChart: new page type "Pie chart" in the page configuration (needs the beta TFT 6.0.5 or newer on the EU panel) - up to five slices from numeric states with name, unit and color, optionally the average over a time range from a history/sql/influxdb instance, alternatively a script data point with the finished text; the web panel renders the card as well
-- (ticaki) admin screensaver: page item templates can be configured per place, with the instances of the adapter as suggestions and template options (e.g. SOC limits of `text.battery.bydhvs`); on an indicator a template can act on tap; a new screensaver starts with two status icons coupled to the relays of the panel
-- (ticaki) admin screensaver: uniform paging arrows for all areas except favorit, the alternate area can hold several items the panel rotates through, the notifications and options buttons moved below the panel picture; items of areas the chosen version does not show are no longer reported as a problem
-- (ticaki) admin navigation: a start page no longer has a prev/next/parent of its own, its neighbours follow from the pages pointing at it (stored values are kept and apply again without the flag); a page named `main` without the flag counts as start page and asks for the flag in the log; empty fields show the neighbours the adapter resolved, a click on the label opens the target page, conflicting links get a warning; an explicit `next` is no longer overwritten when other pages chain in behind it
-- (tt-tom17) page configuration: the unique id of a page is fixed once it was created, because renaming left the navigation of other pages pointing at the old name; the delete confirmation names the pages pointing at the page and offers to connect its previous and next page
-- (tt-tom17) cardQR: a page with "No Password" (or free text, url or telephone code) no longer sends the stored wifi password to the panel - it was shown in clear text and was part of the scanned code
-- (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with a step of 0.5 °C)
-- (tt-tom17) cardThermo2: the humidity row uses its own unit, the unit of the first row also applies to the set temperature
-- (tt-tom17) cardAlarm: the disarm buttons also work without an arm button in the same row; a new page starts with "Arm" and "Disarm" filled in, the top button of both columns is mandatory, because the card cannot be left without them (the type "unlock" still needs one button only)
-- (ticaki) panel: fewer page updates (at most one list update per 2 s for running timers, at least 1 s between updates of a page)
-- (ticaki) the beta option now also applies to Tasmota: update and update indicator use the `tasmota-beta` version
-- (tt-tom17) admin: the two hardware button buttons of a panel tile sit one below the other and show the relay state in their color, with a tooltip
-- (tt-tom17) documentation: rewritten for the admin, complete in English as well and published on GitHub Pages, the admin links point there; missing translations of the page configuration are filled in
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

@@ -1,0 +1,2 @@
+# written by the release script (JSON.stringify, 2 spaces) - prettier would fight it on every release
+io-package.json
