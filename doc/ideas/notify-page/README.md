@@ -50,11 +50,11 @@ anstehender Termin, Internet weg.
 - Stil **MDI** (Material Design Icons) wie im übrigen Panel. Google Material Symbols wurden verglichen und verworfen:
   feiner, aber ohne die Warn-Varianten (`-alert`) und ohne Kloschüssel.
 - „Besetzt“ = Parkverbotsschild `cancel` (Ring mit Strich oben links → unten rechts), z. B. rot.
-- Startumfang (51), auf Nutzerwunsch erweiterbar. Maßgebliche Liste (einzige Quelle für Adapter, Admin-Icon-Tab und
+- Startumfang (52), auf Nutzerwunsch erweiterbar. Maßgebliche Liste (einzige Quelle für Adapter, Admin-Icon-Tab und
   Generator): `templates/popup-notify3-icons.json`; die Aufzählung hier ist nur die Übersicht:
   - Allgemein: `alert`, `information-outline`, `doorbell`, `package-variant-closed`, `mailbox-up`, `phone-ring`,
-    `shield-alert`, `alarm-light`, `window-open-variant`, `door-open`, `garage-open`, `ev-station`, `power-socket-de`,
-    `battery-alert-variant-outline`
+    `shield-alert`, `alarm-light`, `window-open-variant`, `window-open-hinged-variant` (eigenes EU-Fenster), `door-open`,
+    `garage-open`, `ev-station`, `power-socket-de`, `battery-alert-variant-outline`
   - Termine: `calendar`, `calendar-alert`, `calendar-clock`, `bell-ring`, `trash-can`
   - Offline: `wifi-off`, `web-off`, `cloud-off-outline`, `lan-disconnect`
   - Besetzt: `cancel`, `toilet`, `door-closed-lock`
@@ -70,7 +70,7 @@ anstehender Termin, Internet weg.
 
 **Speicher**
 - Icon-Font bei 255 px: gemessen ≈ 3,3 KB pro Icon (zum Vergleich 32 px 136 B, 48 px 250 B, 80 px 461 B),
-  51 Icons ≈ 167 KB Flash. Fonts kosten keinen Seiten-RAM.
+  52 Icons ≈ 171 KB Flash. Fonts kosten keinen Seiten-RAM.
 
 ## Seite und Protokoll (HMI 6.2.0, Test)
 
