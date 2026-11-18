@@ -20,6 +20,7 @@ Contents:
 - [The three buttons, the X and the feedback states](#4-the-three-buttons-the-x-and-the-feedback-states)
 - [How it looks on the panel](#5-how-it-looks-on-the-panel)
 - [Big icon (from TFT 6.2.0)](#6-big-icon-from-tft-620)
+- [Fonts (textSize)](#7-fonts-textsize)
 - [Pitfalls](#pitfalls)
 
 ## 1. Way 1: the states
@@ -41,7 +42,7 @@ Each panel carries a set of fields under
 | `icon` / `iconColor` | string / json | empty | Icon in front of the headline; with `largeIcon` the big icon. |
 | `largeIcon` | boolean | false | Show the message with a big icon, see [Big icon](#6-big-icon-from-tft-620). |
 | `buttonLeftIcon` / `buttonRightIcon` | string | empty | Only with `largeIcon`: icon on the left/right button. |
-| `textSize` | number 0–5 | 3 | Font size, and with it how many lines fit. |
+| `textSize` | number 0–5, 8 | 3 | Font, and with it how many lines fit, see [Fonts (textSize)](#7-fonts-textsize). `6`/`7` count as `3`. |
 | `buzzer` | boolean | false | One beep when the message appears. |
 | `alwaysOn` | boolean | **true** | The popup stays instead of giving way to the screensaver. |
 
@@ -85,7 +86,7 @@ type PagePopupDataDetails = {
     buttonRight?: string;
     colorButtonRight?: { r: number; g: number; b: number } | string;
     colorText?: { r: number; g: number; b: number } | string;
-    textSize?: string;           // 0–5
+    textSize?: string;           // 0–5, 8
     icon?: string;
     iconColor?: { r: number; g: number; b: number } | string;
     largeIcon?: boolean;         // true → big icon (from TFT 6.2.0)
@@ -178,7 +179,7 @@ classic way.
 | **`largeIcon`** | `true` switches on the look with the big icon. |
 | **`icon`** / **`iconColor`** | The big icon and its colour (default white). The panel only has the icons of the list below; the web panel shows any. Without a valid icon the info icon `information-outline` appears. |
 | **`text`** / **`colorText`** | The text line. Text that is too long is cut with `...`, it does not page. `headline` is not shown here. |
-| **`textSize`** | `3` (default) = 48 px and `2` (also `1`) = 32 px, **one** line each; `0` = 24 px in **two** lines. `4` and `5` count as `3`. The upright us-p shows more lines. |
+| **`textSize`** | `3` (default) = 48 px and `2` (also `1`) = 32 px, **one** line each; `0` = 24 px in **two** lines. `4`, `5` and `8` count as `3`. The upright us-p shows more lines. |
 | **`buttonLeftIcon`** / **`colorButtonLeft`** | Left button: icon and background colour. Acts like the left button of section 4. |
 | **`buttonRightIcon`** / **`colorButtonRight`** | Right button: icon and background colour. Acts like the right button of section 4. |
 
@@ -214,6 +215,29 @@ The panel has these big icons (names of the Material Design Icons):
 `weather-fog`, `washing-machine`, `tumble-dryer`, `dishwasher`, `washing-machine-alert`, `tumble-dryer-alert`,
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
 `smoke-detector-alert`, `fire-alert`
+
+## 7. Fonts (textSize)
+
+`textSize` selects the font of the message text. Allowed are `0`–`5` and `8`; `6` and `7` are internal fonts of the
+HMI and, like any invalid value, count as `3`. The lines apply to the classic popup and to the
+[big icon](#6-big-icon-from-tft-620).
+
+| Value | Font | Icons | Character set | Typical use | Lines classic (us-p, web-p) | Lines big icon (us-p) |
+|---|---|---|---|---|---|---|
+| `0` | 24 px | no | large: Latin, Greek, Cyrillic, some CJK | long messages | 7 (web-p 20) | 2 (4) |
+| `1` | 32 px | yes | Latin-1 (no `€`) + icons | text with embedded icons | 5 (web-p 15) | 1 (3), like `2` |
+| `2` | 32 px | no | like `0` | medium-length messages | 5 (web-p 15) | 1 (3) |
+| `3` | 48 px (default) | yes | Latin-1 (no `€`) + icons | short messages | 4 (web-p 10) | 1 (2) |
+| `4` | 80 px bold | yes | Latin-1 (no `€`) + icons | one or two words | 2 (web-p 6) | 1 (2), like `3` |
+| `5` | 128 px bold | no | ASCII only (no umlauts) | number or abbreviation | 1 (web-p 3) | 1 (2), like `3` |
+| `8` | 96 px bold | no | ASCII only, built as a clock font | time, number | 1 (web-p 3) | 1 (2), like `3` |
+
+- **Models:** fonts `1`, `3`, `4`, `5` and `8` are the same on all panels. `0` and `2` differ: the us-l has many
+  more Chinese, Japanese and Korean characters, the us-p lacks e.g. the currency signs (`€`). The web panels draw with
+  browser fonts and therefore show almost everything.
+- **Missing characters do not appear.** If the font does not have a character, the panel silently leaves it out –
+  without a gap. Example: `Größe` with `5` becomes `Gre`.
+- **Icons in the text** (characters from the icon range) are shown only by `1`, `3` and `4`.
 
 ## Pitfalls
 

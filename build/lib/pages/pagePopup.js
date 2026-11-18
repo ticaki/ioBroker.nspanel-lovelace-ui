@@ -83,7 +83,6 @@ class PagePopup extends import_Page.Page {
    * @returns Build the view for nspanel.
    */
   async update() {
-    var _a;
     const message = {};
     const items = this.items;
     if (!items || !this.visibility) {
@@ -148,7 +147,8 @@ class PagePopup extends import_Page.Page {
     if (message.text) {
       message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
     }
-    const maxLineCount = (0, import_tools.notifyLines)(Number(details.textSize), this.basePanel.info.nspanel.model);
+    const textSize = (0, import_tools.popupTextSize)(details.textSize);
+    const maxLineCount = (0, import_tools.notifyLines)(textSize != null ? textSize : Number.NaN, this.basePanel.info.nspanel.model);
     let lines = 0;
     if (message.text && (lines = message.text.split("\r\n").length) > maxLineCount) {
       let test = 0;
@@ -181,7 +181,7 @@ ${message.text}`;
         this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3e3);
       }
     }
-    message.fontSet = (_a = details.textSize) != null ? _a : "";
+    message.fontSet = textSize !== void 0 ? String(textSize) : "";
     if (!import_icon_mapping.Icons.GetIcon(this.detailsArray[0].icon || "")) {
       this.sendToPanel(this.getMessage(message), false);
       return;

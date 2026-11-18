@@ -3,7 +3,7 @@ import { type PageInterface } from '../classes/PageInterface';
 import type { RGB } from '../const/Color';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { getPayloadRemoveTilde, notifyLines, setTriggeredToState } from '../const/tools';
+import { getPayloadRemoveTilde, notifyLines, popupTextSize, setTriggeredToState } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import type { PageItem } from './pageItem';
@@ -152,7 +152,9 @@ export class PagePopup extends Page {
             message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
         }
         // visible lines per textSize and model (web-p shows more lines, see notifyLines)
-        const maxLineCount = notifyLines(Number(details.textSize), this.basePanel.info.nspanel.model);
+        // 6/7 and other invalid values -> 3, missing -> undefined (HMI default)
+        const textSize = popupTextSize(details.textSize);
+        const maxLineCount = notifyLines(textSize ?? Number.NaN, this.basePanel.info.nspanel.model);
         let lines = 0;
         if (message.text && (lines = message.text.split('\r\n').length) > maxLineCount) {
             let test = 0;
@@ -185,7 +187,7 @@ export class PagePopup extends Page {
                 this.rotationTimeout = this.adapter.setTimeout(this.rotation, 3000);
             }
         }
-        message.fontSet = details.textSize ?? '';
+        message.fontSet = textSize !== undefined ? String(textSize) : '';
         if (!Icons.GetIcon(this.detailsArray[0].icon || '')) {
             this.sendToPanel(this.getMessage(message), false);
             return;

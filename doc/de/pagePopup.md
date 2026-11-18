@@ -21,6 +21,7 @@ Inhalt:
 - [Die drei Knöpfe, das X und die Rückmeldungen](#4-die-drei-knöpfe-das-x-und-die-rückmeldungen)
 - [Darstellung am Panel](#5-darstellung-am-panel)
 - [Großes Symbol (ab TFT 6.2.0)](#6-großes-symbol-ab-tft-620)
+- [Schriften (textSize)](#7-schriften-textsize)
 - [Fallstricke](#fallstricke)
 
 ## 1. Weg 1: die Datenpunkte
@@ -42,7 +43,7 @@ Meldung ab.
 | `icon` / `iconColor` | string / json | leer | Symbol vor der Überschrift; mit `largeIcon` das große Symbol. |
 | `largeIcon` | boolean | false | Meldung mit großem Symbol zeigen, siehe [Großes Symbol](#6-großes-symbol-ab-tft-620). |
 | `buttonLeftIcon` / `buttonRightIcon` | string | leer | Nur mit `largeIcon`: Symbol auf dem linken/rechten Knopf. |
-| `textSize` | number 0–5 | 3 | Schriftgröße und damit, wie viele Zeilen passen. |
+| `textSize` | number 0–5, 8 | 3 | Schrift und damit, wie viele Zeilen passen, siehe [Schriften (textSize)](#7-schriften-textsize). `6`/`7` gelten als `3`. |
 | `buzzer` | boolean | false | Einmaliger Ton beim Anzeigen. |
 | `alwaysOn` | boolean | **true** | Popup bleibt stehen, statt in den Bildschirmschoner zu laufen. |
 
@@ -86,7 +87,7 @@ type PagePopupDataDetails = {
     buttonRight?: string;
     colorButtonRight?: { r: number; g: number; b: number } | string;
     colorText?: { r: number; g: number; b: number } | string;
-    textSize?: string;           // 0–5
+    textSize?: string;           // 0–5, 8
     icon?: string;
     iconColor?: { r: number; g: number; b: number } | string;
     largeIcon?: boolean;         // true → großes Symbol (ab TFT 6.2.0)
@@ -179,7 +180,7 @@ dieselbe Meldung klassisch.
 | **`largeIcon`** | `true` schaltet die Darstellung mit großem Symbol ein. |
 | **`icon`** / **`iconColor`** | Das große Symbol und seine Farbe (Vorgabe weiß). Das Panel hat nur die Symbole der Liste unten; das Web-Panel zeigt jedes. Ohne gültiges Symbol erscheint das Info-Symbol `information-outline`. |
 | **`text`** / **`colorText`** | Die Textzeile. Zu langer Text wird mit `...` gekürzt, er blättert nicht. `headline` erscheint hier nicht. |
-| **`textSize`** | `3` (Vorgabe) = 48 px und `2` (auch `1`) = 32 px, je **eine** Zeile; `0` = 24 px in **zwei** Zeilen. `4` und `5` gelten als `3`. Das hochkant gebaute us-p zeigt mehr Zeilen. |
+| **`textSize`** | `3` (Vorgabe) = 48 px und `2` (auch `1`) = 32 px, je **eine** Zeile; `0` = 24 px in **zwei** Zeilen. `4`, `5` und `8` gelten als `3`. Das hochkant gebaute us-p zeigt mehr Zeilen. |
 | **`buttonLeftIcon`** / **`colorButtonLeft`** | Linker Knopf: Symbol und Hintergrundfarbe. Wirkt wie der linke Knopf aus Abschnitt 4. |
 | **`buttonRightIcon`** / **`colorButtonRight`** | Rechter Knopf: Symbol und Hintergrundfarbe. Wirkt wie der rechte Knopf aus Abschnitt 4. |
 
@@ -215,6 +216,29 @@ Diese Symbole kennt das Panel als großes Symbol (Namen der Material Design Icon
 `weather-fog`, `washing-machine`, `tumble-dryer`, `dishwasher`, `washing-machine-alert`, `tumble-dryer-alert`,
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
 `smoke-detector-alert`, `fire-alert`
+
+## 7. Schriften (textSize)
+
+`textSize` wählt die Schrift des Meldungstextes. Erlaubt sind `0`–`5` und `8`; `6` und `7` sind interne Schriften
+der HMI und gelten wie jeder ungültige Wert als `3`. Die Zeilen gelten für das klassische Popup und für das
+[Große Symbol](#6-großes-symbol-ab-tft-620).
+
+| Wert | Schrift | Symbole | Zeichenvorrat | Typisch für | Zeilen klassisch (us-p, web-p) | Zeilen großes Symbol (us-p) |
+|---|---|---|---|---|---|---|
+| `0` | 24 px | nein | groß: Latein, Griechisch, Kyrillisch, teils CJK | lange Meldungen | 7 (web-p 20) | 2 (4) |
+| `1` | 32 px | ja | Latin-1 (kein `€`) + Symbole | Text mit eingebetteten Symbolen | 5 (web-p 15) | 1 (3), wie `2` |
+| `2` | 32 px | nein | wie `0` | mittellange Meldungen | 5 (web-p 15) | 1 (3) |
+| `3` | 48 px (Vorgabe) | ja | Latin-1 (kein `€`) + Symbole | kurze Meldungen | 4 (web-p 10) | 1 (2) |
+| `4` | 80 px fett | ja | Latin-1 (kein `€`) + Symbole | ein, zwei Wörter | 2 (web-p 6) | 1 (2), wie `3` |
+| `5` | 128 px fett | nein | nur ASCII (keine Umlaute) | Zahl oder Kürzel | 1 (web-p 3) | 1 (2), wie `3` |
+| `8` | 96 px fett | nein | nur ASCII, gebaut als Uhrzeit-Schrift | Uhrzeit, Zahl | 1 (web-p 3) | 1 (2), wie `3` |
+
+- **Modelle:** Die Schriften `1`, `3`, `4`, `5` und `8` sind auf allen Panels gleich. `0` und `2` unterscheiden sich:
+  das us-l hat deutlich mehr chinesische, japanische und koreanische Zeichen, dem us-p fehlen u. a. die Währungszeichen
+  (`€`). Die Web-Panels zeichnen mit Browser-Schriften und zeigen deshalb fast alles.
+- **Fehlende Zeichen erscheinen nicht.** Hat die Schrift ein Zeichen nicht, lässt das Panel es kommentarlos weg –
+  ohne Lücke. Beispiel: `Größe` mit `5` wird zu `Gre`.
+- **Symbole im Text** (Zeichen aus dem Symbolbereich) zeigen nur `1`, `3` und `4`.
 
 ## Fallstricke
 

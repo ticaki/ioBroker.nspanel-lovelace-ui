@@ -122,6 +122,8 @@ describe('lib/pages/popupNotify3', () => {
             expect(notify3Font('2')).to.equal(2);
             expect(notify3Font('3')).to.equal(3);
             expect(notify3Font('5')).to.equal(3);
+            expect(notify3Font('8')).to.equal(3);
+            expect(notify3Font(8)).to.equal(3);
         });
     });
 

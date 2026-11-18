@@ -214,8 +214,8 @@ export function usePopupNotify3(details: PagePopupDataDetails | undefined, targe
 }
 
 /**
- * Font of the text line from `textSize` (0..5 like popupNotify): 0 -> 0 (24 px), 1/2 -> 2 (32 px), 3..5, empty or
- * invalid -> 3 (48 px).
+ * Font of the text line from `textSize` (0..5, 8 like popupNotify): 0 -> 0 (24 px), 1/2 -> 2 (32 px), 3..5, 8
+ * (96 px does not fit the 48 px field), empty or invalid -> 3 (48 px).
  *
  * @param textSize textSize of the entry
  */

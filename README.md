@@ -161,6 +161,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
 - (ticaki) notification popup: new option `largeIcon` - shows the message with a big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`) on panels with TFT 6.2.0+ and on web panels; older TFTs show it the classic way, without `largeIcon` nothing changes
+- (ticaki) notification popup: state `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font); unknown values fall back to 3 - see the new section "Fonts" in the popup documentation
 
 ### 2.4.0 (2026-11-17)
 - (ticaki) screensaver: new long press action "Open popup" for indicators (Advanced and Tiles, TFT 6.0.9+) - opens the popup of the light, shutter, fan, selection or timer channel and returns to the screensaver afterwards (script: `ScreensaverEntityLongPressPopup: true`)
