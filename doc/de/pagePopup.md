@@ -14,7 +14,16 @@ Im Adapter heißen **zwei verschiedene Dinge** Popup:
 > gibt es diesen Seitentyp nicht, im Konfigurationsskript auch nicht. Gesteuert wird die Seite
 > ausschließlich über **Datenpunkte** oder über **`sendTo`**.
 
-## Weg 1: die Datenpunkte
+Inhalt:
+- [Weg 1: die Datenpunkte](#1-weg-1-die-datenpunkte)
+- [Weg 2: `sendTo`](#2-weg-2-sendto)
+- [Die Warteschlange](#3-die-warteschlange)
+- [Die drei Knöpfe, das X und die Rückmeldungen](#4-die-drei-knöpfe-das-x-und-die-rückmeldungen)
+- [Darstellung am Panel](#5-darstellung-am-panel)
+- [Großes Symbol (ab TFT 6.2.0)](#6-großes-symbol-ab-tft-620)
+- [Fallstricke](#fallstricke)
+
+## 1. Weg 1: die Datenpunkte
 
 Je Panel liegt unter `nspanel-lovelace-ui.<Instanz>.panels.<Panel>.cmd.pagePopup.` ein Satz Felder.
 Man füllt sie und löst dann **`activate`** aus — erst dieser Knopf liest **alle** Felder und schickt die
@@ -30,7 +39,9 @@ Meldung ab.
 | `headline` / `colorHeadline` | string / json | leer / weiß | Überschrift und ihre Farbe. |
 | `text` / `colorText` | string / json | leer / weiß | Meldungstext und seine Farbe. |
 | `buttonLeft` / `buttonMid` / `buttonRight` (+ `colorButton…`) | string / json | leer / weiß | Beschriftung und Farbe der drei Knöpfe. |
-| `icon` / `iconColor` | string / json | leer | Symbol vor der Überschrift. |
+| `icon` / `iconColor` | string / json | leer | Symbol vor der Überschrift; mit `largeIcon` das große Symbol. |
+| `largeIcon` | boolean | false | Meldung mit großem Symbol zeigen, siehe [Großes Symbol](#6-großes-symbol-ab-tft-620). |
+| `buttonLeftIcon` / `buttonRightIcon` | string | leer | Nur mit `largeIcon`: Symbol auf dem linken/rechten Knopf. |
 | `textSize` | number 1–5 | 3 | Schriftgröße und damit, wie viele Zeilen passen. |
 | `buzzer` | boolean | false | Einmaliger Ton beim Anzeigen. |
 | `alwaysOn` | boolean | **true** | Popup bleibt stehen, statt in den Bildschirmschoner zu laufen. |
@@ -43,7 +54,7 @@ Auf diesem Weg gilt:
   mitgeben — und gesummt wird ohnehin nur, wenn am Panel `cmd.isBuzzerAllowed` gesetzt ist.
 - **`textSize` kennt am Datenpunkt nur 1 bis 5.** Die Größe 0 nimmt nur `sendTo` entgegen.
 
-## Weg 2: `sendTo`
+## 2. Weg 2: `sendTo`
 
 Aus einem Skript heraus ist das der bequemere Weg, weil alles in einem Rutsch geht:
 
@@ -79,6 +90,9 @@ type PagePopupDataDetails = {
     textSize?: string;           // 0–5
     icon?: string;
     iconColor?: { r: number; g: number; b: number } | string;
+    largeIcon?: boolean;         // true → großes Symbol (ab TFT 6.2.0)
+    buttonLeftIcon?: string;     // nur mit largeIcon: Name des Symbols
+    buttonRightIcon?: string;    // nur mit largeIcon: Name des Symbols
     alwaysOn?: boolean;          // fehlt → true
     buzzer?: boolean | string;   // true oder ein Tasmota-Muster
 };
@@ -100,7 +114,7 @@ Die Farbfelder nehmen ein `{r,g,b}`-Objekt **oder** eine Zeichenkette wie `#ff00
 Wert fällt stillschweigend auf die Standardfarbe zurück. Ist **kein Panel online**, meldet der Adapter das
 im Rückruf (`{ error: 'No Panels Online' }`); ein Panelname, den es nicht gibt, landet als Fehler im Log.
 
-## Die Warteschlange
+## 3. Die Warteschlange
 
 Mehrere Meldungen liegen nebeneinander und werden **aufsteigend nach `priority`** sortiert — die kleinste
 Zahl steht vorn. Das Panel zeigt immer die vorderste.
@@ -108,7 +122,7 @@ Zahl steht vorn. Das Panel zeigt immer die vorderste.
 > **Höchstens zehn Popups** hält der Adapter je Panel vor; was darüber hinaus ankommt, fällt hinten weg.
 > Ein fehlerhaftes JSON wird **ohne Meldung verworfen** — kein Logeintrag, keine Reaktion am Panel.
 
-## Die drei Knöpfe, das X und die Rückmeldungen
+## 4. Die drei Knöpfe, das X und die Rückmeldungen
 
 Die drei Knöpfe sind **Antwortknöpfe**: Beschriftung und Farbe kommen aus `buttonLeft`, `buttonMid`,
 `buttonRight` und `colorButton…` (ohne Farbangabe links gelb, Mitte rot, rechts grün); ein Knopf ohne
@@ -138,10 +152,82 @@ Was gedrückt wurde, steht hinterher in Datenpunkten – **nicht** unter `cmd`:
 > Skript, das bisher auf „endet auf meine id" geprüft hat, läuft weiter; eines, das den Panelnamen aus dem
 > lokalen Wert gelesen hat, muss auf den globalen Datenpunkt wechseln.
 
-## Darstellung am Panel
+## 5. Darstellung am Panel
 
 - **Langer Text rotiert.** Passt der Text nicht in die Zeilen, die `textSize` erlaubt, blättert das Panel
   ihn durch (etwa 3 Sekunden je Abschnitt, bei der Rückkehr zum Anfang kürzer).
-- **Ein unbekanntes Symbol lässt der Adapter weg** und schickt die Meldung ohne Symbol.
+- **Ein unbekanntes Symbol lässt der Adapter weg** und schickt die Meldung ohne Symbol (Warnung im Log).
 - **`alwaysOn: true` hält das Popup offen**, sonst greift der Panel-Timeout und der Bildschirmschoner
   übernimmt. Tippt man den Bildschirmschoner an, holt das Panel ein offenes Popup zurück.
+
+## 6. Großes Symbol (ab TFT 6.2.0)
+
+Für Meldungen, die man aus der Entfernung erkennen soll – WC besetzt, Unwetter, Waschmaschine fertig: Mit
+**`largeIcon: true`** zeigt das Panel die Meldung als großes Symbol, darunter **eine Zeile Text**, dazu das X und bis
+zu zwei Knöpfe als senkrechte Spalten links und rechts. Eine neue Schnittstelle gibt es nicht – es sind die Felder
+aus Weg 1 und Weg 2 plus `largeIcon`. **Ohne `largeIcon` bleibt alles wie bisher**: `icon` ist dann das kleine
+Symbol vor der Überschrift.
+
+| Unwetter mit zwei Knöpfen | Besetzt, ohne Knöpfe | Langer Text in einer Zeile | 24 px in zwei Zeilen |
+|---|---|---|---|
+| ![Großes orangefarbenes Gewittersymbol, links ein grüner Knopf mit Haken, rechts ein grauer Knopf mit Wecker, darunter „Unwetterwarnung“](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Rotes Verbotsschild ohne Knöpfe, darunter „Besetzt“](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Waschmaschine mit einem Knopf rechts; der zu lange Text ist mit ... gekürzt](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![Mit textSize 0 steht der Text kleiner in zwei Zeilen](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
+
+Voraussetzung ist ein Panel mit **TFT 6.2.0 oder neuer** oder ein Web-Panel. Ein Panel mit älterer TFT zeigt
+dieselbe Meldung klassisch.
+
+| Feld | Bedeutung |
+|---|---|
+| **`largeIcon`** | `true` schaltet die Darstellung mit großem Symbol ein. |
+| **`icon`** / **`iconColor`** | Das große Symbol und seine Farbe (Vorgabe weiß). Das Panel hat nur die Symbole der Liste unten; das Web-Panel zeigt jedes. Ohne gültiges Symbol erscheint das Info-Symbol `information-outline`. |
+| **`text`** / **`colorText`** | Die Textzeile. Zu langer Text wird mit `...` gekürzt, er blättert nicht. `headline` erscheint hier nicht. |
+| **`textSize`** | `3` (Vorgabe) = 48 px und `2` (auch `1`) = 32 px, je **eine** Zeile; `0` = 24 px in **zwei** Zeilen. `4` und `5` gelten als `3`. Das hochkant gebaute us-p zeigt mehr Zeilen. |
+| **`buttonLeftIcon`** / **`colorButtonLeft`** | Linker Knopf: Symbol und Hintergrundfarbe. Wirkt wie der linke Knopf aus Abschnitt 4. |
+| **`buttonRightIcon`** / **`colorButtonRight`** | Rechter Knopf: Symbol und Hintergrundfarbe. Wirkt wie der rechte Knopf aus Abschnitt 4. |
+
+Ohne Knopf-Symbol richtet sich ein Knopf nach der Beschriftung von Abschnitt 4: Steht in `buttonLeft` ein Text,
+zeigt der linke Knopf `close-thick`; steht in `buttonRight` einer (bei `acknowledge` automatisch `ok`), zeigt der
+rechte `check-bold`. Warten mehrere Meldungen, zeigt der linke Knopf `arrow-right-bold` („weiter“). Sonst bleibt der
+Knopf weg. Passende Knopf-Symbole: OK `check-bold`, Bestätigen `check-circle-outline`, Später `alarm-snooze`, Öffnen
+`door-open` oder `lock-open-variant-outline`, Ablehnen `close-thick`.
+
+```javascript
+sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
+    id: 'unwetter',
+    headline: 'Unwetter',              // für Panels mit älterer TFT
+    text: 'Unwetterwarnung',
+    largeIcon: true,
+    icon: 'weather-lightning-rainy',
+    iconColor: '#ff8000',
+    buttonLeftIcon: 'check-bold',
+    colorButtonLeft: '#208020',
+    buttonRightIcon: 'alarm-snooze',
+    colorButtonRight: '#304850',
+    type: 'acknowledge',
+});
+```
+
+Diese Symbole kennt das Panel als großes Symbol (Namen der Material Design Icons):
+`alert`, `information-outline`, `doorbell`, `package-variant-closed`, `mailbox-up`, `phone-ring`,
+`shield-alert`, `alarm-light`, `window-open-variant`, `door-open`, `garage-open`, `ev-station`, `power-socket-de`,
+`battery-alert-variant-outline`, `calendar`, `calendar-alert`, `calendar-clock`, `bell-ring`, `trash-can`,
+`wifi-off`, `web-off`, `cloud-off-outline`, `lan-disconnect`, `cancel`, `toilet`, `door-closed-lock`,
+`weather-rainy`, `weather-lightning`, `weather-lightning-rainy`, `weather-hail`, `weather-pouring`,
+`weather-snowy-heavy`, `weather-windy`, `weather-tornado`, `home-flood`, `snowflake-alert`, `sun-thermometer`,
+`weather-fog`, `washing-machine`, `tumble-dryer`, `dishwasher`, `washing-machine-alert`, `tumble-dryer-alert`,
+`dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
+`smoke-detector-alert`, `fire-alert`
+
+## Fallstricke
+
+**Ohne `largeIcon` kein großes Symbol.** Ein gesetztes `icon` allein bleibt das kleine Symbol vor der Überschrift –
+so funktionieren bestehende Skripte unverändert weiter.
+
+**Ältere TFT: klassische Darstellung.** Hat das Panel keine TFT 6.2.0, zeigt es die Meldung trotz `largeIcon`
+klassisch. Der Adapter schreibt das einmal als Warnung ins Log.
+
+**Ohne gültiges Symbol erscheint das Info-Symbol.** Fehlt `icon`, ist der Name unbekannt oder steht das Symbol nicht
+in der Liste von Abschnitt 6, zeigt das Panel `information-outline` und der Adapter warnt einmal im Log. Ein
+unbekanntes Knopf-Symbol meldet er ebenfalls und nimmt stattdessen das Standard-Symbol.
+
+**Mit großem Symbol fehlen Überschrift und mittlerer Knopf.** `headline` und `buttonMid` werden dort nicht gezeigt.
+Wer auch ältere Panels bedient, füllt `headline` trotzdem aus.

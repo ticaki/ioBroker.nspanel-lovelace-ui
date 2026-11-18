@@ -21,6 +21,7 @@ import { popupThermoModule } from './popupThermo';
 import { popupInSelModule } from './popupInSel';
 import { popupTimerModule } from './popupTimer';
 import { popupNotifyModule } from './popupNotify';
+import { popupNotify3Module } from './popupNotify3';
 
 /** every card module - a module is found by each of its pageTypes */
 export const modules: readonly AnyCardModule[] = [
@@ -46,6 +47,7 @@ export const modules: readonly AnyCardModule[] = [
     popupInSelModule,
     popupTimerModule,
     popupNotifyModule,
+    popupNotify3Module,
 ];
 
 function buildRegistry(): Readonly<Record<string, AnyCardModule>> {

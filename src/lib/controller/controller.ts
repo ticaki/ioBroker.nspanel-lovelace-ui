@@ -790,6 +790,9 @@ export class Controller extends Library.BaseClass {
             buttonRight: typeof temp.buttonRight === 'string' ? temp.buttonRight : '',
             icon: typeof temp.icon === 'string' ? temp.icon : undefined,
             iconColor: temp.iconColor != null ? getRGBFromValue(temp.iconColor) : undefined,
+            largeIcon: temp.largeIcon === true,
+            buttonLeftIcon: typeof temp.buttonLeftIcon === 'string' ? temp.buttonLeftIcon : undefined,
+            buttonRightIcon: typeof temp.buttonRightIcon === 'string' ? temp.buttonRightIcon : undefined,
             textSize:
                 typeof temp.textSize === 'string'
                     ? temp.textSize
@@ -823,6 +826,9 @@ export class Controller extends Library.BaseClass {
              textSize?: string;
              icon?: string;
              iconColor?: {r:number,g:number,b:number};
+             largeIcon?: boolean; // true: big icon (popupNotify3, TFT 6.2.0+, web panels)
+             buttonLeftIcon?: string; // popupNotify3 (TFT 6.2.0+), MDI name
+             buttonRightIcon?: string; // popupNotify3 (TFT 6.2.0+), MDI name
              alwaysOn?: boolean;
              buzzer?: boolean | string;
          };

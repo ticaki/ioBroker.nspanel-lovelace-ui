@@ -7,6 +7,10 @@ import { getPayloadRemoveTilde, notifyLines, setTriggeredToState } from '../cons
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import type { PageItem } from './pageItem';
+import { POPUP_NOTIFY3, popupNotify3Message, usePopupNotify3, type Notify3Target } from './popupNotify3';
+
+/** the HMI page an entry is shown on */
+type NotifyHmiPage = 'popupNotify' | typeof POPUP_NOTIFY3;
 
 // siehe typ PopupNotificationValue in src/lib/types/types.ts
 export class PagePopup extends Page {
@@ -17,6 +21,8 @@ export class PagePopup extends Page {
     private detailsArray: pages.PagePopupDataDetails[] = [];
     private reminderTimeout: ioBroker.Timeout | undefined;
     private debouceUpdateTimeout: ioBroker.Timeout | undefined;
+    /** warnings of popupNotify3 already logged (update runs again and again for the same entry) */
+    private notify3Warnings = new Set<string>();
     tempItem: PageItem | undefined;
     items: pages.cardPopupDataItems | undefined;
 
@@ -99,6 +105,28 @@ export class PagePopup extends Page {
             details.buzzer = false;
         }
 
+        const hmiPage = this.hmiPageFor(details, true);
+        if (this.basePanel.lastCard !== hmiPage) {
+            // the entry needs the other HMI page (popupNotify <-> popupNotify3)
+            this.sendType();
+        }
+        if (hmiPage === POPUP_NOTIFY3) {
+            if (this.rotationTimeout) {
+                this.adapter.clearTimeout(this.rotationTimeout);
+                this.rotationTimeout = undefined;
+            }
+            const { payload, warnings } = popupNotify3Message({
+                id: this.id,
+                details,
+                queueLength: this.detailsArray.length,
+                timeout: details.alwaysOn ? 0 : this.basePanel.timeout,
+                target: this.notify3Target(),
+            });
+            this.warnOnce(warnings);
+            this.sendToPanel(payload, false);
+            return;
+        }
+
         const convertToDec = (rgb: RGB | undefined | null, def: RGB): string => {
             return String(rgb ? Color.rgb_dec565(rgb) : def ? Color.rgb_dec565(def) : '');
         };
@@ -166,6 +194,69 @@ export class PagePopup extends Page {
         message.iconColor = convertToDec(details.iconColor, Color.White);
         this.sendToPanel(this.getMessage(message), false);
     }
+    /**
+     * @returns model, web/hardware and TFT version of the panel - what decides about popupNotify3
+     */
+    private notify3Target(): Notify3Target {
+        return {
+            model: this.basePanel.info.nspanel.model,
+            isVirtual: this.basePanel.isVirtual,
+            displayVersion: this.basePanel.info.nspanel.displayVersion,
+        };
+    }
+
+    /**
+     * The HMI page for an entry: popupNotify3 for an entry with icon when the panel has it, else popupNotify.
+     *
+     * @param details the entry, undefined = classic
+     * @param log log why an entry with icon stays classic (once per reason)
+     */
+    private hmiPageFor(details: pages.PagePopupDataDetails | undefined, log = false): NotifyHmiPage {
+        const choice = usePopupNotify3(details, this.notify3Target());
+        if (log && choice.warning) {
+            this.warnOnce([choice.warning]);
+        }
+        return choice.use ? POPUP_NOTIFY3 : 'popupNotify';
+    }
+
+    private warnOnce(warnings: string[]): void {
+        for (const warning of warnings) {
+            if (!this.notify3Warnings.has(warning)) {
+                this.notify3Warnings.add(warning);
+                this.log.warn(warning);
+            }
+        }
+    }
+
+    /**
+     * `pageType~popupNotify3` for an entry shown there, `pageType~popupNotify` otherwise.
+     *
+     * @returns the pageType message of the first entry
+     */
+    protected getPageTypePayload(): string {
+        return `pageType~${this.hmiPageFor(this.detailsArray[0])}`;
+    }
+
+    /**
+     * Loads the HMI page of the first entry. popupNotify as every page; popupNotify3 is not a card of its own, so
+     * `lastCard` holds the HMI page name and a change between the two pages always loads the page.
+     *
+     * @param force load the page even if the panel shows it already
+     */
+    sendType(force?: boolean): void {
+        const hmiPage = this.hmiPageFor(this.detailsArray[0]);
+        if (hmiPage === 'popupNotify') {
+            super.sendType(force);
+            return;
+        }
+        if (force || this.basePanel.lastCard !== hmiPage) {
+            this.basePanel.lastSendTypeDate = Date.now();
+            this.resetLastMessage();
+            this.sendToPanel(this.getPageTypePayload(), false);
+        }
+        this.basePanel.lastCard = hmiPage;
+    }
+
     private getMessage(message: Partial<pages.PageNotifyMessage>): string {
         return getPayloadRemoveTilde(
             'entityUpdateDetail',
@@ -373,7 +464,8 @@ export class PagePopup extends Page {
      * Handle button events for the notify popup.
      *
      * Behavior:
-     * - Only processes events when this page is a `popupNotify`.
+     * - Only processes events when this page is a `popupNotify` (HMI page popupNotify or popupNotify3 - same events,
+     *   popupNotify3 sends no button2).
      * - Reacts to `action === "notifyAction"`.
      *   - If `setValue2` exists: writes `true` to `setValue1` on "yes", otherwise to `setValue2`.
      *   - Else: writes boolean to `setValue1` based on `opt === "yes"`.

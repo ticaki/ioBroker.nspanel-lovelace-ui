@@ -318,9 +318,17 @@ export type PagePopupDataDetails = {
     colorText?: RGB;
     //timeout?: number;
     //closingBehaviour?: string;
+    /** popupNotify 0..5; popupNotify3: 0 = 24 px, 1/2 = 32 px, 3..5 = 48 px (default) */
     textSize?: string;
+    /** MDI name: small icon in front of the headline, with largeIcon the big icon of popupNotify3 */
     icon?: AllIcons;
     iconColor?: RGB;
+    /** true: show the entry with the big icon (popupNotify3, TFT 6.2.0+ and web panels), otherwise classic */
+    largeIcon?: boolean;
+    /** popupNotify3: MDI name of the icon on the left button (button1), empty = button hidden */
+    buttonLeftIcon?: string;
+    /** popupNotify3: MDI name of the icon on the right button (button3), empty = button hidden */
+    buttonRightIcon?: string;
     alwaysOn?: boolean;
     buzzer?: boolean | string;
 };

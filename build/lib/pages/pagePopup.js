@@ -26,6 +26,7 @@ var import_Page = require("../classes/Page");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
+var import_popupNotify3 = require("./popupNotify3");
 class PagePopup extends import_Page.Page {
   config;
   lastpage = [];
@@ -34,6 +35,8 @@ class PagePopup extends import_Page.Page {
   detailsArray = [];
   reminderTimeout;
   debouceUpdateTimeout;
+  /** warnings of popupNotify3 already logged (update runs again and again for the same entry) */
+  notify3Warnings = /* @__PURE__ */ new Set();
   tempItem;
   items;
   constructor(config, options) {
@@ -106,6 +109,26 @@ class PagePopup extends import_Page.Page {
       }
       details.buzzer = false;
     }
+    const hmiPage = this.hmiPageFor(details, true);
+    if (this.basePanel.lastCard !== hmiPage) {
+      this.sendType();
+    }
+    if (hmiPage === import_popupNotify3.POPUP_NOTIFY3) {
+      if (this.rotationTimeout) {
+        this.adapter.clearTimeout(this.rotationTimeout);
+        this.rotationTimeout = void 0;
+      }
+      const { payload, warnings } = (0, import_popupNotify3.popupNotify3Message)({
+        id: this.id,
+        details,
+        queueLength: this.detailsArray.length,
+        timeout: details.alwaysOn ? 0 : this.basePanel.timeout,
+        target: this.notify3Target()
+      });
+      this.warnOnce(warnings);
+      this.sendToPanel(payload, false);
+      return;
+    }
     const convertToDec = (rgb, def) => {
       return String(rgb ? import_Color.Color.rgb_dec565(rgb) : def ? import_Color.Color.rgb_dec565(def) : "");
     };
@@ -166,6 +189,64 @@ ${message.text}`;
     message.icon = import_icon_mapping.Icons.GetIcon(details.icon || "");
     message.iconColor = convertToDec(details.iconColor, import_Color.Color.White);
     this.sendToPanel(this.getMessage(message), false);
+  }
+  /**
+   * @returns model, web/hardware and TFT version of the panel - what decides about popupNotify3
+   */
+  notify3Target() {
+    return {
+      model: this.basePanel.info.nspanel.model,
+      isVirtual: this.basePanel.isVirtual,
+      displayVersion: this.basePanel.info.nspanel.displayVersion
+    };
+  }
+  /**
+   * The HMI page for an entry: popupNotify3 for an entry with icon when the panel has it, else popupNotify.
+   *
+   * @param details the entry, undefined = classic
+   * @param log log why an entry with icon stays classic (once per reason)
+   */
+  hmiPageFor(details, log = false) {
+    const choice = (0, import_popupNotify3.usePopupNotify3)(details, this.notify3Target());
+    if (log && choice.warning) {
+      this.warnOnce([choice.warning]);
+    }
+    return choice.use ? import_popupNotify3.POPUP_NOTIFY3 : "popupNotify";
+  }
+  warnOnce(warnings) {
+    for (const warning of warnings) {
+      if (!this.notify3Warnings.has(warning)) {
+        this.notify3Warnings.add(warning);
+        this.log.warn(warning);
+      }
+    }
+  }
+  /**
+   * `pageType~popupNotify3` for an entry shown there, `pageType~popupNotify` otherwise.
+   *
+   * @returns the pageType message of the first entry
+   */
+  getPageTypePayload() {
+    return `pageType~${this.hmiPageFor(this.detailsArray[0])}`;
+  }
+  /**
+   * Loads the HMI page of the first entry. popupNotify as every page; popupNotify3 is not a card of its own, so
+   * `lastCard` holds the HMI page name and a change between the two pages always loads the page.
+   *
+   * @param force load the page even if the panel shows it already
+   */
+  sendType(force) {
+    const hmiPage = this.hmiPageFor(this.detailsArray[0]);
+    if (hmiPage === "popupNotify") {
+      super.sendType(force);
+      return;
+    }
+    if (force || this.basePanel.lastCard !== hmiPage) {
+      this.basePanel.lastSendTypeDate = Date.now();
+      this.resetLastMessage();
+      this.sendToPanel(this.getPageTypePayload(), false);
+    }
+    this.basePanel.lastCard = hmiPage;
   }
   getMessage(message) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
@@ -360,7 +441,8 @@ ${message.text}`;
    * Handle button events for the notify popup.
    *
    * Behavior:
-   * - Only processes events when this page is a `popupNotify`.
+   * - Only processes events when this page is a `popupNotify` (HMI page popupNotify or popupNotify3 - same events,
+   *   popupNotify3 sends no button2).
    * - Reacts to `action === "notifyAction"`.
    *   - If `setValue2` exists: writes `true` to `setValue1` on "yes", otherwise to `setValue2`.
    *   - Else: writes boolean to `setValue1` based on `opt === "yes"`.

@@ -84,6 +84,7 @@ const CARDS = new Set([
     'cardUnlock',
     'popupNotify',
     'popupNotify2',
+    'popupNotify3',
 ]);
 
 /** item types of `entityUpd` (NSPanel.SerialTypePageElements and what the page items send besides) */
@@ -403,6 +404,36 @@ class PayloadValidator {
      * @param {Problems} p problems
      */
     checkDetail(f, p) {
+        if (this.card === 'popupNotify') {
+            // id~heading~hColor~b1~b1Color~b2~b2Color~b3~b3Color~text~textColor~timeout~font~icon~iconColor
+            // (PagePopup.getMessage); a button without text has no color
+            p.check(f.length === 16, `entityUpdateDetail of popupNotify has 15 fields, got ${f.length - 1}`);
+            p.field(f, 3, isColor, 'color');
+            for (const i of [5, 7, 9]) {
+                p.field(f, i, s => (f[i - 1] === '' ? s === '' : isColor(s)), 'color of the button or empty');
+            }
+            p.field(f, 11, isColor, 'color');
+            p.field(f, 12, s => isInt(s, 0, 86_400), 'seconds');
+            p.field(f, 14, s => s === '' || isGlyph(s), 'icon or empty');
+            p.field(f, 15, s => s === '' || isColor(s), 'color or empty');
+            return;
+        }
+        if (this.card === 'popupNotify3') {
+            // id~icon~iconColor~text~textColor~font~btnLeftIcon~btnLeftColor~btnRightIcon~btnRightColor~timeout
+            // (popupNotify3Message, HMI 6.2.0): empty button icon = button hidden, text <= 199 bytes
+            p.check(f.length === 12, `entityUpdateDetail of popupNotify3 has 11 fields, got ${f.length - 1}`);
+            p.field(f, 2, s => isGlyph(s), 'icon');
+            p.field(f, 3, isColor, 'color');
+            p.field(f, 4, s => Buffer.byteLength(s) <= 199 && !/[^\r]\n/.test(s), 'text <= 199 bytes, lines with CR LF');
+            p.field(f, 5, isColor, 'color');
+            p.field(f, 6, s => ['0', '2', '3'].includes(s), 'font 0, 2 or 3');
+            for (const i of [7, 9]) {
+                p.field(f, i, s => s === '' || isGlyph(s), 'button icon or empty');
+                p.field(f, i + 1, s => (f[i] === '' ? s === '' : isColor(s)), 'color of the button or empty');
+            }
+            p.field(f, 11, s => isInt(s, 0, 86_400), 'seconds');
+            return;
+        }
         const id = f[1] ?? '';
         const type = this.itemTypes.get(id);
         if (type === undefined) {

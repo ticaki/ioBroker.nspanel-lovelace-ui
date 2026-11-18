@@ -65,6 +65,7 @@ var import_page_states = require("../configuration/page-states");
 var import_default_pages = require("../const/default-pages");
 var import_no_script = require("../configuration/no-script");
 var import_berry_driver = require("../const/berry-driver");
+var import_popupNotify3 = require("../pages/popupNotify3");
 var import_display_diagnosis = require("./display-diagnosis");
 const DefaultOptions = {
   format: {
@@ -1357,7 +1358,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     if (state.ack) {
       return;
     }
@@ -1638,11 +1639,14 @@ class Panel extends import_library.BaseClass {
             ),
             icon: ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)) == null ? void 0 : _o.val) || void 0,
             textSize: String((_q = (_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _p.val) != null ? _q : 3),
+            largeIcon: ((_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.largeIcon`)) == null ? void 0 : _r.val) === true,
+            buttonLeftIcon: ((_s = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeftIcon`)) == null ? void 0 : _s.val) || void 0,
+            buttonRightIcon: ((_t = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRightIcon`)) == null ? void 0 : _t.val) || void 0,
             iconColor: (0, import_tools.getRGBFromValue)(
-              ((_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _r.val) || "#FFFFFF"
+              ((_u = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _u.val) || "#FFFFFF"
             ),
-            alwaysOn: !!((_t = (_s = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _s.val) != null ? _t : true),
-            buzzer: !!((_v = (_u = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _u.val) != null ? _v : false)
+            alwaysOn: !!((_w = (_v = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _v.val) != null ? _w : true),
+            buzzer: !!((_y = (_x = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _x.val) != null ? _y : false)
           };
           let panels = [this];
           if (global) {
@@ -2260,7 +2264,7 @@ class Panel extends import_library.BaseClass {
         if (event.id == "screensaver") {
           await this.onScreensaverTouch(event);
         } else if (event.action === "bExit") {
-          if (event.id !== "popupNotify") {
+          if (event.id !== "popupNotify" && event.id !== import_popupNotify3.POPUP_NOTIFY3) {
             await this.setActivePage(true);
           } else {
             const currentPage = this.getActivePage();

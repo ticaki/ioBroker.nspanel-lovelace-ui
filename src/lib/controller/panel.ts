@@ -50,6 +50,7 @@ import { collectPageStates, emptyStateNode, mergeStateInfo, type PageStateNode }
 import { mainPageName } from '../const/default-pages';
 import { isNoScriptPanel } from '../configuration/no-script';
 import { isEmulatorDriverVersion, parseDriverVersion } from '../const/berry-driver';
+import { POPUP_NOTIFY3 } from '../pages/popupNotify3';
 import type { NSPanel } from '../types/NSPanel';
 import {
     buildDisplayDiagnosisMessage,
@@ -1932,6 +1933,13 @@ export class Panel extends BaseClass {
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)?.val as AllIcons) ||
                             undefined,
                         textSize: String(this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)?.val ?? 3),
+                        largeIcon: this.library.readdb(`panels.${this.name}.cmd.pagePopup.largeIcon`)?.val === true,
+                        buttonLeftIcon:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeftIcon`)?.val as string) ||
+                            undefined,
+                        buttonRightIcon:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRightIcon`)?.val as string) ||
+                            undefined,
                         iconColor: getRGBFromValue(
                             this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)?.val || '#FFFFFF',
                         ),
@@ -2616,7 +2624,7 @@ export class Panel extends BaseClass {
                 if (event.id == 'screensaver') {
                     await this.onScreensaverTouch(event);
                 } else if (event.action === 'bExit') {
-                    if (event.id !== 'popupNotify') {
+                    if (event.id !== 'popupNotify' && event.id !== POPUP_NOTIFY3) {
                         await this.setActivePage(true);
                     } else {
                         const currentPage = this.getActivePage();

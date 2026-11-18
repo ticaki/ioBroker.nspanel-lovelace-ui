@@ -964,6 +964,45 @@ const genericStateObjects = {
             },
             native: {}
           },
+          largeIcon: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "largeIcon",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true,
+              def: false
+            },
+            native: {}
+          },
+          buttonLeftIcon: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "buttonLeftIcon",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
+          buttonRightIcon: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "buttonRightIcon",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
           alwaysOn: {
             _id: "",
             type: "state",

@@ -26,6 +26,7 @@ const scenarios = [
     require('./scenarios/04-popups'),
     require('./scenarios/05-screensaver'),
     require('./scenarios/06-screensaver-modes'),
+    require('./scenarios/07-popup-notify3'),
 ];
 
 console.log(
