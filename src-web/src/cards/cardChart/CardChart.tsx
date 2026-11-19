@@ -182,6 +182,7 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    send={this.props.send}
                     model={global.model}
                     titleColor={textColor}
                 />

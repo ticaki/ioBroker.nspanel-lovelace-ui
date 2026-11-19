@@ -298,6 +298,7 @@ export class CardPower extends React.Component<CardProps<CardPowerModel>> {
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    send={this.props.send}
                     model={global.model}
                 />
                 {this.renderHome(layout)}

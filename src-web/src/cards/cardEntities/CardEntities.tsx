@@ -19,6 +19,7 @@ export class CardEntities extends React.Component<CardProps<CardEntitiesModel>> 
                 top={ENTITIES_TOP}
                 rowHeight={ENTITIES_ROW_HEIGHT}
                 press={press}
+                send={this.props.send}
                 openPopup={openPopup}
             />
         );

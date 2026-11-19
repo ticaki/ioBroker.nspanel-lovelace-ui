@@ -442,6 +442,7 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    send={this.props.send}
                     model={global.model}
                 />
                 {this.renderLogo()}

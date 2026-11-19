@@ -20,6 +20,7 @@ export class CardSchedule extends React.Component<CardProps<CardScheduleModel>> 
                 rowHeight={SCHEDULE_ROW_HEIGHT}
                 compact
                 press={press}
+                send={this.props.send}
                 openPopup={openPopup}
             />
         );

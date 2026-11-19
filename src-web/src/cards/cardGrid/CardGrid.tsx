@@ -261,6 +261,7 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                     navigation={model.navigation}
                     model={global.model}
                     press={press}
+                    send={this.props.send}
                 />
                 <div
                     data-tiles=""

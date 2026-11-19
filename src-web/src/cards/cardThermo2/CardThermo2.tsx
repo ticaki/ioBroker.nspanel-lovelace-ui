@@ -622,6 +622,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    send={this.props.send}
                     model={global.model}
                 />
                 {this.renderRing()}

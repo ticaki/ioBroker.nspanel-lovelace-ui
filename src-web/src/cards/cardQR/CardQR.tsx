@@ -159,6 +159,7 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    send={this.props.send}
                     model={global.model}
                 />
                 {this.renderCode(layout)}
