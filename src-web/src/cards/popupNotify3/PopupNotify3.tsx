@@ -244,7 +244,7 @@ export class PopupNotify3 extends React.Component<CardProps<PopupNotify3Model>> 
                         textAlign: 'center',
                         whiteSpace: 'pre',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
                     {model.text}
