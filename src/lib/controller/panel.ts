@@ -2884,13 +2884,21 @@ export class Panel extends BaseClass {
      * An open popup is closed first and the navigation starts from the page below it, all in one press: the detail
      * popup of a card page (the page sleeps below it), a notification (`popupNotify`/`popupNotify3`, like its exit
      * button: reminder started, back to the page it came from) and a child page (back to its parent page).
-     * On the screensaver - also with a popup of one of its indicators open - nothing happens.
+     * The screensaver is never left: a popup on top of it (the popup of an indicator, a notification) is closed like
+     * with its exit button and the screensaver is shown again - no navigation. Without a popup nothing happens.
      *
      * @param target which arrow the button presses
      */
     async navigateByButton(target: adminShareConfig.ButtonNavigationTarget): Promise<void> {
         let page = this._activePage;
-        if (!page || page === this.screenSaver) {
+        if (!page) {
+            return;
+        }
+        if (page === this.screenSaver) {
+            if (page.sleep) {
+                // the popup of an indicator - the screensaver sleeps below it, like `bExit` of the popup
+                await this.setActivePage(true);
+            }
             return;
         }
         if (page.sleep) {
@@ -2908,6 +2916,10 @@ export class Panel extends BaseClass {
             page.removeLastPage(last);
             await this.setActivePage(last);
             page = this._activePage;
+            if (page === this.screenSaver) {
+                // a notification on top of the screensaver: closed, the screensaver stays
+                return;
+            }
         }
         if (page && page.directParentPage) {
             await this.setActivePage(page.directParentPage, false);

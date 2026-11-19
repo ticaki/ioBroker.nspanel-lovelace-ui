@@ -173,18 +173,46 @@ describe('lib/controller/panel - hardware button mode navigation', () => {
         expect(s.calls).to.deep.equal(['active:media,false', 'nav:4']);
     });
 
-    it('does nothing on the screensaver, also with a popup of an indicator open', async () => {
-        for (const sleep of [false, true]) {
+    it('does nothing on the screensaver without a popup', async () => {
+        for (const target of ['next', 'prev', 'home', 'parent'] as const) {
             const s = setup(...full);
-            s.screensaver.sleep = sleep;
             show(s, s.screensaver);
-            await s.panel.navigateByButton('next');
-            expect(s.calls, `sleep ${sleep}`).to.deep.equal([]);
-            expect(s.screensaver.sleep).to.equal(sleep);
+            await s.panel.navigateByButton(target);
+            expect(s.calls, target).to.deep.equal([]);
+            expect(s.screensaver.sleep).to.equal(false);
         }
     });
 
-    it('runs from the button event and still writes buttons.<side> on the screensaver', async () => {
+    it('closes the popup of an indicator like its exit button - the screensaver stays, no navigation', async () => {
+        for (const target of ['next', 'prev', 'home', 'parent'] as const) {
+            const s = setup(...full);
+            s.screensaver.sleep = true;
+            show(s, s.screensaver);
+            await s.panel.navigateByButton(target);
+            expect(s.calls, target).to.deep.equal(['wake']);
+            expect(s.screensaver.sleep).to.equal(false);
+            expect(Reflect.get(s.panel, '_activePage')).to.equal(s.screensaver);
+        }
+    });
+
+    it('closes a notification on top of the screensaver - the screensaver stays, no navigation', async () => {
+        const s = setup(...full);
+        const popup = Object.create(PagePopup.prototype) as PagePopup;
+        Object.assign(popup, {
+            name: 'popupNotify',
+            basePanel: s.panel,
+            sleep: false,
+            startReminder: (): number => s.calls.push('reminder'),
+            getLastPage: (): Page => s.screensaver,
+            removeLastPage: (p: Page | undefined): number => s.calls.push(`remove:${p?.name}`),
+        });
+        show(s, popup);
+        await s.panel.navigateByButton('next');
+        expect(s.calls).to.deep.equal(['reminder', 'remove:screensaver', 'active:screensaver']);
+        expect(Reflect.get(s.panel, '_activePage')).to.equal(s.screensaver);
+    });
+
+    it('runs from the button event and still writes buttons.<side> on the screensaver, also with a popup', async () => {
         const s = setup(...full);
         const buttons: { left: Types.ConfigButtonFunction; right: Types.ConfigButtonFunction } = {
             left: { mode: 'navigation', target: 'prev' },
@@ -198,10 +226,14 @@ describe('lib/controller/panel - hardware button mode navigation', () => {
         show(s, s.screensaver);
         await s.panel.onDetachButtonEvent('right');
         expect(s.calls).to.deep.equal(['nav:1', 'nav:3']);
+        s.screensaver.sleep = true;
+        await s.panel.onDetachButtonEvent('left');
+        expect(s.calls).to.deep.equal(['nav:1', 'nav:3', 'wake']);
         expect(s.written).to.deep.equal([
             'panels.A0.buttons.left',
             'panels.A0.buttons.right',
             'panels.A0.buttons.right',
+            'panels.A0.buttons.left',
         ]);
     });
 });

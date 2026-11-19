@@ -159,7 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) hardware buttons: new mode "navigation" with target next/prev/home/parent - a press acts like the matching navigation arrow of the page shown (next/prev short, home/parent long press); an open popup is closed first, on the screensaver nothing happens (admin, script and script-to-admin)
+- (ticaki) hardware buttons: new mode "navigation" with target next/prev/home/parent - a press acts like the matching navigation arrow of the page shown (next/prev short, home/parent long press); an open popup is closed first; the screensaver is never left - a popup on top of it is only closed (admin, script and script-to-admin)
 - (ticaki) navigation: a locked (hidden) page shows a popup "page locked" instead of silently doing nothing, the arrows go on from the page shown; admin marks hidden pages with a closed eye
 - (ticaki) notification popup: new option `largeIcon` - shows the message with a big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`) on panels with TFT 6.2.0+ and on web panels; older TFTs show it the classic way, without `largeIcon` nothing changes
 - (ticaki) admin: icon tab can filter the icons of the large notification (popupNotify3)
