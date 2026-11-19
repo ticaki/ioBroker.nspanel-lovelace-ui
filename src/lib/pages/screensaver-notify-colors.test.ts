@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { NOTIFY_BACKGROUND_MIN_VERSION, Screensaver, screensaverNotifyPayload } from './screensaver';
 import { Color, type ColorThemenInterface, type RGB } from '../const/Color';
+import { screensaverNotifyToScript } from '../configuration/admin-screensaver';
 
 /**
  * Colors of the notification on the screensaver: `notify~<head>~<text>~<head color>~<text color>~<background>`
@@ -30,18 +31,39 @@ describe('screensaver notification colors', () => {
             const none = { head: undefined, text: 'x', background: 'default.color.from.start.bgNotify' };
             expect(screensaverNotifyPayload('H', 'T', none, true)).to.equal('notify~H~T');
         });
+        it('sends the second background (field 6) only with the background', () => {
+            const blink = { ...colors, blink: 63_488 };
+            expect(screensaverNotifyPayload('H', 'T', blink, true)).to.equal('notify~H~T~65535~65504~14791~63488');
+            // TFT before 6.2.0: no background, no blinking
+            expect(screensaverNotifyPayload('H', 'T', blink, false)).to.equal('notify~H~T~65535~65504');
+            // no background color in the theme: no blinking either
+            const noBackground = { ...blink, background: 'default.color.from.start.bgNotify' };
+            expect(screensaverNotifyPayload('H', 'T', noBackground, true)).to.equal('notify~H~T~65535~65504');
+        });
         it('replaces a ~ in headline and text', () => {
             expect(screensaverNotifyPayload('a~b', 'c~d', colors, false)).to.match(/^notify~a-b~c-d~/);
         });
     });
 
     describe('theme defaults', () => {
+        it('the background is the screensaver background of the theme + 27 per channel', () => {
+            for (const theme of [
+                Color.defaultTheme,
+                Color.topicalTheme,
+                Color.technicalTheme,
+                Color.sunsetTheme,
+                Color.volcanoTheme,
+            ]) {
+                const base = theme.background ?? Color.Black;
+                expect(theme.bgNotify).to.deep.equal({ r: base.r + 27, g: base.g + 27, b: base.b + 27 });
+            }
+        });
         const themes: [string, ColorThemenInterface, RGB][] = [
             ['default', Color.defaultTheme, { r: 56, g: 56, b: 56 }],
             ['topical', Color.topicalTheme, Color.NotifyOcean],
             ['technical', Color.technicalTheme, Color.NotifySlate],
-            ['sunset', Color.sunsetTheme, Color.NotifyUmber],
-            ['volcano', Color.volcanoTheme, Color.LavaDeep],
+            ['sunset', Color.sunsetTheme, Color.NotifyPlum],
+            ['volcano', Color.volcanoTheme, Color.NotifyLava],
         ];
         for (const [name, theme, background] of themes) {
             it(`${name}: headline and text white (as the HMI), background set off`, () => {
@@ -70,7 +92,7 @@ describe('screensaver notification colors', () => {
                 Color.fgNotifyHead = Color.volcanoTheme.fgNotifyHead ?? '';
                 Color.bgNotify = Color.volcanoTheme.bgNotify ?? '';
                 expect(Color.getColorFromDefaultOrReturn('default.color.from.start.bgNotify')).to.deep.equal(
-                    Color.LavaDeep,
+                    Color.NotifyLava,
                 );
                 expect(Color.getColorFromDefaultOrReturn('default.color.from.start.fgNotifyHead')).to.deep.equal(
                     Color.White,
@@ -78,6 +100,19 @@ describe('screensaver notification colors', () => {
             } finally {
                 [Color.fgNotifyHead, Color.fgNotifyText, Color.bgNotify] = saved;
             }
+        });
+    });
+
+    describe('blinking of a notification of the admin list', () => {
+        it('the admin colour goes into the script element, an invalid one is dropped', () => {
+            const base = { enabled: ['a.b'], headline: 'H' };
+            expect(screensaverNotifyToScript({ ...base, backgroundBlink: '#ff0000' })).to.include({
+                BackgroundBlink: '#ff0000',
+            });
+            expect(screensaverNotifyToScript({ ...base, backgroundBlink: 'red' })).to.not.have.property(
+                'BackgroundBlink',
+            );
+            expect(screensaverNotifyToScript(base)).to.not.have.property('BackgroundBlink');
         });
     });
 
@@ -92,7 +127,7 @@ describe('screensaver notification colors', () => {
             [Color.fgNotifyHead, Color.fgNotifyText, Color.bgNotify] = saved;
         });
 
-        function payload(isVirtual: boolean, version: string, enabled = true): string {
+        function payload(isVirtual: boolean, version: string, enabled = true, blink?: number): string {
             const saver = Object.create(Screensaver.prototype) as Screensaver;
             Object.assign(saver, {
                 basePanel: {
@@ -101,7 +136,7 @@ describe('screensaver notification colors', () => {
                         !!version && version.localeCompare(v, undefined, { numeric: true }) >= 0,
                 },
             });
-            return (saver as any).notifyPayload(enabled, 'Head', 'Text');
+            return (saver as any).notifyPayload(enabled, 'Head', 'Text', blink);
         }
 
         it(`a hardware panel gets the background from TFT ${NOTIFY_BACKGROUND_MIN_VERSION} on`, () => {
@@ -115,6 +150,11 @@ describe('screensaver notification colors', () => {
         });
         it('a web panel gets the background', () => {
             expect(payload(true, '')).to.equal('notify~Head~Text~65535~65535~14791');
+        });
+        it('the second background goes to TFT 6.2.0 and web panels only', () => {
+            expect(payload(false, '6.2.0', true, 63_488)).to.equal('notify~Head~Text~65535~65535~14791~63488');
+            expect(payload(true, '', true, 63_488)).to.equal('notify~Head~Text~65535~65535~14791~63488');
+            expect(payload(false, '6.1.1', true, 63_488)).to.equal('notify~Head~Text~65535~65535');
         });
         it('clearing stays notify~~', () => {
             expect(payload(true, '6.2.0', false)).to.equal('notify~~');

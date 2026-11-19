@@ -209,10 +209,12 @@ export class Color extends ColorBase {
     static readonly DarkGrayBlue: RGB = { r: 10, g: 13, b: 30 }; // dark bluish UI bars
     static readonly DeepOcean: RGB = { r: 0, g: 60, b: 120 }; // very dark cool header strip
     static readonly DarkBlue: RGB = { r: 0, g: 0, b: 146 }; // dark blue accents
-    static readonly NotifyGray: RGB = { r: 56, g: 56, b: 56 }; // notification box on a black screensaver
-    static readonly NotifySlate: RGB = { r: 40, g: 56, b: 72 }; // notification box, cool (technical)
-    static readonly NotifyUmber: RGB = { r: 72, g: 40, b: 24 }; // notification box, warm (sunset)
-    static readonly NotifyOcean: RGB = { r: 0, g: 84, b: 160 }; // notification box on DeepOcean (topical)
+    // notification box on the screensaver: the background of the theme + 27 per channel (HMIDark 29 -> 56, tested)
+    static readonly NotifyGray: RGB = { r: 56, g: 56, b: 56 }; // on HMIDark (default)
+    static readonly NotifySlate: RGB = { r: 37, g: 40, b: 57 }; // on DarkGrayBlue (technical)
+    static readonly NotifyPlum: RGB = { r: 75, g: 54, b: 90 }; // on 48/27/63 (sunset)
+    static readonly NotifyOcean: RGB = { r: 27, g: 87, b: 147 }; // on DeepOcean (topical)
+    static readonly NotifyLava: RGB = { r: 207, g: 49, b: 27 }; // on LavaCore (volcano)
 
     // ——— Grays / Neutrals ———
     static readonly DarkGray: RGB = { r: 64, g: 64, b: 64 }; // disabled controls, muted icons
@@ -804,7 +806,7 @@ export class Color extends ColorBase {
         fgBar: Color.Off,
         fgNotifyHead: Color.White,
         fgNotifyText: Color.White,
-        bgNotify: Color.NotifyUmber,
+        bgNotify: Color.NotifyPlum,
 
         // Media-spezifisch
         mediaArtistOn: Color.Sunset,
@@ -886,7 +888,7 @@ export class Color extends ColorBase {
         fgBar: Color.AshGray,
         fgNotifyHead: Color.White,
         fgNotifyText: Color.White,
-        bgNotify: Color.LavaDeep,
+        bgNotify: Color.NotifyLava,
         // Media-spezifisch
         mediaArtistOn: Color.LavaCore,
         mediaArtistOff: Color.AshGray,
