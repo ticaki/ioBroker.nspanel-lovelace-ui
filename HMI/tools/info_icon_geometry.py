@@ -1,5 +1,5 @@
 """HMI 6.2.0 (stays 6.2.0): the field of the info icon (tTimeAdd) gets the size of the icon. Pages screensaver
-(standard/alternate) and screensaver2 (advanced) of all models, screensaver3 (easyview) of us-l.
+(standard/alternate, us-l also the font) and screensaver2 (advanced) of all models, screensaver3 (easyview) of us-l.
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/info_icon_geometry.py HMI/nspanel-v6.2.0.HMI <out.HMI>
@@ -17,8 +17,9 @@ seen. EU has a big icon there (5,32,64,64, font 3).
 Fix 1, screensaver and screensaver2: width = the widest icon glyph (U+E000..U+FDFF) of the font of tTimeAdd plus
 MARGIN px. Height, y and font stay. The glyph stays where it is today: centred (xcen 1) x = old x + (old w - new w)/2
 (the script checks that the glyph lands on the same pixel), right aligned (xcen 2) the right edge stays.
-A font of tTimeAdd without the info icons (us-l screensaver: font 2 is a text font) takes the width of the icon font
-with the same height (font 1) and prints a warning - the font itself is not changed here.
+Finding 3: on screensaver of us-l tTimeAdd has font 2, a text font without the info icons - the icon was never
+visible there. Fix 3: font 1 like EU and us-p (same height 32, the icon font). Any other font without the info icons
+stops the script.
 Fix 2, screensaver3 of us-l: tTimeAdd like on EU, shifted by 15 px (us-l is EU + 15 in x): 20,32,64,64, font 3,
 xcen 1, ycen 1. Font 3 of us-l must be the font 3 of EU (same height, icon glyphs). Colours and code stay (load sets
 tTimeAdd.bco=tTime.bco, color~ sets pco).
@@ -66,6 +67,8 @@ EXPECTED = {
     },
 }
 SHRINK = ('screensaver', 'screensaver2')
+# font of tTimeAdd replaced before the width is taken: {model: {page: (old font, new font)}}
+FONT_FIX = {'us-l': {'screensaver': (2, ICON_FONT_32)}}
 # screensaver3 like EU: (x, y, w, h, font, xcen, ycen)
 EASYVIEW = {'us-l': (20, 32, 64, 64, 3, 1, 1)}
 EASYVIEW_EU = (5, 32, 64, 64, 3, 1, 1)
@@ -86,16 +89,21 @@ def boxes_overlap(a, b):
     return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
 
 
-def shrink(hmi, name, info, old):
+def shrink(hmi, name, info, old, font_fix):
     x, y, w, h, fid, xcen, ycen = old
+    fixed = ''
+    if font_fix:
+        old_fid, new_fid = font_fix
+        if fid != old_fid or icon_font(hmi, old_fid)[2]:
+            raise SystemExit(f'{name}.{INFO}: font {fid} is not the font {old_fid} without info icons')
+        if icon_font(hmi, new_fid)[0] != icon_font(hmi, old_fid)[0]:
+            raise SystemExit(f'{name}.{INFO}: font {new_fid} has not the height of font {old_fid}')
+        info.set('font', new_fid)
+        fixed = f', font {old_fid} -> {new_fid}'
+        fid = new_fid
     height, adv, ok = icon_font(hmi, fid)
     if not ok:
-        h32, adv32, ok32 = icon_font(hmi, ICON_FONT_32)
-        if not ok32 or h32 != height:
-            raise SystemExit(f'{name}.{INFO}: font {fid} has no info icons and font {ICON_FONT_32} does not fit')
-        print(f'WARNING {name}.{INFO}: font {fid} (h {height}) has no info icons - the icon is not visible; width '
-              f'from font {ICON_FONT_32} (h {h32}, icons {adv32} px)')
-        adv = adv32
+        raise SystemExit(f'{name}.{INFO}: font {fid} has no info icons')
     new_w = adv + MARGIN
     if new_w >= w:
         raise SystemExit(f'{name}.{INFO}: width {w} is not wider than the icon field {new_w}')
@@ -110,7 +118,7 @@ def shrink(hmi, name, info, old):
     else:
         raise SystemExit(f'{name}.{INFO}: xcen {xcen} not handled')
     info.geometry(new_x, y, new_w, h)
-    return f'icons {adv} px + {MARGIN}'
+    return f'icons {adv} px + {MARGIN}{fixed}'
 
 
 def easyview(hmi, eu_fonts, page, info, new):
@@ -162,7 +170,7 @@ def main(source, target):
         before = ram(page)
         old = geometry(info)
         if name in SHRINK:
-            why = shrink(hmi, name, info, old)
+            why = shrink(hmi, name, info, old, FONT_FIX.get(model, {}).get(name))
         else:
             why = easyview(hmi, eu_fonts, page, info, EASYVIEW[model])
         if ram(page) != before:
