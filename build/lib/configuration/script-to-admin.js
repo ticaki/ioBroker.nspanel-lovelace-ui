@@ -1654,6 +1654,7 @@ function emptyMrIcon() {
 }
 const buttonModes = [
   "page",
+  "navigation",
   "switch",
   "button",
   "buttonOnDelayOff",
@@ -1666,7 +1667,7 @@ function isEmptyButton(value) {
   if (typeof mode !== "string" || !buttonModes.some((m) => m === mode)) {
     return false;
   }
-  const target = value[mode === "page" ? "page" : "state"];
+  const target = value[mode === "page" ? "page" : mode === "navigation" ? "target" : "state"];
   return target === void 0 || target === null || target === "";
 }
 function convertButton(value) {
@@ -1681,6 +1682,10 @@ function convertButton(value) {
   if (mode === "page") {
     rejectUnknownKeys(value, ["mode", "page"], [], reason, "button");
     return { mode, page: String(value.page) };
+  }
+  if (mode === "navigation") {
+    rejectUnknownKeys(value, ["mode", "target"], [], reason, "button");
+    return { mode, target: value.target };
   }
   if (typeof value.state !== "string") {
     throw new ConvertError(reason, "state: expected a state id");

@@ -44,6 +44,9 @@ function isAdminButton(value) {
   if (!isDict(value) || typeof value.mode !== "string" || !import_adminShareConfig.ADMIN_BUTTON_MODES.some((m) => m === value.mode)) {
     return false;
   }
+  if (value.mode === "navigation") {
+    return (0, import_adminShareConfig.isButtonNavigationTarget)(value.target);
+  }
   return value.mode === "page" ? typeof value.page === "string" : typeof value.state === "string";
 }
 function localDate(date) {
@@ -70,6 +73,9 @@ function describeButton(action) {
   }
   if (action.mode === "page") {
     return `page '${action.page}'`;
+  }
+  if (action.mode === "navigation") {
+    return `navigation ${action.target}`;
   }
   return `${action.mode} ${action.state}`;
 }
