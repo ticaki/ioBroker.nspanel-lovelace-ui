@@ -176,6 +176,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Screensaver notification: a change of prefix, unit, suffix or icon states updates it too; a new content is sent at most every 30 s (on/off at once), a notification tapped away stays hidden until the screensaver shows again
 - (ticaki) Web panel: long texts are cut at the field border like on the panel, no own "…" any more
 - (ticaki) navigation: when the long press of a navigation arrow is reached (0.5 s), the heading and the arrows blink yellow/green until the finger is lifted - letting go then leads to home/parent (TFT 6.2.0 and web panel; the web panel now knows the long press of the arrows too)
+- (ticaki) TFT 6.2.0: shorter id buffers of the navigation, cardMedia and the detail popups free page RAM (cardMedia 540 bytes, other cards 120, popups 60) for further features; buffers that can receive long values from the script (cardEntities/Grid/Schedule/Thermo/Thermo2/Alarm/QR items, popupThermo, popupNotify) keep their size
 
 ### 2.4.1 (2026-11-18)
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
