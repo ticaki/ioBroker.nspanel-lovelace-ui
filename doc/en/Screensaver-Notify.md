@@ -16,6 +16,7 @@ Contents:
 - [Preview and what the dialog checks](#7-preview-and-what-the-dialog-checks)
 - [Saving – what the adapter does with it](#8-saving--what-the-adapter-does-with-it)
 - [If something does not look as expected](#9-if-something-does-not-look-as-expected)
+- [Colours: headline, text and background](#10-colours-headline-text-and-background)
 
 ## 1. The list
 ![The screensaver editor with the button bar below the panel picture](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
@@ -152,3 +153,17 @@ On the panel this becomes a headline line (icon + prefix + value/text + unit) an
 - **The buzzer stays silent:** Night mode, `cmd.isBuzzerAllowed` off – or the displayed message did not change at all.
 - **The headline breaks in the wrong place:** The sequence `<sp!it>` must not appear in the text, the adapter splits the lines at it internally. A `~` in the text is replaced by `-`.
 - **A change shows up on another screensaver:** The list is shared – see "Also used by" in the row. **Duplicate** first if a different version is needed.
+
+## 10. Colours: headline, text and background
+
+The colours of the notification are not set in the dialog but by the [colour theme](colorTheme#colours-of-the-notification) of the instance. They apply to all notifications and also to a notification a script sets via `sendTo` or through `cmd`.
+
+| Colour | Meaning |
+|---|---|
+| **Headline** | Font colour of the upper line. In the admin: **Notification headline**. |
+| **Text** | Font colour of the line below. In the admin: **Notification text**. |
+| **Background** | Area behind both lines, so that the notification stands out from the screensaver. It spans the full width from the headline down to the lower edge of the display – if something lies below it that stays visible (the bar with the icons of the advanced screensaver, the colour bars of EasyView and the tiles), it ends above it. In the admin: **Notification background**. |
+
+With the ready-made themes headline and text are white as before; the background is set off slightly from the theme, grey (RGB 56/56/56) with the default theme. Own values come with the colour theme **User colors** in the section **Screensaver**.
+
+> **Only TFT 6.2.0 shows the background.** Older TFTs keep showing the notification on the background of the screensaver; they do take over the headline and text colour. The [web panel](WebPanel) draws the area like the TFT.

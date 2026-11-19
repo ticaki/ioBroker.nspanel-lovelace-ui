@@ -75,11 +75,34 @@ Legend:
 | fgTimeAdd | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:367 |
 | fgForecast | 1 | 1 | 1 | 1 | 1 | 8+ | pages/screensaver.ts:347 |
 | fgBar | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:363 |
+| fgNotifyHead | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
+| fgNotifyText | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
+| bgNotify | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
 | mediaArtistOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:556 |
 | mediaArtistOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:557 |
 | mediaTitleOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:545 |
 | mediaTitleOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:546 |
 | mediaOnOffColor | 1 | 1 | 1 | 1 | 1 | 1 | pages/pageMedia.ts:564 |
+
+## Colours of the notification
+
+The notification is the [notification on the screensaver](Screensaver-Notify). Its three colours are found with the colour theme **User colors** in the tab of the own colours, section **Screensaver**:
+
+| Field | Key | Meaning |
+|---|---|---|
+| **Notification headline** | `fgNotifyHead` | Font colour of the headline (upper line). |
+| **Notification text** | `fgNotifyText` | Font colour of the text below it. |
+| **Notification background** | `bgNotify` | Area behind headline and text: full width, from the headline down to the lower edge of the display or to the bar that stays visible below it. Only from TFT 6.2.0 on and on the web panel – older TFTs keep showing the notification on the background of the screensaver. |
+
+Defaults of the themes: headline and text are white in all themes, as before. The background is set off slightly from the theme:
+
+| Theme | Background |
+|---|---|
+| Default | grey RGB 56/56/56 (`#383838`) |
+| Tropical | blue RGB 0/84/160 – lighter than the dark blue background of the theme |
+| Technical | slate grey RGB 40/56/72 |
+| Sunset | dark brown RGB 72/40/24 |
+| Vulcano | dark red RGB 92/12/12 – darker than the red background of the theme |
 
 ## Observations
 - Weather colors are currently not directly targeted in the TS code – likely reserved for panel rendering or future logic.

@@ -75,11 +75,34 @@ Legende:
 | fgTimeAdd | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:367 |
 | fgForecast | 1 | 1 | 1 | 1 | 1 | 8+ | pages/screensaver.ts:347 |
 | fgBar | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:363 |
+| fgNotifyHead | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
+| fgNotifyText | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
+| bgNotify | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
 | mediaArtistOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:556 |
 | mediaArtistOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:557 |
 | mediaTitleOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:545 |
 | mediaTitleOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:546 |
 | mediaOnOffColor | 1 | 1 | 1 | 1 | 1 | 1 | pages/pageMedia.ts:564 |
+
+## Farben der Schlagzeile
+
+Die Schlagzeile ist die [Benachrichtigung auf dem Bildschirmschoner](Screensaver-Notify). Ihre drei Farben stehen beim Farbthema **Benutzer Farben** im Tab der eigenen Farben, Bereich **Screensaver**:
+
+| Feld | Key | Bedeutung |
+|---|---|---|
+| **Schlagzeile Überschrift** | `fgNotifyHead` | Schriftfarbe der Überschrift (obere Zeile). |
+| **Schlagzeile Text** | `fgNotifyText` | Schriftfarbe des Textes darunter. |
+| **Schlagzeile Hintergrund** | `bgNotify` | Fläche hinter Überschrift und Text: volle Breite, von der Überschrift bis zum unteren Rand des Displays bzw. bis zu der Leiste, die darunter stehen bleibt. Erst ab TFT 6.2.0 und auf dem Web-Panel – ältere TFTs zeigen die Schlagzeile weiter auf dem Hintergrund des Bildschirmschoners. |
+
+Standardwerte der Themen: Überschrift und Text sind in allen Themen weiß, so wie bisher. Der Hintergrund setzt sich leicht vom Thema ab:
+
+| Thema | Hintergrund |
+|---|---|
+| Standard | Grau RGB 56/56/56 (`#383838`) |
+| Tropisch | Blau RGB 0/84/160 – heller als der dunkelblaue Hintergrund des Themas |
+| Technisch | Schiefergrau RGB 40/56/72 |
+| Sonnenuntergang | Dunkelbraun RGB 72/40/24 |
+| Vulkan | Dunkelrot RGB 92/12/12 – dunkler als der rote Hintergrund des Themas |
 
 ## Beobachtungen
 - Wetter-Farben werden aktuell nicht direkt im TS-Code genutzt – möglich, dass sie für Panel-Rendering reserviert sind.
