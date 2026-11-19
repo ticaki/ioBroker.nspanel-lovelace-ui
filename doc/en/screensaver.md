@@ -652,8 +652,15 @@ The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in
 | own info icon (`panels.<panel>.cmd.screenSaver.infoIcon`) | The adapter **always** writes `true` to `panels.<panel>.buttons.infoIcon` (read only, role `button.press`). A popup with the own icon opens only when `panels.<panel>.cmd.screenSaver.infoText` (text, writable) is not empty – the text of the popup is its content. |
 
 - The popup is the usual notification popup with a small icon (see [Popups](pagePopup)). It closes with the cross or after the timeout of the panel; then the screensaver is back.
+- The icon in the popup has the color the info icon has on the screensaver at that moment (orange or red with the timer).
+- The text appears one size larger than in other popups (font 2, 32 px) and is wrapped at word borders, not inside a word. If it does not fit completely, the lines change every few seconds as in every popup.
+
+| Datapoint | Meaning |
+|---|---|
+| **`panels.<panel>.cmd.screenSaver.infoTextFont`** | Font of the text of the own info icon (number, writable): `0` 24 px, `1` 32 px (Western European characters only), `2` 32 px, `3` 48 px (Western European characters only), `4` 80 px bold (Western European characters only), `5` 128 px bold (ASCII only). Empty or any other value gives `2`; the adapter acknowledges the datapoint with the font used. Applies to `infoText` only – the texts of the adapter (timer, firmware) always use font `2`. |
+
 - **With standby brightness 0 the first tap only wakes the display**, as with the indicators: no popup, no state. Only the second tap works.
-- `cmd.screenSaver.infoText` is transferred together with the info icon by [export and import](panelConfigTransfer).
+- `cmd.screenSaver.infoText` and `cmd.screenSaver.infoTextFont` are transferred together with the info icon by [export and import](panelConfigTransfer).
 
 ## Pitfalls
 

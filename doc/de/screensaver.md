@@ -652,8 +652,15 @@ Das Infoicon neben der Uhrzeit lässt sich mit der **TFT 6.2.0** antippen – au
 | eigenes Infoicon (`panels.<Panel>.cmd.screenSaver.infoIcon`) | Der Adapter schreibt **immer** `true` in `panels.<Panel>.buttons.infoIcon` (nur lesbar, Rolle `button.press`). Ein Popup mit dem eigenen Symbol öffnet sich nur, wenn `panels.<Panel>.cmd.screenSaver.infoText` (Text, beschreibbar) nicht leer ist – der Text des Popups ist dessen Inhalt. |
 
 - Das Popup ist das gewohnte Meldungs-Popup mit kleinem Symbol (siehe [Popups](pagePopup)). Es schließt mit dem Kreuz oder nach dem Timeout des Panels; danach steht der Bildschirmschoner wieder da.
+- Das Symbol im Popup hat die Farbe, die das Infoicon gerade auf dem Bildschirmschoner hat (beim Timer orange bzw. rot).
+- Der Text erscheint eine Stufe größer als in anderen Popups (Schrift 2, 32 px) und wird an Wortgrenzen umbrochen, nicht mitten im Wort. Passt er nicht ganz hinein, wechseln die Zeilen alle paar Sekunden wie bei jedem Popup.
+
+| Datenpunkt | Bedeutung |
+|---|---|
+| **`panels.<Panel>.cmd.screenSaver.infoTextFont`** | Schrift des Textes zum eigenen Infoicon (Zahl, beschreibbar): `0` 24 px, `1` 32 px (nur westeuropäische Zeichen), `2` 32 px, `3` 48 px (nur westeuropäische Zeichen), `4` 80 px fett (nur westeuropäische Zeichen), `5` 128 px fett (nur ASCII). Leer oder ein anderer Wert ergibt `2`; der Adapter bestätigt den Datenpunkt mit der verwendeten Schrift. Gilt nur für `infoText` – die Texte des Adapters (Timer, Firmware) stehen immer in Schrift `2`. |
+
 - **Bei Standby-Helligkeit 0 weckt der erste Tipp nur auf**, wie bei den Indikatoren: kein Popup, kein State. Erst der zweite Tipp wirkt.
-- `cmd.screenSaver.infoText` wird beim [Export und Import](panelConfigTransfer) zusammen mit dem Infoicon übertragen.
+- `cmd.screenSaver.infoText` und `cmd.screenSaver.infoTextFont` werden beim [Export und Import](panelConfigTransfer) zusammen mit dem Infoicon übertragen.
 
 ## Fallstricke
 
