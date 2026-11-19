@@ -142,6 +142,8 @@ There are four fields for the panel **clicked** in the list. They belong to the 
 
 If only one of the two targets of an arrow is set on a page (e.g. only *home*), the short press or the swipe leads there as well.
 
+As soon as the long press is reached, the heading and the arrows blink yellow/green: letting go now leads to *home* or *parent* (TFT 6.2.0 and newer and in the web panel).
+
 The choices are the pages this panel knows about and the admin pages assigned to it — the page itself is excluded. The **Show system pages** checkbox adds the internal pages (`///…`) to the list; the unlock page `///unlock` is never hidden. A target already entered always stays visible, even when it is a system page.
 
 At the end of every list there is also **Screensaver**: the gesture then shows the screensaver at once, and the arrow on the panel carries the icon `power-sleep` for it (see [showing the screensaver at once](screensaver#15-showing-the-screensaver-at-once)). This target counts as present on every panel and raises no collision notes — any number of pages may lead there.

@@ -142,6 +142,8 @@ Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie gehören zu
 
 Ist auf einer Seite für einen Pfeil nur eines der beiden Ziele belegt (z. B. nur *home*), führt auch der kurze Druck bzw. das Wischen dorthin.
 
+Sobald der lange Druck erreicht ist, blinken Überschrift und Pfeile gelb/grün: Loslassen führt jetzt zu *home* bzw. *parent* (ab TFT 6.2.0 und im Web-Panel).
+
 Zur Auswahl stehen die Seiten, die dieses Panel kennt, und die Admin-Seiten, die ihm zugewiesen sind — die eigene Seite ist ausgenommen. Der Haken **Systemseiten anzeigen** nimmt zusätzlich die internen Seiten (`///…`) in die Liste; die Entsperrseite `///unlock` wird nie ausgeblendet. Ein bereits eingetragenes Ziel bleibt immer sichtbar, auch wenn es eine Systemseite ist.
 
 Am Ende jeder Liste steht außerdem **Screensaver**: Die Geste zeigt dann sofort den Bildschirmschoner, und der Pfeil auf dem Panel trägt dafür das Symbol `power-sleep` (siehe [Bildschirmschoner sofort anzeigen](screensaver#15-bildschirmschoner-sofort-anzeigen)). Dieses Ziel gilt auf jedem Panel als vorhanden und löst keine Kollisionshinweise aus — beliebig viele Seiten dürfen dorthin führen.
