@@ -131,14 +131,16 @@ Choose a panel in the select field and add it with **+**. There is also the entr
 
 ### Navigation targets
 
-There are four fields for the panel **clicked** in the list. They match the swipe gestures on the panel:
+There are four fields for the panel **clicked** in the list. They belong to the two navigation arrows at the top of the panel:
 
 | Field | Gesture on the panel |
 |---|---|
-| **next** | swipe right once |
-| **prev** | swipe left once |
-| **home** | swipe right twice |
-| **parent** | swipe left twice |
+| **next** | short press on the right arrow or swipe right |
+| **prev** | short press on the left arrow or swipe left |
+| **home** | long press on the right arrow (at least 0.5 s) |
+| **parent** | long press on the left arrow (at least 0.5 s) |
+
+If only one of the two targets of an arrow is set on a page (e.g. only *home*), the short press or the swipe leads there as well.
 
 The choices are the pages this panel knows about and the admin pages assigned to it — the page itself is excluded. The **Show system pages** checkbox adds the internal pages (`///…`) to the list; the unlock page `///unlock` is never hidden. A target already entered always stays visible, even when it is a system page.
 

@@ -131,14 +131,16 @@ Im Auswahlfeld ein Panel wählen und mit **+** hinzufügen. Zusätzlich gibt es 
 
 ### Navigationsziele
 
-Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie entsprechen den Wischgesten am Panel:
+Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie gehören zu den beiden Navigationspfeilen oben am Panel:
 
 | Feld | Geste am Panel |
 |---|---|
-| **next** | einmal nach rechts wischen |
-| **prev** | einmal nach links wischen |
-| **home** | zweimal nach rechts wischen |
-| **parent** | zweimal nach links wischen |
+| **next** | rechten Pfeil kurz drücken oder nach rechts wischen |
+| **prev** | linken Pfeil kurz drücken oder nach links wischen |
+| **home** | rechten Pfeil lang drücken (mindestens 0,5 s) |
+| **parent** | linken Pfeil lang drücken (mindestens 0,5 s) |
+
+Ist auf einer Seite für einen Pfeil nur eines der beiden Ziele belegt (z. B. nur *home*), führt auch der kurze Druck bzw. das Wischen dorthin.
 
 Zur Auswahl stehen die Seiten, die dieses Panel kennt, und die Admin-Seiten, die ihm zugewiesen sind — die eigene Seite ist ausgenommen. Der Haken **Systemseiten anzeigen** nimmt zusätzlich die internen Seiten (`///…`) in die Liste; die Entsperrseite `///unlock` wird nie ausgeblendet. Ein bereits eingetragenes Ziel bleibt immer sichtbar, auch wenn es eine Systemseite ist.
 
