@@ -63,7 +63,7 @@ Die **Farbe der Linie** sagt, wie zwei Seiten zusammenhängen:
 
 Der **Rahmen eines Knotens** sagt, woher die Seite stammt: ohne Farbe aus dem Konfigurationsskript des Panels, violett aus der globalen Skript-Konfiguration, **grün aus der Admin-Konfiguration**, gelb Systemseite bzw. Standard-Startseite, blaugrau gestrichelt ein Datenpunkt-Knoten (keine Seite).
 
-Dazu kommen drei **Marken am Knoten**:
+Dazu kommen **Marken am Knoten**:
 
 | Marke | Bedeutung |
 |---|---|
@@ -71,6 +71,7 @@ Dazu kommen drei **Marken am Knoten**:
 | **Stift** | Skript-Seite, deren Navigation im Admin überschrieben ist (siehe [Abschnitt 8](#8-skript-seiten-überschreiben)). |
 | **Stift in Warnfarbe** | Dieselbe Seite, aber das Skript liefert inzwischen andere Verweise als zum Zeitpunkt der Änderung. |
 | **Gestrichelter Außenrahmen mit Punkt** | Die Verweise dieser Seite wurden geändert und sind noch nicht gespeichert. |
+| **Geschlossenes Auge** | Die Seite ist *Versteckt* und damit am Panel gesperrt, solange dort *Seiten verbergen* eingeschaltet ist (siehe [Seiteneinstellungen](PageConfig)). Der Tooltip: *Gesperrt (versteckt): auf dem Panel nur erreichbar, wenn „Seiten verbergen“ aus ist*. |
 
 Die Herkunft beantwortet die häufige Frage „warum sieht das Panel anders aus als im Skript beschrieben". **Bei gleichem Namen gewinnt aber nicht automatisch die Admin-Seite**: Eine Skript-Seite desselben Panels behält ihren Namen, solange die Admin-Seite nicht die Startseite ist, die Instanz-Option für den Vorrang nicht gesetzt ist und die verdrängte Seite nicht aus dem globalen Skript oder vom Skript eines anderen Panels stammt — andernfalls protokolliert der Adapter „Page with name … already exists, skipping!" und die Admin-Seite entfällt. Die Regel mit allen Ausnahmen steht unter [Pages](Pages).
 
