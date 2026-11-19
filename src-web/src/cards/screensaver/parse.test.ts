@@ -11,6 +11,7 @@ import {
     layoutOf,
     parseColor,
     parseEntityUpd,
+    parseClockBlink,
     parseNotify,
     parseLongPressMask,
     parseStatusUpdate,
@@ -362,5 +363,16 @@ describe('screensaver long press mask (weatherUpdate of screensaver2/screensaver
         expect(model.entities).toHaveLength(15);
         expect(model.longPressMask).toBe(5);
         expect(initial().longPressMask).toBe(0);
+    });
+
+    it('statusUpdate field 7: 1 lets the clock blink, empty, 0 or missing ends it', () => {
+        const status = (payload: string): boolean =>
+            handleCommand('statusUpdate', parseCommand(payload).args, initial(), ctx())!.clockBlink;
+        expect(initial().clockBlink).toBe(false);
+        expect(status('statusUpdate~a~1~b~2~~~1')).toBe(true);
+        expect(status('statusUpdate~a~1~b~2~~')).toBe(false);
+        expect(status('statusUpdate~a~1~b~2~~~0')).toBe(false);
+        expect(status('statusUpdate~a~1~b~2~1~1~')).toBe(false);
+        expect(parseClockBlink(['', '', '', '', '', '', '1'])).toBe(true);
     });
 });

@@ -159,3 +159,60 @@ export function swipeAction(dx: number, dy: number): 'swipeUp' | 'swipeDown' | '
     }
     return dy > 0 ? 'swipeDown' : 'swipeUp';
 }
+
+/** One phase of the blinking clock the adapter asks for (field 7 of `statusUpdate`, HMI 6.2.0 `tmBlink`) */
+export const CLOCK_BLINK_MS = 500;
+
+/** RGB565 colours of the blinking clock the adapter asks for: red first, then white */
+export const CLOCK_BLINK_COLORS: readonly [number, number] = [63488, 65535];
+
+/**
+ * The colour of the clock in a phase of the blinking the adapter asks for
+ *
+ * @param phase number of {@link CLOCK_BLINK_MS} phases since the blinking started, 0 = the first
+ * @returns the RGB565 colour
+ */
+export function clockBlinkColor(phase: number): number {
+    return CLOCK_BLINK_COLORS[phase % 2 === 0 ? 0 : 1];
+}
+
+/**
+ * The colour of the clock: the blinking of a long press has priority, then the blinking the adapter asks for, else
+ * the colour of `color~` (HMI 6.2.0: `vaLPOn` before `vaBlink`, both keep the normal colour in `vaLPCol`)
+ *
+ * @param normal RGB565 colour of `color~` (or the text colour of `dimmode`)
+ * @param longPressPhase phase of the long press blinking, undefined: not armed
+ * @param alertPhase phase of the blinking the adapter asks for, undefined: off
+ * @returns the RGB565 colour
+ */
+export function clockColor(normal: number, longPressPhase: number | undefined, alertPhase: number | undefined): number {
+    if (longPressPhase !== undefined) {
+        return longPressBlinkColor(longPressPhase);
+    }
+    if (alertPhase !== undefined) {
+        return clockBlinkColor(alertPhase);
+    }
+    return normal;
+}
+
+/** id of a tap on the info icon next to the clock (`tTimeAdd` of HMI 6.2.0): `buttonPress2,bInfo,button,<taps>` */
+export const INFO_ICON_ID = 'bInfo';
+
+/**
+ * The release of a touch that started on the info icon next to the clock: like an indicator without long press it
+ * counts with the taps of the background and sends `bInfo,button,<taps>`, a swipe from the icon is a swipe. A touch
+ * of a dark display sends the tap as well - the adapter drops it (`Screensaver.onIndicatorWakeTap`).
+ *
+ * @param prev the tap state before the touch
+ * @param dx horizontal movement in px since the touch started
+ * @param dy vertical movement in px
+ * @returns the new tap state and what to send with `press`
+ */
+export function infoIconRelease(prev: TapState, dx: number, dy: number): { tap: TapState; press: IndicatorPress } {
+    const tap = nextTap(prev);
+    const swipe = swipeAction(dx, dy);
+    if (swipe) {
+        return { tap, press: ['screensaver', swipe] };
+    }
+    return { tap, press: [INFO_ICON_ID, 'button', tap.tapCount] };
+}

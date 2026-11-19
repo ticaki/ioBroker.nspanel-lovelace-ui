@@ -246,6 +246,19 @@ const genericStateObjects = {
           },
           native: {}
         },
+        infoIcon: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buttons.infoIcon",
+            type: "boolean",
+            role: "button.press",
+            read: true,
+            write: false,
+            def: true
+          },
+          native: {}
+        },
         screensaverGesture: {
           _id: "",
           type: "state",
@@ -466,6 +479,32 @@ const genericStateObjects = {
               read: true,
               write: true,
               def: ""
+            },
+            native: {}
+          },
+          infoText: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.infoText",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
+          clockBlink: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.clockBlink",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true,
+              def: false
             },
             native: {}
           },
@@ -2403,6 +2442,17 @@ const InternalStates = {
       }
     },
     "cmd/screensaverActivateNotification": {
+      val: false,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/screensaverClockBlink": {
       val: false,
       ack: true,
       common: {

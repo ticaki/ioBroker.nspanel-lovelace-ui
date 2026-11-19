@@ -53,6 +53,7 @@ import type { PanelPageDumpRuntime } from '../configuration/page-dump';
 import type { PageDumpKind } from '../types/pageDump';
 import { isEmulatorDriverVersion, parseDriverVersion } from '../const/berry-driver';
 import { POPUP_NOTIFY3 } from '../pages/popupNotify3';
+import { SCREENSAVER_INFO_ICON_ID } from '../pages/screensaver-info-icon';
 import type { NSPanel } from '../types/NSPanel';
 import {
     buildDisplayDiagnosisMessage,
@@ -1043,6 +1044,26 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon,
         );
 
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoText`);
+        if (state && typeof state.val === 'string' && this.screenSaver) {
+            this.screenSaver.infoText = state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.infoText`,
+            this.screenSaver?.infoText ?? '',
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.infoText,
+        );
+
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.clockBlink`);
+        if (state && state.val != null && this.screenSaver) {
+            this.screenSaver.clockBlink = !!state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.clockBlink`,
+            this.screenSaver?.clockBlink ?? false,
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink,
+        );
+
         if (this.buttons && this.screenSaver) {
             const entries = Object.entries(this.buttons) as [
                 keyof typeof this.buttons,
@@ -1775,6 +1796,23 @@ export class Panel extends BaseClass {
                         await this.statesControler.setInternalState(
                             `${this.name}/cmd/screenSaverInfoIcon`,
                             state.val,
+                            false,
+                        );
+                    }
+                    break;
+                }
+                case 'screenSaver.infoText': {
+                    if (state && state.val != null && typeof state.val === 'string' && this.screenSaver) {
+                        this.screenSaver.infoText = state.val;
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoText`, state.val);
+                    }
+                    break;
+                }
+                case 'screenSaver.clockBlink': {
+                    if (state && state.val != null) {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screensaverClockBlink`,
+                            !!state.val,
                             false,
                         );
                     }
@@ -2664,6 +2702,15 @@ export class Panel extends BaseClass {
                         }
                         break;
                     }
+                    // the info icon next to the clock, TFT 6.2.0+ and web panels (`bInfo,button,<taps>`)
+                    if (
+                        this._activePage === this.screenSaver &&
+                        event.id === SCREENSAVER_INFO_ICON_ID &&
+                        event.action === 'button'
+                    ) {
+                        await this.screenSaver.onInfoIconTap(event);
+                        break;
+                    }
                     // a tile of the screensaver, TFT 6.0.8+ (`<id>,button,<taps>`); an older TFT sends no taps
                     if (
                         this._activePage === this.screenSaver &&
@@ -3104,6 +3151,17 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/screensaverClockBlink': {
+                    if (this.screenSaver) {
+                        this.screenSaver.clockBlink = !!state.val;
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.screenSaver.clockBlink`,
+                            !!state.val,
+                            definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink,
+                        );
+                    }
+                    break;
+                }
                 case 'cmd/screensaverTextNotification': {
                     if (this.screenSaver && typeof state.val === 'string') {
                         this.screenSaver.textNotification = state.val;
@@ -3242,6 +3300,9 @@ export class Panel extends BaseClass {
             }
             case 'cmd/screenSaverInfoIcon': {
                 return this.screenSaver?.infoIcon ?? '';
+            }
+            case 'cmd/screensaverClockBlink': {
+                return this.screenSaver?.clockBlink ?? false;
             }
             case 'cmd/screenSaverLayout': {
                 if (this.screenSaver) {

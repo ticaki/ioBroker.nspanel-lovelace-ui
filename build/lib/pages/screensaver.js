@@ -49,6 +49,7 @@ var import_Page = require("../classes/Page");
 var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
 var import_Color = require("../const/Color");
+var import_screensaver_info_icon = require("./screensaver-info-icon");
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_screensaver_timer = require("./screensaver-timer");
 var _Screensaver_instances, sendNotify_fn;
@@ -141,6 +142,12 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "headingNotification", "");
     __publicField(this, "textNotification", "");
     __publicField(this, "customNotification", false);
+    /** text of the popup a tap on the icon of the user opens (`cmd.screenSaver.infoText`), empty: no popup */
+    __publicField(this, "infoText", "");
+    /** the clock blinks red/white (`cmd.screenSaver.clockBlink`), see {@link sendsClockBlink} */
+    __publicField(this, "_clockBlink", false);
+    /** the info icon of the last `time~`, undefined: none */
+    __publicField(this, "shownInfoIcon");
     __publicField(this, "activeNotification", false);
     __publicField(this, "activeNotifyId", "");
     /**
@@ -1282,18 +1289,20 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       }
       text = message.options.time[0].split("~")[5];
     }
-    let icon = `${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`;
+    let infoIcon = this.infoIcon ? { name: this.infoIcon, user: true } : void 0;
     if (timerActive) {
       const iconName = timer.status === "expired" ? "timer-alert" : timer.status === "paused" ? "timer-pause" : "timer-sand";
-      icon = `~${import_icon_mapping.Icons.GetIcon(iconName)}`;
+      infoIcon = { name: iconName, user: false };
     } else if (this.basePanel.isVirtual) {
     } else if (this.basePanel.info.nspanel.displayVersion === "0.0.0") {
       if (!this.adapter.config.hideDeveloperSymbols) {
-        icon = `~${import_icon_mapping.Icons.GetIcon("cog-refresh-outline")}`;
+        infoIcon = { name: "cog-refresh-outline", user: false };
       }
-    } else if (!icon && tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)) {
-      icon = `~${import_icon_mapping.Icons.GetIcon("wrench-clock")}`;
+    } else if (!infoIcon && tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)) {
+      infoIcon = { name: "wrench-clock", user: false };
     }
+    const icon = infoIcon ? `~${import_icon_mapping.Icons.GetIcon(infoIcon.name)}` : "";
+    this.shownInfoIcon = icon ? infoIcon : void 0;
     const colorsChanged = !!this.clockTimer && this.visibility && (this.colorTimerStatus !== timer.status || this.colorTimerShown !== showTimer);
     const payload = `time~${text}${icon}`;
     this.scheduleTimerTick(timer);
@@ -1354,8 +1363,78 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.basePanel.info.nspanel.bigIconLeft ? "1" : "",
       this.basePanel.info.nspanel.bigIconRight ? "1" : ""
     ];
+    if (this._clockBlink && this.sendsClockBlink()) {
+      msgArray.push("1");
+    }
     const msg = tools.getPayloadArrayRemoveTilde(msgArray);
     this.sendIfChanged("statusUpdate", msg);
+  }
+  /**
+   * true when the panel reads the blink flag of the clock (field 7 of `statusUpdate`): a web panel or a TFT
+   * {@link SCREENSAVER_CLOCK_BLINK_MIN_VERSION}+ - older TFTs get the message as before.
+   */
+  sendsClockBlink() {
+    return this.basePanel.isVirtual || this.basePanel.meetsVersion(import_screensaver_info_icon.SCREENSAVER_CLOCK_BLINK_MIN_VERSION);
+  }
+  /** the clock blinks red/white until it is set to false (`cmd.screenSaver.clockBlink`) */
+  get clockBlink() {
+    return this._clockBlink;
+  }
+  /**
+   * Starts or ends the blinking of the clock: the next `statusUpdate~` carries the flag, also after every
+   * `pageType~` of the screensaver (it clears the memory of the sent messages).
+   */
+  set clockBlink(blink) {
+    if (this._clockBlink === blink) {
+      return;
+    }
+    this._clockBlink = blink;
+    void this.sendStatusIcons();
+  }
+  /**
+   * A tap on the info icon next to the clock (TFT 6.2.0+ and web panels, `buttonPress2,bInfo,button,<taps>`):
+   * - standby brightness 0: the first touch only wakes the display ({@link onIndicatorWakeTap}), nothing else.
+   * - an icon of the adapter (timer, development firmware, firmware update): a popup with the small icon and a
+   *   translated explanation.
+   * - the icon of the user (`cmd.screenSaver.infoIcon`): `buttons.infoIcon` is always written, the popup with the
+   *   icon and {@link infoText} opens only when the text is not empty.
+   * The popup closes like any notification (cross or timeout) and brings the screensaver back.
+   *
+   * @param event the event of the panel
+   */
+  async onInfoIconTap(event) {
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
+    if (this.onIndicatorWakeTap(event.opt)) {
+      return;
+    }
+    this.onTouch(_Screensaver.tapCount(event.opt));
+    const icon = this.shownInfoIcon;
+    if (!icon) {
+      this.log.debug("Tap on the info icon of the screensaver, but no icon is shown");
+      return;
+    }
+    let text = "";
+    if (icon.user) {
+      await this.library.writedp(
+        `panels.${this.basePanel.name}.buttons.infoIcon`,
+        true,
+        Definition.genericStateObjects.panel.panels.buttons.infoIcon
+      );
+      text = this.infoText;
+    } else {
+      const key = import_screensaver_info_icon.SCREENSAVER_INFO_ICON_TEXTS[icon.name];
+      text = key ? this.library.getTranslation(key) : "";
+    }
+    if (!text) {
+      return;
+    }
+    await this.basePanel.statesControler.setInternalState(
+      `${this.basePanel.name}/cmd/popupNotificationCustom`,
+      JSON.stringify((0, import_screensaver_info_icon.screensaverInfoNotification)(icon.name, text)),
+      false
+    );
   }
   async HandleNotification() {
     if (this.basePanel.isOnline === false) {

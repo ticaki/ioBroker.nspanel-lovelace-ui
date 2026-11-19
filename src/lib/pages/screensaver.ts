@@ -16,6 +16,12 @@ import { Color, type RGB } from '../const/Color';
 import type { NSPanel } from '../types/NSPanel';
 import type { IClientPublishOptions } from 'mqtt';
 import {
+    SCREENSAVER_CLOCK_BLINK_MIN_VERSION,
+    SCREENSAVER_INFO_ICON_TEXTS,
+    screensaverInfoNotification,
+    type ScreensaverInfoIcon,
+} from './screensaver-info-icon';
+import {
     checkClockTimerPatterns,
     clockTimerUsesPageItem,
     clockTimerUsesSlots,
@@ -158,6 +164,12 @@ export class Screensaver extends Page {
     public headingNotification: string = '';
     public textNotification: string = '';
     public customNotification: boolean = false;
+    /** text of the popup a tap on the icon of the user opens (`cmd.screenSaver.infoText`), empty: no popup */
+    public infoText: string = '';
+    /** the clock blinks red/white (`cmd.screenSaver.clockBlink`), see {@link sendsClockBlink} */
+    private _clockBlink: boolean = false;
+    /** the info icon of the last `time~`, undefined: none */
+    private shownInfoIcon: ScreensaverInfoIcon | undefined = undefined;
     private activeNotification: boolean = false;
     private activeNotifyId: string = '';
     /**
@@ -1561,26 +1573,29 @@ export class Screensaver extends Page {
             }
             text = message.options.time[0].split('~')[5];
         }
-        let icon = `${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`;
+        let infoIcon: ScreensaverInfoIcon | undefined = this.infoIcon ? { name: this.infoIcon, user: true } : undefined;
         if (timerActive) {
             // stays while the timer is active, also after a tap to the clock - before everything else
             const iconName =
                 timer.status === 'expired' ? 'timer-alert' : timer.status === 'paused' ? 'timer-pause' : 'timer-sand';
-            icon = `~${Icons.GetIcon(iconName)}`;
+            infoIcon = { name: iconName, user: false };
         } else if (this.basePanel.isVirtual) {
             // a web panel has no TFT firmware - no development and no update symbol
         } else if (this.basePanel.info.nspanel.displayVersion === '0.0.0') {
             // only for development firmware
             if (!this.adapter.config.hideDeveloperSymbols) {
-                icon = `~${Icons.GetIcon('cog-refresh-outline')}`;
+                infoIcon = { name: 'cog-refresh-outline', user: false };
             }
         } else if (
-            !icon &&
+            !infoIcon &&
             tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)
         ) {
             // only if a newer firmware is available - not for a newer TFT on the display or an unknown version
-            icon = `~${Icons.GetIcon('wrench-clock')}`;
+            infoIcon = { name: 'wrench-clock', user: false };
         }
+        const icon = infoIcon ? `~${Icons.GetIcon(infoIcon.name)}` : '';
+        // what a tap on the icon explains, see onInfoIconTap
+        this.shownInfoIcon = icon ? infoIcon : undefined;
 
         // time and icon get their color from color~, only sent when it changes: with the same background the HMI just
         // sets the font colors of its elements, the page is not drawn again
@@ -1652,8 +1667,84 @@ export class Screensaver extends Page {
             this.basePanel.info.nspanel.bigIconLeft ? '1' : '',
             this.basePanel.info.nspanel.bigIconRight ? '1' : '',
         ];
+        if (this._clockBlink && this.sendsClockBlink()) {
+            // field 7: the clock blinks red/white, see SCREENSAVER_CLOCK_BLINK_MIN_VERSION
+            msgArray.push('1');
+        }
         const msg = tools.getPayloadArrayRemoveTilde(msgArray);
         this.sendIfChanged('statusUpdate', msg);
+    }
+
+    /**
+     * true when the panel reads the blink flag of the clock (field 7 of `statusUpdate`): a web panel or a TFT
+     * {@link SCREENSAVER_CLOCK_BLINK_MIN_VERSION}+ - older TFTs get the message as before.
+     */
+    private sendsClockBlink(): boolean {
+        return this.basePanel.isVirtual || this.basePanel.meetsVersion(SCREENSAVER_CLOCK_BLINK_MIN_VERSION);
+    }
+
+    /** the clock blinks red/white until it is set to false (`cmd.screenSaver.clockBlink`) */
+    get clockBlink(): boolean {
+        return this._clockBlink;
+    }
+
+    /**
+     * Starts or ends the blinking of the clock: the next `statusUpdate~` carries the flag, also after every
+     * `pageType~` of the screensaver (it clears the memory of the sent messages).
+     */
+    set clockBlink(blink: boolean) {
+        if (this._clockBlink === blink) {
+            return;
+        }
+        this._clockBlink = blink;
+        void this.sendStatusIcons();
+    }
+
+    /**
+     * A tap on the info icon next to the clock (TFT 6.2.0+ and web panels, `buttonPress2,bInfo,button,<taps>`):
+     * - standby brightness 0: the first touch only wakes the display ({@link onIndicatorWakeTap}), nothing else.
+     * - an icon of the adapter (timer, development firmware, firmware update): a popup with the small icon and a
+     *   translated explanation.
+     * - the icon of the user (`cmd.screenSaver.infoIcon`): `buttons.infoIcon` is always written, the popup with the
+     *   icon and {@link infoText} opens only when the text is not empty.
+     * The popup closes like any notification (cross or timeout) and brings the screensaver back.
+     *
+     * @param event the event of the panel
+     */
+    async onInfoIconTap(event: Types.IncomingEvent): Promise<void> {
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        if (this.onIndicatorWakeTap(event.opt)) {
+            return;
+        }
+        // the HMI clears a shown notification with every touch, as with a key of an indicator
+        this.onTouch(Screensaver.tapCount(event.opt));
+        const icon = this.shownInfoIcon;
+        if (!icon) {
+            this.log.debug('Tap on the info icon of the screensaver, but no icon is shown');
+            return;
+        }
+        let text = '';
+        if (icon.user) {
+            await this.library.writedp(
+                `panels.${this.basePanel.name}.buttons.infoIcon`,
+                true,
+                Definition.genericStateObjects.panel.panels.buttons.infoIcon,
+            );
+            text = this.infoText;
+        } else {
+            const key = SCREENSAVER_INFO_ICON_TEXTS[icon.name];
+            text = key ? this.library.getTranslation(key) : '';
+        }
+        if (!text) {
+            return;
+        }
+        await this.basePanel.statesControler.setInternalState(
+            `${this.basePanel.name}/cmd/popupNotificationCustom`,
+            JSON.stringify(screensaverInfoNotification(icon.name, text)),
+            false,
+        );
     }
 
     async HandleNotification(): Promise<void> {

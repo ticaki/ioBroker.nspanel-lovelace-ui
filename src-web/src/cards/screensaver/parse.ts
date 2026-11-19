@@ -53,6 +53,8 @@ export interface ScreensaverModel {
     longPressMask: number;
     colors: ScreensaverColors | undefined;
     status: [StatusIcon, StatusIcon];
+    /** field 7 of `statusUpdate` is `1`: the clock blinks red/white until the field is gone ({@link parseClockBlink}) */
+    clockBlink: boolean;
     /** `undefined` = no notification shown */
     notify: ScreensaverNotify | undefined;
 }
@@ -142,6 +144,7 @@ export function initial(): ScreensaverModel {
         longPressMask: 0,
         colors: undefined,
         status: [emptyStatusIcon(), emptyStatusIcon()],
+        clockBlink: false,
         notify: undefined,
     };
 }
@@ -201,12 +204,22 @@ export function parseColor(args: string[]): ScreensaverColors {
     };
 }
 
-/** `statusUpdate~icon1~icon1Color~icon2~icon2Color~icon1Font~icon2Font` (font `1` = big icon) */
+/** `statusUpdate~icon1~icon1Color~icon2~icon2Color~icon1Font~icon2Font[~clockBlink]` (font `1` = big icon) */
 export function parseStatusUpdate(args: string[]): [StatusIcon, StatusIcon] {
     return [
         { icon: field(args, 0), color: toNumber(args[1], 65535), big: field(args, 4) === '1' },
         { icon: field(args, 2), color: toNumber(args[3], 65535), big: field(args, 5) === '1' },
     ];
+}
+
+/**
+ * Field 7 of `statusUpdate` (behind the font fields, TFT 6.2.0 and web panels): `1` lets the clock blink red/white,
+ * anything else (empty, `0`, missing) ends it.
+ *
+ * @param args the fields after `statusUpdate`
+ */
+export function parseClockBlink(args: string[]): boolean {
+    return field(args, 6) === '1';
 }
 
 /** `notify~heading~text`; both empty = clear the notification. Line breaks of the text (`\r\n`) are kept. */
@@ -228,7 +241,7 @@ export function handleCommand(
         case 'color':
             return { ...prev, colors: parseColor(args) };
         case 'statusUpdate':
-            return { ...prev, status: parseStatusUpdate(args) };
+            return { ...prev, status: parseStatusUpdate(args), clockBlink: parseClockBlink(args) };
         case 'notify':
             return { ...prev, notify: parseNotify(args) };
         default:

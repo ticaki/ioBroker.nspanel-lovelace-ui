@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+    CLOCK_BLINK_MS,
+    clockBlinkColor,
+    clockColor,
+    INFO_ICON_ID,
+    infoIconRelease,
     indicatorLongPressAllowed,
     isDarkWakeTouch,
     indicatorRelease,
@@ -123,5 +128,41 @@ describe('isDarkWakeTouch', () => {
         expect(isDarkWakeTouch(false, 0)).toBe(true);
         expect(isDarkWakeTouch(true, 0)).toBe(false);
         expect(isDarkWakeTouch(false, 20)).toBe(false);
+    });
+
+    describe('blinking clock of the adapter (statusUpdate field 7)', () => {
+        it('blinks red first, then white, 500 ms per phase', () => {
+            expect(CLOCK_BLINK_MS).toBe(500);
+            expect(clockBlinkColor(0)).toBe(63488);
+            expect(clockBlinkColor(1)).toBe(65535);
+            expect(clockBlinkColor(2)).toBe(63488);
+        });
+
+        it('the long press has priority, without both the clock has its colour', () => {
+            expect(clockColor(1234, undefined, undefined)).toBe(1234);
+            expect(clockColor(1234, undefined, 1)).toBe(65535);
+            expect(clockColor(1234, 0, 1)).toBe(longPressBlinkColor(0));
+            expect(clockColor(1234, 1, undefined)).toBe(longPressBlinkColor(1));
+        });
+    });
+
+    describe('infoIconRelease', () => {
+        it('a tap counts with the background taps and sends bInfo,button,<taps>', () => {
+            const first = infoIconRelease({ tapCount: 0 }, 0, 0);
+            expect(first.press).toEqual([INFO_ICON_ID, 'button', 1]);
+            expect(INFO_ICON_ID).toBe('bInfo');
+            const second = infoIconRelease(nextTap(first.tap), 2, 3);
+            expect(second.press).toEqual(['bInfo', 'button', 3]);
+        });
+
+        it('a swipe that starts on the icon is a swipe, but counts', () => {
+            const r = infoIconRelease({ tapCount: 1 }, 0, -120);
+            expect(r.press).toEqual(['screensaver', 'swipeUp']);
+            expect(r.tap.tapCount).toBe(2);
+        });
+
+        it('a touch of a dark display sends the tap as well (the adapter only wakes)', () => {
+            expect(infoIconRelease({ tapCount: 0 }, 0, 0).press).toEqual(['bInfo', 'button', 1]);
+        });
     });
 });

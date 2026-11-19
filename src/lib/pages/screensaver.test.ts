@@ -587,6 +587,27 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
             }
         });
 
+        it('remembers the shown info icon for a tap on it: adapter icon, icon of the user or none', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_000 });
+            f.saver._infoIcon = 'alarm';
+            await f.saver.HandleTime();
+            expect(f.saver.shownInfoIcon).to.deep.equal({ name: 'timer-sand', user: false });
+            await f.setState('x.0.on', false);
+            await f.saver.HandleTime();
+            expect(f.saver.shownInfoIcon).to.deep.equal({ name: 'alarm', user: true });
+            f.saver._infoIcon = '';
+            await f.saver.HandleTime();
+            expect(f.saver.shownInfoIcon).to.equal(undefined);
+            f.saver.basePanel.isVirtual = false;
+            f.saver.basePanel.info.nspanel = { displayVersion: '6.0.8', onlineVersion: '6.0.9' };
+            await f.saver.HandleTime();
+            expect(f.saver.shownInfoIcon).to.deep.equal({ name: 'wrench-clock', user: false });
+            f.saver.basePanel.info.nspanel = { displayVersion: '0.0.0', onlineVersion: '6.0.9' };
+            f.saver.adapter.config = { hideDeveloperSymbols: false };
+            await f.saver.HandleTime();
+            expect(f.saver.shownInfoIcon).to.deep.equal({ name: 'cog-refresh-outline', user: false });
+        });
+
         it('shows the clock with the info icon while the on/off state is off', async () => {
             const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': NOW + 90_000 });
             f.saver._infoIcon = 'wrench';
@@ -1247,6 +1268,84 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                     'weatherUpdate',
                     'statusUpdate',
                 ]);
+            });
+        });
+
+        describe('clock blink (statusUpdate field 7)', () => {
+            const flush = async (): Promise<void> => {
+                for (let i = 0; i < 5; i++) {
+                    await new Promise(resolve => setImmediate(resolve));
+                }
+            };
+            const status = (messages: string[]): string[][] =>
+                messages.filter(m => m.startsWith('statusUpdate~')).map(m => m.split('~'));
+            const blink = async (s: Scene, on: boolean): Promise<string[]> =>
+                s.during(async () => {
+                    s.saver.clockBlink = on;
+                    await flush();
+                });
+
+            it('a web panel: field 7 is 1 while the clock blinks, without the field after false', async () => {
+                const s = await scene();
+                await s.show();
+                at(5000);
+                const on = status(await blink(s, true));
+                expect(on).to.have.length(1);
+                expect(on[0]).to.have.length(8);
+                expect(on[0][7]).to.equal('1');
+                // the same value again: nothing
+                expect(await blink(s, true)).to.deep.equal([]);
+                const off = status(await blink(s, false));
+                expect(off).to.have.length(1);
+                expect(off[0]).to.have.length(7);
+            });
+
+            it('a hardware panel only from TFT 6.2.0 on', async () => {
+                const cases: [string, boolean][] = [
+                    ['6.2.0', true],
+                    ['6.3.1', true],
+                    ['6.1.3', false],
+                    ['0.0.0', false],
+                    ['', false],
+                ];
+                for (const [version, sends] of cases) {
+                    const s = await scene();
+                    s.saver.basePanel.isVirtual = false;
+                    s.saver.basePanel.info.nspanel = { displayVersion: version, onlineVersion: version };
+                    s.saver.adapter.config = { hideDeveloperSymbols: true };
+                    s.saver.basePanel.meetsVersion = (v: string): boolean =>
+                        !!version && version.localeCompare(v, undefined, { numeric: true }) >= 0;
+                    await s.show();
+                    at(5000);
+                    const sent = status(await blink(s, true));
+                    if (sends) {
+                        expect(
+                            sent.map(m => m[7]),
+                            version,
+                        ).to.deep.equal(['1']);
+                    } else {
+                        // the message of an older TFT does not change - nothing to send
+                        expect(sent, version).to.deep.equal([]);
+                    }
+                }
+            });
+
+            it('the flag comes again with the statusUpdate after every pageType', async () => {
+                const s = await scene();
+                await s.show();
+                at(5000);
+                await blink(s, true);
+                const again = status(await s.show());
+                expect(again.map(m => m[7])).to.deep.equal(['1']);
+            });
+
+            it('an invisible screensaver sends nothing, its next show sends the flag', async () => {
+                const s = await scene();
+                s.saver.visibility = false;
+                expect(await blink(s, true)).to.deep.equal([]);
+                expect(s.saver.clockBlink).to.equal(true);
+                s.saver.visibility = true;
+                expect(status(await s.show()).map(m => m[7])).to.deep.equal(['1']);
             });
         });
 

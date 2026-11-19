@@ -207,6 +207,7 @@ const panelSettingDefaults = {
   "screenSaver.timeout": 15,
   "screenSaver.doubleClick": true,
   "screenSaver.infoIcon": "",
+  "screenSaver.infoText": "",
   "dim.standby": 15,
   "dim.active": 80,
   "dim.dayMode": true,

@@ -127,6 +127,7 @@ export namespace NSPanel {
         | 'cmd/screensaverHeadingNotification'
         | 'cmd/screensaverTextNotification'
         | 'cmd/screensaverActivateNotification'
+        | 'cmd/screensaverClockBlink'
         | 'cmd/screenSaverInfoIcon'
         | 'info/PopupInfo'
         | 'cmd/power2'

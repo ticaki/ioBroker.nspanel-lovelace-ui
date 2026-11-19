@@ -2637,6 +2637,29 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.answerMessage(obj, notifySent ? { result: 'ok' } : { error: 'sendToAnyError' });
                     break;
                 }
+                case 'screensaverClockBlink': {
+                    // sendTo('nspanel-lovelace-ui.0', 'screensaverClockBlink', { panel: 'panelTopic', enabled: true });
+                    let blinkSent = false;
+                    if (obj.message?.panel && this.controller?.panels) {
+                        const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
+                        if (panel?.screenSaver) {
+                            await panel.statesControler.setInternalState(
+                                `${panel.name}/cmd/screensaverClockBlink`,
+                                !!obj.message.enabled,
+                                false,
+                            );
+                            blinkSent = true;
+                        } else {
+                            this.log.warn(`Panel ${obj.message.panel} not exists!`);
+                        }
+                    } else {
+                        this.log.warn(
+                            `Missing panel in screensaverClockBlink: ${JSON.stringify(obj.message)} or controller not ready!`,
+                        );
+                    }
+                    this.answerMessage(obj, blinkSent ? { result: 'ok' } : { error: 'sendToAnyError' });
+                    break;
+                }
                 case 'buzzer': {
                     // sendTo('nspanel-lovelace-ui.0', 'buzzer', { panel: 'panelTopic', command: '1,2,3,0xF54' });
                     if (obj.message?.panel && this.controller?.panels) {

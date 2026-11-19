@@ -1124,7 +1124,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug((0, import_redact.stringifyForLog)(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -2234,8 +2234,30 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.answerMessage(obj, notifySent ? { result: "ok" } : { error: "sendToAnyError" });
           break;
         }
-        case "buzzer": {
+        case "screensaverClockBlink": {
+          let blinkSent = false;
           if (((_M = obj.message) == null ? void 0 : _M.panel) && ((_N = this.controller) == null ? void 0 : _N.panels)) {
+            const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
+            if (panel == null ? void 0 : panel.screenSaver) {
+              await panel.statesControler.setInternalState(
+                `${panel.name}/cmd/screensaverClockBlink`,
+                !!obj.message.enabled,
+                false
+              );
+              blinkSent = true;
+            } else {
+              this.log.warn(`Panel ${obj.message.panel} not exists!`);
+            }
+          } else {
+            this.log.warn(
+              `Missing panel in screensaverClockBlink: ${JSON.stringify(obj.message)} or controller not ready!`
+            );
+          }
+          this.answerMessage(obj, blinkSent ? { result: "ok" } : { error: "sendToAnyError" });
+          break;
+        }
+        case "buzzer": {
+          if (((_O = obj.message) == null ? void 0 : _O.panel) && ((_P = this.controller) == null ? void 0 : _P.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(

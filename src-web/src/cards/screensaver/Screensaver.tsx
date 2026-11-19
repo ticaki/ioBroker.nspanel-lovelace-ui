@@ -6,12 +6,14 @@ import type { Entity6, GlobalState } from '../../protocol/types';
 import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import {
+    CLOCK_BLINK_MS,
     INDICATOR_LONG_PRESS_MS,
     LONG_PRESS_BLINK_MS,
+    clockColor,
     indicatorLongPressAllowed,
     indicatorRelease,
+    infoIconRelease,
     isDarkWakeTouch,
-    longPressBlinkColor,
     longPressStillPossible,
     nextTap,
     swipeAction,
@@ -111,6 +113,11 @@ interface ScreensaverState {
      * ({@link longPressBlinkColor}), undefined: not armed, the clock has its colour
      */
     blinkPhase: number | undefined;
+    /**
+     * phase of the red/white blinking of the clock the adapter asks for (field 7 of `statusUpdate`), undefined: off.
+     * A long press ({@link blinkPhase}) has priority.
+     */
+    alertPhase: number | undefined;
 }
 
 /** Top of a text box whose capital letters start at `capTop` */
@@ -130,7 +137,7 @@ function textTop(capTop: number, fontSize: number): number {
  * (`doc/web-panel/MISSING_PICTURES.md`).
  */
 export class Screensaver extends React.Component<CardProps<ScreensaverModel>, ScreensaverState> {
-    state: ScreensaverState = { blinkPhase: undefined };
+    state: ScreensaverState = { blinkPhase: undefined, alertPhase: undefined };
     private tap: TapState = { tapCount: 0 };
     private pointerStart: PointerStart | undefined;
     /** timer of the long press of a held indicator tile ({@link INDICATOR_LONG_PRESS_MS}) */
@@ -143,9 +150,45 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     private longPressArmed = false;
     /** timer of the blinking clock while the long press is armed ({@link LONG_PRESS_BLINK_MS}) */
     private blinkTimer: ReturnType<typeof setInterval> | undefined;
+    /** timer of the red/white blinking the adapter asks for ({@link CLOCK_BLINK_MS}) */
+    private alertTimer: ReturnType<typeof setInterval> | undefined;
+
+    componentDidMount(): void {
+        this.updateAlert();
+    }
 
     componentWillUnmount(): void {
         this.clearLongPress(false);
+        this.stopAlert(false);
+    }
+
+    /** starts or ends the red/white blinking of the clock with field 7 of `statusUpdate` */
+    private updateAlert(): void {
+        if (this.props.model.clockBlink) {
+            if (this.alertTimer === undefined) {
+                this.setState({ alertPhase: 0 });
+                this.alertTimer = setInterval(() => {
+                    this.setState(prev => ({ alertPhase: (prev.alertPhase ?? 0) + 1 }));
+                }, CLOCK_BLINK_MS);
+            }
+        } else {
+            this.stopAlert(true);
+        }
+    }
+
+    /**
+     * Ends the red/white blinking, the clock gets its colour back.
+     *
+     * @param redraw false while unmounting - no state change then
+     */
+    private stopAlert(redraw: boolean): void {
+        if (this.alertTimer !== undefined) {
+            clearInterval(this.alertTimer);
+            this.alertTimer = undefined;
+        }
+        if (redraw && this.state.alertPhase !== undefined) {
+            this.setState({ alertPhase: undefined });
+        }
     }
 
     /**
@@ -157,6 +200,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     componentDidUpdate(prevProps: Readonly<CardProps<ScreensaverModel>>): void {
         if (prevProps.global.awake && !this.props.global.awake) {
             this.tap = { tapCount: 0 };
+        }
+        if (prevProps.model.clockBlink !== this.props.model.clockBlink) {
+            this.updateAlert();
         }
     }
 
@@ -224,14 +270,17 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     };
 
     /**
-     * css colour of the clock: yellow/green while the long press of a held indicator tile is armed, otherwise its
-     * `color~` field
+     * css colour of the clock: yellow/green while the long press of a held indicator tile is armed, red/white while
+     * the adapter lets it blink, otherwise its `color~` field ({@link clockColor})
      *
      * @param value the `color~` field of the clock
      */
     private timeColor(value: number | undefined): string {
-        const phase = this.state.blinkPhase;
-        return phase === undefined ? this.color(value) : color565ToCss(longPressBlinkColor(phase));
+        const { blinkPhase, alertPhase } = this.state;
+        if (blinkPhase === undefined && alertPhase === undefined) {
+            return this.color(value);
+        }
+        return color565ToCss(clockColor(value ?? this.props.global.dim.text, blinkPhase, alertPhase));
     }
 
     /** css colour of a `color~` field, the text colour of `dimmode` when the field is missing */
@@ -296,6 +345,23 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
         } else if (send?.kind === 'event') {
             this.props.send(send.event);
         }
+    }
+
+    /**
+     * The release of a touch that started on the info icon next to the clock: `bInfo,button,<taps>` like an indicator
+     * without long press, a swipe from the icon is a swipe ({@link infoIconRelease})
+     *
+     * @param e the pointer event of the release
+     */
+    private infoIconTap(e: React.PointerEvent): void {
+        const start = this.pointerStart;
+        const { tap, press } = infoIconRelease(
+            this.tap,
+            start ? e.clientX - start.x : 0,
+            start ? e.clientY - start.y : 0,
+        );
+        this.tap = tap;
+        this.props.press(...press);
     }
 
     private readonly onPointerCancel = (): void => {
@@ -425,7 +491,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     /**
      * The info icon of `time~HH:MM~icon` (colour `tTimeAdd`): below the time in the
      * standard and alternate layout, above it in the advanced layout and left of it in
-     * EasyView and tiles.
+     * EasyView and tiles. A tap on it sends `bInfo,button,<taps>` ({@link infoIconTap}).
      *
      * @param top top edge of the icon box
      * @param left left edge of the icon box
@@ -437,12 +503,24 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
             return null;
         }
         return (
-            <Icon
-                glyph={global.timeIcon}
-                size={size}
-                color={this.color(model.colors?.timeAdd)}
-                style={{ position: 'absolute', top, left }}
-            />
+            <div
+                data-role="infoIcon"
+                onPointerDown={(): void => this.clearLongPress()}
+                onPointerUp={(e): void => {
+                    e.stopPropagation();
+                    this.clearLongPress();
+                    this.infoIconTap(e);
+                    this.pointerStart = undefined;
+                }}
+                style={{ position: 'absolute', top, left, width: size, height: size }}
+            >
+                <Icon
+                    glyph={global.timeIcon}
+                    size={size}
+                    color={this.color(model.colors?.timeAdd)}
+                    style={{ display: 'block' }}
+                />
+            </div>
         );
     }
 

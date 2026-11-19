@@ -66,6 +66,7 @@ var import_default_pages = require("../const/default-pages");
 var import_no_script = require("../configuration/no-script");
 var import_berry_driver = require("../const/berry-driver");
 var import_popupNotify3 = require("../pages/popupNotify3");
+var import_screensaver_info_icon = require("../pages/screensaver-info-icon");
 var import_display_diagnosis = require("./display-diagnosis");
 const DefaultOptions = {
   format: {
@@ -554,7 +555,7 @@ class Panel extends import_library.BaseClass {
     }
   }
   init = async () => {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     if (this.unload || this.adapter.unload) {
       return;
     }
@@ -868,6 +869,24 @@ class Panel extends import_library.BaseClass {
       `panels.${this.name}.cmd.screenSaver.infoIcon`,
       (_e = (_d = this.screenSaver) == null ? void 0 : _d.infoIcon) != null ? _e : "",
       definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoText`);
+    if (state && typeof state.val === "string" && this.screenSaver) {
+      this.screenSaver.infoText = state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.infoText`,
+      (_g = (_f = this.screenSaver) == null ? void 0 : _f.infoText) != null ? _g : "",
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.infoText
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.clockBlink`);
+    if (state && state.val != null && this.screenSaver) {
+      this.screenSaver.clockBlink = !!state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.clockBlink`,
+      (_i = (_h = this.screenSaver) == null ? void 0 : _h.clockBlink) != null ? _i : false,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink
     );
     if (this.buttons && this.screenSaver) {
       const entries = Object.entries(this.buttons);
@@ -1499,6 +1518,23 @@ class Panel extends import_library.BaseClass {
             await this.statesControler.setInternalState(
               `${this.name}/cmd/screenSaverInfoIcon`,
               state.val,
+              false
+            );
+          }
+          break;
+        }
+        case "screenSaver.infoText": {
+          if (state && state.val != null && typeof state.val === "string" && this.screenSaver) {
+            this.screenSaver.infoText = state.val;
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoText`, state.val);
+          }
+          break;
+        }
+        case "screenSaver.clockBlink": {
+          if (state && state.val != null) {
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screensaverClockBlink`,
+              !!state.val,
               false
             );
           }
@@ -2297,6 +2333,10 @@ class Panel extends import_library.BaseClass {
             }
             break;
           }
+          if (this._activePage === this.screenSaver && event.id === import_screensaver_info_icon.SCREENSAVER_INFO_ICON_ID && event.action === "button") {
+            await this.screenSaver.onInfoIconTap(event);
+            break;
+          }
           if (this._activePage === this.screenSaver && event.action === "button" && event.opt !== "" && this.screenSaver.isIndicatorEvent(event)) {
             if (this.screenSaver.onIndicatorWakeTap(event.opt)) {
               break;
@@ -2437,7 +2477,7 @@ class Panel extends import_library.BaseClass {
   sendtempOffsetToPanel(_value) {
   }
   onInternalCommand = async (id, state) => {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     if (!id.startsWith(this.name)) {
       return null;
     }
@@ -2714,6 +2754,17 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "cmd/screensaverClockBlink": {
+          if (this.screenSaver) {
+            this.screenSaver.clockBlink = !!state.val;
+            await this.library.writedp(
+              `panels.${this.name}.cmd.screenSaver.clockBlink`,
+              !!state.val,
+              definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink
+            );
+          }
+          break;
+        }
         case "cmd/screensaverTextNotification": {
           if (this.screenSaver && typeof state.val === "string") {
             this.screenSaver.textNotification = state.val;
@@ -2853,6 +2904,9 @@ ${this.info.tasmota.onlineVersion}`;
       case "cmd/screenSaverInfoIcon": {
         return (_b = (_a = this.screenSaver) == null ? void 0 : _a.infoIcon) != null ? _b : "";
       }
+      case "cmd/screensaverClockBlink": {
+        return (_d = (_c = this.screenSaver) == null ? void 0 : _c.clockBlink) != null ? _d : false;
+      }
       case "cmd/screenSaverLayout": {
         if (this.screenSaver) {
           return import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode);
@@ -2860,7 +2914,7 @@ ${this.info.tasmota.onlineVersion}`;
         break;
       }
       case "info/PopupInfo": {
-        return (_c = this.data["info/PopupInfo"]) != null ? _c : null;
+        return (_e = this.data["info/PopupInfo"]) != null ? _e : null;
       }
       case "cmd/hideCards": {
         return this.hideCards;

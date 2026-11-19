@@ -57,6 +57,8 @@ export const genericStateObjects: {
                 };
                 screenSaver: customChannelType & {
                     infoIcon: ioBroker.StateObject;
+                    infoText: ioBroker.StateObject;
+                    clockBlink: ioBroker.StateObject;
                     timeout: ioBroker.StateObject;
                     doubleClick: ioBroker.StateObject;
                     layout: Omit<ioBroker.StateObject, 'common'> & {
@@ -90,6 +92,7 @@ export const genericStateObjects: {
                 right: ioBroker.StateObject;
                 indicator: ioBroker.StateObject;
                 indicatorLong: ioBroker.StateObject;
+                infoIcon: ioBroker.StateObject;
                 screensaverGesture: ioBroker.StateObject;
             };
             pagePopup: customChannelType & {
@@ -304,6 +307,19 @@ export const genericStateObjects: {
                         name: 'StateObjects.buttons.indicatorLong',
                         type: 'boolean',
                         role: 'button.long',
+                        read: true,
+                        write: false,
+                        def: true,
+                    },
+                    native: {},
+                },
+                infoIcon: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.buttons.infoIcon',
+                        type: 'boolean',
+                        role: 'button.press',
                         read: true,
                         write: false,
                         def: true,
@@ -531,6 +547,32 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: '',
+                        },
+                        native: {},
+                    },
+                    infoText: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.infoText',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    clockBlink: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.clockBlink',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                            def: false,
                         },
                         native: {},
                     },
@@ -2474,6 +2516,17 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
             },
         },
         'cmd/screensaverActivateNotification': {
+            val: false,
+            ack: true,
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'switch',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/screensaverClockBlink': {
             val: false,
             ack: true,
             common: {
