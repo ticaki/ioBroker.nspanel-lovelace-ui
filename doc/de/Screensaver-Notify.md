@@ -17,6 +17,7 @@ Inhalt:
 - [Speichern – was der Adapter daraus macht](#8-speichern--was-der-adapter-daraus-macht)
 - [Wenn etwas nicht wie erwartet aussieht](#9-wenn-etwas-nicht-wie-erwartet-aussieht)
 - [Farben: Überschrift, Text und Hintergrund](#10-farben-überschrift-text-und-hintergrund)
+  - [Hintergrund blinkt](#hintergrund-blinkt)
 
 ## 1. Die Liste
 ![Der Screensaver-Editor mit der Knopfleiste unter dem Panelbild](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
@@ -153,6 +154,7 @@ Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Te
 - **Der Summer bleibt still:** Nachtmodus, `cmd.isBuzzerAllowed` aus – oder die angezeigte Meldung hat gar nicht gewechselt.
 - **Die Überschrift wird falsch umbrochen:** Die Zeichenfolge `<sp!it>` darf im Text nicht vorkommen, der Adapter trennt daran intern die Zeilen. Ein `~` im Text wird durch `-` ersetzt.
 - **Eine Änderung taucht auf einem anderen Bildschirmschoner auf:** Die Liste ist gemeinsam – siehe „Auch verwendet von“ in der Zeile. Vor einer abweichenden Fassung erst **Duplizieren**.
+- **Der Hintergrund blinkt nicht:** Das kann erst TFT 6.2.0 (und das Web-Panel), und nur bei einer Benachrichtigung mit Haken **Hintergrund blinkt** – siehe [Hintergrund blinkt](#hintergrund-blinkt).
 
 ## 10. Farben: Überschrift, Text und Hintergrund
 
@@ -164,6 +166,19 @@ Die Farben der Schlagzeile stellt nicht der Dialog ein, sondern das [Farbthema](
 | **Text** | Schriftfarbe der Zeile darunter. Im Admin: **Schlagzeile Text**. |
 | **Hintergrund** | Fläche hinter beiden Zeilen, damit sich die Schlagzeile vom Bildschirmschoner abhebt. Sie reicht über die volle Breite von der Überschrift bis zum unteren Rand des Displays – liegt darunter noch etwas, das sichtbar bleibt (die Leiste mit den Symbolen beim erweiterten Screensaver, die Farbbalken bei EasyView und den Kacheln), endet sie davor. Im Admin: **Schlagzeile Hintergrund**. |
 
-Mit den fertigen Themen sind Überschrift und Text weiß wie bisher; der Hintergrund ist leicht vom Thema abgesetzt, beim Standardthema Grau (RGB 56/56/56). Eigene Werte gibt es mit dem Farbthema **Benutzer Farben** im Bereich **Screensaver**.
+Mit den fertigen Themen sind Überschrift und Text weiß wie bisher; der Hintergrund ist der Hintergrund des Bildschirmschoners, leicht aufgehellt – beim Standardthema Grau (RGB 56/56/56). Eigene Werte gibt es mit dem Farbthema **Benutzer Farben** im Bereich **Screensaver**.
 
 > **Den Hintergrund zeigt erst TFT 6.2.0.** Ältere TFTs zeigen die Schlagzeile weiter auf dem Hintergrund des Bildschirmschoners, Überschrift- und Textfarbe übernehmen sie. Das [Web-Panel](WebPanel) zeichnet die Fläche wie die TFT.
+
+### Hintergrund blinkt
+
+Eine einzelne Benachrichtigung kann zusätzlich auf sich aufmerksam machen: Ihr Hintergrund wechselt dann jede Sekunde zwischen dem Hintergrund aus dem Farbthema und einer zweiten Farbe. Eingestellt wird das im Dialog der Benachrichtigung, im Abschnitt **Blinken** unter dem Summer:
+
+| Feld | Bedeutung |
+|---|---|
+| **Hintergrund blinkt** | Schaltet das Blinken für diese Benachrichtigung ein. Ohne Haken blinkt nichts. |
+| **Zweite Farbe** | Erscheint mit dem Haken, vorbelegt mit Dunkelrot (`#9c201a`). Die erste Farbe ist immer der Hintergrund aus dem Farbthema. |
+
+Das Panel blinkt selbst – der Adapter schickt die Meldung nur einmal. Das Blinken endet, sobald die Benachrichtigung verschwindet (Datenpunkt aus, weggetippt) oder eine andere ohne Blinken an ihre Stelle tritt.
+
+> **Nur ab TFT 6.2.0 und auf dem Web-Panel.** Ältere TFTs zeigen gar keinen Hintergrund und damit auch kein Blinken. Eine Schlagzeile, die ein Skript per `sendTo` oder über `cmd` setzt, blinkt nie.

@@ -94,15 +94,17 @@ The notification is the [notification on the screensaver](Screensaver-Notify). I
 | **Notification text** | `fgNotifyText` | Font colour of the text below it. |
 | **Notification background** | `bgNotify` | Area behind headline and text: full width, from the headline down to the lower edge of the display or to the bar that stays visible below it. Only from TFT 6.2.0 on and on the web panel – older TFTs keep showing the notification on the background of the screensaver. |
 
-Defaults of the themes: headline and text are white in all themes, as before. The background is set off slightly from the theme:
+Defaults of the themes: headline and text are white in all themes, as before. The background is the background of the screensaver in the respective theme, lightened by 27 per colour channel – the same distance as with the default theme, the hue stays:
 
-| Theme | Background |
-|---|---|
-| Default | grey RGB 56/56/56 (`#383838`) |
-| Tropical | blue RGB 0/84/160 – lighter than the dark blue background of the theme |
-| Technical | slate grey RGB 40/56/72 |
-| Sunset | dark brown RGB 72/40/24 |
-| Vulcano | dark red RGB 92/12/12 – darker than the red background of the theme |
+| Theme | Background of the screensaver | Background of the notification |
+|---|---|---|
+| Default | RGB 29/29/29 | RGB 56/56/56 (`#383838`) |
+| Tropical | RGB 0/60/120 | RGB 27/87/147 |
+| Technical | RGB 10/13/30 | RGB 37/40/57 |
+| Sunset | RGB 48/27/63 | RGB 75/54/90 |
+| Vulcano | RGB 180/22/0 | RGB 207/49/27 |
+
+With **User colors** the colour of the field **Notification background** applies; if it stays empty, the one of the default theme.
 
 ## Observations
 - Weather colors are currently not directly targeted in the TS code – likely reserved for panel rendering or future logic.

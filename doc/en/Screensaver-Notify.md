@@ -17,6 +17,7 @@ Contents:
 - [Saving – what the adapter does with it](#8-saving--what-the-adapter-does-with-it)
 - [If something does not look as expected](#9-if-something-does-not-look-as-expected)
 - [Colours: headline, text and background](#10-colours-headline-text-and-background)
+  - [Background blinks](#background-blinks)
 
 ## 1. The list
 ![The screensaver editor with the button bar below the panel picture](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
@@ -153,6 +154,7 @@ On the panel this becomes a headline line (icon + prefix + value/text + unit) an
 - **The buzzer stays silent:** Night mode, `cmd.isBuzzerAllowed` off – or the displayed message did not change at all.
 - **The headline breaks in the wrong place:** The sequence `<sp!it>` must not appear in the text, the adapter splits the lines at it internally. A `~` in the text is replaced by `-`.
 - **A change shows up on another screensaver:** The list is shared – see "Also used by" in the row. **Duplicate** first if a different version is needed.
+- **The background does not blink:** Only TFT 6.2.0 (and the web panel) can do that, and only for a notification with the tick **Background blinks** – see [Background blinks](#background-blinks).
 
 ## 10. Colours: headline, text and background
 
@@ -164,6 +166,19 @@ The colours of the notification are not set in the dialog but by the [colour the
 | **Text** | Font colour of the line below. In the admin: **Notification text**. |
 | **Background** | Area behind both lines, so that the notification stands out from the screensaver. It spans the full width from the headline down to the lower edge of the display – if something lies below it that stays visible (the bar with the icons of the advanced screensaver, the colour bars of EasyView and the tiles), it ends above it. In the admin: **Notification background**. |
 
-With the ready-made themes headline and text are white as before; the background is set off slightly from the theme, grey (RGB 56/56/56) with the default theme. Own values come with the colour theme **User colors** in the section **Screensaver**.
+With the ready-made themes headline and text are white as before; the background is the background of the screensaver, slightly lightened – grey (RGB 56/56/56) with the default theme. Own values come with the colour theme **User colors** in the section **Screensaver**.
 
 > **Only TFT 6.2.0 shows the background.** Older TFTs keep showing the notification on the background of the screensaver; they do take over the headline and text colour. The [web panel](WebPanel) draws the area like the TFT.
+
+### Background blinks
+
+A single notification can draw attention to itself on top: its background then alternates every second between the background of the colour theme and a second colour. This is set in the dialog of the notification, in the section **Blinking** below the buzzer:
+
+| Field | Meaning |
+|---|---|
+| **Background blinks** | Switches the blinking on for this notification. Without the tick nothing blinks. |
+| **Second colour** | Appears with the tick, preset to dark red (`#9c201a`). The first colour is always the background of the colour theme. |
+
+The panel blinks by itself – the adapter sends the message only once. The blinking ends as soon as the notification disappears (state off, tapped away) or another one without blinking takes its place.
+
+> **Only from TFT 6.2.0 on and on the web panel.** Older TFTs show no background at all and therefore no blinking either. A notification that a script sets via `sendTo` or through `cmd` never blinks.

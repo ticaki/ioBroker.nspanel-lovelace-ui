@@ -94,15 +94,17 @@ Die Schlagzeile ist die [Benachrichtigung auf dem Bildschirmschoner](Screensaver
 | **Schlagzeile Text** | `fgNotifyText` | Schriftfarbe des Textes darunter. |
 | **Schlagzeile Hintergrund** | `bgNotify` | Fläche hinter Überschrift und Text: volle Breite, von der Überschrift bis zum unteren Rand des Displays bzw. bis zu der Leiste, die darunter stehen bleibt. Erst ab TFT 6.2.0 und auf dem Web-Panel – ältere TFTs zeigen die Schlagzeile weiter auf dem Hintergrund des Bildschirmschoners. |
 
-Standardwerte der Themen: Überschrift und Text sind in allen Themen weiß, so wie bisher. Der Hintergrund setzt sich leicht vom Thema ab:
+Standardwerte der Themen: Überschrift und Text sind in allen Themen weiß, so wie bisher. Der Hintergrund ist der Hintergrund des Bildschirmschoners im jeweiligen Thema, je Farbkanal um 27 aufgehellt – derselbe Abstand wie beim Standardthema, der Farbton bleibt:
 
-| Thema | Hintergrund |
-|---|---|
-| Standard | Grau RGB 56/56/56 (`#383838`) |
-| Tropisch | Blau RGB 0/84/160 – heller als der dunkelblaue Hintergrund des Themas |
-| Technisch | Schiefergrau RGB 40/56/72 |
-| Sonnenuntergang | Dunkelbraun RGB 72/40/24 |
-| Vulkan | Dunkelrot RGB 92/12/12 – dunkler als der rote Hintergrund des Themas |
+| Thema | Hintergrund des Bildschirmschoners | Hintergrund der Schlagzeile |
+|---|---|---|
+| Standard | RGB 29/29/29 | RGB 56/56/56 (`#383838`) |
+| Tropisch | RGB 0/60/120 | RGB 27/87/147 |
+| Technisch | RGB 10/13/30 | RGB 37/40/57 |
+| Sonnenuntergang | RGB 48/27/63 | RGB 75/54/90 |
+| Vulkan | RGB 180/22/0 | RGB 207/49/27 |
+
+Mit **Benutzer Farben** gilt die Farbe aus dem Feld **Schlagzeile Hintergrund**; bleibt es leer, die des Standardthemas.
 
 ## Beobachtungen
 - Wetter-Farben werden aktuell nicht direkt im TS-Code genutzt – möglich, dass sie für Panel-Rendering reserviert sind.
