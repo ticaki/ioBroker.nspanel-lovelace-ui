@@ -9,6 +9,7 @@ Wie der Bildschirmschoner selbst angelegt wird, steht unter [Screensaver im Admi
 Inhalt:
 - [Die Liste](#1-die-liste)
 - [Inhalt: Überschrift und Text](#2-inhalt-überschrift-und-text)
+  - [Wann sich die Meldung am Panel ändert](#wann-sich-die-meldung-am-panel-ändert)
 - [Wann anzeigen: Datenpunkte und Bedingung](#3-wann-anzeigen-datenpunkte-und-bedingung)
 - [Priorität: welche Meldung das Panel zeigt](#4-priorität-welche-meldung-das-panel-zeigt)
 - [Quittieren und Gruppen-ID](#5-quittieren-und-gruppen-id)
@@ -63,6 +64,21 @@ Ganz oben im Dialog steht die **Beschreibung**, darunter die Vorschau, dann der 
 
 > ⚠️ Ob ein Feld als Text oder als Datenpunkt gilt, entscheidet allein, **ob es die ID wirklich gibt**. Ein Tippfehler in der ID landet unbemerkt als Text auf dem Panel; gewarnt wird nicht. Dasselbe gilt für eine ID, die auf einen Punkt endet (`pirate-weather.0.` statt `pirate-weather.0.temperature`) – sie wird nie als Datenpunkt erkannt. Die [Vorschau](#7-vorschau-und-was-der-dialog-prüft) ist die Probe aufs Exempel: Steht dort der Wert, wurde die ID erkannt.
 
+### Wann sich die Meldung am Panel ändert
+
+Ändert sich der Wert eines Datenpunkts in **einem** der Inhaltsfelder – Icon, Überschrift-Präfix, Überschrift, Überschrift-Einheit, Text-Präfix, Text oder Text-Suffix –, schickt der Adapter die Meldung mit dem neuen Inhalt ans Panel.
+
+| Was sich ändert | Wann es am Panel ankommt |
+|---|---|
+| **Inhalt** der angezeigten Meldung | **Höchstens alle 30 Sekunden.** Liegt das letzte Senden länger zurück, sofort; sonst einmal am Ende der 30 Sekunden mit den Werten von dann. Zwischenstände entfallen. So überflutet ein Wert, der sich sekündlich ändert (etwa eine Spannung), das Panel nicht. |
+| **An/Aus** über die Datenpunkte und die Bedingung aus [Abschnitt 3](#3-wann-anzeigen-datenpunkte-und-bedingung) | **Sofort:** die Meldung erscheint oder verschwindet, und eine andere Meldung kommt durch ihre [Priorität](#4-priorität-welche-meldung-das-panel-zeigt) sofort an die Reihe. |
+
+> **Weggetippt bleibt weggetippt.** Jede Berührung des Bildschirmschoners blendet die Meldung am Panel aus – das macht das Display selbst. Bleibt der Bildschirmschoner dabei stehen (etwa bei einem Wisch oder einem einzelnen Tipp mit eingeschaltetem Doppelklick), bleibt die Meldung auch bei neuem Inhalt ausgeblendet. Sie kommt zurück, wenn der Bildschirmschoner das nächste Mal erscheint, also nach dem nächsten Abdunkeln. Kommt über ihre Datenpunkte eine andere Meldung an die Reihe, erscheint diese sofort. Ist die Standby-Helligkeit 0, hat der erste Tipp auf das dunkle Display nichts ausgeblendet – dann kommt auch neuer Inhalt weiter an.
+
+Eine **quittierte** Meldung bleibt ausgeblendet, auch wenn sich ihr Inhalt ändert – sie kommt erst wieder, wenn ihr Datenpunkt aus- und wieder angeht (siehe [Quittieren](#5-quittieren-und-gruppen-id)).
+
+Eine Meldung, die per `sendTo` (`screensaverNotify`) oder über `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` gesetzt wird, ist nicht im Admin konfiguriert und wird nicht gebremst.
+
 ## 3. Wann anzeigen: Datenpunkte und Bedingung
 ![Datenpunkte, Bedingung, Priorität, Quittieren und Summer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
@@ -102,7 +118,7 @@ Das Panel zeigt **immer nur eine** Benachrichtigung. Sind mehrere gleichzeitig a
 
 Drei Möglichkeiten: **Aus**, **Standard** (`1,2,3,0xF54`) oder **Eigene Tonfolge**. Bei „Eigene“ ist das Feld **Tonfolge** Pflicht; es nimmt die Argumente des Tasmota-Befehls `Buzzer` in der Form *Anzahl,an,aus,Melodie*. Leerzeichen am Rand schneidet der Admin beim Übernehmen weg.
 
-Der Summer ertönt nur, **wenn die angezeigte Benachrichtigung wechselt** – nicht wiederholt, solange dieselbe Meldung steht. Außerdem schweigt er im **Nachtmodus** (`panels.<Panel>.cmd.dim.dayMode` aus) und wenn `panels.<Panel>.cmd.isBuzzerAllowed` aus ist; dieser State ist beschreibbar und steht von Haus aus auf `true`.
+Der Summer ertönt nur, **wenn die angezeigte Benachrichtigung wechselt** – nicht wiederholt, solange dieselbe Meldung steht, auch nicht, wenn sich ihr Inhalt ändert. Außerdem schweigt er im **Nachtmodus** (`panels.<Panel>.cmd.dim.dayMode` aus) und wenn `panels.<Panel>.cmd.isBuzzerAllowed` aus ist; dieser State ist beschreibbar und steht von Haus aus auf `true`.
 
 > Auf einem [Web-Panel](WebPanel) erscheint dieselbe Meldung. Der Summer ist der einzige Tasmota-Befehl, den der Adapter an den Browser durchreicht – dort spielt ihn der Browser ab, allerdings erst, nachdem im Browser einmal getippt wurde.
 
@@ -149,6 +165,7 @@ Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Te
 - **Ein Tipp auf den Bildschirmschoner tut nichts:** Es lag eine quittierbare Benachrichtigung darüber – der erste Tipp hat sie quittiert, der nächste führt weiter. Bleibt das Panel auch bei einer **nicht** quittierbaren Meldung im Bildschirmschoner, läuft noch 2.2.0 oder älter; siehe [Quittieren](#5-quittieren-und-gruppen-id).
 - **Eine gelöschte Benachrichtigung taucht wieder auf:** Nicht gelöscht, nur nicht mehr angehakt. Ein gelöschter Bildschirmschoner nimmt seine Benachrichtigungen nicht mit – sie stehen weiter in der gemeinsamen Liste.
 - **Quittieren wirkt auf mehr als gedacht:** Benachrichtigungen mit derselben **Gruppen-ID** werden gemeinsam ausgeblendet, auch auf anderen Panels.
+- **Ein Wert auf dem Panel hinkt hinterher:** Neuer Inhalt derselben Meldung kommt höchstens alle 30 Sekunden ans Panel, siehe [Wann sich die Meldung am Panel ändert](#wann-sich-die-meldung-am-panel-ändert). Wurde die Meldung weggetippt, erscheint sie erst nach dem nächsten Abdunkeln wieder.
 - **Der Summer bleibt still:** Nachtmodus, `cmd.isBuzzerAllowed` aus – oder die angezeigte Meldung hat gar nicht gewechselt.
 - **Die Überschrift wird falsch umbrochen:** Die Zeichenfolge `<sp!it>` darf im Text nicht vorkommen, der Adapter trennt daran intern die Zeilen. Ein `~` im Text wird durch `-` ersetzt.
 - **Eine Änderung taucht auf einem anderen Bildschirmschoner auf:** Die Liste ist gemeinsam – siehe „Auch verwendet von“ in der Zeile. Vor einer abweichenden Fassung erst **Duplizieren**.

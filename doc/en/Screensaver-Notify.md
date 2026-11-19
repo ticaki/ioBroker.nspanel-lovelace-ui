@@ -9,6 +9,7 @@ How the screensaver itself is created is described under [Screensaver in the adm
 Contents:
 - [The list](#1-the-list)
 - [Content: headline and text](#2-content-headline-and-text)
+  - [When the message changes on the panel](#when-the-message-changes-on-the-panel)
 - [When to show: states and condition](#3-when-to-show-states-and-condition)
 - [Priority: which message the panel shows](#4-priority-which-message-the-panel-shows)
 - [Dismissing and the group ID](#5-dismissing-and-the-group-id)
@@ -63,6 +64,21 @@ At the very top of the dialog stands the **Description**, below it the preview, 
 
 > ⚠️ Whether a field counts as a text or as a state depends solely on **whether the id actually exists**. A typo in an id silently ends up as text on the panel; there is no warning. The same holds for an id that ends on a dot (`pirate-weather.0.` instead of `pirate-weather.0.temperature`) – it is never recognised as a state. The [preview](#7-preview-and-what-the-dialog-checks) is the proof: if the value appears there, the id was recognised.
 
+### When the message changes on the panel
+
+When the value of a state in **any** of the content fields changes – icon, headline prefix, headline, headline unit, text prefix, text or text suffix – the adapter sends the message with the new content to the panel.
+
+| What changes | When it reaches the panel |
+|---|---|
+| **Content** of the displayed message | **At most every 30 seconds.** If the last send is longer ago, at once; otherwise once at the end of the 30 seconds with the values of then. Intermediate values are dropped. So a value that changes every second (a voltage, say) does not flood the panel. |
+| **On/off** through the states and the condition of [section 3](#3-when-to-show-states-and-condition) | **At once:** the message appears or disappears, and another message takes its turn by its [priority](#4-priority-which-message-the-panel-shows) at once. |
+
+> **Tapped away stays away.** Every touch of the screensaver hides the message on the panel – the display does that by itself. If the screensaver stays (a swipe, say, or a single tap with double click switched on), the message stays hidden, also with a new content. It comes back the next time the screensaver appears, that is after the next dimming. If its states bring another message up, that one appears at once. With a standby brightness of 0 the first tap on the dark display hid nothing – then new content still arrives.
+
+A **dismissed** message stays hidden, also when its content changes – it only comes back when its state goes off and on again (see [Dismissing](#5-dismissing-and-the-group-id)).
+
+A message set by `sendTo` (`screensaverNotify`) or through `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` is not configured in the admin and is not throttled.
+
 ## 3. When to show: states and condition
 ![States, condition, priority, dismissing and buzzer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
@@ -102,7 +118,7 @@ The panel shows **one** notification at a time. If several are active at once, t
 
 Three choices: **Off**, **Default** (`1,2,3,0xF54`) or **Own tone sequence**. With "own" the field **Tone sequence** is mandatory; it takes the arguments of the Tasmota command `Buzzer` in the form *count,on,off,tune*. Spaces at the edges are cut off by the admin when applying.
 
-The buzzer only sounds **when the displayed notification changes** – not repeatedly while the same message stands. It also stays silent in **night mode** (`panels.<panel>.cmd.dim.dayMode` off) and when `panels.<panel>.cmd.isBuzzerAllowed` is off; this state is writable and stands on `true` by default.
+The buzzer only sounds **when the displayed notification changes** – not repeatedly while the same message stands, not even when its content changes. It also stays silent in **night mode** (`panels.<panel>.cmd.dim.dayMode` off) and when `panels.<panel>.cmd.isBuzzerAllowed` is off; this state is writable and stands on `true` by default.
 
 > On a [web panel](WebPanel) the same message appears. The buzzer is the only Tasmota command the adapter passes on to the browser – there the browser plays it, but only after the browser has been tapped once.
 
@@ -149,6 +165,7 @@ On the panel this becomes a headline line (icon + prefix + value/text + unit) an
 - **A tap on the screensaver does nothing:** A dismissible notification lay over it – the first tap dismissed it, the next one leads on. If the panel stays in the screensaver with a message that **cannot** be dismissed as well, it is still running 2.2.0 or older; see [Dismissing](#5-dismissing-and-the-group-id).
 - **A deleted notification turns up again:** Not deleted, only no longer ticked. A deleted screensaver does not take its notifications with it – they stay in the common list.
 - **Dismissing affects more than expected:** Notifications with the same **Group ID** are hidden together, on other panels as well.
+- **A value on the panel lags behind:** New content of the same message reaches the panel at most every 30 seconds, see [When the message changes on the panel](#when-the-message-changes-on-the-panel). A message that was tapped away only appears again after the next dimming.
 - **The buzzer stays silent:** Night mode, `cmd.isBuzzerAllowed` off – or the displayed message did not change at all.
 - **The headline breaks in the wrong place:** The sequence `<sp!it>` must not appear in the text, the adapter splits the lines at it internally. A `~` in the text is replaced by `-`.
 - **A change shows up on another screensaver:** The list is shared – see "Also used by" in the row. **Duplicate** first if a different version is needed.
