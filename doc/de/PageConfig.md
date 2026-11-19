@@ -133,7 +133,7 @@ Im Auswahlfeld ein Panel wählen und mit **+** hinzufügen. Zusätzlich gibt es 
 
 Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie gehören zu den beiden Navigationspfeilen oben am Panel:
 
-| Feld | Geste am Panel |
+| Feld | Bedienung am Panel |
 |---|---|
 | **next** | rechten Pfeil kurz drücken oder nach rechts wischen |
 | **prev** | linken Pfeil kurz drücken oder nach links wischen |
@@ -195,8 +195,8 @@ Die drei Blätter-Zeilen erscheinen bei **Menü-Seiten** (Grid, Grid2, Grid3, En
 
 Ist *Seiten verbergen* eingeschaltet, gilt für jede Seite mit dem Haken *Versteckt*:
 
-- **Wischen und die Pfeile** überspringen sie; es geht mit der nächsten Seite in derselben Richtung weiter.
-- **Ein gezieltes Ziel** — ein Navigations-Element, ein *parent*/*home*-Sprung, `cmd.goToNavigationPoint` — öffnet sie nicht. Das Panel bleibt auf der angezeigten Seite und meldet *„Seite gesperrt“*: ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup.
+- **Wischen und die Pfeile** überspringen sie – auch der lange Druck; es geht von der übersprungenen Seite aus in derselben Richtung weiter, eine Sperrmeldung gibt es dabei nicht.
+- **Ein gezieltes Ziel** — ein Navigations-Element, `cmd.goToNavigationPoint`, ein Hardware-Taster mit *Zu einem Navigationspunkt wechseln* — öffnet sie nicht. Das Panel bleibt auf der angezeigten Seite und meldet *„Seite gesperrt“*: ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup.
 - **Im Admin** zeigt ein geschlossenes Auge solche Seiten, in der Seitenliste und im [Navigation Flow](naviFlow); der Tooltip lautet *Gesperrt (versteckt): auf dem Panel nur erreichbar, wenn „Seiten verbergen“ aus ist*. Das Auge erscheint unabhängig davon, ob *Seiten verbergen* gerade eingeschaltet ist.
 
 Ist *Seiten verbergen* ausgeschaltet, verhalten sich versteckte Seiten wie alle anderen. Typischer Einsatz: Wartungs- oder Expertenseiten, die nur zeitweise erreichbar sein sollen — der Datenpunkt lässt sich dafür z. B. per Skript an eine Anwesenheit oder Uhrzeit koppeln.

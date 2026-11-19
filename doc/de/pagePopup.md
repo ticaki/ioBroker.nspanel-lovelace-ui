@@ -156,7 +156,7 @@ Was gedrückt wurde, steht hinterher in Datenpunkten – **nicht** unter `cmd`:
 
 - **Langer Text rotiert.** Passt der Text nicht in die Zeilen, die `textSize` erlaubt, blättert das Panel
   ihn durch (etwa 3 Sekunden je Abschnitt, bei der Rückkehr zum Anfang kürzer).
-- **Ein unbekanntes Symbol lässt der Adapter weg** und schickt die Meldung ohne Symbol (Warnung im Log).
+- **Nur ein leeres Symbolfeld bleibt leer.** Einen unbekannten Namen reicht der Adapter unverändert ans Panel durch; im Log steht dazu nur ein Eintrag der Stufe *debug*.
 - **`alwaysOn: true` hält das Popup offen**, sonst greift der Panel-Timeout und der Bildschirmschoner
   übernimmt. Tippt man den Bildschirmschoner an, holt das Panel ein offenes Popup zurück.
 
@@ -164,13 +164,13 @@ Was gedrückt wurde, steht hinterher in Datenpunkten – **nicht** unter `cmd`:
 
 Für Meldungen, die man aus der Entfernung erkennen soll – WC besetzt, Unwetter, Waschmaschine fertig: Mit
 **`largeIcon: true`** zeigt das Panel die Meldung als großes Symbol, darunter **eine Zeile Text**, dazu das X und bis
-zu zwei Knöpfe als senkrechte Spalten links und rechts. Eine neue Schnittstelle gibt es nicht – es sind die Felder
+zu zwei Knöpfe als senkrechte Spalten links und rechts; im US-Hochformat stehen sie nebeneinander am unteren Rand. Eine neue Schnittstelle gibt es nicht – es sind die Felder
 aus Weg 1 und Weg 2 plus `largeIcon`. **Ohne `largeIcon` bleibt alles wie bisher**: `icon` ist dann das kleine
 Symbol vor der Überschrift.
 
 | Unwetter mit zwei Knöpfen | Besetzt, ohne Knöpfe | Langer Text in einer Zeile | 24 px in zwei Zeilen |
 |---|---|---|---|
-| ![Großes orangefarbenes Gewittersymbol, links ein grüner Knopf mit Haken, rechts ein grauer Knopf mit Wecker, darunter „Unwetterwarnung“](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Rotes Verbotsschild ohne Knöpfe, darunter „Besetzt“](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Waschmaschine mit einem Knopf rechts; der zu lange Text ist mit ... gekürzt](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![Mit textSize 0 steht der Text kleiner in zwei Zeilen](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
+| ![Großes orangefarbenes Gewittersymbol, links ein grüner Knopf mit Haken, rechts ein grauer Knopf mit Wecker, darunter „Unwetterwarnung“](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Rotes Verbotsschild ohne Knöpfe, darunter „WC besetzt“](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Waschmaschine mit Warnzeichen und einem Knopf rechts, darunter „Waschmaschine: Störung“ über die ganze Breite](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![Mit textSize 0 steht der Text kleiner in zwei Zeilen](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
 
 Voraussetzung ist ein Panel mit **TFT 6.2.0 oder neuer** oder ein Web-Panel. Ein Panel mit älterer TFT zeigt
 dieselbe Meldung klassisch.
@@ -234,7 +234,7 @@ Knopf **Große Benachrichtigung (popupNotify3)**.
 der HMI und gelten wie jeder ungültige Wert als `3`. Die Zeilen gelten für das klassische Popup und für das
 [Große Symbol](#6-großes-symbol-ab-tft-620).
 
-| Wert | Schrift | Symbole | Zeichenvorrat | Typisch für | Zeilen klassisch (us-p, web-p) | Zeilen großes Symbol (us-p) |
+| Wert | Schrift | Symbole | Zeichenvorrat | Typisch für | Zeilen klassisch | Zeilen großes Symbol (quer; hochkant) |
 |---|---|---|---|---|---|---|
 | `0` | 24 px | nein | groß: Latein, Griechisch, Kyrillisch, teils CJK | lange Meldungen | 7 (web-p 20) | 2 (4) |
 | `1` | 32 px | ja | Latin-1 (kein `€`) + Symbole | Text mit eingebetteten Symbolen | 5 (web-p 15) | 1 (3), wie `2` |
@@ -245,7 +245,7 @@ der HMI und gelten wie jeder ungültige Wert als `3`. Die Zeilen gelten für das
 | `8` | 96 px fett | nein | nur ASCII, gebaut als Uhrzeit-Schrift | Uhrzeit, Zahl | 1 (web-p 3) | 1 (2), wie `3` |
 
 - **Modelle:** Die Schriften `1`, `3`, `4`, `5` und `8` sind auf allen Panels gleich. `0` und `2` unterscheiden sich:
-  das us-l hat deutlich mehr chinesische, japanische und koreanische Zeichen, dem us-p fehlen u. a. die Währungszeichen
+  das us-l hat deutlich mehr chinesische Schriftzeichen (Kana und Hangul fehlen allen Modellen), dem us-p fehlen u. a. die Währungszeichen
   (`€`). Die Web-Panels zeichnen mit Browser-Schriften und zeigen deshalb fast alles.
 - **Fehlende Zeichen erscheinen nicht.** Hat die Schrift ein Zeichen nicht, lässt das Panel es kommentarlos weg –
   ohne Lücke. Beispiel: `Größe` mit `5` wird zu `Gre`.
@@ -261,7 +261,7 @@ klassisch. Der Adapter schreibt das einmal als Warnung ins Log.
 
 **Ohne gültiges Symbol erscheint das Info-Symbol.** Fehlt `icon`, ist der Name unbekannt oder steht das Symbol nicht
 in der Liste von Abschnitt 6, zeigt das Panel `information-outline` und der Adapter warnt einmal im Log. Ein
-unbekanntes Knopf-Symbol meldet er ebenfalls und nimmt stattdessen das Standard-Symbol.
+unbekanntes Knopf-Symbol meldet er ebenfalls und nimmt stattdessen das Standard-Symbol; gibt es für den Knopf keines, bleibt der Knopf weg.
 
 **Mit großem Symbol fehlen Überschrift und mittlerer Knopf.** `headline` und `buttonMid` werden dort nicht gezeigt.
 Wer auch ältere Panels bedient, füllt `headline` trotzdem aus.

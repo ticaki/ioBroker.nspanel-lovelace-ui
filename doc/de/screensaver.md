@@ -319,7 +319,7 @@ Ab der TFT 6.0.9 meldet das Panel den Druck auf einen Indikator erst beim **Losl
 - **Ist er keine Taste**, wirkt der Tipp wie ein Tipp auf den **Hintergrund** des Bildschirmschoners: Er folgt der Einstellung für den Doppelklick, blendet einen [Timer](#timer-statt-uhrzeit) zurück auf die Uhrzeit, quittiert eine [Benachrichtigung](#13-benachrichtigungen) und zählt für die Gesten. Der Bildschirmschoner wird damit nicht mehr sofort verlassen.
 - `panels.<Panel>.buttons.indicator-<n>` wird weiterhin bei **jedem** Tipp geschrieben.
 - Eine **Wischgeste**, die auf einem Indikator beginnt, sendet nur die Geste.
-- **Bei Standby-Helligkeit 0 weckt der erste Druck nur auf.** Ist das Display im Bildschirmschoner dunkel, schaltet der erste Druck auf einen Indikator nur das Licht ein – kurz oder lang: keine Aktion, kein Popup, kein State `indicator-<n>` oder `indicatorLong-<n>`; ab der TFT 6.2.0 blinkt dabei auch die Uhrzeit nicht. Erst der zweite Druck wirkt wie gewohnt. So löst ein Griff im Dunkeln (etwa an der Haustür) nichts aus.
+- **Bei Standby-Helligkeit 0 weckt der erste Druck nur auf.** Ist das Display im Bildschirmschoner dunkel (die Standby-Helligkeit des gerade geltenden Modus – Tag oder Nacht – steht auf 0), schaltet der erste Druck auf einen Indikator nur das Licht ein – kurz oder lang: keine Aktion, kein Popup, kein State `indicator-<n>` oder `indicatorLong-<n>`; ab der TFT 6.2.0 blinkt dabei auch die Uhrzeit nicht. Erst der zweite Druck wirkt wie gewohnt. So löst ein Griff im Dunkeln (etwa an der Haustür) nichts aus.
 
 Mit einer älteren TFT kommt der Druck ohne Zähler an: Ein Indikator **mit** Aktion führt sie aus, ein Indikator **ohne** Aktion schickt das Panel auf die Hauptseite.
 
@@ -339,7 +339,7 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 ![Der Item-Dialog eines Dimmer-Indikators mit geöffneter Auswahl „Aktion bei langem Drücken“ – hier mit „Popup öffnen“, weil der Kanal ein Dimmer ist](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - Ab der TFT **6.2.0** löst der lange Druck erst beim **Loslassen** aus: Liegt der Finger **500 ms**, blinkt die Uhrzeit gelb und grün – jetzt kann man loslassen; danach bekommt die Uhrzeit ihre Farbe zurück. Wer vorher loslässt, tippt kurz; eine Wischgeste verwirft auch den langen Druck. Mit der TFT 6.0.9 bis 6.1.x löst er nach 500 ms aus, noch während der Finger liegt. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
-- Ab der TFT **6.2.0** blinken nur Indikatoren, die eine **Aktion bei langem Drücken** haben (auch **Nur Datenpunkt auslösen**). Bei allen anderen bleibt die Uhrzeit ruhig, und auch ein langes Halten ist beim Loslassen ein kurzer Tipp. Der Adapter teilt dem Panel mit, welche Indikatoren gemeint sind; mit einer älteren TFT blinkt weiterhin jeder Indikator.
+- Ab der TFT **6.2.0** blinken nur Indikatoren, die eine **Aktion bei langem Drücken** haben (auch **Nur Datenpunkt auslösen**). Bei allen anderen bleibt die Uhrzeit ruhig, und auch ein langes Halten ist beim Loslassen ein kurzer Tipp. Der Adapter teilt dem Panel mit, welche Indikatoren gemeint sind; mit einer älteren TFT hat weiterhin jeder Indikator einen langen Druck – dort blinkt die Uhrzeit nie.
 - **Werte zum Umschalten** gibt es beim langen Druck nicht.
 - Taste und Schalter brauchen einen **beschreibbaren** Datenpunkt; sonst meldet der Dialog dasselbe wie bei der Aktion des kurzen Drucks und lässt nicht übernehmen. Fehlt der Datenpunkt zur Laufzeit oder ist er nicht beschreibbar, warnt der Adapter im Log (*the long press state … does not exist or is not writable – a long press acts like a tap*), und der lange Druck wirkt wie ein kurzer.
 - Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt den langen Druck.
@@ -347,7 +347,7 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 
 > **Beispiel:** Ein Indikator **Licht** schaltet beim kurzen Tipp das Licht (**Schalter**) und öffnet beim langen Druck eine Seite (**Seite öffnen**) – zwei Funktionen auf derselben Kachel.
 
-**Ein eigener State.** Jeder lange Druck schreibt `true` in `panels.<Panel>.buttons.indicatorLong-<n>` – dieselbe Reihenfolge wie bei `indicator-<n>`, Typ `boolean`, nur lesbar, Rolle `button.long`. Geschrieben wird er **immer**, auch ohne eingestellte Aktion; ohne Aktion wirkt der lange Druck zusätzlich wie ein Tipp, dann kommen **beide** States. So lässt er sich auch ohne Aktion im Dialog als Auslöser für eigene Skripte nutzen.
+**Ein eigener State.** Jeder lange Druck schreibt `true` in `panels.<Panel>.buttons.indicatorLong-<n>` – dieselbe Reihenfolge wie bei `indicator-<n>`, Typ `boolean`, nur lesbar, Rolle `button.long`. Mit der TFT 6.0.9 bis 6.1.x wird er **immer** geschrieben, auch ohne eingestellte Aktion; ohne Aktion wirkt der lange Druck dort zusätzlich wie ein Tipp, dann kommen **beide** States. So lässt er sich auch ohne Aktion im Dialog als Auslöser für eigene Skripte nutzen.
 
 > **Ab der TFT 6.2.0 braucht der State eine Aktion.** Ein Indikator ohne **Aktion bei langem Drücken** kennt dann keinen langen Druck mehr, `indicatorLong-<n>` bleibt leer. Wer den State bisher ohne Aktion als Auslöser genutzt hat, wählt **Nur Datenpunkt auslösen**.
 
@@ -642,18 +642,19 @@ Zwei Wege schalten es ein und aus:
 
 ## 18. Tipp auf das Infoicon
 
-Das Infoicon neben der Uhrzeit lässt sich mit der **TFT 6.2.0** antippen – auch im [Web-Panel](WebPanel). Der Tipp zählt wie ein Indikator ohne langen Druck: Er wird beim Loslassen gesendet, ein Wischen, das auf dem Symbol beginnt, bleibt ein Wischen. Ohne Symbol ist die Stelle ein Teil des Hintergrunds. Ein Tipp auf die Uhrzeit selbst wirkt wie bisher (beim Timer schaltet er auf die Uhrzeit um, siehe [Timer statt Uhrzeit](#timer-statt-uhrzeit)).
+Das Infoicon neben der Uhrzeit lässt sich mit der **TFT 6.2.0** antippen – auch im [Web-Panel](WebPanel). Der Tipp wird wie bei einem Indikator beim Loslassen gesendet, und ein Wischen, das auf dem Symbol beginnt, bleibt ein Wischen. Anders als ein Tipp auf den Hintergrund zählt er aber nicht für den Doppelklick und blendet keinen Timer zurück auf die Uhrzeit; eine angezeigte Benachrichtigung gilt damit trotzdem als gesehen. Ohne Symbol ist die Stelle ein Teil des Hintergrunds. Ein Tipp auf die Uhrzeit selbst wirkt wie bisher (beim Timer schaltet er auf die Uhrzeit um, siehe [Timer statt Uhrzeit](#timer-statt-uhrzeit)).
 
 | Symbol | Was der Tipp zeigt |
 |---|---|
 | `timer-sand`, `timer-pause`, `timer-alert` | Ein Popup mit dem Symbol: *Ein Timer läuft.*, *Ein Timer ist pausiert.* bzw. *Ein Timer ist abgelaufen.* |
 | `cog-refresh-outline` | Ein Popup: *Auf dem Display läuft eine Entwickler-Firmware.* |
 | `wrench-clock` | Ein Popup: *Für das Display ist ein Firmware-Update verfügbar.* |
-| eigenes Infoicon (`panels.<Panel>.cmd.screenSaver.infoIcon`) | Der Adapter schreibt **immer** `true` in `panels.<Panel>.buttons.infoIcon` (nur lesbar, Rolle `button.press`). Ein Popup mit dem eigenen Symbol öffnet sich nur, wenn `panels.<Panel>.cmd.screenSaver.infoText` (Text, beschreibbar) nicht leer ist – der Text des Popups ist dessen Inhalt. |
+| eigenes Infoicon (`panels.<Panel>.cmd.screenSaver.infoIcon`) | Solange das eigene Symbol zu sehen ist, schreibt der Adapter bei **jedem** Tipp `true` in `panels.<Panel>.buttons.infoIcon` (nur lesbar, Rolle `button.press`). Ein Popup mit dem eigenen Symbol öffnet sich nur, wenn `panels.<Panel>.cmd.screenSaver.infoText` (Text, beschreibbar) nicht leer ist – der Text des Popups ist dessen Inhalt. |
 
+- **Welches Symbol zu sehen ist, entscheidet diese Reihenfolge:** Ein laufender Timer verdrängt alles, danach kommt die Entwickler-Firmware; das Symbol für das Firmware-Update erscheint nur, wenn kein eigenes Infoicon gesetzt ist. Zeigt der Bildschirmschoner eines dieser Symbole, bleibt der State `buttons.infoIcon` aus. Ein [Web-Panel](WebPanel) hat keine TFT-Firmware und zeigt die beiden Firmware-Symbole nie.
 - Das Popup ist das gewohnte Meldungs-Popup mit kleinem Symbol (siehe [Popups](pagePopup)). Es schließt mit dem Kreuz oder nach dem Timeout des Panels; danach steht der Bildschirmschoner wieder da.
 - Das Symbol im Popup hat die Farbe, die das Infoicon gerade auf dem Bildschirmschoner hat (beim Timer orange bzw. rot).
-- Der Text erscheint eine Stufe größer als in anderen Popups (Schrift 2, 32 px) und wird an Wortgrenzen umbrochen, nicht mitten im Wort. Passt er nicht ganz hinein, wechseln die Zeilen alle paar Sekunden wie bei jedem Popup.
+- Der Text steht in Schrift 2 (32 px) – eine Stufe über der 24-px-Schrift, die das Panel ohne Angabe nimmt – und wird an Wortgrenzen umbrochen, nicht mitten im Wort. Passt er nicht ganz hinein, wechseln die Zeilen alle paar Sekunden wie bei jedem Popup.
 
 | Datenpunkt | Bedeutung |
 |---|---|

@@ -75,9 +75,9 @@ Legende:
 | fgTimeAdd | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:367 |
 | fgForecast | 1 | 1 | 1 | 1 | 1 | 8+ | pages/screensaver.ts:347 |
 | fgBar | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:363 |
-| fgNotifyHead | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
-| fgNotifyText | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
-| bgNotify | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1079 |
+| fgNotifyHead | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1177 |
+| fgNotifyText | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1177 |
+| bgNotify | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1177 |
 | mediaArtistOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:556 |
 | mediaArtistOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:557 |
 | mediaTitleOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:545 |
@@ -86,13 +86,13 @@ Legende:
 
 ## Farben der Schlagzeile
 
-Die Schlagzeile ist die [Benachrichtigung auf dem Bildschirmschoner](Screensaver-Notify). Ihre drei Farben stehen beim Farbthema **Benutzer Farben** im Tab der eigenen Farben, Bereich **Screensaver**:
+Die Schlagzeile ist die [Benachrichtigung auf dem Bildschirmschoner](Screensaver-Notify). Ihre drei Farben stehen im Reiter **Farbthema**, den der Admin nur beim Farbthema **Benutzer Farben** zeigt, im Bereich **Screensaver**:
 
 | Feld | Key | Bedeutung |
 |---|---|---|
 | **Schlagzeile Überschrift** | `fgNotifyHead` | Schriftfarbe der Überschrift (obere Zeile). |
 | **Schlagzeile Text** | `fgNotifyText` | Schriftfarbe des Textes darunter. |
-| **Schlagzeile Hintergrund** | `bgNotify` | Fläche hinter Überschrift und Text: volle Breite, von der Überschrift bis zum unteren Rand des Displays bzw. bis zu der Leiste, die darunter stehen bleibt. Erst ab TFT 6.2.0 und auf dem Web-Panel – ältere TFTs zeigen die Schlagzeile weiter auf dem Hintergrund des Bildschirmschoners. |
+| **Schlagzeile Hintergrund** | `bgNotify` | Fläche hinter Überschrift und Text: volle Breite, von der Überschrift bis zum unteren Rand des Displays bzw. bis zu dem, was darunter sichtbar bleibt (je nach Modell und Version des Bildschirmschoners). Erst ab TFT 6.2.0 und auf dem Web-Panel – ältere TFTs zeigen die Schlagzeile weiter auf dem Hintergrund des Bildschirmschoners. |
 
 Standardwerte der Themen: Überschrift und Text sind in allen Themen weiß, so wie bisher. Der Hintergrund ist der Hintergrund des Bildschirmschoners im jeweiligen Thema, je Farbkanal um 27 aufgehellt – derselbe Abstand wie beim Standardthema, der Farbton bleibt:
 
@@ -104,7 +104,7 @@ Standardwerte der Themen: Überschrift und Text sind in allen Themen weiß, so w
 | Sonnenuntergang | RGB 48/27/63 | RGB 75/54/90 |
 | Vulkan | RGB 180/22/0 | RGB 207/49/27 |
 
-Mit **Benutzer Farben** gilt die Farbe aus dem Feld **Schlagzeile Hintergrund**; bleibt es leer, die des Standardthemas.
+Mit **Benutzer Farben** gilt die Farbe aus dem Feld **Schlagzeile Hintergrund**. Es ist mit `#383838` vorbelegt, dem Wert des Standardthemas; wird es geleert, gilt wieder das Standardthema.
 
 ## Beobachtungen
 - Wetter-Farben werden aktuell nicht direkt im TS-Code genutzt – möglich, dass sie für Panel-Rendering reserviert sind.

@@ -19,7 +19,7 @@ Above the list there are two buttons:
 | **All icons** | The whole collection (default). |
 | **Large notification (popupNotify3)** | Only the icons the panel can show in the [notification with a big icon](pagePopup#6-big-icon-from-tft-620). The tooltip of the button puts it like this: *Only these icons can be shown large in the notification, any other icon falls back to information-outline*. |
 
-The filter **Filter icons** works in both views. Next to it stands how many icons are visible right now (*"… icons"*).
+The filter **Filter icons** works in both views. To the right of the buttons stands how many icons are visible right now (*"… icons"*).
 
 ## Notes
 

@@ -319,7 +319,7 @@ From the TFT 6.0.9 on the panel reports the press on an indicator when the finge
 - **If it is no key**, the tap acts like a tap on the **background** of the screensaver: it follows the double click setting, switches a [timer](#timer-instead-of-the-clock) back to the clock, acknowledges a [notification](#13-notifications) and counts for the gestures. The screensaver is no longer left at once.
 - `panels.<panel>.buttons.indicator-<n>` is still written on **every** tap.
 - A **swipe** that starts on an indicator sends the gesture only.
-- **With standby brightness 0 the first press only wakes the display.** When the screensaver display is dark, the first press on an indicator only turns the light on – short or long: no action, no popup, no state `indicator-<n>` or `indicatorLong-<n>`; from the TFT 6.2.0 on the time does not blink either. Only the second press works as usual. So a touch in the dark (at the front door, say) triggers nothing.
+- **With standby brightness 0 the first press only wakes the display.** When the screensaver display is dark (the standby brightness of the current mode – day or night – is 0), the first press on an indicator only turns the light on – short or long: no action, no popup, no state `indicator-<n>` or `indicatorLong-<n>`; from the TFT 6.2.0 on the time does not blink either. Only the second press works as usual. So a touch in the dark (at the front door, say) triggers nothing.
 
 With an older TFT the press arrives without the counter: an indicator **with** an action runs it, an indicator **without** one sends the panel to the main page.
 
@@ -339,7 +339,7 @@ In the item dialog of an indicator a second block **Action on long press** stand
 ![The item dialog of a dimmer indicator with the choice “Action on long press” opened – here with “Open popup”, because the channel is a dimmer](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - From the TFT **6.2.0** on the long press fires only when the finger is **lifted**: after **500 ms** of holding the time blinks yellow and green – you can let go now; afterwards the time gets its colour back. Letting go earlier is a short tap; a swipe drops the long press too. With the TFT 6.0.9 to 6.1.x it fires after 500 ms, while the finger is still down. With an action set **only** that action runs – the action of the short press stays out.
-- From the TFT **6.2.0** on only indicators with an **Action on long press** blink (**Only trigger the state** included). With all others the time stays calm, and holding long is a short tap when the finger is lifted. The adapter tells the panel which indicators are meant; with an older TFT every indicator still blinks.
+- From the TFT **6.2.0** on only indicators with an **Action on long press** blink (**Only trigger the state** included). With all others the time stays calm, and holding long is a short tap when the finger is lifted. The adapter tells the panel which indicators are meant; with an older TFT every indicator still has a long press – the time never blinks there.
 - **Values to cycle through** does not exist for the long press.
 - Button and switch need a **writable** state; otherwise the dialog says the same as for the action of the short press and does not allow applying. If the state is missing at runtime or is not writable, the adapter warns in the log (*the long press state … does not exist or is not writable - a long press acts like a tap*), and the long press acts like a short one.
 - A [template](#5-templates-as-items) on an indicator place gets the long press as well.
@@ -347,7 +347,7 @@ In the item dialog of an indicator a second block **Action on long press** stand
 
 > **Example:** An indicator **Light** switches the light on a short tap (**switch**) and opens a page on a long press (**open a page**) – two functions on the same tile.
 
-**A state of its own.** Every long press writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` – the same order as `indicator-<n>`, type `boolean`, read-only, role `button.long`. It is written **always**, even without an action set; without an action the long press acts like a tap on top of that, so **both** states arrive. That makes the long press usable as a trigger for own scripts even without an action in the dialog.
+**A state of its own.** Every long press writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` – the same order as `indicator-<n>`, type `boolean`, read-only, role `button.long`. With the TFT 6.0.9 to 6.1.x it is written **always**, even without an action set; without an action the long press acts like a tap on top of that there, so **both** states arrive. That makes the long press usable as a trigger for own scripts even without an action in the dialog.
 
 > **From the TFT 6.2.0 on the state needs an action.** An indicator without an **Action on long press** then knows no long press any more, `indicatorLong-<n>` stays empty. Whoever used the state as a trigger without an action so far chooses **Only trigger the state**.
 
@@ -642,18 +642,19 @@ Two ways switch it on and off:
 
 ## 18. Tapping the info icon
 
-The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in the [web panel](WebPanel). The tap counts like an indicator without a long press: it is sent on release, a swipe that starts on the icon stays a swipe. Without an icon the spot is part of the background. A tap on the clock itself works as before (with a timer it switches to the clock, see [Timer instead of the clock](#timer-instead-of-the-clock)).
+The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in the [web panel](WebPanel). The tap is sent on release as with an indicator, and a swipe that starts on the icon stays a swipe. Unlike a tap on the background it does not count for the double click and does not switch a timer back to the clock; a notification shown is nevertheless taken as seen. Without an icon the spot is part of the background. A tap on the clock itself works as before (with a timer it switches to the clock, see [Timer instead of the clock](#timer-instead-of-the-clock)).
 
 | Icon | What the tap shows |
 |---|---|
 | `timer-sand`, `timer-pause`, `timer-alert` | A popup with the icon: *A timer is running.*, *A timer is paused.* or *A timer has expired.* |
 | `cog-refresh-outline` | A popup: *The display is running a development firmware.* |
 | `wrench-clock` | A popup: *A firmware update is available for the display.* |
-| own info icon (`panels.<panel>.cmd.screenSaver.infoIcon`) | The adapter **always** writes `true` to `panels.<panel>.buttons.infoIcon` (read only, role `button.press`). A popup with the own icon opens only when `panels.<panel>.cmd.screenSaver.infoText` (text, writable) is not empty – the text of the popup is its content. |
+| own info icon (`panels.<panel>.cmd.screenSaver.infoIcon`) | While the own icon is shown, the adapter writes `true` to `panels.<panel>.buttons.infoIcon` (read only, role `button.press`). A popup with the own icon opens only when `panels.<panel>.cmd.screenSaver.infoText` (text, writable) is not empty – the text of the popup is its content. |
 
+- **Which icon is shown follows this order:** a running timer displaces everything, then comes the development firmware; the firmware update icon appears only when no own info icon is set. While the screensaver shows one of those icons, the state `buttons.infoIcon` stays away. A [web panel](WebPanel) has no TFT firmware and never shows the two firmware icons.
 - The popup is the usual notification popup with a small icon (see [Popups](pagePopup)). It closes with the cross or after the timeout of the panel; then the screensaver is back.
 - The icon in the popup has the color the info icon has on the screensaver at that moment (orange or red with the timer).
-- The text appears one size larger than in other popups (font 2, 32 px) and is wrapped at word borders, not inside a word. If it does not fit completely, the lines change every few seconds as in every popup.
+- The text uses font 2 (32 px) – one size above the 24 px font the panel takes without a setting – and is wrapped at word borders, not inside a word. If it does not fit completely, the lines change every few seconds as in every popup.
 
 | Datapoint | Meaning |
 |---|---|

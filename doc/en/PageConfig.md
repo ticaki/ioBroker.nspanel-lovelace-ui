@@ -133,7 +133,7 @@ Choose a panel in the select field and add it with **+**. There is also the entr
 
 There are four fields for the panel **clicked** in the list. They belong to the two navigation arrows at the top of the panel:
 
-| Field | Gesture on the panel |
+| Field | Operation on the panel |
 |---|---|
 | **next** | short press on the right arrow or swipe right |
 | **prev** | short press on the left arrow or swipe left |
@@ -195,8 +195,8 @@ The three paging rows appear on **menu pages** (Grid, Grid2, Grid3, Entities, Sc
 
 While *Hide pages* is on, every page with the *Hidden* box ticked behaves like this:
 
-- **Swiping and the arrows** skip it; paging goes on with the next page in the same direction.
-- **A targeted navigation** — a navigation item, a *parent*/*home* jump, `cmd.goToNavigationPoint` — does not open it. The panel stays on the page shown and reports *"Page locked"*: from TFT 6.2.0 with a large prohibition icon, on older TFTs as a classic popup.
+- **Swiping and the arrows** skip it – the long press as well; paging goes on from the skipped page in the same direction, without a lock message.
+- **A targeted navigation** — a navigation item, `cmd.goToNavigationPoint`, a hardware button with *Go to a navigation point* — does not open it. The panel stays on the page shown and reports *"Page locked"*: from TFT 6.2.0 with a large prohibition icon, on older TFTs as a classic popup.
 - **In the admin** a closed eye marks such pages, in the page list and in the [navigation flow](naviFlow); the tooltip reads *Locked (hidden): only reachable on the panel while “Hide pages” is off*. The eye is shown regardless of whether *Hide pages* is currently on.
 
 While *Hide pages* is off, hidden pages behave like all others. Typical use: maintenance or expert pages that should only be reachable at times — the datapoint can, for example, be tied to presence or the time of day by a script.

@@ -155,7 +155,7 @@ What was pressed ends up in states – **not** below `cmd`:
 
 - **Long text rotates.** If the text does not fit into the lines `textSize` allows, the panel pages through
   it (about 3 seconds per block, shorter when it wraps back to the start).
-- **An unknown icon is left out** and the message is sent without one (warning in the log).
+- **Only an empty icon field stays empty.** An unknown name is passed on to the panel unchanged; the log only gets a *debug* entry.
 - **`alwaysOn: true` keeps the popup open**, otherwise the panel timeout applies and the screensaver takes
   over. Tapping the screensaver brings an open popup back.
 
@@ -163,13 +163,13 @@ What was pressed ends up in states – **not** below `cmd`:
 
 For messages you want to recognise from across the room – toilet occupied, severe weather, washing machine done:
 with **`largeIcon: true`** the panel shows the message as a big icon with **one line of text** below it, plus the X
-and up to two buttons as vertical columns on the left and right. There is no new interface – it is the fields of
+and up to two buttons as vertical columns on the left and right; on US portrait they sit side by side along the bottom edge. There is no new interface – it is the fields of
 way 1 and way 2 plus `largeIcon`. **Without `largeIcon` everything stays as before**: `icon` is then the small icon
 in front of the headline.
 
 | Severe weather with two buttons | Occupied, no buttons | Long text in one line | 24 px in two lines |
 |---|---|---|---|
-| ![Big orange thunderstorm icon, a green button with a tick on the left, a grey button with an alarm clock on the right, "Unwetterwarnung" below](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Red prohibition sign without buttons, "Besetzt" below](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Washing machine with one button on the right; the text that is too long is cut with ...](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![With textSize 0 the text is smaller and in two lines](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
+| ![Big orange thunderstorm icon, a green button with a tick on the left, a grey button with an alarm clock on the right, "Unwetterwarnung" below](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Red prohibition sign without buttons, "WC besetzt" below](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Washing machine with an alert sign and one button on the right, "Waschmaschine: Störung" below across the full width](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![With textSize 0 the text is smaller and in two lines](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
 
 It needs a panel with **TFT 6.2.0 or newer** or a web panel. A panel with an older TFT shows the same message the
 classic way.
@@ -232,7 +232,7 @@ button **Large notification (popupNotify3)**.
 HMI and, like any invalid value, count as `3`. The lines apply to the classic popup and to the
 [big icon](#6-big-icon-from-tft-620).
 
-| Value | Font | Icons | Character set | Typical use | Lines classic (us-p, web-p) | Lines big icon (us-p) |
+| Value | Font | Icons | Character set | Typical use | Lines classic | Lines big icon (landscape; portrait) |
 |---|---|---|---|---|---|---|
 | `0` | 24 px | no | large: Latin, Greek, Cyrillic, some CJK | long messages | 7 (web-p 20) | 2 (4) |
 | `1` | 32 px | yes | Latin-1 (no `€`) + icons | text with embedded icons | 5 (web-p 15) | 1 (3), like `2` |
@@ -243,7 +243,7 @@ HMI and, like any invalid value, count as `3`. The lines apply to the classic po
 | `8` | 96 px bold | no | ASCII only, built as a clock font | time, number | 1 (web-p 3) | 1 (2), like `3` |
 
 - **Models:** fonts `1`, `3`, `4`, `5` and `8` are the same on all panels. `0` and `2` differ: the us-l has many
-  more Chinese, Japanese and Korean characters, the us-p lacks e.g. the currency signs (`€`). The web panels draw with
+  more Chinese characters (kana and hangul are missing on all models), the us-p lacks e.g. the currency signs (`€`). The web panels draw with
   browser fonts and therefore show almost everything.
 - **Missing characters do not appear.** If the font does not have a character, the panel silently leaves it out –
   without a gap. Example: `Größe` with `5` becomes `Gre`.
@@ -259,7 +259,7 @@ scripts keep working unchanged.
 
 **Without a valid icon the info icon appears.** If `icon` is missing, the name is unknown or the icon is not in the
 list of section 6, the panel shows `information-outline` and the adapter warns once in the log. An unknown button
-icon is reported as well and replaced by the default icon.
+icon is reported as well and replaced by the default icon; if the button has no default icon, it stays away.
 
 **With the big icon, headline and middle button are missing.** `headline` and `buttonMid` are not shown there.
 If you also serve older panels, fill in `headline` anyway.
