@@ -63,7 +63,7 @@ describe('HMI id length (txt_maxl 23 of the id buffers)', () => {
             const p: any = Object.create(PageMenu.prototype);
             Object.assign(p, { id, name: `page-${id}`, adapter: {}, basePanel: {} });
             let config: any;
-            p.createPageItems = async (cfg: any[]): Promise<any[]> => {
+            p.createPageItems = async (cfg: any[]): ReturnType<Page['createPageItems']> => {
                 config = cfg[0];
                 return Page.prototype.createPageItems.call(p, cfg);
             };
