@@ -250,8 +250,8 @@ function landscapeTiles(left: number, columns: number, side: number): TilesGeome
             { left: left + 1, top: 315, width: barWidth, height: 5 },
             { left: left + 1 + barWidth + 80, top: 315, width: barWidth, height: 5 },
         ],
-        // tNotifyHead y 214, tNotifyText down to the lower edge (the status bars are drawn over it)
-        notify: { headingTop: 216, textTop: 270, lines: 2, area: { top: 214, bottom: 320 } },
+        // tNotifyHead y 214, tNotifyText down to the status bars (y 315), they stay visible
+        notify: { headingTop: 216, textTop: 270, lines: 2, area: { top: 214, bottom: 315 } },
     };
 }
 

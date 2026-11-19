@@ -22,9 +22,12 @@ Fix 2: tNotifyText.h so that the field ends at the lower edge of the screen or a
 stays visible (tIcon*, tRelay* - they are not covered):
   EU/us-l screensaver:  264 + 47 -> 264 + 56 (= 320, lower edge)
   EU/us-l screensaver2: 229 + 50 -> 229 + 51 (= 280, top of tIcon1/tIcon2)
+  EU/us-l screensaver5: 264 + 56 -> 264 + 51 (= 315, top of the relay bars tRelay1/tRelay2 - the text field reached
+                        under them, its background covered the bars on the panel)
   us-p screensaver2:    308 + 130 -> 308 + 132 (= 440, top of tIcon1/tIcon2)
 Unchanged (the text already ends at the lower edge or at the element below): screensaver3 EU/us-l (315, the relay
-bars tRelay1/tRelay2 at 315..320), screensaver5 EU/us-l (320), us-p screensaver3/screensaver5 (475, tRelay at 475). us-p screensaver: the notification lies in the middle of the page (330..388), below are the forecasts - unchanged.
+bars tRelay1/tRelay2 at 315..320), us-p screensaver3/screensaver5 (475, tRelay at 475). us-p screensaver: the
+notification lies in the middle of the page (330..388), below are the forecasts - unchanged.
 Between tNotifyHead and tNotifyText there is no gap on any page (checked).
 
 pageStartup.tRelease stays 6.2.0.
@@ -51,13 +54,13 @@ EXPECTED = {
         'screensaver': ((0, 207, 450, 58), (0, 264, 450, 47), 56),
         'screensaver2': ((1, 181, 448, 48), (1, 229, 448, 50), 51),
         'screensaver3': ((0, 174, 450, 58), (0, 232, 450, 83), None),
-        'screensaver5': ((0, 214, 450, 50), (0, 264, 450, 56), None),
+        'screensaver5': ((0, 214, 450, 50), (0, 264, 450, 56), 51),
     },
     'us-l': {
         'screensaver': ((15, 207, 450, 58), (15, 264, 450, 47), 56),
         'screensaver2': ((16, 181, 448, 48), (16, 229, 448, 50), 51),
         'screensaver3': ((15, 174, 450, 58), (15, 232, 450, 83), None),
-        'screensaver5': ((15, 214, 450, 50), (15, 264, 450, 56), None),
+        'screensaver5': ((15, 214, 450, 50), (15, 264, 450, 56), 51),
     },
     'us-p': {
         'screensaver': ((0, 272, 320, 58), (0, 330, 320, 58), MIDDLE),
@@ -128,7 +131,8 @@ def patch_geometry(name, page, exp_head, exp_text, new_h, screen_h):
     if hy + hh < ty or hy > ty:
         raise SystemExit(f'{name}: gap between {HEAD} (to {hy + hh}) and {TEXT} (from {ty})')
     keep = [o for o in page.objs[1:] if o.name.startswith(KEEP)]
-    below = [o for o in keep if o.get('y') >= ty + th and o.get('x') < tx + tw and tx < o.get('x') + o.get('w')]
+    # everything that starts below the top of the text field - also an element the text field covers today
+    below = [o for o in keep if o.get('y') > ty and o.get('x') < tx + tw and tx < o.get('x') + o.get('w')]
     limit = min([o.get('y') for o in below] + [screen_h])
     if new_h == MIDDLE:
         if ty + th >= screen_h * 0.9:

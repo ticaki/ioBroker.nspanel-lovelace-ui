@@ -103,8 +103,8 @@ describe('screensaver notification: fields 3-5', () => {
         ['screensaver3', 'eu', 174, 315],
         ['screensaver3', 'us-p', 177, 475],
         ['screensaver3', 'web-p', 211, 630],
-        ['screensaver5', 'eu', 214, 320],
-        ['screensaver5', 'web-l', 214, 320],
+        ['screensaver5', 'eu', 214, 315],
+        ['screensaver5', 'web-l', 214, 315],
         ['screensaver5', 'us-p', 366, 475],
         ['screensaver5', 'web-p', 364, 630],
     ];
