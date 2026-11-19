@@ -478,7 +478,7 @@ The remaining time stands in **minutes with a point**, so it cannot be mistaken 
 
 - The info icon of the timer takes precedence over the own info icon and over the update symbols.
 - There is no AM/PM with the timer, not even in the 12-hour format.
-- In the version **Advanced** the time and the info icon keep their usual colour – that page of the panel does not know the colour command.
+- In the version **Advanced** the time and the info icon keep their usual color up to the **TFT 6.0.9** – that page of the panel does not know the color command yet. From the **TFT 6.1.0** on and in the [web panel](WebPanel) they take the color of the timer.
 
 **Expired** stays until the on/off state becomes false. New data only ends the alarm when it lies in the future.
 
@@ -605,7 +605,7 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 
 **Status icons:** `mrIcon1` and `mrIcon2` do not appear as icons here but as the two color bars at the lower edge. Only the color is visible (**Color on** / **Color off**); icon, value and unit are not shown by the panel in this version. A status icon without a state leaves its bar black. In the panel picture of the editor the two therefore stand as wide bars at the bottom as well (see [status icons](#9-status-icons)).
 
-**Time and date:** The clock is larger than in the other versions and has a font of its own; the info icon stands to the left of the time. The [timer instead of the clock](#timer-instead-of-the-clock) works here too, and unlike in the version Advanced the time and the info icon take the color of the timer.
+**Time and date:** The clock is larger than in the other versions and has a font of its own; the info icon stands to the left of the time. The [timer instead of the clock](#timer-instead-of-the-clock) works here too, and the time and the info icon take the color of the timer – unlike in the version Advanced, which only does so from the TFT 6.1.0 on (see [display on the panel](#display-on-the-panel)).
 
 **No favorite:** Tiles has no favorite place. With it the current weather the other versions show there is gone as well – the ticked **Extra items at the bottom** from [weather](#11-weather), on the other hand, attach themselves behind the last own item in the area **Bottom** as usual.
 

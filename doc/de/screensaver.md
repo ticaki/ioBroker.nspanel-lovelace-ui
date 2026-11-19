@@ -478,7 +478,7 @@ Die Restzeit steht in **Minuten mit Punkt**, damit sie sich nicht mit der Uhrzei
 
 - Das Infoicon des Timers hat Vorrang vor dem eigenen Infoicon und vor den Update-Symbolen.
 - Eine AM/PM-Angabe gibt es beim Timer nicht, auch nicht im 12-Stunden-Format.
-- In der Version **Advanced** behalten Uhrzeit und Infoicon ihre gewohnte Farbe – diese Seite des Panels kennt den Farbbefehl nicht.
+- In der Version **Advanced** behalten Uhrzeit und Infoicon bis zur **TFT 6.0.9** ihre gewohnte Farbe – diese Seite des Panels kennt den Farbbefehl dort noch nicht. Ab der **TFT 6.1.0** und im [Web-Panel](WebPanel) nehmen sie die Farbe des Timers an.
 
 **Abgelaufen** bleibt stehen, bis der An/Aus-Datenpunkt falsch wird. Neue Daten beenden den Alarm nur, wenn sie in der Zukunft liegen.
 
@@ -605,7 +605,7 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 
 **Statussymbole:** `mrIcon1` und `mrIcon2` erscheinen hier nicht als Symbole, sondern als die beiden Farbbalken am unteren Rand. Sichtbar ist nur die Farbe (**Farbe an** / **Farbe aus**); Symbol, Wert und Einheit zeigt das Panel in dieser Version nicht. Ein Statussymbol ohne Datenpunkt lässt seinen Balken schwarz. Auch im Panelbild des Editors stehen die beiden darum als breite Balken unten (siehe [Statussymbole](#9-statussymbole)).
 
-**Uhrzeit und Datum:** Die Uhr ist größer als in den anderen Versionen und hat eine eigene Schrift; das Infosymbol steht links neben der Uhrzeit. Der [Timer statt Uhrzeit](#timer-statt-uhrzeit) arbeitet auch hier, und anders als in der Version Advanced nehmen Uhrzeit und Infosymbol dabei die Farbe des Timers an.
+**Uhrzeit und Datum:** Die Uhr ist größer als in den anderen Versionen und hat eine eigene Schrift; das Infosymbol steht links neben der Uhrzeit. Der [Timer statt Uhrzeit](#timer-statt-uhrzeit) arbeitet auch hier, und Uhrzeit und Infosymbol nehmen dabei die Farbe des Timers an – anders als in der Version Advanced, die das erst ab der TFT 6.1.0 tut (siehe [Anzeige am Panel](#anzeige-am-panel)).
 
 **Kein Favorit:** Kacheln hat keinen Favorit-Platz. Damit entfällt auch das aktuelle Wetter, das die anderen Versionen dort zeigen – die angehakten **Zusatz-Items unten** aus [Wetter](#11-wetter) hängen sich dagegen wie gewohnt hinter das letzte eigene Item im Bereich **Unten**.
 
