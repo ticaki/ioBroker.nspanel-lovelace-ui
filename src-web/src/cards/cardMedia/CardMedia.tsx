@@ -304,7 +304,7 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                         color={color}
                     />
                 ) : (
-                    // a text never leaves the cell: cut with an ellipsis
+                    // a text never leaves the cell: cut at the cell border like on the panel (no own …)
                     <span
                         data-option-text=""
                         style={{
@@ -312,7 +312,7 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                             padding: '0 2px',
                             boxSizing: 'border-box',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            textOverflow: 'clip',
                             whiteSpace: 'nowrap',
                         }}
                     >

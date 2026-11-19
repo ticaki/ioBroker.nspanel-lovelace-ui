@@ -237,7 +237,7 @@ export class PopupFan extends React.Component<CardProps<PopupFanModel>, PopupFan
                                 color: theme.foreground,
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
-                                textOverflow: 'ellipsis',
+                                textOverflow: 'clip',
                             }}
                         >
                             {model.speedLabel}

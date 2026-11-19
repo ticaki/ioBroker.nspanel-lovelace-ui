@@ -521,7 +521,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 width: column.width,
                 textAlign: 'center',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                textOverflow: 'clip',
             };
             result.push(
                 <div
@@ -601,7 +601,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
                     {this.renderRuns(notify.heading, style.headingSize, this.color(colors?.mainText))}
@@ -964,7 +964,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         top: textTop(top + 5 + i * 33, 17),
                         left: valueLeft,
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                         width: valueWidth,
                         fontSize: 17,
                         color: this.color(colors?.mainText),

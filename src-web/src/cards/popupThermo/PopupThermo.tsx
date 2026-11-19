@@ -159,7 +159,7 @@ export class PopupThermo extends React.Component<CardProps<PopupThermoModel>, Po
                         fontSize: POPUP_FONT_SIZE,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
                     {row.heading}
