@@ -1527,7 +1527,7 @@
     "scroll_auto_hint": "Como la clásica; además, la página avanza sola pasado el tiempo configurado.",
     "scroll_auto_timing": "Segundos hasta la página siguiente",
     "scroll_classic": "Clásica",
-    "scroll_classic_hint": "Más elementos que posiciones: las flechas dobles del panel pasan de página.",
+    "scroll_classic_hint": "Más elementos que posiciones: las flechas del panel pasan de página.",
     "scroll_presentation": "Paginación de los elementos de la página",
     "scroll_type": "Desplazar por",
     "scroll_type_half": "Media página",

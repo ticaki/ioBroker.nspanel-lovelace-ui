@@ -1561,7 +1561,7 @@
     "scroll_auto_hint": "Wie klassisch, zusätzlich blättert die Seite nach der eingestellten Zeit von selbst weiter.",
     "scroll_auto_timing": "Sekunden bis zur nächsten Seite",
     "scroll_classic": "Klassisch",
-    "scroll_classic_hint": "Mehr Elemente als Plätze: Die Doppelpfeile des Panels blättern weiter.",
+    "scroll_classic_hint": "Mehr Elemente als Plätze: Die Pfeile des Panels blättern weiter.",
     "scroll_presentation": "Blättern der Seitenelemente",
     "scroll_type": "Weiterblättern um",
     "scroll_type_half": "Eine halbe Seite",

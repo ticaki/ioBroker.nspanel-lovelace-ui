@@ -229,7 +229,7 @@ More than nine slots are spread over several pages by the adapter. **How** the p
 
 | Choice | Effect |
 |---|---|
-| **Classic** | *"More items than places: the double arrows of the panel page through them."* – the default. The navigation arrows at the top of the panel become paging arrows as long as there is another page. |
+| **Classic** | *"More items than places: the arrows of the panel page through them."* – the default. The navigation arrows at the top of the panel become paging arrows as long as there is another page. |
 | **Arrow** | *"More items than places: the last place shows an arrow that pages on."* – here that is the **ninth** slot between − and +; eight places remain for slots. The arrow only appears once more than nine slots come together, and on the last page it pages back to the first. |
 | **Automatic** | *"Like classic, the page also advances by itself after the set time."* – with the field **Seconds until the next page** (empty = 15). |
 

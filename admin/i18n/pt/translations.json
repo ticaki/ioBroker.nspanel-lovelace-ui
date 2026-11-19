@@ -1527,7 +1527,7 @@
     "scroll_auto_hint": "Como a clássica; além disso, a página avança sozinha após o tempo definido.",
     "scroll_auto_timing": "Segundos até à página seguinte",
     "scroll_classic": "Clássica",
-    "scroll_classic_hint": "Mais elementos do que lugares: as setas duplas do painel avançam pelas páginas.",
+    "scroll_classic_hint": "Mais elementos do que lugares: as setas do painel avançam pelas páginas.",
     "scroll_presentation": "Paginação dos elementos da página",
     "scroll_type": "Avançar por",
     "scroll_type_half": "Meia página",

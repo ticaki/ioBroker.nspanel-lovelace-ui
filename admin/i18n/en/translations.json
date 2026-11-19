@@ -1561,7 +1561,7 @@
     "scroll_auto_hint": "Like classic, the page also advances by itself after the set time.",
     "scroll_auto_timing": "Seconds until the next page",
     "scroll_classic": "Classic",
-    "scroll_classic_hint": "More items than places: the double arrows of the panel page through them.",
+    "scroll_classic_hint": "More items than places: the arrows of the panel page through them.",
     "scroll_presentation": "Paging of the page items",
     "scroll_type": "Scroll by",
     "scroll_type_half": "Half page",

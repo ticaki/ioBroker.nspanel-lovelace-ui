@@ -1527,7 +1527,7 @@
     "scroll_auto_hint": "Jak klasyczne; dodatkowo strona przewija się sama po ustawionym czasie.",
     "scroll_auto_timing": "Sekundy do następnej strony",
     "scroll_classic": "Klasyczne",
-    "scroll_classic_hint": "Więcej elementów niż miejsc: podwójne strzałki panelu przewijają dalej.",
+    "scroll_classic_hint": "Więcej elementów niż miejsc: strzałki panelu przewijają dalej.",
     "scroll_presentation": "Przewijanie elementów strony",
     "scroll_type": "Przewijaj o",
     "scroll_type_half": "Pół strony",

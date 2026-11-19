@@ -1527,7 +1527,7 @@
     "scroll_auto_hint": "与经典方式相同，另外页面会在设定时间后自动翻页。",
     "scroll_auto_timing": "到下一页的秒数",
     "scroll_classic": "经典",
-    "scroll_classic_hint": "项目数多于位置数：面板的双箭头可翻页查看。",
+    "scroll_classic_hint": "项目数多于位置数：面板的箭头可翻页查看。",
     "scroll_presentation": "页面项目翻页方式",
     "scroll_type": "翻页幅度",
     "scroll_type_half": "半页",
