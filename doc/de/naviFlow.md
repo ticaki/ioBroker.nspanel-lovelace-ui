@@ -71,7 +71,7 @@ Dazu kommen **Marken am Knoten**:
 | **Stift** | Skript-Seite, deren Navigation im Admin überschrieben ist (siehe [Abschnitt 8](#8-skript-seiten-überschreiben)). |
 | **Stift in Warnfarbe** | Dieselbe Seite, aber das Skript liefert inzwischen andere Verweise als zum Zeitpunkt der Änderung. |
 | **Gestrichelter Außenrahmen mit Punkt** | Die Verweise dieser Seite wurden geändert und sind noch nicht gespeichert. |
-| **Geschlossenes Auge** | Die Seite ist *Versteckt* und damit am Panel gesperrt, solange dort *Seiten verbergen* eingeschaltet ist (siehe [Seiteneinstellungen](PageConfig)). Der Tooltip: *Gesperrt (versteckt): auf dem Panel nur erreichbar, wenn „Seiten verbergen“ aus ist*. |
+| **Geschlossenes Auge** | Die Seite ist *Versteckt* und damit am Panel gesperrt, solange dort *Seiten verbergen* eingeschaltet ist (siehe [Seiten verbergen](PageConfig#seiten-verbergen)). Der Tooltip: *Gesperrt (versteckt): auf dem Panel nur erreichbar, wenn „Seiten verbergen“ aus ist*. |
 
 Die Herkunft beantwortet die häufige Frage „warum sieht das Panel anders aus als im Skript beschrieben". **Bei gleichem Namen gewinnt aber nicht automatisch die Admin-Seite**: Eine Skript-Seite desselben Panels behält ihren Namen, solange die Admin-Seite nicht die Startseite ist, die Instanz-Option für den Vorrang nicht gesetzt ist und die verdrängte Seite nicht aus dem globalen Skript oder vom Skript eines anderen Panels stammt — andernfalls protokolliert der Adapter „Page with name … already exists, skipping!" und die Admin-Seite entfällt. Die Regel mit allen Ausnahmen steht unter [Pages](Pages).
 

@@ -14,6 +14,7 @@ Inhalt:
 - [Seiten anlegen und löschen](#seiten-anlegen-und-löschen)
 - [Panelzuweisung und Navigation](#panelzuweisung-und-navigation)
 - [Seitendetails](#seitendetails)
+  - [Seiten verbergen](#seiten-verbergen)
 - [Der Knopf *Dokumentation*](#der-knopf-dokumentation)
 - [Speichern](#speichern)
 - [Unterseiten je Kartentyp](#unterseiten-je-kartentyp)
@@ -169,7 +170,7 @@ Der zweite Reiter der rechten Spalte. Er gilt für jeden Seitentyp; die drei Bl�
 | Einstellung | Bedeutung |
 |---|---|
 | **Startseite (main)** | Die Seite wird auf den zugewiesenen Panels unter der ID `main` veröffentlicht und ersetzt dort die Startseite aus dem Skript oder die vom Adapter erzeugte. Erst zuweisen, dann markieren: Ohne Panelzuweisung bleibt der Haken gesperrt (*„Erst ein Panel zuweisen"*), ebenso bei gestoppter Instanz und dann, wenn für ein betroffenes Panel schon eine andere Seite Startseite ist — der Hinweis nennt sie. Solange die Markierung sitzt, sind Panelzuweisung und die vier Navigationsziele gesperrt (der Name ist ohnehin fest): Die Startseite hat **keine eigene Navigation** — ihre Nachbarn ergeben sich aus den anderen Seiten, deren *prev* oder *next* auf sie zeigt, und die Felder zeigen, was der Adapter daraus ermittelt hat. Zuvor gespeicherte Ziele bleiben erhalten, werden aber ignoriert, solange die Markierung sitzt, und gelten wieder, sobald sie fällt. Eine Seite, die schlicht `main` **heißt**, behandelt der Adapter genauso — auch ohne Markierung, dann mit einer Warnung im Log. |
-| **Versteckt** | Die Seite ist **gesperrt**, solange am Panel *Seiten verbergen* (`hideCards`) eingeschaltet ist: Beim Wischen wird sie übersprungen, und ein gezieltes Navigationsziel (z. B. ein Navigations-Element auf einer Grid-Seite) öffnet sie nicht, sondern zeigt die Meldung *„Seite gesperrt“* (ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup). Die Pfeile blättern danach von der angezeigten Seite aus weiter. Ohne *Seiten verbergen* wirkt *Versteckt* nicht. Im Admin tragen solche Seiten ein geschlossenes Auge — in der Seitenliste und im Navigation Flow. |
+| **Versteckt** | Die Seite ist **gesperrt**, solange am Panel *Seiten verbergen* (`hideCards`) eingeschaltet ist: Beim Wischen wird sie übersprungen, und ein gezieltes Navigationsziel (z. B. ein Navigations-Element auf einer Grid-Seite) öffnet sie nicht, sondern zeigt die Meldung *„Seite gesperrt“* (ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup). Die Pfeile blättern danach von der angezeigten Seite aus weiter. Ohne *Seiten verbergen* wirkt *Versteckt* nicht. Im Admin tragen solche Seiten ein geschlossenes Auge — in der Seitenliste und im Navigation Flow. Wo *Seiten verbergen* geschaltet wird: [Seiten verbergen](#seiten-verbergen). |
 | **Blättern der Seitenelemente** | *Klassisch* (die Doppelpfeile des Panels blättern), *Pfeil* (der letzte Platz der Seite wird zum Blätterpfeil) oder *Automatisch* (wie klassisch, blättert zusätzlich von selbst weiter). Vorgabe: klassisch. |
 | **Weiterblättern um** | *Eine ganze Seite* oder *eine halbe Seite*. Erscheint nur bei *Klassisch* und *Automatisch*. |
 | **Sekunden bis zur nächsten Seite** | Nur bei *Automatisch*; leer = 15 Sekunden. |
@@ -178,6 +179,25 @@ Der zweite Reiter der rechten Spalte. Er gilt für jeden Seitentyp; die drei Bl�
 Die drei Blätter-Zeilen erscheinen bei **Menü-Seiten** (Grid, Grid2, Grid3, Entities, Schedule), bei der **Thermostat-Seite (Thermo2)** und beim **Mediaplayer**. *Eine halbe Seite* gibt es nur bei den drei Grid-Varianten und bei Thermo2 — und bei Thermo2 wird die Wahl vom Adapter wieder auf *ganze Seite* zurückgesetzt. Was die drei Modi auf der jeweiligen Karte bedeuten, steht unter [Menü-Seiten](pageMenu#7-blättern-der-seitenelemente), [Thermostat](cardThermo2) und [Mediaplayer](cardMedia#9-blättern-der-optionsleiste).
 
 > Die beiden Reiter heißen *Navigation* und *Seitendetails* (auf schmalem Schirm *Nav* und *Details*).
+
+### Seiten verbergen
+
+*Seiten verbergen* ist der Schalter, ohne den *Versteckt* nichts bewirkt. Er gilt **je Panel** für alle seine versteckten Seiten — Admin-Seiten wie Skriptseiten (`hidden: true`). Ein Feld im Admin gibt es dafür nicht; geschaltet wird er an zwei Stellen:
+
+| Wo | Wie |
+|---|---|
+| **Datenpunkt** | `nspanel-lovelace-ui.0.panels.<ID>.cmd.hideCards` (`true`/`false`, Vorgabe `false`) — etwa im Tab *Objekte*, per Skript oder Blockly, ohne Bestätigung (`ack: false`) geschrieben. Die Änderung wirkt sofort, ohne Neustart, und bleibt über Neustarts erhalten. |
+| **Am Panel** | Auf den Serviceseiten (geschützt mit dem *Service-Pin* aus den [globalen Einstellungen](globelSettings)): *Overview* → *System* → Schalter *Hide Cards*. Grün = eingeschaltet. |
+
+Ist *Seiten verbergen* eingeschaltet, gilt für jede Seite mit dem Haken *Versteckt*:
+
+- **Wischen und die Pfeile** überspringen sie; es geht mit der nächsten Seite in derselben Richtung weiter.
+- **Ein gezieltes Ziel** — ein Navigations-Element, ein *parent*/*home*-Sprung, `cmd.goToNavigationPoint` — öffnet sie nicht. Das Panel bleibt auf der angezeigten Seite und meldet *„Seite gesperrt“*: ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup.
+- **Im Admin** zeigt ein geschlossenes Auge solche Seiten, in der Seitenliste und im [Navigation Flow](naviFlow); der Tooltip lautet *Gesperrt (versteckt): auf dem Panel nur erreichbar, wenn „Seiten verbergen“ aus ist*. Das Auge erscheint unabhängig davon, ob *Seiten verbergen* gerade eingeschaltet ist.
+
+Ist *Seiten verbergen* ausgeschaltet, verhalten sich versteckte Seiten wie alle anderen. Typischer Einsatz: Wartungs- oder Expertenseiten, die nur zeitweise erreichbar sein sollen — der Datenpunkt lässt sich dafür z. B. per Skript an eine Anwesenheit oder Uhrzeit koppeln.
+
+Die Einstellung wandert mit [Export und Import](panelConfigTransfer) (Teil *Sonstiges*).
 
 ## Der Knopf *Dokumentation*
 

@@ -71,7 +71,7 @@ On top of that there are **marks on a node**:
 | **Pencil** | Script page whose navigation is overridden in the admin (see [section 8](#8-overriding-script-pages)). |
 | **Pencil in the warning colour** | The same page, but the script now delivers other links than it did at the time of the change. |
 | **Dashed outer border with a dot** | The links of this page were changed and are not saved yet. |
-| **Closed eye** | The page is *Hidden* and therefore locked on the panel while *Hide pages* is on there (see [page settings](PageConfig)). The tooltip: *Locked (hidden): only reachable on the panel while “Hide pages” is off*. |
+| **Closed eye** | The page is *Hidden* and therefore locked on the panel while *Hide pages* is on there (see [Hide pages](PageConfig#hide-pages)). The tooltip: *Locked (hidden): only reachable on the panel while “Hide pages” is off*. |
 
 The origin answers the frequent question "why does the panel look different from what the script describes". **With an equal name the admin page does not automatically win**, though: a script page of the same panel keeps its name as long as the admin page is not the start page, the instance option for precedence is not set and the page pushed aside does not come from the global script or from the script of another panel — otherwise the adapter logs "Page with name … already exists, skipping!" and the admin page is dropped. The rule with all its exceptions is on [Pages](Pages).
 
