@@ -117,12 +117,13 @@ The decoupling survives adapter restarts (the adapter reads the state back when 
 
 ## 8. The action types
 
-The **Action** field has seven entries besides *not configured here*:
+The **Action** field has eight entries besides *not configured here*:
 
 | Action | What the button does |
 |---|---|
 | **not configured here** | The admin configures nothing; what the configuration script says about this button applies. On saving, the field is removed from the configuration. With *Panel uses no script* this means: no function. |
 | **Go to a navigation point** | The panel jumps to the chosen page. |
+| **Navigation (like an arrow of the page)** | The button acts like a navigation arrow of the page shown, see below. |
 | **Flip a datapoint** | Toggles a boolean state. |
 | **Set a datapoint to true** | Sets the state to `true` (push-button behaviour). |
 | **Set true, back to false after the delay** | Sets `true` immediately, `false` after the delay. |
@@ -133,6 +134,9 @@ The **Action** field has seven entries besides *not configured here*:
 Depending on the choice, the matching fields appear:
 
 - **Navigation point** — a select list with the navigation points of this panel; these are exactly the values the state `cmd.goToNavigationPoint` knows, including the system pages (names with `///`). If the list is empty, the dialog offers a text field with the note to enter the name as it appears in `cmd.goToNavigationPoint`. A stored name the panel does not (any longer) report stays visible in the list and is not lost.
+- **Arrow** — only for *Navigation*: which arrow of the page shown is pressed. *Next (next)* = right arrow short, *Back (prev)* = left arrow short, *Home page (home)* = right arrow long, *Parent (parent)* = left arrow long. The targets are the [navigation targets](PageConfig#navigation-targets) of the page in question, and the rules of the arrow apply: if only one of the two targets of the arrow is set, the button leads there, whether *next* or *home* (or *prev* or *parent*) is chosen; if none is set, nothing happens. On a menu page with more entries than it shows, *next* and *prev* first turn the pages within it, like a short press of the arrow.
+  - **A popup is open** (detail popup of an entry, notification, sub page such as the speaker list): the press closes it and then navigates from the page below — both with one press. A notification is put away as with its close button.
+  - **The screensaver is active** (also with a popup of one of its indicators): nothing happens, the screensaver stays. The state `buttons.left` or `buttons.right` is still set, as for every action.
 - **Datapoint** — chosen from the object tree; only **writable** states are offered.
 - **Delay (s)** — only for the four delay types. Empty means **0.25 s**; allowed are 0.001 to 2,147,483 seconds. A value outside those limits disables *Save*; should an unusable value reach the panel all the same, it computes with 250 ms. Pressing the button again during the delay restarts the running time.
 
