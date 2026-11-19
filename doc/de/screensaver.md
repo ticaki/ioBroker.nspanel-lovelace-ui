@@ -23,6 +23,8 @@ Inhalt:
 - [Speichern – was der Adapter daraus macht](#14-speichern--was-der-adapter-daraus-macht)
 - [Bildschirmschoner sofort anzeigen](#15-bildschirmschoner-sofort-anzeigen)
 - [Kacheln](#16-kacheln)
+- [Blinkende Uhrzeit](#17-blinkende-uhrzeit)
+- [Tipp auf das Infoicon](#18-tipp-auf-das-infoicon)
 - [Fallstricke](#fallstricke)
 
 ## 1. Bildschirmschoner anlegen
@@ -623,6 +625,36 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 - **Alte Adapterversion (Downgrade):** Eine Adapterversion, die Kacheln nicht kennt, zeigt den Bildschirmschoner als **Standard** und schreibt eine Warnung ins Log (`mode 'tiles' (card 'screensaver5') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`). Die gespeicherte Konfiguration bleibt unverändert, nach einem Upgrade gilt Kacheln wieder.
 - **Web-Panel:** Das [Web-Panel](WebPanel) zeichnet Kacheln ebenfalls – seit den Hochformat-Layouts auch für `us-p` und für das Smartphone-Modell `web-p` (unten vier Spalten statt fünf). Wie viele Plätze es sind, richtet sich wie am Panel nach dem Modell (siehe [Web-Panel](WebPanel)).
 
+## 17. Blinkende Uhrzeit
+
+Ein Skript oder eine Automation kann die Uhrzeit des Bildschirmschoners **rot und weiß blinken** lassen – etwa als Hinweis, dass etwas Aufmerksamkeit braucht. Jede Phase dauert eine halbe Sekunde. Das Blinken läuft, bis es wieder ausgeschaltet wird; danach hat die Uhrzeit wieder ihre gewohnte Farbe. Eine neue Farbe für die Uhrzeit, die währenddessen kommt (etwa durch einen Timer), merkt sich das Panel und zeigt sie nach dem Blinken.
+
+Zwei Wege schalten es ein und aus:
+
+| Weg | Wert |
+|---|---|
+| **Datenpunkt** | `panels.<Panel>.cmd.screenSaver.clockBlink` (Rolle `switch`, beschreibbar): `true` blinkt, `false` beendet es. Der Wert bleibt über einen Neustart des Adapters erhalten. |
+| **`sendTo`** | `sendTo('nspanel-lovelace-ui.0', 'screensaverClockBlink', { panel: '<Topic des Panels>', enabled: true });` – `enabled: false` beendet es. Das Panel wird über sein MQTT-Topic gefunden, wie bei `screensaverNotify`. |
+
+- Es gilt für die Versionen Standard, Alternate, Advanced, Easyview und Kacheln und braucht die **TFT 6.2.0**; ältere TFTs bekommen den Befehl nicht und blinken nicht. Das [Web-Panel](WebPanel) blinkt ebenfalls.
+- **Der lange Druck hat Vorrang:** Hält man in Advanced oder Kacheln einen Indikator mit langem Druck, blinkt die Uhrzeit wie gewohnt gelb und grün. Nach dem Loslassen blinkt sie wieder rot und weiß, solange der Datenpunkt an ist.
+- Nach einem Seitenwechsel und beim Zurückkehren zum Bildschirmschoner blinkt die Uhrzeit sofort wieder.
+
+## 18. Tipp auf das Infoicon
+
+Das Infoicon neben der Uhrzeit lässt sich mit der **TFT 6.2.0** antippen – auch im [Web-Panel](WebPanel). Der Tipp zählt wie ein Indikator ohne langen Druck: Er wird beim Loslassen gesendet, ein Wischen, das auf dem Symbol beginnt, bleibt ein Wischen. Ohne Symbol ist die Stelle ein Teil des Hintergrunds. Ein Tipp auf die Uhrzeit selbst wirkt wie bisher (beim Timer schaltet er auf die Uhrzeit um, siehe [Timer statt Uhrzeit](#timer-statt-uhrzeit)).
+
+| Symbol | Was der Tipp zeigt |
+|---|---|
+| `timer-sand`, `timer-pause`, `timer-alert` | Ein Popup mit dem Symbol: *Ein Timer läuft.*, *Ein Timer ist pausiert.* bzw. *Ein Timer ist abgelaufen.* |
+| `cog-refresh-outline` | Ein Popup: *Auf dem Display läuft eine Entwickler-Firmware.* |
+| `wrench-clock` | Ein Popup: *Für das Display ist ein Firmware-Update verfügbar.* |
+| eigenes Infoicon (`panels.<Panel>.cmd.screenSaver.infoIcon`) | Der Adapter schreibt **immer** `true` in `panels.<Panel>.buttons.infoIcon` (nur lesbar, Rolle `button.press`). Ein Popup mit dem eigenen Symbol öffnet sich nur, wenn `panels.<Panel>.cmd.screenSaver.infoText` (Text, beschreibbar) nicht leer ist – der Text des Popups ist dessen Inhalt. |
+
+- Das Popup ist das gewohnte Meldungs-Popup mit kleinem Symbol (siehe [Popups](pagePopup)). Es schließt mit dem Kreuz oder nach dem Timeout des Panels; danach steht der Bildschirmschoner wieder da.
+- **Bei Standby-Helligkeit 0 weckt der erste Tipp nur auf**, wie bei den Indikatoren: kein Popup, kein State. Erst der zweite Tipp wirkt.
+- `cmd.screenSaver.infoText` wird beim [Export und Import](panelConfigTransfer) zusammen mit dem Infoicon übertragen.
+
 ## Fallstricke
 
 - **Der Tab Screensaver fehlt:** Er erscheint erst, wenn die MQTT-Einstellungen vollständig sind (Server bzw. IP, Port und Zugangsdaten) **und mindestens ein Panel** in der Panel-Tabelle unter [NSPanelsetting](NSPanelsetting) steht. Zentrale Zugangsdaten zählen nur, solange der Adapter **nicht** selbst den MQTT-Server stellt – im Server-Betrieb müssen Benutzername und Passwort in den Feldern stehen.
@@ -652,3 +684,6 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 - **Der Timer bleibt auf `0.0` in Rot:** Das ist der Alarm. Er endet erst, wenn der An/Aus-Datenpunkt falsch wird oder neue Daten in der Zukunft liegen; ein Tipp blendet nur die Uhrzeit ein, das rote Infoicon bleibt.
 - **Übernehmen im Uhrzeit-Dialog ist gesperrt:** *Timer anzeigen* ist gesetzt, aber ein Datenpunkt fehlt, ein Muster ist ungültig oder kein Pageitem gewählt. Häkchen abwählen oder die Felder füllen.
 - **Ein Timer-Item auf einer Seite hat keine Tasten:** Es nutzt den Timer des Bildschirmschoners, der aber keinen vollständigen Timer hat – oder es ist zugleich dessen Quelle (Kreis). Das Log nennt den Grund einmal; Einzelheiten unter [Timer-Popup](popupTimer).
+- **Die Uhrzeit blinkt nicht:** Das Panel hat eine TFT vor 6.2.0 – der Adapter schickt den Befehl dann gar nicht. Oder gerade läuft ein langer Druck; der hat Vorrang (siehe [Blinkende Uhrzeit](#17-blinkende-uhrzeit)).
+- **Der Tipp auf das eigene Infoicon öffnet kein Popup:** `cmd.screenSaver.infoText` ist leer – dann kommt nur der State `buttons.infoIcon`. Bei Standby-Helligkeit 0 weckt der erste Tipp nur auf.
+- **Ein Tipp zwischen Uhrzeit und Datum öffnet ein Popup:** In der Version Standard und Alternate ist das Feld des Infoicons ein Streifen über die ganze Breite zwischen Uhrzeit und Datum. Solange ein Symbol darin steht, zählt jeder Tipp in diesem Streifen als Tipp auf das Infoicon. In Easyview auf `us-l` und `us-p` ist das Feld dagegen nur 2 Pixel breit und lässt sich praktisch nicht treffen.

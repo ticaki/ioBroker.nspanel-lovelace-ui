@@ -23,6 +23,8 @@ Contents:
 - [Saving – what the adapter does with it](#14-saving--what-the-adapter-does-with-it)
 - [Showing the screensaver at once](#15-showing-the-screensaver-at-once)
 - [Tiles](#16-tiles)
+- [Blinking clock](#17-blinking-clock)
+- [Tapping the info icon](#18-tapping-the-info-icon)
 - [Pitfalls](#pitfalls)
 
 ## 1. Creating a screensaver
@@ -623,6 +625,36 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 - **Older adapter version (downgrade):** An adapter version that does not know Tiles shows the screensaver as **Standard** and writes a warning into the log (`mode 'tiles' (card 'screensaver5') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`). The stored configuration stays unchanged, after an upgrade Tiles applies again.
 - **Web panel:** The [web panel](WebPanel) draws Tiles as well – since the portrait layouts also for `us-p` and for the smartphone model `web-p` (four columns at the bottom instead of five). How many places there are follows the model, as on the panel (see [web panel](WebPanel)).
 
+## 17. Blinking clock
+
+A script or an automation can let the clock of the screensaver **blink red and white** – for example as a hint that something needs attention. Each phase lasts half a second. The blinking goes on until it is switched off; then the clock has its usual colour again. A new colour for the clock that arrives meanwhile (from a timer, for example) is kept by the panel and shown after the blinking.
+
+Two ways switch it on and off:
+
+| Way | Value |
+|---|---|
+| **Datapoint** | `panels.<panel>.cmd.screenSaver.clockBlink` (role `switch`, writable): `true` blinks, `false` ends it. The value survives a restart of the adapter. |
+| **`sendTo`** | `sendTo('nspanel-lovelace-ui.0', 'screensaverClockBlink', { panel: '<topic of the panel>', enabled: true });` – `enabled: false` ends it. The panel is found by its MQTT topic, as with `screensaverNotify`. |
+
+- It works for the versions Standard, Alternate, Advanced, Easyview and Tiles and needs the **TFT 6.2.0**; older TFTs do not get the command and do not blink. The [web panel](WebPanel) blinks as well.
+- **The long press has priority:** While an indicator with a long press is held in Advanced or Tiles, the clock blinks yellow and green as usual. After releasing it, it blinks red and white again as long as the datapoint is on.
+- After a page change and when the screensaver comes back, the clock blinks again at once.
+
+## 18. Tapping the info icon
+
+The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in the [web panel](WebPanel). The tap counts like an indicator without a long press: it is sent on release, a swipe that starts on the icon stays a swipe. Without an icon the spot is part of the background. A tap on the clock itself works as before (with a timer it switches to the clock, see [Timer instead of the clock](#timer-instead-of-the-clock)).
+
+| Icon | What the tap shows |
+|---|---|
+| `timer-sand`, `timer-pause`, `timer-alert` | A popup with the icon: *A timer is running.*, *A timer is paused.* or *A timer has expired.* |
+| `cog-refresh-outline` | A popup: *The display is running a development firmware.* |
+| `wrench-clock` | A popup: *A firmware update is available for the display.* |
+| own info icon (`panels.<panel>.cmd.screenSaver.infoIcon`) | The adapter **always** writes `true` to `panels.<panel>.buttons.infoIcon` (read only, role `button.press`). A popup with the own icon opens only when `panels.<panel>.cmd.screenSaver.infoText` (text, writable) is not empty – the text of the popup is its content. |
+
+- The popup is the usual notification popup with a small icon (see [Popups](pagePopup)). It closes with the cross or after the timeout of the panel; then the screensaver is back.
+- **With standby brightness 0 the first tap only wakes the display**, as with the indicators: no popup, no state. Only the second tap works.
+- `cmd.screenSaver.infoText` is transferred together with the info icon by [export and import](panelConfigTransfer).
+
 ## Pitfalls
 
 - **The Screensaver tab is missing:** It only appears once the MQTT settings are complete (server or IP, port and credentials) **and at least one panel** stands in the panel table under [NSPanelsetting](NSPanelsetting). Central credentials only count as long as the adapter does **not** provide the MQTT server itself – in server mode the user name and the password have to stand in the fields.
@@ -652,3 +684,6 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 - **The timer stays at `0.0` in red:** That is the alarm. It only ends when the on/off state becomes false or new data lies in the future; a tap only brings the clock back, the red info icon stays.
 - **Apply in the time dialog is disabled:** *Show timer* is set, but a state is missing, a pattern is invalid or no page item is chosen. Untick the checkbox or fill the fields.
 - **A timer item on a page has no buttons:** It uses the timer of the screensaver, but that one has no complete timer – or it is its source at the same time (circle). The log names the reason once; details under [timer popup](popupTimer).
+- **The clock does not blink:** The panel has a TFT before 6.2.0 – the adapter does not send the command then. Or a long press is running; it has priority (see [Blinking clock](#17-blinking-clock)).
+- **A tap on the own info icon opens no popup:** `cmd.screenSaver.infoText` is empty – then only the state `buttons.infoIcon` comes. With standby brightness 0 the first tap only wakes the display.
+- **A tap between the clock and the date opens a popup:** In the versions Standard and Alternate the field of the info icon is a strip across the whole width between the clock and the date. As long as an icon stands in it, every tap in this strip counts as a tap on the info icon. In Easyview on `us-l` and `us-p`, on the other hand, the field is only 2 pixels wide and can hardly be hit.
