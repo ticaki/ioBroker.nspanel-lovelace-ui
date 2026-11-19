@@ -178,7 +178,7 @@ dieselbe Meldung klassisch.
 | Feld | Bedeutung |
 |---|---|
 | **`largeIcon`** | `true` schaltet die Darstellung mit großem Symbol ein. |
-| **`icon`** / **`iconColor`** | Das große Symbol und seine Farbe (Vorgabe weiß). Das Panel hat nur die Symbole der Liste unten; das Web-Panel zeigt jedes. Ohne gültiges Symbol erscheint das Info-Symbol `information-outline`. |
+| **`icon`** / **`iconColor`** | Das große Symbol und seine Farbe (Vorgabe weiß). Das Panel hat nur die Symbole der Liste unten; ein Web-Panel ebenso, jedes andere Symbol nur mit der Instanz-Option **Web-Panel: Erweiterungen gegenüber dem Hardware-Panel erlauben** (siehe [Web-Panel](WebPanel#1-einschalten-und-adresse)). Ohne gültiges Symbol erscheint das Info-Symbol `information-outline`. |
 | **`text`** / **`colorText`** | Die Textzeile. Zu langer Text wird mit `...` gekürzt, er blättert nicht. `headline` erscheint hier nicht. |
 | **`textSize`** | `3` (Vorgabe) = 48 px und `2` (auch `1`) = 32 px, je **eine** Zeile; `0` = 24 px in **zwei** Zeilen. `4`, `5` und `8` gelten als `3`. Das hochkant gebaute us-p zeigt mehr Zeilen. |
 | **`buttonLeftIcon`** / **`colorButtonLeft`** | Linker Knopf: Symbol und Hintergrundfarbe. Wirkt wie der linke Knopf aus Abschnitt 4 – **„Nein / Weiter“**: Rückmeldung in `.buttonLeft`, eine `acknowledge`-Meldung wird **nicht** quittiert. Passend: `close-thick` oder `alarm-snooze`. |
@@ -215,14 +215,18 @@ sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
 
 Diese Symbole kennt das Panel als großes Symbol (Namen der Material Design Icons):
 `alert`, `information-outline`, `doorbell`, `package-variant-closed`, `mailbox-up`, `phone-ring`,
-`shield-alert`, `alarm-light`, `window-open-variant`, `door-open`, `garage-open`, `ev-station`, `power-socket-de`,
-`battery-alert-variant-outline`, `calendar`, `calendar-alert`, `calendar-clock`, `bell-ring`, `trash-can`,
-`wifi-off`, `web-off`, `cloud-off-outline`, `lan-disconnect`, `cancel`, `toilet`, `door-closed-lock`,
-`weather-rainy`, `weather-lightning`, `weather-lightning-rainy`, `weather-hail`, `weather-pouring`,
-`weather-snowy-heavy`, `weather-windy`, `weather-tornado`, `home-flood`, `snowflake-alert`, `sun-thermometer`,
+`shield-alert`, `alarm-light`, `window-open-variant`, `window-open-hinged-variant`, `window-shutter-alert`,
+`door-open`, `garage-open`, `ev-station`, `power-socket-de`, `battery-alert-variant-outline`, `calendar`,
+`calendar-alert`, `calendar-clock`, `bell-ring`, `trash-can`, `wifi-off`, `web-off`, `cloud-off-outline`,
+`lan-disconnect`, `cancel`, `toilet`, `door-closed-lock`, `weather-rainy`, `weather-lightning`,
+`weather-lightning-rainy`, `weather-hail`, `weather-pouring`, `weather-snowy-heavy`, `weather-windy`,
+`weather-tornado`, `home-alert`, `subway-alert-variant`, `home-flood`, `snowflake-alert`, `sun-thermometer`,
 `weather-fog`, `washing-machine`, `tumble-dryer`, `dishwasher`, `washing-machine-alert`, `tumble-dryer-alert`,
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
 `smoke-detector-alert`, `fire-alert`
+
+Die [Symbolübersicht](symbolOverview#große-benachrichtigung-popupnotify3) im Admin zeigt genau diese Symbole mit dem
+Knopf **Große Benachrichtigung (popupNotify3)**.
 
 ## 7. Schriften (textSize)
 

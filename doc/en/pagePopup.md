@@ -177,7 +177,7 @@ classic way.
 | Field | Meaning |
 |---|---|
 | **`largeIcon`** | `true` switches on the look with the big icon. |
-| **`icon`** / **`iconColor`** | The big icon and its colour (default white). The panel only has the icons of the list below; the web panel shows any. Without a valid icon the info icon `information-outline` appears. |
+| **`icon`** / **`iconColor`** | The big icon and its colour (default white). The panel only has the icons of the list below; so does a web panel, any other icon only with the instance option **Web panel: allow extensions over the hardware panel** (see [web panel](WebPanel#1-switching-on-and-address)). Without a valid icon the info icon `information-outline` appears. |
 | **`text`** / **`colorText`** | The text line. Text that is too long is cut with `...`, it does not page. `headline` is not shown here. |
 | **`textSize`** | `3` (default) = 48 px and `2` (also `1`) = 32 px, **one** line each; `0` = 24 px in **two** lines. `4`, `5` and `8` count as `3`. The upright us-p shows more lines. |
 | **`buttonLeftIcon`** / **`colorButtonLeft`** | Left button: icon and background colour. Acts like the left button of section 4 – **"No / Next"**: feedback in `.buttonLeft`, an `acknowledge` message is **not** acknowledged. Fitting: `close-thick` or `alarm-snooze`. |
@@ -213,14 +213,18 @@ sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
 
 The panel has these big icons (names of the Material Design Icons):
 `alert`, `information-outline`, `doorbell`, `package-variant-closed`, `mailbox-up`, `phone-ring`,
-`shield-alert`, `alarm-light`, `window-open-variant`, `door-open`, `garage-open`, `ev-station`, `power-socket-de`,
-`battery-alert-variant-outline`, `calendar`, `calendar-alert`, `calendar-clock`, `bell-ring`, `trash-can`,
-`wifi-off`, `web-off`, `cloud-off-outline`, `lan-disconnect`, `cancel`, `toilet`, `door-closed-lock`,
-`weather-rainy`, `weather-lightning`, `weather-lightning-rainy`, `weather-hail`, `weather-pouring`,
-`weather-snowy-heavy`, `weather-windy`, `weather-tornado`, `home-flood`, `snowflake-alert`, `sun-thermometer`,
+`shield-alert`, `alarm-light`, `window-open-variant`, `window-open-hinged-variant`, `window-shutter-alert`,
+`door-open`, `garage-open`, `ev-station`, `power-socket-de`, `battery-alert-variant-outline`, `calendar`,
+`calendar-alert`, `calendar-clock`, `bell-ring`, `trash-can`, `wifi-off`, `web-off`, `cloud-off-outline`,
+`lan-disconnect`, `cancel`, `toilet`, `door-closed-lock`, `weather-rainy`, `weather-lightning`,
+`weather-lightning-rainy`, `weather-hail`, `weather-pouring`, `weather-snowy-heavy`, `weather-windy`,
+`weather-tornado`, `home-alert`, `subway-alert-variant`, `home-flood`, `snowflake-alert`, `sun-thermometer`,
 `weather-fog`, `washing-machine`, `tumble-dryer`, `dishwasher`, `washing-machine-alert`, `tumble-dryer-alert`,
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
 `smoke-detector-alert`, `fire-alert`
+
+The [icon overview](symbolOverview#large-notification-popupnotify3) in the admin shows exactly these icons with the
+button **Large notification (popupNotify3)**.
 
 ## 7. Fonts (textSize)
 
