@@ -138,14 +138,17 @@ class Color extends ColorBase {
   // very dark cool header strip
   static DarkBlue = { r: 0, g: 0, b: 146 };
   // dark blue accents
+  // notification box on the screensaver: the background of the theme + 27 per channel (HMIDark 29 -> 56, tested)
   static NotifyGray = { r: 56, g: 56, b: 56 };
-  // notification box on a black screensaver
-  static NotifySlate = { r: 40, g: 56, b: 72 };
-  // notification box, cool (technical)
-  static NotifyUmber = { r: 72, g: 40, b: 24 };
-  // notification box, warm (sunset)
-  static NotifyOcean = { r: 0, g: 84, b: 160 };
-  // notification box on DeepOcean (topical)
+  // on HMIDark (default)
+  static NotifySlate = { r: 37, g: 40, b: 57 };
+  // on DarkGrayBlue (technical)
+  static NotifyPlum = { r: 75, g: 54, b: 90 };
+  // on 48/27/63 (sunset)
+  static NotifyOcean = { r: 27, g: 87, b: 147 };
+  // on DeepOcean (topical)
+  static NotifyLava = { r: 207, g: 49, b: 27 };
+  // on LavaCore (volcano)
   // ——— Grays / Neutrals ———
   static DarkGray = { r: 64, g: 64, b: 64 };
   // disabled controls, muted icons
@@ -782,7 +785,7 @@ class Color extends ColorBase {
     fgBar: Color.Off,
     fgNotifyHead: Color.White,
     fgNotifyText: Color.White,
-    bgNotify: Color.NotifyUmber,
+    bgNotify: Color.NotifyPlum,
     // Media-spezifisch
     mediaArtistOn: Color.Sunset,
     mediaArtistOff: Color.Gray,
@@ -864,7 +867,7 @@ class Color extends ColorBase {
     fgBar: Color.AshGray,
     fgNotifyHead: Color.White,
     fgNotifyText: Color.White,
-    bgNotify: Color.LavaDeep,
+    bgNotify: Color.NotifyLava,
     // Media-spezifisch
     mediaArtistOn: Color.LavaCore,
     mediaArtistOff: Color.AshGray,

@@ -987,7 +987,21 @@ export type ScreensaverNotifyConfig = {
     dismissibleId?: string;
     /** buzzer when shown: true = {@link screensaverNotifyDefaultBuzzer}, a string = own tone sequence */
     buzzer?: boolean | string;
+    /**
+     * second background colour `#rrggbb`: set = the background of the notification alternates every second between the
+     * background of the color theme and this colour (TFT 6.2.0+ and web panel), missing = no blinking
+     */
+    backgroundBlink?: string;
 };
+
+/**
+ * true for a colour `#rrggbb` (the second background of a notification, {@link ScreensaverNotifyConfig.backgroundBlink})
+ *
+ * @param value any value
+ */
+export function isHexColor(value: unknown): value is string {
+    return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
+}
 
 /**
  * a number as the panel prints a value (tools getValueEntryString): without grouping, with fixed decimals when given

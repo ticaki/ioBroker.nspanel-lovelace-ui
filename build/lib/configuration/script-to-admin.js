@@ -1413,6 +1413,7 @@ const notifyKeys = [
   "isDismissiblePerEvent",
   "dismissibleIDGlobal",
   "buzzer",
+  "BackgroundBlink",
   "Enabled",
   "VisibleCondition"
 ];
@@ -1477,6 +1478,12 @@ function convertNotify(element, where) {
     cfg.buzzer = buzzer;
   } else if (buzzer !== void 0 && buzzer !== null && buzzer !== false && buzzer !== "") {
     throw new ConvertError(reason, `${where}.buzzer: expected true or a tone sequence`);
+  }
+  const blink = element.BackgroundBlink;
+  if ((0, import_adminShareConfig.isHexColor)(blink)) {
+    cfg.backgroundBlink = blink;
+  } else if (blink !== void 0 && blink !== null && blink !== "") {
+    throw new ConvertError(reason, `${where}.BackgroundBlink: expected a color #rrggbb`);
   }
   return cfg;
 }

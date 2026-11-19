@@ -4438,7 +4438,8 @@ class ConfigManager extends import_library.BaseClass {
     }
     result.data.entity1.suffix = {
       type: "const",
-      constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}<sp!it>${entity.buzzer ? entity.buzzer === true ? "1,2,3,0xF54" : entity.buzzer : ""}`
+      // <sp!it>priority<sp!it>buzzer<sp!it>second background (RGB565, empty = no blinking)
+      constVal: `<sp!it>${typeof entity.Priority === "number" ? entity.Priority : 99}<sp!it>${entity.buzzer ? entity.buzzer === true ? "1,2,3,0xF54" : entity.buzzer : ""}<sp!it>${import_Color.Color.isHex(entity.BackgroundBlink) ? import_Color.Color.rgb_dec565(import_Color.Color.ConvertHexToRgb(entity.BackgroundBlink)) : ""}`
     };
     result.data.entity2 = structuredClone(result.data.entity1);
     if (entity.Text) {

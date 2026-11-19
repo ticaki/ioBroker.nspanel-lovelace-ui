@@ -82,6 +82,7 @@ __export(adminShareConfig_exports, {
   isClockTimerComplete: () => isClockTimerComplete,
   isClockTimerSourceItem: () => isClockTimerSourceItem,
   isCountdownChannel: () => isCountdownChannel,
+  isHexColor: () => isHexColor,
   isHmiTextSize: () => isHmiTextSize,
   isIconColorScaleElement: () => isIconColorScaleElement,
   isIconTextSize: () => isIconTextSize,
@@ -464,6 +465,9 @@ function screensaverItemFields(area) {
   };
 }
 const screensaverNotifyDefaultBuzzer = "1,2,3,0xF54";
+function isHexColor(value) {
+  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
+}
 function formatEntryNumber(value, locale = "de-DE", decimals = null) {
   if (decimals !== null) {
     return value.toLocaleString(locale, {
@@ -2257,6 +2261,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isClockTimerComplete,
   isClockTimerSourceItem,
   isCountdownChannel,
+  isHexColor,
   isHmiTextSize,
   isIconColorScaleElement,
   isIconTextSize,

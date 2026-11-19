@@ -79,6 +79,9 @@ function screensaverNotifyPayload(heading, text, colors, withBackground) {
   const fields = [colors.head, colors.text, ...withBackground ? [colors.background] : []].map(
     (c) => import_Color.Color.isRGB(c) ? String(import_Color.Color.rgb_dec565(c)) : ""
   );
+  if (withBackground && fields[2] !== "" && colors.blink !== void 0) {
+    fields.push(String(colors.blink));
+  }
   while (fields.length > 0 && fields[fields.length - 1] === "") {
     fields.pop();
   }
@@ -900,11 +903,17 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.customNotification = enabled && (this.headingNotification !== "" || this.textNotification !== "");
     void this.HandleNotification();
   }
-  notifyPayload(enabled, heading, text) {
+  /**
+   * @param enabled false: the message that clears the notification
+   * @param heading headline
+   * @param text text
+   * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+   */
+  notifyPayload(enabled, heading, text, blink) {
     if (!enabled) {
       return tools.getPayload("notify", "", "");
     }
-    const colors = { head: import_Color.Color.fgNotifyHead, text: import_Color.Color.fgNotifyText, background: import_Color.Color.bgNotify };
+    const colors = { head: import_Color.Color.fgNotifyHead, text: import_Color.Color.fgNotifyText, background: import_Color.Color.bgNotify, blink };
     return screensaverNotifyPayload(heading, text, colors, this.sendsNotifyBackground());
   }
   /**
@@ -1494,12 +1503,15 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       return;
     }
     const notifyList = message.options.notify.map((n) => n.split("~")).filter((n) => n[4] !== "" || n[5] !== "").map((n) => {
+      var _a;
       const s = n[5].split("<sp!it>");
       const { heading, text } = (0, import_adminShareConfig.screensaverNotifyLines)({ icon: n[2], headline: s[0], text: n[4] });
       const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
       const buzzer = s[2];
+      const blinkValue = parseInt((_a = s[3]) != null ? _a : "", 10);
+      const blink = Number.isInteger(blinkValue) && blinkValue >= 0 ? blinkValue : void 0;
       const id = n[1];
-      return { heading, text, prio, id, buzzer };
+      return { heading, text, prio, id, buzzer, blink };
     }).sort((a, b) => a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1);
     if (this.customNotification === true) {
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, this.customNotification, this.headingNotification, this.textNotification);
@@ -1507,11 +1519,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const heading = notifyList[0].heading;
       const text = notifyList[0].text;
       if (heading !== "" || text !== "") {
-        if (this.activeNotifyId != notifyList[0].id && this.lastSent.get("notify") !== this.notifyPayload(true, heading, text) && notifyList[0].buzzer && this.basePanel.dim.dayMode && this.basePanel.isBuzzerAllowed) {
+        if (this.activeNotifyId != notifyList[0].id && this.lastSent.get("notify") !== this.notifyPayload(true, heading, text, notifyList[0].blink) && notifyList[0].buzzer && this.basePanel.dim.dayMode && this.basePanel.isBuzzerAllowed) {
           this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
         }
         this.activeNotifyId = notifyList[0].id;
-        __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text);
+        __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text, notifyList[0].blink);
       }
     } else {
       this.activeNotifyId = "";
@@ -1993,7 +2005,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   }
 };
 _Screensaver_instances = new WeakSet();
-sendNotify_fn = function(enabled, heading = "", text = "") {
+sendNotify_fn = function(enabled, heading = "", text = "", blink) {
   if (!this.basePanel.isOnline) {
     return;
   }
@@ -2002,7 +2014,7 @@ sendNotify_fn = function(enabled, heading = "", text = "") {
   if (!this.activeNotification && !wasActive) {
     return;
   }
-  if (this.sendIfChanged("notify", this.notifyPayload(this.activeNotification, heading, text))) {
+  if (this.sendIfChanged("notify", this.notifyPayload(this.activeNotification, heading, text, blink))) {
     this.notifyHidden = false;
   }
   if (!this.activeNotification) {

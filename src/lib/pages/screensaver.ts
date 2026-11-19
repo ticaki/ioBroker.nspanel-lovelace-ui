@@ -112,12 +112,17 @@ export interface ScreensaverNotifyColors {
     text: unknown;
     /** background of both (`bco`), field 5 */
     background: unknown;
+    /**
+     * second background as RGB565, field 6: with field 5 the HMI alternates both every second (TFT 6.2.0+, web panel);
+     * undefined = no blinking. Only sent together with the background.
+     */
+    blink?: number;
 }
 
 /**
- * `notify~<headline>~<text>~<headline color>~<text color>~<background>` - the colors as RGB565. A color that is no RGB
- * stays empty (the HMI keeps its color, the background then is the one of the screensaver); empty fields at the end
- * are left out.
+ * `notify~<headline>~<text>~<headline color>~<text color>~<background>~<second background>` - the colors as RGB565. A
+ * color that is no RGB stays empty (the HMI keeps its color, the background then is the one of the screensaver); empty
+ * fields at the end are left out. The second background (blinking) only goes with a background.
  *
  * @param heading headline
  * @param text text
@@ -134,6 +139,9 @@ export function screensaverNotifyPayload(
     const fields = [colors.head, colors.text, ...(withBackground ? [colors.background] : [])].map(c =>
         Color.isRGB(c) ? String(Color.rgb_dec565(c)) : '',
     );
+    if (withBackground && fields[2] !== '' && colors.blink !== undefined) {
+        fields.push(String(colors.blink));
+    }
     while (fields.length > 0 && fields[fields.length - 1] === '') {
         fields.pop();
     }
@@ -1053,7 +1061,7 @@ export class Screensaver extends Page {
         void this.HandleNotification();
     }
 
-    #sendNotify(enabled: boolean, heading: string = '', text: string = ''): void {
+    #sendNotify(enabled: boolean, heading: string = '', text: string = '', blink?: number): void {
         if (!this.basePanel.isOnline) {
             return;
         }
@@ -1064,7 +1072,7 @@ export class Screensaver extends Page {
             return;
         }
 
-        if (this.sendIfChanged('notify', this.notifyPayload(this.activeNotification, heading, text))) {
+        if (this.sendIfChanged('notify', this.notifyPayload(this.activeNotification, heading, text, blink))) {
             this.notifyHidden = false;
         }
         if (!this.activeNotification) {
@@ -1072,11 +1080,17 @@ export class Screensaver extends Page {
         }
     }
 
-    private notifyPayload(enabled: boolean, heading: string, text: string): string {
+    /**
+     * @param enabled false: the message that clears the notification
+     * @param heading headline
+     * @param text text
+     * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+     */
+    private notifyPayload(enabled: boolean, heading: string, text: string, blink?: number): string {
         if (!enabled) {
             return tools.getPayload('notify', '', '');
         }
-        const colors = { head: Color.fgNotifyHead, text: Color.fgNotifyText, background: Color.bgNotify };
+        const colors = { head: Color.fgNotifyHead, text: Color.fgNotifyText, background: Color.bgNotify, blink };
         return screensaverNotifyPayload(heading, text, colors, this.sendsNotifyBackground());
     }
 
@@ -1841,7 +1855,7 @@ export class Screensaver extends Page {
             return;
         }
         // only use valid notify entries
-        // format: type~int~icon~color~heading<sp!it>prio~text
+        // format: type~int~icon~color~heading<sp!it>prio<sp!it>buzzer<sp!it>blink~text
         // lower prio = higher priority
         const notifyList = message.options.notify
             .map(n => n.split('~'))
@@ -1851,8 +1865,10 @@ export class Screensaver extends Page {
                 const { heading, text } = screensaverNotifyLines({ icon: n[2], headline: s[0], text: n[4] });
                 const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
                 const buzzer = s[2];
+                const blinkValue = parseInt(s[3] ?? '', 10);
+                const blink = Number.isInteger(blinkValue) && blinkValue >= 0 ? blinkValue : undefined;
                 const id = n[1];
-                return { heading, text, prio, id, buzzer };
+                return { heading, text, prio, id, buzzer, blink };
             })
             .sort((a, b) => (a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1));
 
@@ -1865,7 +1881,7 @@ export class Screensaver extends Page {
                 // the same text after a touch is no news
                 if (
                     this.activeNotifyId != notifyList[0].id &&
-                    this.lastSent.get('notify') !== this.notifyPayload(true, heading, text) &&
+                    this.lastSent.get('notify') !== this.notifyPayload(true, heading, text, notifyList[0].blink) &&
                     notifyList[0].buzzer &&
                     this.basePanel.dim.dayMode &&
                     this.basePanel.isBuzzerAllowed
@@ -1873,7 +1889,7 @@ export class Screensaver extends Page {
                     this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
                 }
                 this.activeNotifyId = notifyList[0].id;
-                this.#sendNotify(true, heading, text);
+                this.#sendNotify(true, heading, text, notifyList[0].blink);
             }
         } else {
             this.activeNotifyId = '';

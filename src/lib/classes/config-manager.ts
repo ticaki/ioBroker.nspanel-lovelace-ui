@@ -5295,7 +5295,8 @@ export class ConfigManager extends BaseClass {
         }
         result.data.entity1.suffix = {
             type: 'const',
-            constVal: `<sp!it>${typeof entity.Priority === 'number' ? entity.Priority : 99}<sp!it>${entity.buzzer ? (entity.buzzer === true ? '1,2,3,0xF54' : entity.buzzer) : ''}`,
+            // <sp!it>priority<sp!it>buzzer<sp!it>second background (RGB565, empty = no blinking)
+            constVal: `<sp!it>${typeof entity.Priority === 'number' ? entity.Priority : 99}<sp!it>${entity.buzzer ? (entity.buzzer === true ? '1,2,3,0xF54' : entity.buzzer) : ''}<sp!it>${Color.isHex(entity.BackgroundBlink) ? Color.rgb_dec565(Color.ConvertHexToRgb(entity.BackgroundBlink)) : ''}`,
         };
         result.data.entity2 = structuredClone(result.data.entity1);
         if (entity.Text) {

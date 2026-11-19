@@ -979,6 +979,8 @@ declare namespace ScriptConfig {
               isDismissiblePerEvent?: boolean;
               dismissibleIDGlobal?: string;
               buzzer?: boolean | string;
+              /** second background colour `#rrggbb`: the background blinks (TFT 6.2.0+, web panel) */
+              BackgroundBlink?: string;
           } & (
               | {
                     Enabled?: string | null | string[];

@@ -1722,6 +1722,28 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 expect(s.kinds(await s.sleepReachedOnSamePage())).to.include('notify');
             });
 
+            it('a notification of the admin list with a second background blinks (field 6)', async () => {
+                const saved = [Color.fgNotifyHead, Color.fgNotifyText, Color.bgNotify];
+                Color.fgNotifyHead = Color.White;
+                Color.fgNotifyText = Color.White;
+                Color.bgNotify = Color.NotifyGray;
+                try {
+                    const s = await scene({ notify: true });
+                    s.notify().getPageItemPayload = async (): Promise<string> =>
+                        Promise.resolve(`~scr?2~~~Text~Head<sp!it>1<sp!it><sp!it>63488`);
+                    const sent = await s.during(() => s.saver.HandleNotification());
+                    expect(sent).to.deep.equal(['notify~Head~Text~65535~65535~14791~63488']);
+                    // without the second background: no field 6
+                    s.notify().getPageItemPayload = async (): Promise<string> =>
+                        Promise.resolve(`~scr?2~~~Text~Head<sp!it>1<sp!it><sp!it>`);
+                    expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([
+                        'notify~Head~Text~65535~65535~14791',
+                    ]);
+                } finally {
+                    [Color.fgNotifyHead, Color.fgNotifyText, Color.bgNotify] = saved;
+                }
+            });
+
             it('a tap without a notification sends no empty notify', async () => {
                 const s = await scene();
                 await s.show();

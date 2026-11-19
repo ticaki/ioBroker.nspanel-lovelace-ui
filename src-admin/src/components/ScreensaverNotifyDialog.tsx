@@ -35,6 +35,7 @@ import IconSelect from '../IconSelect';
 import {
     type ScreensaverNotifyConfig,
     formatEntryNumber,
+    isHexColor,
     screensaverNotifyDefaultBuzzer,
     screensaverNotifyLines,
 } from '../../../src/lib/types/adminShareConfig';
@@ -53,6 +54,9 @@ export interface ScreensaverNotifyDialogProps {
 }
 
 type BuzzerMode = 'off' | 'default' | 'custom';
+
+/** second background when "background blinks" is ticked - a dark red (Color.LavaGlow of the adapter) */
+const DEFAULT_BLINK_COLOR = '#9c201a';
 
 /** text fields of a notification: fixed text or state id */
 type NotifyTextField = 'headline' | 'headlinePrefix' | 'headlineUnit' | 'text' | 'textPrefix' | 'textSuffix';
@@ -315,6 +319,9 @@ export default class ScreensaverNotifyDialog extends React.Component<
             out.buzzer = true;
         } else if (buzzerMode === 'custom') {
             out.buzzer = buzzerSequence.trim();
+        }
+        if (isHexColor(draft.backgroundBlink)) {
+            out.backgroundBlink = draft.backgroundBlink;
         }
         this.props.onSave(out);
         this.close();
@@ -617,6 +624,47 @@ export default class ScreensaverNotifyDialog extends React.Component<
         );
     }
 
+    private renderBlink(): React.JSX.Element {
+        const blink = this.state.draft.backgroundBlink;
+        const on = blink !== undefined;
+        return (
+            <Box>
+                {this.renderSectionTitle('screensaver_notify_blinkSection', 'screensaver.notifyBlink')}
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={on}
+                                onChange={e =>
+                                    this.set('backgroundBlink', e.target.checked ? DEFAULT_BLINK_COLOR : undefined)
+                                }
+                            />
+                        }
+                        label={this.getText('screensaver_notify_backgroundBlink')}
+                    />
+                    {on && (
+                        <TextField
+                            variant="standard"
+                            type="color"
+                            label={this.getText('screensaver_notify_backgroundBlinkColor')}
+                            value={isHexColor(blink) ? blink : DEFAULT_BLINK_COLOR}
+                            onChange={e => this.set('backgroundBlink', e.target.value)}
+                            slotProps={{ inputLabel: { shrink: true } }}
+                            sx={{ width: 160 }}
+                        />
+                    )}
+                </Box>
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block' }}
+                >
+                    {this.getText('screensaver_notify_backgroundBlinkHint')}
+                </Typography>
+            </Box>
+        );
+    }
+
     private renderBuzzer(): React.JSX.Element {
         const { buzzerMode, buzzerSequence } = this.state;
         return (
@@ -705,6 +753,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
                     {this.renderCondition()}
                     {this.renderDismiss()}
                     {this.renderBuzzer()}
+                    {this.renderBlink()}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={this.close}>{this.getText('Cancel1')}</Button>

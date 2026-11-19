@@ -1,4 +1,5 @@
 import {
+    isHexColor,
     normalizeScreensaverEntry,
     screensaverAlternateItems,
     screensaverCardOfMode,
@@ -150,6 +151,9 @@ export function screensaverNotifyToScript(
     }
     if (cfg.buzzer === true || (typeof cfg.buzzer === 'string' && cfg.buzzer.trim())) {
         element.buzzer = cfg.buzzer === true ? true : String(cfg.buzzer).trim();
+    }
+    if (isHexColor(cfg.backgroundBlink)) {
+        element.BackgroundBlink = cfg.backgroundBlink;
     }
     return element;
 }

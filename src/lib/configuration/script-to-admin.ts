@@ -16,6 +16,7 @@ import { isButton } from '../const/config-manager-const';
 import { mainPageName } from '../const/default-pages';
 import { normalizeCycleValues } from '../const/screensaver-cycle';
 import {
+    isHexColor,
     ALL_PANELS_SPECIAL_ID,
     dropScriptNavigation,
     emptyChannelValueConfig,
@@ -2017,6 +2018,7 @@ const notifyKeys = [
     'isDismissiblePerEvent',
     'dismissibleIDGlobal',
     'buzzer',
+    'BackgroundBlink',
     'Enabled',
     'VisibleCondition',
 ] as const;
@@ -2094,6 +2096,12 @@ function convertNotify(element: unknown, where: string): Omit<ScreensaverNotifyC
         cfg.buzzer = buzzer;
     } else if (buzzer !== undefined && buzzer !== null && buzzer !== false && buzzer !== '') {
         throw new ConvertError(reason, `${where}.buzzer: expected true or a tone sequence`);
+    }
+    const blink = element.BackgroundBlink;
+    if (isHexColor(blink)) {
+        cfg.backgroundBlink = blink;
+    } else if (blink !== undefined && blink !== null && blink !== '') {
+        throw new ConvertError(reason, `${where}.BackgroundBlink: expected a color #rrggbb`);
     }
     return cfg;
 }

@@ -70,6 +70,7 @@ export const screensaverTopics = {
         en: '5. Dismissing and the group ID',
     },
     'screensaver.notifyBuzzer': { page: 'Screensaver-Notify', de: '6. Summer', en: '6. Buzzer' },
+    'screensaver.notifyBlink': { page: 'Screensaver-Notify', de: 'Hintergrund blinkt', en: 'Background blinks' },
     'screensaver.notifyPreview': {
         page: 'Screensaver-Notify',
         de: '7. Vorschau und was der Dialog prüft',
