@@ -4431,10 +4431,10 @@ class ConfigManager extends import_library.BaseClass {
     }
     result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.Headline || " ", true);
     if (entity.HeadlinePrefix) {
-      result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix);
+      result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix, true);
     }
     if (entity.HeadlineUnit) {
-      result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit);
+      result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit, true);
     }
     result.data.entity1.suffix = {
       type: "const",
@@ -4446,14 +4446,14 @@ class ConfigManager extends import_library.BaseClass {
       result.data.text = {
         true: {
           value: await this.getFieldAsDataItemConfig(entity.Text, true),
-          prefix: entity.TextPrefix ? await this.getFieldAsDataItemConfig(entity.TextPrefix) : void 0,
-          suffix: entity.TextSuffix ? await this.getFieldAsDataItemConfig(entity.TextSuffix) : void 0
+          prefix: entity.TextPrefix ? await this.getFieldAsDataItemConfig(entity.TextPrefix, true) : void 0,
+          suffix: entity.TextSuffix ? await this.getFieldAsDataItemConfig(entity.TextSuffix, true) : void 0
         }
       };
     }
     if (entity.HeadlineIcon) {
       result.data.icon = {
-        true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon) }
+        true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon, true) }
       };
     }
     if ("Enabled" in entity && entity.Enabled != null) {

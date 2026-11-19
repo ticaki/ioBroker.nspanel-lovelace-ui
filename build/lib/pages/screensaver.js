@@ -168,6 +168,15 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "activeNotification", false);
     __publicField(this, "activeNotifyId", "");
     /**
+     * id of the configured notification whose content is on the HMI, '' when none is (nothing shown, a custom one or
+     * a reload with `pageType~`). Only a new content of this notification is throttled, see {@link notifyContentInterval}.
+     */
+    __publicField(this, "shownNotifyId", "");
+    /** time of the last send of a configured notification, the start of the throttle window */
+    __publicField(this, "notifyContentTs", 0);
+    /** sends the content that waited for the end of the throttle window */
+    __publicField(this, "notifyContentTimer");
+    /**
      * The page item whose popup a long press of an indicator opened ({@link openIndicatorPopup}), until the screensaver
      * is shown again ({@link onVisibilityChange}).
      */
@@ -904,6 +913,59 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     void this.HandleNotification();
   }
   /**
+   * Sends a configured notification. A new content of the notification that is already shown goes out at most every
+   * {@link Screensaver.notifyContentInterval} ms: at once when the last send is longer ago, otherwise once at the end
+   * of the window with the values of then (HandleNotification reads them again). Nothing goes out for it while a
+   * touch has cleared it on the HMI ({@link notifyHidden}) - it comes back with the next `pageType~`. Another
+   * notification (enabled, priority) and one after a reload are sent at once.
+   *
+   * @param id id of the page item of the notification
+   * @param heading heading of the notification
+   * @param text text of the notification
+   * @param blink second background (RGB565) of the notification, undefined = no blinking. Like the colors of the
+   * theme it is part of the payload: a new color of the shown notification counts as a new content.
+   */
+  sendConfiguredNotify(id, heading, text, blink) {
+    if (this.shownNotifyId === id && this.activeNotification) {
+      if (this.notifyHidden || this.lastSent.get("notify") === this.notifyPayload(true, heading, text, blink)) {
+        return;
+      }
+      const wait = this.notifyContentTs + _Screensaver.notifyContentInterval - Date.now();
+      if (wait > 0) {
+        this.scheduleNotifyContent(wait);
+        return;
+      }
+    }
+    this.clearNotifyContentTimer();
+    if (__privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text, blink)) {
+      this.notifyContentTs = Date.now();
+    }
+    this.shownNotifyId = this.activeNotification ? id : "";
+  }
+  /**
+   * Starts the timer for the end of the throttle window of the notification content, unless it runs already.
+   *
+   * @param wait ms up to the end of the window
+   */
+  scheduleNotifyContent(wait) {
+    if (this.notifyContentTimer || this.unload || this.adapter.unload) {
+      return;
+    }
+    this.notifyContentTimer = this.adapter.setTimeout(() => {
+      this.notifyContentTimer = void 0;
+      if (this.unload || this.adapter.unload || !this.visibility) {
+        return;
+      }
+      void this.HandleNotification();
+    }, wait);
+  }
+  clearNotifyContentTimer() {
+    if (this.notifyContentTimer) {
+      this.adapter.clearTimeout(this.notifyContentTimer);
+      this.notifyContentTimer = void 0;
+    }
+  }
+  /**
    * @param enabled false: the message that clears the notification
    * @param heading headline
    * @param text text
@@ -961,8 +1023,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   }
   /**
    * Any touch makes the HMI clear a notification by itself (`tc0` press, unless the display is off) - and the adapter
-   * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again: it comes
-   * back with the next `pageType~` or a new content. What the HMI dropped behind it can go out now. With a standby
+   * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again, also not
+   * with a new content of the same notification: it comes back with the next `pageType~` (or another notification
+   * takes its place). What the HMI dropped behind it can go out now. With a standby
    * brightness of 0 the touch may have hit a dark display and cleared nothing: then what follows still counts as
    * dropped and is repeated with the next touch or the end of the notification. A tap with a counter above 1 always
    * hit an awake display (the first tap of the run woke it), so the HMI cleared the notification then.
@@ -1113,6 +1176,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.weatherDropped = false;
       this.lastTimerPayload = "";
       this.notifyHidden = false;
+      this.shownNotifyId = "";
       this.wakeTapRun = false;
       this.lastUpdateTs = 0;
       this.timeAfterRender = true;
@@ -1514,6 +1578,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       return { heading, text, prio, id, buzzer, blink };
     }).sort((a, b) => a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1);
     if (this.customNotification === true) {
+      this.clearNotifyContentTimer();
+      this.shownNotifyId = "";
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, this.customNotification, this.headingNotification, this.textNotification);
     } else if (notifyList.length > 0) {
       const heading = notifyList[0].heading;
@@ -1523,10 +1589,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
         }
         this.activeNotifyId = notifyList[0].id;
-        __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text, notifyList[0].blink);
+        this.sendConfiguredNotify(notifyList[0].id, heading, text, notifyList[0].blink);
       }
     } else {
       this.activeNotifyId = "";
+      this.clearNotifyContentTimer();
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, false);
     }
   }
@@ -1605,6 +1672,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.lastTimerTap = now;
       await this.HandleTime();
       this.lastSent.delete("notify");
+      this.shownNotifyId = "";
       await this.HandleNotification();
       return true;
     }
@@ -1901,6 +1969,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (this.updateThrottle) {
       this.adapter.clearTimeout(this.updateThrottle);
     }
+    this.clearNotifyContentTimer();
     if (this.blockButtons) {
       this.adapter.clearTimeout(this.blockButtons);
     }
@@ -2005,21 +2074,33 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   }
 };
 _Screensaver_instances = new WeakSet();
+/**
+ * @param enabled When true, send heading + text; otherwise clear the notify.
+ * @param heading heading of the notification
+ * @param text text of the notification
+ * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+ * @returns true when a message went out
+ */
 sendNotify_fn = function(enabled, heading = "", text = "", blink) {
   if (!this.basePanel.isOnline) {
-    return;
+    return false;
   }
   const wasActive = this.activeNotification;
   this.activeNotification = enabled && (heading !== "" || text !== "");
-  if (!this.activeNotification && !wasActive) {
-    return;
+  if (!this.activeNotification) {
+    this.shownNotifyId = "";
   }
-  if (this.sendIfChanged("notify", this.notifyPayload(this.activeNotification, heading, text, blink))) {
+  if (!this.activeNotification && !wasActive) {
+    return false;
+  }
+  const sent = this.sendIfChanged("notify", this.notifyPayload(this.activeNotification, heading, text, blink));
+  if (sent) {
     this.notifyHidden = false;
   }
   if (!this.activeNotification) {
     this.resendDropped();
   }
+  return sent;
 };
 /** Minimum pause between two weatherUpdate/color bursts - protects the Nextion serial buffer */
 __publicField(_Screensaver, "minUpdateInterval", 1e3);
@@ -2038,6 +2119,12 @@ __publicField(_Screensaver, "updatePlaces", /* @__PURE__ */ new Set([
   "mricon",
   "notify"
 ]));
+/**
+ * A configured notification sends a new content of the notification that is shown at most this often: a value
+ * that changes every second must not flood the panel. Showing, hiding and a change to another notification
+ * (enabled, priority) are not throttled, nor the custom notification of sendTo/cmd.
+ */
+__publicField(_Screensaver, "notifyContentInterval", 3e4);
 /** the popup of the HMI for the type of a page item (the first field of its payload), as a card page opens it */
 __publicField(_Screensaver, "popupOfItemType", {
   light: "popupLight",

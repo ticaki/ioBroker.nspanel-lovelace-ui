@@ -228,6 +228,21 @@ export class Screensaver extends Page {
     private activeNotification: boolean = false;
     private activeNotifyId: string = '';
     /**
+     * id of the configured notification whose content is on the HMI, '' when none is (nothing shown, a custom one or
+     * a reload with `pageType~`). Only a new content of this notification is throttled, see {@link notifyContentInterval}.
+     */
+    private shownNotifyId: string = '';
+    /**
+     * A configured notification sends a new content of the notification that is shown at most this often: a value
+     * that changes every second must not flood the panel. Showing, hiding and a change to another notification
+     * (enabled, priority) are not throttled, nor the custom notification of sendTo/cmd.
+     */
+    private static readonly notifyContentInterval = 30_000;
+    /** time of the last send of a configured notification, the start of the throttle window */
+    private notifyContentTs: number = 0;
+    /** sends the content that waited for the end of the throttle window */
+    private notifyContentTimer: ioBroker.Timeout | undefined = undefined;
+    /**
      * The page item whose popup a long press of an indicator opened ({@link openIndicatorPopup}), until the screensaver
      * is shown again ({@link onVisibilityChange}).
      */
@@ -1061,22 +1076,91 @@ export class Screensaver extends Page {
         void this.HandleNotification();
     }
 
-    #sendNotify(enabled: boolean, heading: string = '', text: string = '', blink?: number): void {
+    /**
+     * @param enabled When true, send heading + text; otherwise clear the notify.
+     * @param heading heading of the notification
+     * @param text text of the notification
+     * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+     * @returns true when a message went out
+     */
+    #sendNotify(enabled: boolean, heading: string = '', text: string = '', blink?: number): boolean {
         if (!this.basePanel.isOnline) {
-            return;
+            return false;
         }
         const wasActive = this.activeNotification;
         this.activeNotification = enabled && (heading !== '' || text !== '');
+        if (!this.activeNotification) {
+            this.shownNotifyId = '';
+        }
         // no notification is what the HMI starts with: an empty message only clears one that was shown
         if (!this.activeNotification && !wasActive) {
-            return;
+            return false;
         }
 
-        if (this.sendIfChanged('notify', this.notifyPayload(this.activeNotification, heading, text, blink))) {
+        const sent = this.sendIfChanged('notify', this.notifyPayload(this.activeNotification, heading, text, blink));
+        if (sent) {
             this.notifyHidden = false;
         }
         if (!this.activeNotification) {
             this.resendDropped();
+        }
+        return sent;
+    }
+
+    /**
+     * Sends a configured notification. A new content of the notification that is already shown goes out at most every
+     * {@link Screensaver.notifyContentInterval} ms: at once when the last send is longer ago, otherwise once at the end
+     * of the window with the values of then (HandleNotification reads them again). Nothing goes out for it while a
+     * touch has cleared it on the HMI ({@link notifyHidden}) - it comes back with the next `pageType~`. Another
+     * notification (enabled, priority) and one after a reload are sent at once.
+     *
+     * @param id id of the page item of the notification
+     * @param heading heading of the notification
+     * @param text text of the notification
+     * @param blink second background (RGB565) of the notification, undefined = no blinking. Like the colors of the
+     * theme it is part of the payload: a new color of the shown notification counts as a new content.
+     */
+    private sendConfiguredNotify(id: string, heading: string, text: string, blink?: number): void {
+        if (this.shownNotifyId === id && this.activeNotification) {
+            if (this.notifyHidden || this.lastSent.get('notify') === this.notifyPayload(true, heading, text, blink)) {
+                return;
+            }
+            const wait = this.notifyContentTs + Screensaver.notifyContentInterval - Date.now();
+            if (wait > 0) {
+                this.scheduleNotifyContent(wait);
+                return;
+            }
+        }
+        this.clearNotifyContentTimer();
+        if (this.#sendNotify(true, heading, text, blink)) {
+            this.notifyContentTs = Date.now();
+        }
+        this.shownNotifyId = this.activeNotification ? id : '';
+    }
+
+    /**
+     * Starts the timer for the end of the throttle window of the notification content, unless it runs already.
+     *
+     * @param wait ms up to the end of the window
+     */
+    private scheduleNotifyContent(wait: number): void {
+        if (this.notifyContentTimer || this.unload || this.adapter.unload) {
+            return;
+        }
+        this.notifyContentTimer = this.adapter.setTimeout(() => {
+            this.notifyContentTimer = undefined;
+            if (this.unload || this.adapter.unload || !this.visibility) {
+                // a screensaver shown again sends everything with its pageType
+                return;
+            }
+            void this.HandleNotification();
+        }, wait);
+    }
+
+    private clearNotifyContentTimer(): void {
+        if (this.notifyContentTimer) {
+            this.adapter.clearTimeout(this.notifyContentTimer);
+            this.notifyContentTimer = undefined;
         }
     }
 
@@ -1144,8 +1228,9 @@ export class Screensaver extends Page {
 
     /**
      * Any touch makes the HMI clear a notification by itself (`tc0` press, unless the display is off) - and the adapter
-     * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again: it comes
-     * back with the next `pageType~` or a new content. What the HMI dropped behind it can go out now. With a standby
+     * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again, also not
+     * with a new content of the same notification: it comes back with the next `pageType~` (or another notification
+     * takes its place). What the HMI dropped behind it can go out now. With a standby
      * brightness of 0 the touch may have hit a dark display and cleared nothing: then what follows still counts as
      * dropped and is repeated with the next touch or the end of the notification. A tap with a counter above 1 always
      * hit an awake display (the first tap of the run woke it), so the HMI cleared the notification then.
@@ -1320,6 +1405,7 @@ export class Screensaver extends Page {
             this.weatherDropped = false;
             this.lastTimerPayload = '';
             this.notifyHidden = false;
+            this.shownNotifyId = '';
             this.wakeTapRun = false;
             this.lastUpdateTs = 0;
             this.timeAfterRender = true;
@@ -1873,6 +1959,9 @@ export class Screensaver extends Page {
             .sort((a, b) => (a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1));
 
         if (this.customNotification === true) {
+            // set by sendTo/cmd, not configured: not throttled
+            this.clearNotifyContentTimer();
+            this.shownNotifyId = '';
             this.#sendNotify(this.customNotification, this.headingNotification, this.textNotification);
         } else if (notifyList.length > 0) {
             const heading = notifyList[0].heading;
@@ -1889,10 +1978,11 @@ export class Screensaver extends Page {
                     this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
                 }
                 this.activeNotifyId = notifyList[0].id;
-                this.#sendNotify(true, heading, text, notifyList[0].blink);
+                this.sendConfiguredNotify(notifyList[0].id, heading, text, notifyList[0].blink);
             }
         } else {
             this.activeNotifyId = '';
+            this.clearNotifyContentTimer();
             this.#sendNotify(false);
         }
     }
@@ -1974,8 +2064,9 @@ export class Screensaver extends Page {
             this.timerTappedAway = true;
             this.lastTimerTap = now;
             await this.HandleTime();
-            // the HMI clears a notification by itself with every touch - it was not dismissed
+            // the HMI clears a notification by itself with every touch - it was not dismissed: shown again at once
             this.lastSent.delete('notify');
+            this.shownNotifyId = '';
             await this.HandleNotification();
             return true;
         }
@@ -2314,6 +2405,7 @@ export class Screensaver extends Page {
         if (this.updateThrottle) {
             this.adapter.clearTimeout(this.updateThrottle);
         }
+        this.clearNotifyContentTimer();
         if (this.blockButtons) {
             this.adapter.clearTimeout(this.blockButtons);
         }

@@ -5286,12 +5286,13 @@ export class ConfigManager extends BaseClass {
         if (!result.data.entity1) {
             throw new Error('Invalid data');
         }
+        // every field of the content triggers: the screensaver throttles a new content, see Screensaver.notifyContentInterval
         result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.Headline || ' ', true);
         if (entity.HeadlinePrefix) {
-            result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix);
+            result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix, true);
         }
         if (entity.HeadlineUnit) {
-            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit);
+            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit, true);
         }
         result.data.entity1.suffix = {
             type: 'const',
@@ -5303,14 +5304,18 @@ export class ConfigManager extends BaseClass {
             result.data.text = {
                 true: {
                     value: await this.getFieldAsDataItemConfig(entity.Text, true),
-                    prefix: entity.TextPrefix ? await this.getFieldAsDataItemConfig(entity.TextPrefix) : undefined,
-                    suffix: entity.TextSuffix ? await this.getFieldAsDataItemConfig(entity.TextSuffix) : undefined,
+                    prefix: entity.TextPrefix
+                        ? await this.getFieldAsDataItemConfig(entity.TextPrefix, true)
+                        : undefined,
+                    suffix: entity.TextSuffix
+                        ? await this.getFieldAsDataItemConfig(entity.TextSuffix, true)
+                        : undefined,
                 },
             };
         }
         if (entity.HeadlineIcon) {
             result.data.icon = {
-                true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon) },
+                true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon, true) },
             };
         }
 
