@@ -248,6 +248,9 @@ function buttonText(action: AdminButtonFunction | undefined): string {
     if (action.mode === 'page') {
         return `${mode}: ${action.page}`;
     }
+    if (action.mode === 'navigation') {
+        return `${mode}: ${I18n.t(`panelButtonDialog_target_${action.target}`)}`;
+    }
     const delay =
         'delay' in action && typeof action.delay === 'number'
             ? ` (${I18n.t('convertScript_buttonDelay', String(action.delay))})`

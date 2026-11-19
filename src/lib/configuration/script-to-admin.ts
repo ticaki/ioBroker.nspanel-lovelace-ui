@@ -2320,6 +2320,7 @@ function emptyMrIcon(): ScriptConfig.ScreenSaverMRElement {
 /** the modes of a hardware button the config manager knows (`isButton`) */
 const buttonModes: readonly NonNullable<AdminButtonFunction>['mode'][] = [
     'page',
+    'navigation',
     'switch',
     'button',
     'buttonOnDelayOff',
@@ -2330,7 +2331,7 @@ const buttonModes: readonly NonNullable<AdminButtonFunction>['mode'][] = [
 
 /**
  * Whether a script button is the empty form of the template (`{ mode: 'switch', state: '' }`): a known
- * mode whose target (`state`, for `page` the `page`) is empty, null or missing. The config manager
+ * mode whose target (`state`, for `page` the `page`, for `navigation` the `target`) is empty, null or missing. The config manager
  * rejects it in `isButton`, logs "Button ... wrong configured!" and sets no action - on the panel it is
  * the same as no button at all.
  *
@@ -2341,7 +2342,7 @@ function isEmptyButton(value: Dict): boolean {
     if (typeof mode !== 'string' || !buttonModes.some(m => m === mode)) {
         return false;
     }
-    const target = value[mode === 'page' ? 'page' : 'state'];
+    const target = value[mode === 'page' ? 'page' : mode === 'navigation' ? 'target' : 'state'];
     return target === undefined || target === null || target === '';
 }
 
@@ -2366,6 +2367,10 @@ function convertButton(value: unknown): AdminButtonFunction | undefined {
     if (mode === 'page') {
         rejectUnknownKeys(value, ['mode', 'page'], [], reason, 'button');
         return { mode, page: String(value.page) };
+    }
+    if (mode === 'navigation') {
+        rejectUnknownKeys(value, ['mode', 'target'], [], reason, 'button');
+        return { mode, target: value.target };
     }
     if (typeof value.state !== 'string') {
         throw new ConvertError(reason, 'state: expected a state id');

@@ -1529,6 +1529,15 @@ declare namespace ScriptConfig {
            */
           state: string;
       }
+        | {
+            /**
+             * Mode for acting like a navigation arrow of the page shown:
+             * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long.
+             * An open popup is closed first, on the screensaver nothing happens.
+             */
+            mode: 'navigation';
+            target: 'next' | 'prev' | 'home' | 'parent';
+        }
         | null;
 
     export type Config = {

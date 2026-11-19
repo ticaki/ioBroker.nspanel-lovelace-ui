@@ -45,6 +45,24 @@ describe('lib/configuration - applyAdminButtons', () => {
         expect(result.invalid).to.deep.equal(['left', 'right']);
     });
 
+    it('takes the mode navigation with each of its four targets', () => {
+        for (const target of ['next', 'prev', 'home', 'parent'] as const) {
+            const result = applyAdminButtons(scriptButtons(), { buttonLeft: { mode: 'navigation', target } });
+            expect(result.buttons?.left, target).to.deep.equal({ mode: 'navigation', target });
+            expect(result.invalid).to.deep.equal([]);
+        }
+    });
+
+    it('rejects the mode navigation without a known target', () => {
+        for (const target of [undefined, '', 'up', 5]) {
+            const result = applyAdminButtons(scriptButtons(), {
+                buttonRight: JSON.parse(JSON.stringify({ mode: 'navigation', target })),
+            });
+            expect(result.buttons, String(target)).to.deep.equal(scriptButtons());
+            expect(result.invalid).to.deep.equal(['right']);
+        }
+    });
+
     it('accepts a configured "no action"', () => {
         const result = applyAdminButtons(scriptButtons(), { buttonLeft: null });
         expect(result.buttons).to.deep.equal({ left: null, right: { mode: 'button', state: 'alias.0.scriptRight' } });

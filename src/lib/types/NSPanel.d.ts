@@ -502,6 +502,18 @@ export namespace NSPanel {
                */
               state: string | dataItem.Dataitem;
           }
+        | {
+              /**
+               * Mode for acting like a navigation arrow of the page shown.
+               *
+               */
+              mode: 'navigation';
+              /**
+               * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long.
+               *
+               */
+              target: 'next' | 'prev' | 'home' | 'parent';
+          }
         | null;
 
     type STATUS0 = {

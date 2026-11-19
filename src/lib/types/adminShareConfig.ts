@@ -4324,11 +4324,34 @@ export type AdminButtonFunction =
           /** id of the datapoint */
           state: string;
       }
+    | {
+          /** act like a navigation arrow of the page shown, see {@link ButtonNavigationTarget} */
+          mode: 'navigation';
+          target: ButtonNavigationTarget;
+      }
     | null;
+
+/**
+ * Target of the hardware button mode 'navigation': which navigation arrow of the page shown the button presses
+ * (next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long).
+ */
+export type ButtonNavigationTarget = 'next' | 'prev' | 'home' | 'parent';
+
+/** All targets of the hardware button mode 'navigation' in the order the admin dialog offers them. */
+export const BUTTON_NAVIGATION_TARGETS: readonly ButtonNavigationTarget[] = ['next', 'prev', 'home', 'parent'];
+
+/**
+ * @param value anything
+ * @returns true for a target of the hardware button mode 'navigation'
+ */
+export function isButtonNavigationTarget(value: unknown): value is ButtonNavigationTarget {
+    return typeof value === 'string' && BUTTON_NAVIGATION_TARGETS.some(t => t === value);
+}
 
 /** Modes of `AdminButtonFunction` in the order the admin dialog offers them. */
 export const ADMIN_BUTTON_MODES = [
     'page',
+    'navigation',
     'switch',
     'button',
     'buttonOnDelayOff',

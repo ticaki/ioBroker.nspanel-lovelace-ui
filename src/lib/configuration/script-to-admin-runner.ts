@@ -20,6 +20,7 @@
  */
 import {
     ADMIN_BUTTON_MODES,
+    isButtonNavigationTarget,
     CONVERT_GLOBAL_DECISIONS,
     type ConvertGlobalDecision,
     findChartEntryForScript,
@@ -141,6 +142,9 @@ function isAdminButton(value: unknown): value is AdminButtonFunction {
     if (!isDict(value) || typeof value.mode !== 'string' || !ADMIN_BUTTON_MODES.some(m => m === value.mode)) {
         return false;
     }
+    if (value.mode === 'navigation') {
+        return isButtonNavigationTarget(value.target);
+    }
     return value.mode === 'page' ? typeof value.page === 'string' : typeof value.state === 'string';
 }
 
@@ -196,6 +200,9 @@ function describeButton(action: AdminButtonFunction): string {
     }
     if (action.mode === 'page') {
         return `page '${action.page}'`;
+    }
+    if (action.mode === 'navigation') {
+        return `navigation ${action.target}`;
     }
     return `${action.mode} ${action.state}`;
 }

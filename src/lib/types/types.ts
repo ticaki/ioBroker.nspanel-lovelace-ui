@@ -2,7 +2,7 @@ import type * as dataItem from '../controller/data-item';
 import { type RGB } from '../const/Color';
 import type * as pages from './pages';
 import type { NSPanel } from './NSPanel';
-import type { IconScaleElement } from './adminShareConfig';
+import type { ButtonNavigationTarget, IconScaleElement } from './adminShareConfig';
 
 /**
  * Bitte an folgendes Schema halten
@@ -313,6 +313,18 @@ export type ConfigButtonFunction =
            *
            */
           state: string | dataItem.Dataitem;
+      }
+    | {
+          /**
+           * Mode for acting like a navigation arrow of the page shown.
+           *
+           */
+          mode: 'navigation';
+          /**
+           * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long.
+           *
+           */
+          target: ButtonNavigationTarget;
       }
     | null;
 

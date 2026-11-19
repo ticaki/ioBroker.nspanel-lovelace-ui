@@ -3381,6 +3381,31 @@ describe('lib/configuration - planScriptToAdmin: buttons', () => {
         expect(result.plan.nothingToDo).to.equal(false);
     });
 
+    it('converts the mode navigation and rejects an unknown target or extra fields', () => {
+        const result = plan(
+            baseConfig({
+                buttonLeft: { mode: 'navigation', target: 'parent' },
+                buttonRight: { mode: 'navigation', target: 'home' },
+            }),
+        );
+        expect(result.buttons).to.deep.equal({
+            left: { mode: 'navigation', target: 'parent' },
+            right: { mode: 'navigation', target: 'home' },
+        });
+        expect(result.plan.buttonsSkipped).to.deep.equal([]);
+        for (const button of [
+            { mode: 'navigation', target: 'up' },
+            { mode: 'navigation', target: 'next', page: 'main' },
+        ]) {
+            const invalid = plan(baseConfig({ buttonLeft: button }));
+            expect(invalid.plan.buttonsSkipped[0]?.reason, JSON.stringify(button)).to.equal('buttonNotSupported');
+            expect(invalid.buttons, JSON.stringify(button)).to.deep.equal({});
+        }
+        // the empty form counts as no button
+        const empty = plan(baseConfig({ buttonLeft: { mode: 'navigation', target: '' } }));
+        expect(empty.plan.buttonsSkipped).to.deep.equal([]);
+    });
+
     it('leaves a button alone that the admin has configured (also as "no action") or that is not valid', () => {
         const result = plan(
             baseConfig({

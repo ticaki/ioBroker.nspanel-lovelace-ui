@@ -2806,7 +2806,7 @@ export class Panel extends BaseClass {
         }
     }
 
-    onDetachButtonEvent = async (button: 'left' | 'right'): Promise<void> => {
+    async onDetachButtonEvent(button: 'left' | 'right'): Promise<void> {
         const action: Types.ConfigButtonFunction = this.buttons
             ? button === 'left'
                 ? this.buttons.left
@@ -2827,6 +2827,10 @@ export class Panel extends BaseClass {
                     if (typeof action.page === 'string') {
                         await this.navigation.setTargetPageByName(action.page);
                     }
+                    break;
+                }
+                case 'navigation': {
+                    await this.navigateByButton(action.target);
                     break;
                 }
                 case 'switch': {
@@ -2869,7 +2873,56 @@ export class Panel extends BaseClass {
                 }
             }
         }
-    };
+    }
+
+    /**
+     * Hardware button in mode 'navigation': one press acts like the matching navigation arrow of the page shown -
+     * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long. The arrow
+     * keeps its rules (`Navigation.go`): with only one of its two targets set the short press leads there as well,
+     * with none nothing happens; a menu page with more entries than it shows turns its pages first.
+     *
+     * An open popup is closed first and the navigation starts from the page below it, all in one press: the detail
+     * popup of a card page (the page sleeps below it), a notification (`popupNotify`/`popupNotify3`, like its exit
+     * button: reminder started, back to the page it came from) and a child page (back to its parent page).
+     * On the screensaver - also with a popup of one of its indicators open - nothing happens.
+     *
+     * @param target which arrow the button presses
+     */
+    async navigateByButton(target: adminShareConfig.ButtonNavigationTarget): Promise<void> {
+        let page = this._activePage;
+        if (!page || page === this.screenSaver) {
+            return;
+        }
+        if (page.sleep) {
+            // the detail popup of a card page - the page sleeps below it
+            await this.setActivePage(true);
+            page = this._activePage;
+        }
+        if (page instanceof PagePopup) {
+            const last = page.getLastPage();
+            if (!last) {
+                this.log.debug(`Hardware button navigation: popup ${page.name} has no page to go back to`);
+                return;
+            }
+            page.startReminder();
+            page.removeLastPage(last);
+            await this.setActivePage(last);
+            page = this._activePage;
+        }
+        if (page && page.directParentPage) {
+            await this.setActivePage(page.directParentPage, false);
+            page = this._activePage;
+        }
+        if (!page || page === this.screenSaver) {
+            return;
+        }
+        const short = target === 'next' || target === 'prev';
+        if (target === 'next' || target === 'home') {
+            page.goRight(short);
+        } else {
+            page.goLeft(short);
+        }
+    }
 
     _sendtempOffsetToPanel(value: number): void {
         if (this.unload || this.adapter.unload || !this.isOnline || this.isVirtual) {

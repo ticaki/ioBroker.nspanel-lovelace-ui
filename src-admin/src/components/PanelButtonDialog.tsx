@@ -20,14 +20,22 @@ import {
 import { I18n, type ThemeType } from '@iobroker/gui-components';
 import {
     ADMIN_BUTTON_DEFAULT_DELAY,
-    ADMIN_BUTTON_DELAY_MODES,
     ADMIN_BUTTON_MAX_DELAY,
     ADMIN_BUTTON_MIN_DELAY,
     ADMIN_BUTTON_MODES,
     ADMIN_BUTTON_STATE_MODES,
+    BUTTON_NAVIGATION_TARGETS,
+    isButtonNavigationTarget,
     type AdminButtonFunction,
-    type AdminButtonMode,
+    type ButtonNavigationTarget,
 } from '../../../src/lib/types/adminShareConfig';
+import {
+    buildPanelButtonAction,
+    isDelayMode,
+    isPanelButtonDialogMode,
+    type PanelButtonActionResult,
+    type PanelButtonDialogMode,
+} from '../panelButtonAction';
 import { EntitySelector } from './EntitySelector';
 import { DocHelp } from './DocHelp';
 
@@ -58,7 +66,7 @@ export interface PanelButtonDialogProps {
 }
 
 /** `none` = the admin configures nothing, the configuration script keeps its value */
-type DialogMode = AdminButtonMode | 'none';
+type DialogMode = PanelButtonDialogMode;
 
 interface PanelButtonDialogState {
     open: boolean;
@@ -72,6 +80,8 @@ interface PanelButtonDialogState {
     mode: DialogMode;
     /** target of mode 'page' */
     page: string;
+    /** target of mode 'navigation' */
+    target: ButtonNavigationTarget;
     /** datapoint of the datapoint modes */
     stateId: string;
     /** delay of the delay modes in seconds, as typed; empty = the default of the adapter */
@@ -89,6 +99,7 @@ const closedState: Omit<PanelButtonDialogState, 'side' | 'panelId' | 'panelName'
     noScript: false,
     mode: 'none',
     page: '',
+    target: 'next',
     stateId: '',
     delay: '',
     pages: [],
@@ -148,7 +159,8 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
                 noScript: panel.noScript === true,
                 mode,
                 page: action && action.mode === 'page' ? action.page : '',
-                stateId: action && action.mode !== 'page' ? action.state : '',
+                target: action && action.mode === 'navigation' ? action.target : 'next',
+                stateId: action && 'state' in action ? action.state : '',
                 delay:
                     action && 'delay' in action && typeof action.delay === 'number' && !isNaN(action.delay)
                         ? String(action.delay)
@@ -262,7 +274,17 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
     };
 
     private handleModeChange = (event: SelectChangeEvent<DialogMode>): void => {
-        this.setState({ mode: event.target.value });
+        const mode = event.target.value;
+        if (isPanelButtonDialogMode(mode)) {
+            this.setState({ mode });
+        }
+    };
+
+    private handleTargetChange = (event: SelectChangeEvent<ButtonNavigationTarget>): void => {
+        const target = event.target.value;
+        if (isButtonNavigationTarget(target)) {
+            this.setState({ target });
+        }
     };
 
     private handlePageSelect = (event: SelectChangeEvent<string>): void => {
@@ -281,41 +303,10 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
         this.setState({ delay: event.target.value });
     };
 
-    /** The delay as the adapter gets it; undefined = field empty or not a delay mode. */
-    private parsedDelay(): number | undefined {
-        const { mode, delay } = this.state;
-        if (!ADMIN_BUTTON_DELAY_MODES.includes(mode as AdminButtonMode) || delay.trim() === '') {
-            return undefined;
-        }
-        const value = Number(delay.replace(',', '.'));
-        return isNaN(value) ? undefined : value;
-    }
-
-    /** Everything the dialog needs for a save, or null while something is missing. */
-    private buildAction(): { ok: true; action: AdminButtonFunction | undefined } | { ok: false } {
-        const { mode, page, stateId } = this.state;
-        if (mode === 'none') {
-            return { ok: true, action: undefined };
-        }
-        if (mode === 'page') {
-            const target = page.trim();
-            return target ? { ok: true, action: { mode: 'page', page: target } } : { ok: false };
-        }
-        const id = stateId.trim();
-        if (!id || id.endsWith('.')) {
-            return { ok: false };
-        }
-        if (mode === 'switch' || mode === 'button') {
-            return { ok: true, action: { mode, state: id } };
-        }
-        const delay = this.parsedDelay();
-        if (this.state.delay.trim() !== '' && delay === undefined) {
-            return { ok: false };
-        }
-        if (delay !== undefined && (delay < ADMIN_BUTTON_MIN_DELAY || delay > ADMIN_BUTTON_MAX_DELAY)) {
-            return { ok: false };
-        }
-        return { ok: true, action: delay === undefined ? { mode, state: id } : { mode, state: id, delay } };
+    /** Everything the dialog needs for a save, or `ok: false` while something is missing. */
+    private buildAction(): PanelButtonActionResult {
+        const { mode, page, target, stateId, delay } = this.state;
+        return buildPanelButtonAction({ mode, page, target, stateId, delay });
     }
 
     /**
@@ -397,11 +388,44 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
         );
     }
 
+    /** The target of mode 'navigation': which navigation arrow of the page shown the button presses. */
+    private renderNavigationField(): React.JSX.Element {
+        const { target } = this.state;
+        return (
+            <Box>
+                <FormControl fullWidth>
+                    <InputLabel id="panelButtonDialogTargetLabel">{I18n.t('panelButtonDialog_target')}</InputLabel>
+                    <Select<ButtonNavigationTarget>
+                        labelId="panelButtonDialogTargetLabel"
+                        label={I18n.t('panelButtonDialog_target')}
+                        value={target}
+                        onChange={this.handleTargetChange}
+                    >
+                        {BUTTON_NAVIGATION_TARGETS.map(entry => (
+                            <MenuItem
+                                key={entry}
+                                value={entry}
+                            >
+                                {I18n.t(`panelButtonDialog_target_${entry}`)}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary' }}
+                >
+                    {I18n.t('panelButtonDialog_targetHint')}
+                </Typography>
+            </Box>
+        );
+    }
+
     /** Datapoint and, for the delay modes, the delay. */
     private renderStateFields(): React.JSX.Element {
         const { socket, theme, themeType } = this.props;
         const { mode, stateId, delay } = this.state;
-        const isDelayMode = ADMIN_BUTTON_DELAY_MODES.includes(mode as AdminButtonMode);
+        const showDelay = isDelayMode(mode);
         return (
             <>
                 <Box>
@@ -424,7 +448,7 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
                         {I18n.t('panelButtonDialog_stateHint')}
                     </Typography>
                 </Box>
-                {isDelayMode && (
+                {showDelay && (
                     <TextField
                         variant="outlined"
                         type="number"
@@ -551,7 +575,8 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
                                     </Typography>
                                 )}
                                 {mode === 'page' && this.renderPageField()}
-                                {ADMIN_BUTTON_STATE_MODES.includes(mode as AdminButtonMode) && this.renderStateFields()}
+                                {mode === 'navigation' && this.renderNavigationField()}
+                                {ADMIN_BUTTON_STATE_MODES.some(m => m === mode) && this.renderStateFields()}
                             </>
                         )}
                     </Box>
