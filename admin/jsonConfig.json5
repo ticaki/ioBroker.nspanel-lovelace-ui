@@ -821,6 +821,39 @@
                             "md": 3,
                             "lg": 2,
                             "xl": 2
+                        },
+                        {
+                            "attr": "colFgNotifyHead",
+                            "type": "color",
+                            "label": "colorNotifyHead",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colFgNotifyText",
+                            "type": "color",
+                            "label": "colorNotifyText",
+                            "default": "#ffffff",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
+                        },
+                        {
+                            "attr": "colBgNotify",
+                            "type": "color",
+                            "label": "colorNotifyBackground",
+                            "default": "#383838",
+                            "xs": 12,
+                            "sm": 6,
+                            "md": 3,
+                            "lg": 2,
+                            "xl": 2
                         }
                     ]
                 },

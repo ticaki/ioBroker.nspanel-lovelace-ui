@@ -37,9 +37,11 @@ var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "acce
 var screensaver_exports = {};
 __export(screensaver_exports, {
   INDICATOR_LONG_PRESS_MASK_MIN_VERSION: () => INDICATOR_LONG_PRESS_MASK_MIN_VERSION,
+  NOTIFY_BACKGROUND_MIN_VERSION: () => NOTIFY_BACKGROUND_MIN_VERSION,
   Screensaver: () => Screensaver,
   indicatorLongPressMask: () => indicatorLongPressMask,
-  resolveScreensaverOptions: () => resolveScreensaverOptions
+  resolveScreensaverOptions: () => resolveScreensaverOptions,
+  screensaverNotifyPayload: () => screensaverNotifyPayload
 });
 module.exports = __toCommonJS(screensaver_exports);
 var Definition = __toESM(require("../const/definition"));
@@ -72,6 +74,16 @@ function resolveScreensaverOptions(options) {
   };
 }
 const INDICATOR_LONG_PRESS_MASK_MIN_VERSION = "6.2.0";
+const NOTIFY_BACKGROUND_MIN_VERSION = "6.2.0";
+function screensaverNotifyPayload(heading, text, colors, withBackground) {
+  const fields = [colors.head, colors.text, ...withBackground ? [colors.background] : []].map(
+    (c) => import_Color.Color.isRGB(c) ? String(import_Color.Color.rgb_dec565(c)) : ""
+  );
+  while (fields.length > 0 && fields[fields.length - 1] === "") {
+    fields.pop();
+  }
+  return tools.getPayload(tools.getPayloadRemoveTilde("notify", heading, text), ...fields);
+}
 function indicatorLongPressMask(supported) {
   let mask = 0;
   for (let i = 0; i < supported.length; i++) {
@@ -889,7 +901,17 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     void this.HandleNotification();
   }
   notifyPayload(enabled, heading, text) {
-    return enabled ? tools.getPayloadRemoveTilde("notify", heading, text) : tools.getPayload("notify", "", "");
+    if (!enabled) {
+      return tools.getPayload("notify", "", "");
+    }
+    const colors = { head: import_Color.Color.fgNotifyHead, text: import_Color.Color.fgNotifyText, background: import_Color.Color.bgNotify };
+    return screensaverNotifyPayload(heading, text, colors, this.sendsNotifyBackground());
+  }
+  /**
+   * true when `notify~` carries the background (field 5): a web panel or a TFT {@link NOTIFY_BACKGROUND_MIN_VERSION}+
+   */
+  sendsNotifyBackground() {
+    return this.basePanel.isVirtual || this.basePanel.meetsVersion(NOTIFY_BACKGROUND_MIN_VERSION);
   }
   /**
    * Sends a message of a filtered type when it differs from the last one of that type.
@@ -2026,8 +2048,10 @@ let Screensaver = _Screensaver;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   INDICATOR_LONG_PRESS_MASK_MIN_VERSION,
+  NOTIFY_BACKGROUND_MIN_VERSION,
   Screensaver,
   indicatorLongPressMask,
-  resolveScreensaverOptions
+  resolveScreensaverOptions,
+  screensaverNotifyPayload
 });
 //# sourceMappingURL=screensaver.js.map

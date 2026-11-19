@@ -91,6 +91,12 @@ export interface ColorThemenInterface {
     fgTimeAdd?: RGB;
     fgForecast?: RGB;
     fgBar?: RGB;
+    /** headline of the notification on the screensaver (field 3 of `notify~`) */
+    fgNotifyHead?: RGB;
+    /** text of the notification on the screensaver (field 4 of `notify~`) */
+    fgNotifyText?: RGB;
+    /** background of the notification on the screensaver (field 5 of `notify~`, TFT 6.2.0+) */
+    bgNotify?: RGB;
     solar?: RGB;
     temperature?: RGB;
     gust?: RGB;
@@ -174,6 +180,9 @@ class ColorBase {
     static fgTimeAdd: RGB | string = 'default.color.from.start.foreground';
     static fgForecast: RGB | string = 'default.color.from.start.foreground';
     static fgBar: RGB | string = 'default.color.from.start.foreground';
+    static fgNotifyHead: RGB | string = 'default.color.from.start.fgNotifyHead';
+    static fgNotifyText: RGB | string = 'default.color.from.start.fgNotifyText';
+    static bgNotify: RGB | string = 'default.color.from.start.bgNotify';
     static solar: RGB | string = 'default.color.from.start.solar';
     static temperature: RGB | string = 'default.color.from.start.temperature';
     static gust: RGB | string = 'default.color.from.start.gust';
@@ -200,6 +209,10 @@ export class Color extends ColorBase {
     static readonly DarkGrayBlue: RGB = { r: 10, g: 13, b: 30 }; // dark bluish UI bars
     static readonly DeepOcean: RGB = { r: 0, g: 60, b: 120 }; // very dark cool header strip
     static readonly DarkBlue: RGB = { r: 0, g: 0, b: 146 }; // dark blue accents
+    static readonly NotifyGray: RGB = { r: 56, g: 56, b: 56 }; // notification box on a black screensaver
+    static readonly NotifySlate: RGB = { r: 40, g: 56, b: 72 }; // notification box, cool (technical)
+    static readonly NotifyUmber: RGB = { r: 72, g: 40, b: 24 }; // notification box, warm (sunset)
+    static readonly NotifyOcean: RGB = { r: 0, g: 84, b: 160 }; // notification box on DeepOcean (topical)
 
     // ——— Grays / Neutrals ———
     static readonly DarkGray: RGB = { r: 64, g: 64, b: 64 }; // disabled controls, muted icons
@@ -456,6 +469,12 @@ export class Color extends ColorBase {
                     return Color.fgForecast;
                 case 'default.color.from.start.fgBar':
                     return Color.fgBar;
+                case 'default.color.from.start.fgNotifyHead':
+                    return Color.fgNotifyHead;
+                case 'default.color.from.start.fgNotifyText':
+                    return Color.fgNotifyText;
+                case 'default.color.from.start.bgNotify':
+                    return Color.bgNotify;
                 case 'default.color.from.start.solar':
                     return Color.solar;
                 case 'default.color.from.start.temperature':
@@ -550,6 +569,9 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.HMIOn,
         fgForecast: Color.LightGray,
         fgBar: Color.LightGray,
+        fgNotifyHead: Color.White,
+        fgNotifyText: Color.White,
+        bgNotify: Color.NotifyGray,
         // Media-spezifisch
         mediaArtistOn: Color.Yellow,
         mediaArtistOff: Color.Gray,
@@ -622,6 +644,9 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.Turquoise,
         fgForecast: Color.Sand,
         fgBar: Color.Sand,
+        fgNotifyHead: Color.White,
+        fgNotifyText: Color.White,
+        bgNotify: Color.NotifyOcean,
         solar: Color.Sun,
         temperature: Color.Sunset,
         // Media-spezifisch
@@ -699,6 +724,9 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.Cyan,
         fgForecast: Color.BlueLight,
         fgBar: Color.DarkGray,
+        fgNotifyHead: Color.White,
+        fgNotifyText: Color.White,
+        bgNotify: Color.NotifySlate,
 
         // Media-spezifisch
         mediaArtistOn: Color.TechMint,
@@ -774,6 +802,9 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.Magenta,
         fgForecast: Color.colorSonos,
         fgBar: Color.Off,
+        fgNotifyHead: Color.White,
+        fgNotifyText: Color.White,
+        bgNotify: Color.NotifyUmber,
 
         // Media-spezifisch
         mediaArtistOn: Color.Sunset,
@@ -853,6 +884,9 @@ export class Color extends ColorBase {
         fgTimeAdd: Color.FireGlow,
         fgForecast: Color.FlameYellow, // Forecast-Werte hellgelb für Kontrast
         fgBar: Color.AshGray,
+        fgNotifyHead: Color.White,
+        fgNotifyText: Color.White,
+        bgNotify: Color.LavaDeep,
         // Media-spezifisch
         mediaArtistOn: Color.LavaCore,
         mediaArtistOff: Color.AshGray,

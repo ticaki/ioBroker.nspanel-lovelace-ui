@@ -271,6 +271,9 @@ declare global {
                 colFgTimeAdd: string;
                 colFgForecast: string;
                 colFgBar: string;
+                colFgNotifyHead: string;
+                colFgNotifyText: string;
+                colBgNotify: string;
             }[];
 
             colorCardMedia: {

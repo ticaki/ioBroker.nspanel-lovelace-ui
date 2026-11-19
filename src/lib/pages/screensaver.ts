@@ -99,6 +99,48 @@ export function resolveScreensaverOptions(options: pages.PageBase): {
 export const INDICATOR_LONG_PRESS_MASK_MIN_VERSION = '6.2.0';
 
 /**
+ * TFT version from which on the screensavers read field 5 of `notify~`, the background of the notification
+ * (`HMI/tools/notify_background.py`). Fields 3/4 (headline/text color) are read by every TFT the adapter supports.
+ */
+export const NOTIFY_BACKGROUND_MIN_VERSION = '6.2.0';
+
+/** The colors of the notification on the screensaver as the color theme holds them (a missing key is a string). */
+export interface ScreensaverNotifyColors {
+    /** headline (`tNotifyHead.pco`), field 3 */
+    head: unknown;
+    /** text (`tNotifyText.pco`), field 4 */
+    text: unknown;
+    /** background of both (`bco`), field 5 */
+    background: unknown;
+}
+
+/**
+ * `notify~<headline>~<text>~<headline color>~<text color>~<background>` - the colors as RGB565. A color that is no RGB
+ * stays empty (the HMI keeps its color, the background then is the one of the screensaver); empty fields at the end
+ * are left out.
+ *
+ * @param heading headline
+ * @param text text
+ * @param colors colors of the theme
+ * @param withBackground true when the panel reads field 5 ({@link NOTIFY_BACKGROUND_MIN_VERSION}, web panel)
+ * @returns the message
+ */
+export function screensaverNotifyPayload(
+    heading: string,
+    text: string,
+    colors: ScreensaverNotifyColors,
+    withBackground: boolean,
+): string {
+    const fields = [colors.head, colors.text, ...(withBackground ? [colors.background] : [])].map(c =>
+        Color.isRGB(c) ? String(Color.rgb_dec565(c)) : '',
+    );
+    while (fields.length > 0 && fields[fields.length - 1] === '') {
+        fields.pop();
+    }
+    return tools.getPayload(tools.getPayloadRemoveTilde('notify', heading, text), ...fields);
+}
+
+/**
  * The long press mask of the indicator slots as the HMI reads it: bit (N-1) for indicator N (1 -> 1, 3 -> 4, 7 -> 64).
  *
  * @param supported per indicator slot as sent: true when its indicator has a long press
@@ -1031,7 +1073,18 @@ export class Screensaver extends Page {
     }
 
     private notifyPayload(enabled: boolean, heading: string, text: string): string {
-        return enabled ? tools.getPayloadRemoveTilde('notify', heading, text) : tools.getPayload('notify', '', '');
+        if (!enabled) {
+            return tools.getPayload('notify', '', '');
+        }
+        const colors = { head: Color.fgNotifyHead, text: Color.fgNotifyText, background: Color.bgNotify };
+        return screensaverNotifyPayload(heading, text, colors, this.sendsNotifyBackground());
+    }
+
+    /**
+     * true when `notify~` carries the background (field 5): a web panel or a TFT {@link NOTIFY_BACKGROUND_MIN_VERSION}+
+     */
+    private sendsNotifyBackground(): boolean {
+        return this.basePanel.isVirtual || this.basePanel.meetsVersion(NOTIFY_BACKGROUND_MIN_VERSION);
     }
 
     /**
