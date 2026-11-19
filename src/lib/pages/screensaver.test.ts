@@ -1039,7 +1039,16 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
 
         type Scene = Fixture & {
             /** what the items show, changed by the tests */
-            now: { value: string; mr: string; notify: boolean; dismissed: boolean; text: string };
+            now: {
+                value: string;
+                mr: string;
+                notify: boolean;
+                dismissed: boolean;
+                text: string;
+                /** a second notification with a higher priority */
+                notify2: boolean;
+                text2: string;
+            };
             indicator: () => any;
             mricon: () => any;
             notify: () => any;
@@ -1051,7 +1060,16 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
 
         async function scene(start: Partial<Scene['now']> = {}): Promise<Scene> {
             const f = await setup(off, {});
-            const now = { value: 'A', mr: 'lamp', notify: false, dismissed: false, text: 'Text', ...start };
+            const now = {
+                value: 'A',
+                mr: 'lamp',
+                notify: false,
+                dismissed: false,
+                text: 'Text',
+                notify2: false,
+                text2: 'Urgent',
+                ...start,
+            };
             const item = (modeScr: string, id: number, payload: () => string, extra: object = {}): any =>
                 Object.assign(Object.create(PageItem.prototype), {
                     id: `scr?${id}`,
@@ -1074,10 +1092,14 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                     now.dismissed = true;
                 },
             });
+            const notifyItem2 = item('notify', 3, () => `~scr?3~~~${now.text2}~Alarm<sp!it>0<sp!it>`, {
+                isEnabled: async (): Promise<boolean> => Promise.resolve(now.notify2),
+            });
             f.saver.pageItems = [
                 item('bottom', 0, () => `~~icon~1~name~${now.value}`),
                 item('mricon', 1, () => `~~${now.mr}~2~~`),
                 notifyItem,
+                notifyItem2,
             ];
             f.saver.library = { writedp: async (): Promise<void> => Promise.resolve() };
             f.saver.basePanel.lastCard = 'screensaver';
@@ -1192,6 +1214,8 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['statusUpdate']);
                 expect(await s.during(() => s.saver.update())).to.deep.equal([]);
 
+                // a new content of the shown notification: the 30 s of the throttle are over
+                at(31_000);
                 s.now.text = 'Other';
                 expect(await s.during(() => s.saver.update())).to.deep.equal(['notify~Head~Other']);
                 expect(await s.during(() => s.saver.update())).to.deep.equal([]);
@@ -1613,14 +1637,15 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
             });
 
-            it('comes back after a touch with a new content or a pageType', async () => {
+            it('a touch keeps it away also with a new content, it comes back with a pageType', async () => {
                 const s = await scene({ notify: true });
                 await s.show();
                 await s.saver.onTimerTap('bExit', '1');
+                at(40_000);
                 s.now.text = 'Other';
-                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal(['notify~Head~Other']);
-                await s.saver.onTimerTap('bExit', '1');
-                expect(s.kinds(await s.sleepReachedOnSamePage())).to.include('notify');
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
+                expect(s.timers.filter(t => t.ms > 1000 && t.ms <= 30_000 && !t.cleared)).to.deep.equal([]);
+                expect(await s.sleepReachedOnSamePage()).to.include('notify~Head~Other');
             });
 
             it('a tap without a notification sends no empty notify', async () => {
@@ -1727,7 +1752,7 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 const s = await scene({ notify: true });
                 await s.show();
                 await s.saver.onTimerTap('swipeUp', '');
-                s.now.text = 'Other';
+                s.now.notify2 = true;
                 await s.saver.HandleNotification();
                 s.now.value = 'B';
                 at(5000);
@@ -1800,6 +1825,188 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 await f.saver.HandleTime();
                 const sent = await f.during(() => f.saver.onTimerTap('bExit', '1'));
                 expect(sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~Head~Text']);
+            });
+        });
+
+        describe('notification content at most every 30 s', () => {
+            const waiting = (s: Scene): Fixture['timers'] =>
+                s.timers.filter(t => t.ms > 1000 && t.ms <= 30_000 && !t.cleared);
+            const trigger = (s: Scene, item = s.notify()): Promise<string[]> =>
+                s.during(() => s.saver.onStateTrigger('x', item));
+
+            it('goes out at once when the last send is 30 s ago', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                at(30_000);
+                s.now.text = 'Other';
+                expect(await trigger(s)).to.deep.equal(['notify~Head~Other']);
+                expect(waiting(s)).to.deep.equal([]);
+            });
+
+            it('within 30 s: once at the end of the window with the latest values, without ringing', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                expect(s.sent.filter(m => m.startsWith('buzzer'))).to.have.length(1);
+                at(10_000);
+                s.now.text = 'B';
+                expect(await trigger(s)).to.deep.equal([]);
+                expect(waiting(s).map(t => t.ms)).to.deep.equal([20_000]);
+                at(20_000);
+                s.now.text = 'C';
+                expect(await trigger(s)).to.deep.equal([]);
+                // an update reads the notification as well, it waits too
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.not.include('notify');
+                expect(waiting(s)).to.have.length(1);
+                at(30_000);
+                s.now.text = 'D';
+                const timer = waiting(s)[0];
+                const sent = await s.during(async () => {
+                    timer.cleared = true;
+                    timer.fn();
+                    await new Promise(resolve => setImmediate(resolve));
+                });
+                // B and C are gone, only the state at the end of the window
+                expect(sent).to.deep.equal(['notify~Head~D']);
+                expect(s.sent.filter(m => m.startsWith('notify~Head~'))).to.deep.equal([
+                    'notify~Head~Text',
+                    'notify~Head~D',
+                ]);
+                expect(s.sent.filter(m => m.startsWith('buzzer'))).to.have.length(1);
+                // the window starts again with this send
+                at(35_000);
+                s.now.text = 'E';
+                expect(await trigger(s)).to.deep.equal([]);
+                expect(waiting(s).map(t => t.ms)).to.deep.equal([25_000]);
+            });
+
+            it('nothing at the end of the window when the content is back', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                at(10_000);
+                s.now.text = 'B';
+                await trigger(s);
+                s.now.text = 'Text';
+                at(30_000);
+                const sent = await s.during(async () => {
+                    const timer = waiting(s)[0];
+                    timer.cleared = true;
+                    timer.fn();
+                    await new Promise(resolve => setImmediate(resolve));
+                });
+                expect(sent).to.deep.equal([]);
+            });
+
+            it('enabled switches at once, also within the window: hide, show, another one by priority', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                at(5000);
+                s.now.text = 'B';
+                expect(await trigger(s)).to.deep.equal([]);
+                s.now.notify = false;
+                expect(await trigger(s)).to.deep.equal(['notify~~']);
+                expect(waiting(s)).to.deep.equal([]);
+                at(6000);
+                s.now.notify = true;
+                // it appears again: that rings as before
+                expect(await trigger(s)).to.deep.equal(['buzzer t/cmnd/Buzzer', 'notify~Head~B']);
+                at(7000);
+                s.now.notify2 = true;
+                expect(await trigger(s, s.saver.pageItems[3])).to.deep.equal(['notify~Alarm~Urgent']);
+                at(8000);
+                s.now.notify2 = false;
+                // back to the first one (it rings again, as before)
+                const back = await trigger(s, s.saver.pageItems[3]);
+                expect(back.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~Head~B']);
+            });
+
+            it('a touched one gets no new content up to the pageType, another one comes at once', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                await s.saver.onTimerTap('swipeUp', '');
+                at(40_000);
+                s.now.text = 'B';
+                expect(await trigger(s)).to.deep.equal([]);
+                expect(waiting(s)).to.deep.equal([]);
+                s.now.notify2 = true;
+                expect(await trigger(s, s.saver.pageItems[3])).to.deep.equal(['notify~Alarm~Urgent']);
+            });
+
+            it('the pageType brings the touched one back with its content of then', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                await s.saver.onTimerTap('swipeUp', '');
+                at(5000);
+                s.now.text = 'B';
+                await trigger(s);
+                at(6000);
+                const sent = await s.sleepReachedOnSamePage();
+                expect(sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~Head~B']);
+            });
+
+            it('a touch on a dark display cleared nothing: the new content still comes', async () => {
+                const s = await scene({ notify: true });
+                s.saver.basePanel.dim.standby = 0;
+                await s.show();
+                await s.saver.onTimerTap('swipeUp', '');
+                at(40_000);
+                s.now.text = 'B';
+                expect(await trigger(s)).to.deep.equal(['notify~Head~B']);
+            });
+
+            it('a dismissed one stays dismissed with a new content', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                await s.saver.onScreensaverTap();
+                expect(s.now.dismissed).to.equal(true);
+                at(40_000);
+                s.now.text = 'B';
+                expect(await trigger(s)).to.deep.equal([]);
+                expect(s.kinds(await s.sleepReachedOnSamePage())).to.not.include('notify');
+            });
+
+            it('the custom notification (sendTo/cmd) is not throttled', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.saver.customNotification = true;
+                s.saver.headingNotification = 'H';
+                s.saver.textNotification = 'A';
+                at(1000);
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal(['notify~H~A']);
+                at(2000);
+                s.saver.textNotification = 'B';
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal(['notify~H~B']);
+                // back to the configured one: it is shown at once
+                s.saver.customNotification = false;
+                at(3000);
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal(['notify~Head~Text']);
+            });
+
+            it('the timer of the window sends nothing while the screensaver is hidden and goes with delete', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                at(10_000);
+                s.now.text = 'B';
+                await trigger(s);
+                const timer = waiting(s)[0];
+                s.saver.visibility = false;
+                at(30_000);
+                const sent = await s.during(async () => {
+                    timer.cleared = true;
+                    timer.fn();
+                    await new Promise(resolve => setImmediate(resolve));
+                });
+                expect(sent).to.deep.equal([]);
+                s.saver.visibility = true;
+                s.now.text = 'C';
+                at(31_000);
+                await trigger(s);
+                at(35_000);
+                s.now.text = 'D';
+                await trigger(s);
+                const next = waiting(s);
+                expect(next).to.have.length(1);
+                await s.saver.delete();
+                expect(next[0].cleared).to.equal(true);
             });
         });
 
