@@ -173,7 +173,8 @@ Plätzen rutschen die Elemente auf die folgenden Seiten.“
 
 Auch die **Überschrift** einer Seite ist unterschiedlich breit: Sie wird auf 28 Zeichen im Querformat,
 13 im US-Hochformat, 16 bei *Smartphone hochkant* und 45 bei *Smartphone quer* gekürzt; längerer Text
-endet mit „…“.
+endet mit „…“. Jeder andere Text, der nicht in sein Feld passt, endet wie am Panel an der Feldgrenze – auch
+mitten in einem Buchstaben; ein „…“ zeichnet das Web-Panel nicht selbst dazu.
 
 ### Plätze des Bildschirmschoners
 

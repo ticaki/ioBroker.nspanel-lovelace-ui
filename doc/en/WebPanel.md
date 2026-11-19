@@ -170,7 +170,9 @@ items per page. The editor shows the largest number; on panels with fewer places
 following pages."
 
 The **headline** of a page differs in width as well: it is shortened to 28 characters in landscape, 13 on
-US portrait, 16 on *Smartphone portrait* and 45 on *Smartphone landscape*; longer text ends with "…".
+US portrait, 16 on *Smartphone portrait* and 45 on *Smartphone landscape*; longer text ends with "…". Any other
+text that does not fit its field ends at the field border like on the panel – even in the middle of a letter; the
+web panel adds no "…" of its own.
 
 ### Places of the screensaver
 
