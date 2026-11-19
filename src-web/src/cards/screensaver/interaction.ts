@@ -163,6 +163,20 @@ export function swipeAction(dx: number, dy: number): 'swipeUp' | 'swipeDown' | '
 /** One phase of the blinking clock the adapter asks for (field 7 of `statusUpdate`, HMI 6.2.0 `tmBlink`) */
 export const CLOCK_BLINK_MS = 500;
 
+/** One phase of the blinking background of a notification (fields 5/6 of `notify~`, HMI 6.2.0 `tmNotBg`) */
+export const NOTIFY_BLINK_MS = 1000;
+
+/**
+ * The background of a notification in a phase of its blinking: field 5 in the even phases, field 6 in the odd ones.
+ *
+ * @param background field 5, RGB565
+ * @param blink field 6, RGB565, undefined = no blinking
+ * @param phase number of {@link NOTIFY_BLINK_MS} phases since the notification arrived, undefined = not blinking
+ */
+export function notifyBackground(background: number, blink: number | undefined, phase: number | undefined): number {
+    return blink !== undefined && phase !== undefined && phase % 2 === 1 ? blink : background;
+}
+
 /** RGB565 colours of the blinking clock the adapter asks for: red first, then white */
 export const CLOCK_BLINK_COLORS: readonly [number, number] = [63488, 65535];
 

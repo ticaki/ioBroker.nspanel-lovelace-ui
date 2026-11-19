@@ -9,6 +9,7 @@ import {
     CLOCK_BLINK_MS,
     INDICATOR_LONG_PRESS_MS,
     LONG_PRESS_BLINK_MS,
+    NOTIFY_BLINK_MS,
     clockColor,
     indicatorLongPressAllowed,
     indicatorRelease,
@@ -16,6 +17,7 @@ import {
     isDarkWakeTouch,
     longPressStillPossible,
     nextTap,
+    notifyBackground,
     swipeAction,
     type TapState,
 } from './interaction';
@@ -123,6 +125,8 @@ interface ScreensaverState {
      * A long press ({@link blinkPhase}) has priority.
      */
     alertPhase: number | undefined;
+    /** phase of the blinking background of the notification (fields 5/6 of `notify~`), undefined: off */
+    notifyPhase: number | undefined;
 }
 
 /** Top of a text box whose capital letters start at `capTop` */
@@ -142,7 +146,7 @@ function textTop(capTop: number, fontSize: number): number {
  * (`doc/web-panel/MISSING_PICTURES.md`).
  */
 export class Screensaver extends React.Component<CardProps<ScreensaverModel>, ScreensaverState> {
-    state: ScreensaverState = { blinkPhase: undefined, alertPhase: undefined };
+    state: ScreensaverState = { blinkPhase: undefined, alertPhase: undefined, notifyPhase: undefined };
     private tap: TapState = { tapCount: 0 };
     private pointerStart: PointerStart | undefined;
     /** timer of the long press of a held indicator tile ({@link INDICATOR_LONG_PRESS_MS}) */
@@ -157,14 +161,48 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     private blinkTimer: ReturnType<typeof setInterval> | undefined;
     /** timer of the red/white blinking the adapter asks for ({@link CLOCK_BLINK_MS}) */
     private alertTimer: ReturnType<typeof setInterval> | undefined;
+    /** timer of the blinking background of the notification ({@link NOTIFY_BLINK_MS}) */
+    private notifyTimer: ReturnType<typeof setInterval> | undefined;
 
     componentDidMount(): void {
         this.updateAlert();
+        this.updateNotifyBlink();
     }
 
     componentWillUnmount(): void {
         this.clearLongPress(false);
         this.stopAlert(false);
+        this.stopNotifyBlink(false);
+    }
+
+    /**
+     * Starts the blinking background of the notification anew with every `notify~` that has fields 5 and 6 (like
+     * `tmNotBg` of the HMI), ends it with a notification without field 6 or with the clearing one.
+     */
+    private updateNotifyBlink(): void {
+        const notify = this.props.model.notify;
+        this.stopNotifyBlink(true);
+        if (notify?.background !== undefined && notify.blink !== undefined) {
+            this.setState({ notifyPhase: 0 });
+            this.notifyTimer = setInterval(() => {
+                this.setState(prev => ({ notifyPhase: (prev.notifyPhase ?? 0) + 1 }));
+            }, NOTIFY_BLINK_MS);
+        }
+    }
+
+    /**
+     * Ends the blinking background of the notification.
+     *
+     * @param redraw false while unmounting - no state change then
+     */
+    private stopNotifyBlink(redraw: boolean): void {
+        if (this.notifyTimer !== undefined) {
+            clearInterval(this.notifyTimer);
+            this.notifyTimer = undefined;
+        }
+        if (redraw && this.state.notifyPhase !== undefined) {
+            this.setState({ notifyPhase: undefined });
+        }
     }
 
     /** starts or ends the red/white blinking of the clock with field 7 of `statusUpdate` */
@@ -208,6 +246,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
         }
         if (prevProps.model.clockBlink !== this.props.model.clockBlink) {
             this.updateAlert();
+        }
+        if (prevProps.model.notify !== this.props.model.notify) {
+            this.updateNotifyBlink();
         }
     }
 
@@ -757,7 +798,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                             left: 0,
                             width,
                             height: area.bottom - area.top,
-                            background: color565ToCss(notify.background),
+                            background: color565ToCss(
+                                notifyBackground(notify.background, notify.blink, this.state.notifyPhase),
+                            ),
                         }}
                     />
                 ) : null}

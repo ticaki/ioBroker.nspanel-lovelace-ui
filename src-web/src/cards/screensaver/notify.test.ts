@@ -5,6 +5,7 @@ import { color565ToCss } from '../../protocol/color';
 import type { PanelModel } from '../../protocol/types';
 import { initialGlobalState } from '../../store/PanelStore';
 import { Screensaver } from './Screensaver';
+import { NOTIFY_BLINK_MS, notifyBackground } from './interaction';
 import { handleCommand, initial, parseNotify, type ScreensaverNotify } from './parse';
 
 /** RGB 56/56/56, the background of the default theme */
@@ -70,6 +71,28 @@ describe('screensaver notification: fields 3-5', () => {
         });
         expect(parseNotify(['H', 'T', '', 'x', String(GRAY)])).toEqual({ heading: 'H', text: 'T', background: GRAY });
         expect(parseNotify(['', '', '1', '2', '3'])).toBeUndefined();
+    });
+
+    it('field 6 is the second background, only together with field 5', () => {
+        expect(parseNotify(['H', 'T', '', '', String(GRAY), String(RED)])).toEqual({
+            heading: 'H',
+            text: 'T',
+            background: GRAY,
+            blink: RED,
+        });
+        expect(parseNotify(['H', 'T', '', '', '', String(RED)])).toEqual({ heading: 'H', text: 'T' });
+    });
+
+    it('the background alternates every second between field 5 and 6', () => {
+        expect(NOTIFY_BLINK_MS).toBe(1000);
+        expect([0, 1, 2, 3].map(phase => notifyBackground(GRAY, RED, phase))).toEqual([GRAY, RED, GRAY, RED]);
+        expect(notifyBackground(GRAY, undefined, 1)).toBe(GRAY);
+        expect(notifyBackground(GRAY, RED, undefined)).toBe(GRAY);
+    });
+
+    it('draws a blinking notification first in the colour of field 5', () => {
+        const html = render('screensaver', 'eu', { heading: 'H', text: 'T', background: GRAY, blink: RED });
+        expect(area(html)?.background).toBe(color565ToCss(GRAY));
     });
 
     it('handleCommand keeps the colours', () => {

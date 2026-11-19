@@ -47,6 +47,8 @@ export interface ScreensaverNotify {
     textColor?: number;
     /** field 5, RGB565 background of the notification area, `undefined` = not sent (the page shows through) */
     background?: number;
+    /** field 6, RGB565 second background: with field 5 both alternate every second, `undefined` = no blinking */
+    blink?: number;
 }
 
 export interface ScreensaverModel {
@@ -242,6 +244,7 @@ export function parseNotify(args: string[]): ScreensaverNotify | undefined {
     const headColor = colorField(args, 2);
     const textColor = colorField(args, 3);
     const background = colorField(args, 4);
+    const blink = colorField(args, 5);
     if (headColor !== undefined) {
         result.headColor = headColor;
     }
@@ -250,6 +253,10 @@ export function parseNotify(args: string[]): ScreensaverNotify | undefined {
     }
     if (background !== undefined) {
         result.background = background;
+        // the HMI reads field 6 only with field 5
+        if (blink !== undefined) {
+            result.blink = blink;
+        }
     }
     return result;
 }
