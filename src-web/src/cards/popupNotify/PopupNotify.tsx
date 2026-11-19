@@ -25,12 +25,14 @@ const BUTTON_WIDTH = 160;
 const PORTRAIT_BUTTON_WIDTH = 90;
 const BUTTON_FONT_SIZE = 24;
 const BUTTON_PADDING_LEFT = 25;
+/** text box of us-p: tText of the HMI page popupNotify (x 4, w 307) */
+const US_P_TEXT = { left: 4, right: 311 };
 
 /**
  * The layout of popupNotify per model. Landscape like the HMI (eu: icon 64 px at 76/152, text
  * from x 138 (24 without icon) to 424, buttons of 160 px at y 285); `web-l` widens the text box
  * to x 584 and spreads the buttons over the 640 px. Portrait (us-p, web-p): the text box is
- * 272 px wide (x 24..296) from y 74, the icon moves small into the heading line, three
+ * 272 px wide (x 24..296, us-p x 4..311 like the HMI) from y 74, the icon moves small into the heading line, three
  * buttons of 90 px in one row at the bottom (web-p y 605).
  *
  * @param model the panel model the popup sees
@@ -42,7 +44,12 @@ export function notifyGeometry(model: PanelModel): NotifyGeometry {
         return {
             heading: { left: 24, centerY: 42, fontSize: 24, right: 90 },
             icon: { centerX: 42, centerY: 42, size: 36, inHeading: true },
-            text: { top: 74, leftWithIcon: 24, left: 24, right: width - 24 },
+            // us-p like tText of the HMI (x 4..311): the adapter wraps for that width, the web clone shows the same
+            // lines; web-p x 24..296
+            text:
+                model === 'us-p'
+                    ? { top: 74, leftWithIcon: US_P_TEXT.left, left: US_P_TEXT.left, right: US_P_TEXT.right }
+                    : { top: 74, leftWithIcon: 24, left: 24, right: width - 24 },
             button: {
                 lefts: [0, 1, 2].map(i => Math.round(i * share + (share - PORTRAIT_BUTTON_WIDTH) / 2)),
                 width: PORTRAIT_BUTTON_WIDTH,

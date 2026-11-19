@@ -236,13 +236,35 @@ export function cutUtf8(text: string, maxBytes: number): string {
  */
 export function notify3Text(text: string, font: Notify3Font, model: NSpanelModel): string {
     const layout = NOTIFY3_TEXT[model];
+    const lines = notifyTextLines(text, font, model, layout.width, layout.lines[font]);
+    return cutUtf8(lines.join('\r\n'), NOTIFY3_TEXT_MAX_BYTES);
+}
+
+/**
+ * The lines of a notification text (popupNotify3 and the classic popupNotify): the Nextion wraps character by
+ * character, so the text is wrapped at word borders by the measured width of the font of the model. One line
+ * (maxLines <= 1): fitText with ellipsis, line breaks become spaces. Several lines: wrapText - line breaks (`\n`,
+ * `\r\n`, the literal `/r/n` of popupNotify) are kept, a word too wide on its own is broken character by character,
+ * more than maxLines lines end with an ellipsis. `~` becomes `-` (field separator of the payload).
+ *
+ * @param text the text
+ * @param font font id of the text field (a font with a width table, see isFontId)
+ * @param model panel model
+ * @param width width of the text field in px
+ * @param maxLines maximum number of lines (Number.MAX_SAFE_INTEGER: no limit, e.g. when the page rotates the lines)
+ * @returns the lines, to be joined with the line break of the page
+ */
+export function notifyTextLines(
+    text: string,
+    font: number,
+    model: NSpanelModel,
+    width: number,
+    maxLines: number,
+): string[] {
     const clean = text.replaceAll('/r/n', '\n').replaceAll('~', '-');
-    const maxLines = layout.lines[font];
-    const out =
-        maxLines <= 1
-            ? fitText(clean.replace(/\r?\n/g, ' '), font, model, layout.width)
-            : wrapText(clean, font, model, layout.width, maxLines).join('\r\n');
-    return cutUtf8(out, NOTIFY3_TEXT_MAX_BYTES);
+    return maxLines <= 1
+        ? [fitText(clean.replace(/\r?\n/g, ' '), font, model, width)]
+        : wrapText(clean, font, model, width, maxLines);
 }
 
 /** the two buttons of popupNotify3: MDI names, '' = hidden */

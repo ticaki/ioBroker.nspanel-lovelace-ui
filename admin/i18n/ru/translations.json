@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.doubleClick": "Двойной щелчок",
     "StateObjects.screenSaver.infoIcon": "Информация значок",
     "StateObjects.screenSaver.infoText": "Текст инфо-значка",
+    "StateObjects.screenSaver.infoTextFont": "Шрифт текста инфо-значка",
     "StateObjects.screenSaver.layout": "Макет",
     "StateObjects.screenSaver.rotationTime": "Интервал вращения (0 = без изменений)",
     "StateObjects.screenSaver.screenSaver": "Заставка",

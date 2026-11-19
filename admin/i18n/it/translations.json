@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.doubleClick": "Doppio clic",
     "StateObjects.screenSaver.infoIcon": "Icona delle informazioni",
     "StateObjects.screenSaver.infoText": "Testo dell'icona informativa",
+    "StateObjects.screenSaver.infoTextFont": "Carattere del testo dell'icona informativa",
     "StateObjects.screenSaver.layout": "Disposizione",
     "StateObjects.screenSaver.rotationTime": "Intervallo di rotazione (0 = nessuna modifica)",
     "StateObjects.screenSaver.screenSaver": "Salvaschermo",

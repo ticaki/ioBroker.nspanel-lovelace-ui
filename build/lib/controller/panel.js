@@ -32,6 +32,7 @@ __export(panel_exports, {
   readTempOffset: () => readTempOffset
 });
 module.exports = __toCommonJS(panel_exports);
+var import_screensaver_info_font = require("../const/screensaver-info-font");
 var import_panel_message = require("./panel-message");
 var import_screensaver = require("../pages/screensaver");
 var globals = __toESM(require("../types/function-and-const"));
@@ -555,7 +556,7 @@ class Panel extends import_library.BaseClass {
     }
   }
   init = async () => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     if (this.unload || this.adapter.unload) {
       return;
     }
@@ -879,13 +880,20 @@ class Panel extends import_library.BaseClass {
       (_g = (_f = this.screenSaver) == null ? void 0 : _f.infoText) != null ? _g : "",
       definition.genericStateObjects.panel.panels.cmd.screenSaver.infoText
     );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoTextFont`);
+    const infoTextFont = (_h = this.screenSaver) == null ? void 0 : _h.setInfoTextFont(state == null ? void 0 : state.val);
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.infoTextFont`,
+      infoTextFont != null ? infoTextFont : import_screensaver_info_font.SCREENSAVER_INFO_FONT_DEFAULT,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.infoTextFont
+    );
     state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.clockBlink`);
     if (state && state.val != null && this.screenSaver) {
       this.screenSaver.clockBlink = !!state.val;
     }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.clockBlink`,
-      (_i = (_h = this.screenSaver) == null ? void 0 : _h.clockBlink) != null ? _i : false,
+      (_j = (_i = this.screenSaver) == null ? void 0 : _i.clockBlink) != null ? _j : false,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink
     );
     if (this.buttons && this.screenSaver) {
@@ -1527,6 +1535,13 @@ class Panel extends import_library.BaseClass {
           if (state && state.val != null && typeof state.val === "string" && this.screenSaver) {
             this.screenSaver.infoText = state.val;
             await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoText`, state.val);
+          }
+          break;
+        }
+        case "screenSaver.infoTextFont": {
+          if (state && this.screenSaver) {
+            const font = this.screenSaver.setInfoTextFont(state.val);
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoTextFont`, font);
           }
           break;
         }

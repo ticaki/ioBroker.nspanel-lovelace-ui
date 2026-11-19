@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.doubleClick": "Double cliquer",
     "StateObjects.screenSaver.infoIcon": "Icône d'informations",
     "StateObjects.screenSaver.infoText": "Texte de l'icône d'information",
+    "StateObjects.screenSaver.infoTextFont": "Police du texte de l'icône d'information",
     "StateObjects.screenSaver.layout": "Mise en page",
     "StateObjects.screenSaver.rotationTime": "Intervalle de rotation (0 = pas de changement)",
     "StateObjects.screenSaver.screenSaver": "Économiseur d'écran",

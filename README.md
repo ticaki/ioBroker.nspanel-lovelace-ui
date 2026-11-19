@@ -168,7 +168,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) screensaver: long press and clock blinking only for indicators with a long press action (TFT 6.2.0 and web panel), new long press option "only trigger the state" - **note:** whoever used `buttons.indicatorLong-N` without a long press action must choose this option with TFT 6.2.0
 - (ticaki) screensaver: with standby brightness 0 the first press on an indicator only wakes the display (no action, no popup, no state, no long press)
 - (ticaki) screensaver: new state `cmd.screenSaver.clockBlink` and sendTo `screensaverClockBlink` let the clock blink red/white until switched off (TFT 6.2.0 and web panel; a long press keeps priority)
-- (ticaki) screensaver: the info icon next to the clock can be tapped (TFT 6.2.0 and web panel) - timer and firmware icons explain themselves in a popup, the own info icon writes `buttons.infoIcon` and shows the new text `cmd.screenSaver.infoText` when it is set
+- (ticaki) screensaver: the info icon next to the clock can be tapped (TFT 6.2.0 and web panel) - timer and firmware icons explain themselves in a popup, the own info icon writes `buttons.infoIcon` and shows the new text `cmd.screenSaver.infoText` when it is set; the popup shows the icon in its screensaver color, a larger font (font 2, 32 px; for the own text selectable with the new state `cmd.screenSaver.infoTextFont`) and wraps the text at word borders
 - (ticaki) screensaver: TFT 6.2.0 - the info icon on the standard/alternate and easyview screensaver of us-l was not visible, only the icon itself reacts to a tap (no longer the whole strip between clock and date)
 
 ### 2.4.1 (2026-11-18)

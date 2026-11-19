@@ -42,6 +42,7 @@ __export(popupNotify3_exports, {
   notify3Font: () => notify3Font,
   notify3Icon: () => notify3Icon,
   notify3Text: () => notify3Text,
+  notifyTextLines: () => notifyTextLines,
   popupNotify3Buttons: () => popupNotify3Buttons,
   popupNotify3Message: () => popupNotify3Message,
   supportsPopupNotify3: () => supportsPopupNotify3,
@@ -145,10 +146,12 @@ function cutUtf8(text, maxBytes) {
 }
 function notify3Text(text, font, model) {
   const layout = NOTIFY3_TEXT[model];
+  const lines = notifyTextLines(text, font, model, layout.width, layout.lines[font]);
+  return cutUtf8(lines.join("\r\n"), NOTIFY3_TEXT_MAX_BYTES);
+}
+function notifyTextLines(text, font, model, width, maxLines) {
   const clean = text.replaceAll("/r/n", "\n").replaceAll("~", "-");
-  const maxLines = layout.lines[font];
-  const out = maxLines <= 1 ? (0, import_text_width.fitText)(clean.replace(/\r?\n/g, " "), font, model, layout.width) : (0, import_text_width.wrapText)(clean, font, model, layout.width, maxLines).join("\r\n");
-  return cutUtf8(out, NOTIFY3_TEXT_MAX_BYTES);
+  return maxLines <= 1 ? [(0, import_text_width.fitText)(clean.replace(/\r?\n/g, " "), font, model, width)] : (0, import_text_width.wrapText)(clean, font, model, width, maxLines);
 }
 function buttonIcon(name, fallback, side, target, warnings) {
   const wanted = typeof name === "string" ? name.trim() : "";
@@ -215,6 +218,7 @@ function popupNotify3Message(input) {
   notify3Font,
   notify3Icon,
   notify3Text,
+  notifyTextLines,
   popupNotify3Buttons,
   popupNotify3Message,
   supportsPopupNotify3,

@@ -18,7 +18,10 @@ import type { IClientPublishOptions } from 'mqtt';
 import {
     SCREENSAVER_CLOCK_BLINK_MIN_VERSION,
     SCREENSAVER_INFO_ICON_TEXTS,
+    screensaverInfoFont,
     screensaverInfoNotification,
+    SCREENSAVER_INFO_FONT_DEFAULT,
+    type ScreensaverInfoFont,
     type ScreensaverInfoIcon,
 } from './screensaver-info-icon';
 import {
@@ -166,6 +169,8 @@ export class Screensaver extends Page {
     public customNotification: boolean = false;
     /** text of the popup a tap on the icon of the user opens (`cmd.screenSaver.infoText`), empty: no popup */
     public infoText: string = '';
+    /** font of {@link infoText} in the popup (`cmd.screenSaver.infoTextFont`), see {@link screensaverInfoFont} */
+    private _infoTextFont: ScreensaverInfoFont = SCREENSAVER_INFO_FONT_DEFAULT;
     /** the clock blinks red/white (`cmd.screenSaver.clockBlink`), see {@link sendsClockBlink} */
     private _clockBlink: boolean = false;
     /** the info icon of the last `time~`, undefined: none */
@@ -1700,6 +1705,22 @@ export class Screensaver extends Page {
         void this.sendStatusIcons();
     }
 
+    /** font of the text of the user icon in the popup of the info icon */
+    get infoTextFont(): ScreensaverInfoFont {
+        return this._infoTextFont;
+    }
+
+    /**
+     * Sets the font of the text of the user icon from `cmd.screenSaver.infoTextFont`.
+     *
+     * @param value value of the state: 0..5, anything else gives {@link SCREENSAVER_INFO_FONT_DEFAULT}
+     * @returns the font used
+     */
+    setInfoTextFont(value: unknown): ScreensaverInfoFont {
+        this._infoTextFont = screensaverInfoFont(value);
+        return this._infoTextFont;
+    }
+
     /**
      * A tap on the info icon next to the clock (TFT 6.2.0+ and web panels, `buttonPress2,bInfo,button,<taps>`):
      * - standby brightness 0: the first touch only wakes the display ({@link onIndicatorWakeTap}), nothing else.
@@ -1726,6 +1747,7 @@ export class Screensaver extends Page {
             return;
         }
         let text = '';
+        let font = SCREENSAVER_INFO_FONT_DEFAULT;
         if (icon.user) {
             await this.library.writedp(
                 `panels.${this.basePanel.name}.buttons.infoIcon`,
@@ -1733,6 +1755,7 @@ export class Screensaver extends Page {
                 Definition.genericStateObjects.panel.panels.buttons.infoIcon,
             );
             text = this.infoText;
+            font = this._infoTextFont;
         } else {
             const key = SCREENSAVER_INFO_ICON_TEXTS[icon.name];
             text = key ? this.library.getTranslation(key) : '';
@@ -1742,7 +1765,16 @@ export class Screensaver extends Page {
         }
         await this.basePanel.statesControler.setInternalState(
             `${this.basePanel.name}/cmd/popupNotificationCustom`,
-            JSON.stringify(screensaverInfoNotification(icon.name, text)),
+            JSON.stringify(
+                screensaverInfoNotification({
+                    icon: icon.name,
+                    // the color the icon has on the screensaver (color~ field tTimeAdd)
+                    iconColor: this.timeAddColor(),
+                    text,
+                    font,
+                    model: this.basePanel.info.nspanel.model,
+                }),
+            ),
             false,
         );
     }

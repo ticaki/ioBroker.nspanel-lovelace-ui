@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.doubleClick": "双击",
     "StateObjects.screenSaver.infoIcon": "信息图标",
     "StateObjects.screenSaver.infoText": "信息图标文本",
+    "StateObjects.screenSaver.infoTextFont": "信息图标文本字体",
     "StateObjects.screenSaver.layout": "布局",
     "StateObjects.screenSaver.rotationTime": "旋转间隔（0 =无更改）",
     "StateObjects.screenSaver.screenSaver": "屏幕保护程序",

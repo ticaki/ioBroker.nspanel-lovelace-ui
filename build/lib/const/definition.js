@@ -47,6 +47,7 @@ __export(definition_exports, {
 module.exports = __toCommonJS(definition_exports);
 var globals = __toESM(require("../types/function-and-const"));
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_screensaver_info_font = require("./screensaver-info-font");
 const defaultChannel = {
   _id: "",
   type: "channel",
@@ -492,6 +493,23 @@ const genericStateObjects = {
               read: true,
               write: true,
               def: ""
+            },
+            native: {}
+          },
+          infoTextFont: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.infoTextFont",
+              type: "number",
+              role: "level",
+              read: true,
+              write: true,
+              def: import_screensaver_info_font.SCREENSAVER_INFO_FONT_DEFAULT,
+              min: 0,
+              max: 5,
+              step: 1,
+              states: { ...import_screensaver_info_font.SCREENSAVER_INFO_FONT_STATES }
             },
             native: {}
           },

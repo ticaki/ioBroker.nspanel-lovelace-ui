@@ -4,6 +4,7 @@ import * as globals from '../types/function-and-const';
 import type { PagePopupDataDetails } from '../types/pages';
 import type { RGB } from './Color';
 import { panelStatusStates } from '../types/adminShareConfig';
+import { SCREENSAVER_INFO_FONT_DEFAULT, SCREENSAVER_INFO_FONT_STATES } from './screensaver-info-font';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -58,6 +59,7 @@ export const genericStateObjects: {
                 screenSaver: customChannelType & {
                     infoIcon: ioBroker.StateObject;
                     infoText: ioBroker.StateObject;
+                    infoTextFont: ioBroker.StateObject;
                     clockBlink: ioBroker.StateObject;
                     timeout: ioBroker.StateObject;
                     doubleClick: ioBroker.StateObject;
@@ -560,6 +562,23 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: '',
+                        },
+                        native: {},
+                    },
+                    infoTextFont: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.infoTextFont',
+                            type: 'number',
+                            role: 'level',
+                            read: true,
+                            write: true,
+                            def: SCREENSAVER_INFO_FONT_DEFAULT,
+                            min: 0,
+                            max: 5,
+                            step: 1,
+                            states: { ...SCREENSAVER_INFO_FONT_STATES },
                         },
                         native: {},
                     },

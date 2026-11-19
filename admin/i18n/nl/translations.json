@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.doubleClick": "Dubbelklik",
     "StateObjects.screenSaver.infoIcon": "Info -pictogram",
     "StateObjects.screenSaver.infoText": "Tekst bij het info-icoon",
+    "StateObjects.screenSaver.infoTextFont": "Lettertype van de tekst bij het info-icoon",
     "StateObjects.screenSaver.layout": "Lay -out",
     "StateObjects.screenSaver.rotationTime": "Rotatie -interval (0 = geen verandering)",
     "StateObjects.screenSaver.screenSaver": "Schermen",

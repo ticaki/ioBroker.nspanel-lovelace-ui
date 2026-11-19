@@ -122,6 +122,7 @@
     "StateObjects.screenSaver.doubleClick": "Double click",
     "StateObjects.screenSaver.infoIcon": "Info icon",
     "StateObjects.screenSaver.infoText": "Info icon text",
+    "StateObjects.screenSaver.infoTextFont": "Info icon text font",
     "StateObjects.screenSaver.layout": "Layout",
     "StateObjects.screenSaver.rotationTime": "Rotation interval (0 = no change)",
     "StateObjects.screenSaver.screenSaver": "Screensaver",

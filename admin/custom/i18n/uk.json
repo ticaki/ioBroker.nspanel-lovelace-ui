@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.doubleClick": "Двічі клацніть",
     "StateObjects.screenSaver.infoIcon": "Значок інформації",
     "StateObjects.screenSaver.infoText": "Текст інфо-значка",
+    "StateObjects.screenSaver.infoTextFont": "Шрифт тексту інфо-значка",
     "StateObjects.screenSaver.layout": "Макет",
     "StateObjects.screenSaver.rotationTime": "Інтервал обертання (0 = відсутність змін)",
     "StateObjects.screenSaver.screenSaver": "Екран",

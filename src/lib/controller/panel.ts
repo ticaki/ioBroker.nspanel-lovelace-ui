@@ -6,6 +6,7 @@ import type {
     PageMenuConfigInfo,
     PanelListEntry,
 } from '../types/adminShareConfig';
+import { SCREENSAVER_INFO_FONT_DEFAULT } from '../const/screensaver-info-font';
 import { PanelSend } from './panel-message';
 
 import { Screensaver, type ScreensaverExitTap } from '../pages/screensaver';
@@ -1054,6 +1055,14 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.screenSaver.infoText,
         );
 
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoTextFont`);
+        const infoTextFont = this.screenSaver?.setInfoTextFont(state?.val);
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.infoTextFont`,
+            infoTextFont ?? SCREENSAVER_INFO_FONT_DEFAULT,
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.infoTextFont,
+        );
+
         state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.clockBlink`);
         if (state && state.val != null && this.screenSaver) {
             this.screenSaver.clockBlink = !!state.val;
@@ -1805,6 +1814,14 @@ export class Panel extends BaseClass {
                     if (state && state.val != null && typeof state.val === 'string' && this.screenSaver) {
                         this.screenSaver.infoText = state.val;
                         await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoText`, state.val);
+                    }
+                    break;
+                }
+                case 'screenSaver.infoTextFont': {
+                    // empty or invalid: the default font, acknowledged with the font used
+                    if (state && this.screenSaver) {
+                        const font = this.screenSaver.setInfoTextFont(state.val);
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoTextFont`, font);
                     }
                     break;
                 }

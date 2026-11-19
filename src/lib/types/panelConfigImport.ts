@@ -60,6 +60,7 @@ import {
     type PanelConfigGroup,
     type PanelSettingValue,
 } from './panelConfigExport';
+import { SCREENSAVER_INFO_FONT_DEFAULT } from '../const/screensaver-info-font';
 
 // ---------------------------------------------------------------------------------------------------------------
 // parsing
@@ -317,6 +318,7 @@ export const panelSettingDefaults: Readonly<Record<string, PanelSettingValue>> =
     'screenSaver.doubleClick': true,
     'screenSaver.infoIcon': '',
     'screenSaver.infoText': '',
+    'screenSaver.infoTextFont': SCREENSAVER_INFO_FONT_DEFAULT,
     'dim.standby': 15,
     'dim.active': 80,
     'dim.dayMode': true,

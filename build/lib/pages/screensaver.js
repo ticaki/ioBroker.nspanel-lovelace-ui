@@ -144,6 +144,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "customNotification", false);
     /** text of the popup a tap on the icon of the user opens (`cmd.screenSaver.infoText`), empty: no popup */
     __publicField(this, "infoText", "");
+    /** font of {@link infoText} in the popup (`cmd.screenSaver.infoTextFont`), see {@link screensaverInfoFont} */
+    __publicField(this, "_infoTextFont", import_screensaver_info_icon.SCREENSAVER_INFO_FONT_DEFAULT);
     /** the clock blinks red/white (`cmd.screenSaver.clockBlink`), see {@link sendsClockBlink} */
     __publicField(this, "_clockBlink", false);
     /** the info icon of the last `time~`, undefined: none */
@@ -1391,6 +1393,20 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this._clockBlink = blink;
     void this.sendStatusIcons();
   }
+  /** font of the text of the user icon in the popup of the info icon */
+  get infoTextFont() {
+    return this._infoTextFont;
+  }
+  /**
+   * Sets the font of the text of the user icon from `cmd.screenSaver.infoTextFont`.
+   *
+   * @param value value of the state: 0..5, anything else gives {@link SCREENSAVER_INFO_FONT_DEFAULT}
+   * @returns the font used
+   */
+  setInfoTextFont(value) {
+    this._infoTextFont = (0, import_screensaver_info_icon.screensaverInfoFont)(value);
+    return this._infoTextFont;
+  }
   /**
    * A tap on the info icon next to the clock (TFT 6.2.0+ and web panels, `buttonPress2,bInfo,button,<taps>`):
    * - standby brightness 0: the first touch only wakes the display ({@link onIndicatorWakeTap}), nothing else.
@@ -1416,6 +1432,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       return;
     }
     let text = "";
+    let font = import_screensaver_info_icon.SCREENSAVER_INFO_FONT_DEFAULT;
     if (icon.user) {
       await this.library.writedp(
         `panels.${this.basePanel.name}.buttons.infoIcon`,
@@ -1423,6 +1440,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         Definition.genericStateObjects.panel.panels.buttons.infoIcon
       );
       text = this.infoText;
+      font = this._infoTextFont;
     } else {
       const key = import_screensaver_info_icon.SCREENSAVER_INFO_ICON_TEXTS[icon.name];
       text = key ? this.library.getTranslation(key) : "";
@@ -1432,7 +1450,16 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
     await this.basePanel.statesControler.setInternalState(
       `${this.basePanel.name}/cmd/popupNotificationCustom`,
-      JSON.stringify((0, import_screensaver_info_icon.screensaverInfoNotification)(icon.name, text)),
+      JSON.stringify(
+        (0, import_screensaver_info_icon.screensaverInfoNotification)({
+          icon: icon.name,
+          // the color the icon has on the screensaver (color~ field tTimeAdd)
+          iconColor: this.timeAddColor(),
+          text,
+          font,
+          model: this.basePanel.info.nspanel.model
+        })
+      ),
       false
     );
   }

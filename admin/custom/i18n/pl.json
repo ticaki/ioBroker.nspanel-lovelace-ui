@@ -117,6 +117,7 @@
     "StateObjects.screenSaver.doubleClick": "Kliknij dwukrotnie",
     "StateObjects.screenSaver.infoIcon": "Ikona informacji",
     "StateObjects.screenSaver.infoText": "Tekst ikony informacyjnej",
+    "StateObjects.screenSaver.infoTextFont": "Czcionka tekstu ikony informacyjnej",
     "StateObjects.screenSaver.layout": "Układ",
     "StateObjects.screenSaver.rotationTime": "Odstęp obrotu (0 = bez zmiany)",
     "StateObjects.screenSaver.screenSaver": "Ekran ekranu",

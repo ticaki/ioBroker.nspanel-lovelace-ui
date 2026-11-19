@@ -18,14 +18,21 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var screensaver_info_icon_exports = {};
 __export(screensaver_info_icon_exports, {
+  POPUP_NOTIFY_TEXT_WIDTH: () => POPUP_NOTIFY_TEXT_WIDTH,
   SCREENSAVER_CLOCK_BLINK_MIN_VERSION: () => SCREENSAVER_CLOCK_BLINK_MIN_VERSION,
+  SCREENSAVER_INFO_FONT_DEFAULT: () => import_screensaver_info_font.SCREENSAVER_INFO_FONT_DEFAULT,
+  SCREENSAVER_INFO_FONT_STATES: () => import_screensaver_info_font.SCREENSAVER_INFO_FONT_STATES,
   SCREENSAVER_INFO_ICON_ID: () => SCREENSAVER_INFO_ICON_ID,
   SCREENSAVER_INFO_ICON_TEXTS: () => SCREENSAVER_INFO_ICON_TEXTS,
   SCREENSAVER_INFO_NOTIFY_ID: () => SCREENSAVER_INFO_NOTIFY_ID,
-  screensaverInfoNotification: () => screensaverInfoNotification
+  screensaverInfoFont: () => import_screensaver_info_font.screensaverInfoFont,
+  screensaverInfoNotification: () => screensaverInfoNotification,
+  screensaverInfoText: () => screensaverInfoText
 });
 module.exports = __toCommonJS(screensaver_info_icon_exports);
 var import_icon_mapping = require("../const/icon_mapping");
+var import_popupNotify3 = require("./popupNotify3");
+var import_screensaver_info_font = require("../const/screensaver-info-font");
 const SCREENSAVER_CLOCK_BLINK_MIN_VERSION = "6.2.0";
 const SCREENSAVER_INFO_ICON_ID = "bInfo";
 const SCREENSAVER_INFO_NOTIFY_ID = "screensaverInfoIcon";
@@ -36,7 +43,21 @@ const SCREENSAVER_INFO_ICON_TEXTS = {
   "cog-refresh-outline": "screensaver_info_dev_firmware",
   "wrench-clock": "screensaver_info_firmware_update"
 };
-function screensaverInfoNotification(icon, text) {
+const POPUP_NOTIFY_TEXT_WIDTH = {
+  eu: { text: 397, withIcon: 285 },
+  "us-l": { text: 397, withIcon: 285 },
+  "us-p": { text: 307, withIcon: 306 },
+  "web-l": { text: 560, withIcon: 446 },
+  "web-p": { text: 272, withIcon: 272 }
+};
+function screensaverInfoText(text, font, model, withIcon) {
+  const widths = POPUP_NOTIFY_TEXT_WIDTH[model];
+  return (0, import_popupNotify3.notifyTextLines)(text, font, model, withIcon ? widths.withIcon : widths.text, Number.MAX_SAFE_INTEGER).join(
+    "\n"
+  );
+}
+function screensaverInfoNotification(popup) {
+  const withIcon = import_icon_mapping.Icons.iconMap.has(popup.icon.trim());
   const details = {
     id: SCREENSAVER_INFO_NOTIFY_ID,
     priority: 50,
@@ -44,24 +65,31 @@ function screensaverInfoNotification(icon, text) {
     global: false,
     alwaysOn: false,
     headline: "",
-    text,
+    text: screensaverInfoText(popup.text, popup.font, popup.model, withIcon),
+    textSize: String(popup.font),
     buttonLeft: "",
     buttonMid: "",
     buttonRight: "",
     largeIcon: false,
     buzzer: false
   };
-  if (import_icon_mapping.Icons.isIcon(icon)) {
-    details.icon = icon;
+  if (withIcon && import_icon_mapping.Icons.isIcon(popup.icon)) {
+    details.icon = popup.icon;
+    details.iconColor = popup.iconColor;
   }
   return details;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  POPUP_NOTIFY_TEXT_WIDTH,
   SCREENSAVER_CLOCK_BLINK_MIN_VERSION,
+  SCREENSAVER_INFO_FONT_DEFAULT,
+  SCREENSAVER_INFO_FONT_STATES,
   SCREENSAVER_INFO_ICON_ID,
   SCREENSAVER_INFO_ICON_TEXTS,
   SCREENSAVER_INFO_NOTIFY_ID,
-  screensaverInfoNotification
+  screensaverInfoFont,
+  screensaverInfoNotification,
+  screensaverInfoText
 });
 //# sourceMappingURL=screensaver-info-icon.js.map

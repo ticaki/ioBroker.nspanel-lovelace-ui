@@ -13,8 +13,10 @@ import {
     SCREENSAVER_INFO_ICON_TEXTS,
     SCREENSAVER_INFO_NOTIFY_ID,
     screensaverInfoNotification,
+    screensaverInfoText,
 } from './screensaver-info-icon';
 import type * as Types from '../types/types';
+import { Color } from '../const/Color';
 
 const noop = (): void => undefined;
 
@@ -44,6 +46,7 @@ function setup(icon: { name: string; user: boolean } | undefined, standby = 10, 
         name: '#scr',
         id: '0',
         infoText,
+        _infoTextFont: 2,
         shownInfoIcon: icon,
         activeNotification: false,
         notifyHidden: false,
@@ -60,6 +63,7 @@ function setup(icon: { name: string; user: boolean } | undefined, standby = 10, 
         },
         basePanel: {
             name: 'A0',
+            info: { nspanel: { model: 'eu' } },
             dim: { dayMode: true, standby, nightStandby: 50 },
             statesControler: {
                 setInternalState: async (id: string, val: string): Promise<void> => {
@@ -91,7 +95,8 @@ describe('lib/pages/screensaver - tap on the info icon', () => {
             expect(f.popups[0], name).to.include({
                 id: SCREENSAVER_INFO_NOTIFY_ID,
                 type: 'information',
-                text: `t:${key}`,
+                text: screensaverInfoText(`t:${key}`, 2, 'eu', true),
+                textSize: '2',
                 icon: name,
                 largeIcon: false,
                 headline: '',
@@ -114,7 +119,11 @@ describe('lib/pages/screensaver - tap on the info icon', () => {
         await f.saver.onInfoIconTap(tap('1'));
         expect(f.writes).to.deep.equal(['panels.A0.buttons.infoIcon=true']);
         expect(f.popups).to.have.length(1);
-        expect(f.popups[0]).to.include({ text: 'Die Waschmaschine ist fertig', icon: 'alarm', largeIcon: false });
+        expect(f.popups[0]).to.include({
+            text: screensaverInfoText('Die Waschmaschine ist fertig', 2, 'eu', true),
+            icon: 'alarm',
+            largeIcon: false,
+        });
     });
 
     it('the icon of the user without a text: only buttons.infoIcon', async () => {
@@ -143,7 +152,15 @@ describe('lib/pages/screensaver - tap on the info icon', () => {
     });
 
     it('the notification closes like an information: no buttons, no buzzer, not always on', () => {
-        expect(screensaverInfoNotification('wrench-clock', 'x')).to.deep.equal({
+        expect(
+            screensaverInfoNotification({
+                icon: 'wrench-clock',
+                iconColor: Color.Orange,
+                text: 'x',
+                font: 2,
+                model: 'eu',
+            }),
+        ).to.deep.equal({
             id: SCREENSAVER_INFO_NOTIFY_ID,
             priority: 50,
             type: 'information',
@@ -151,12 +168,14 @@ describe('lib/pages/screensaver - tap on the info icon', () => {
             alwaysOn: false,
             headline: '',
             text: 'x',
+            textSize: '2',
             buttonLeft: '',
             buttonMid: '',
             buttonRight: '',
             largeIcon: false,
             buzzer: false,
             icon: 'wrench-clock',
+            iconColor: Color.Orange,
         });
     });
 
@@ -166,6 +185,7 @@ describe('lib/pages/screensaver - tap on the info icon', () => {
             ...Object.values(SCREENSAVER_INFO_ICON_TEXTS),
             'StateObjects.buttons.infoIcon',
             'StateObjects.screenSaver.infoText',
+            'StateObjects.screenSaver.infoTextFont',
             'StateObjects.screenSaver.clockBlink',
         ];
         const langs = fs.readdirSync(dir);

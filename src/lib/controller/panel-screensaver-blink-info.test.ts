@@ -5,6 +5,7 @@
 import { expect } from 'chai';
 import { Panel } from './panel';
 import type * as Types from '../types/types';
+import { screensaverInfoFont } from '../const/screensaver-info-font';
 
 const noop = (): void => undefined;
 
@@ -23,6 +24,7 @@ function setup(): Fixture {
     const saver: Record<string, unknown> = {
         clockBlink: false,
         infoText: '',
+        setInfoTextFont: (value: unknown): number => screensaverInfoFont(value),
         onInfoIconTap: async (event: Types.IncomingEvent): Promise<void> => {
             calls.push(`info:${event.id}:${event.action}:${event.opt}`);
             return Promise.resolve();
@@ -115,5 +117,25 @@ describe('lib/controller/panel - info icon of the screensaver', () => {
         await f.panel.onStateChange('panels.A0.cmd.screenSaver.infoText', state('Tür offen'));
         expect(f.saver.infoText).to.equal('Tür offen');
         expect(f.writes).to.deep.equal(['panels.A0.cmd.screenSaver.infoText=Tür offen']);
+    });
+
+    it('cmd.screenSaver.infoTextFont: 0..5 as given, empty or invalid acked as the default font 2', async () => {
+        const f = setup();
+        for (const val of [0, 5, 3, null, '', 'abc', 6, 8, -1, 2.5, '4']) {
+            await f.panel.onStateChange('panels.A0.cmd.screenSaver.infoTextFont', state(val));
+        }
+        expect(f.writes.map(w => w.split('=')[1])).to.deep.equal([
+            '0',
+            '5',
+            '3',
+            '2',
+            '2',
+            '2',
+            '2',
+            '2',
+            '2',
+            '2',
+            '4',
+        ]);
     });
 });
