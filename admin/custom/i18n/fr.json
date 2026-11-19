@@ -1527,7 +1527,7 @@
     "scroll_auto_hint": "Comme le mode classique ; en plus, la page avance d'elle-même après le délai réglé.",
     "scroll_auto_timing": "Secondes avant la page suivante",
     "scroll_classic": "Classique",
-    "scroll_classic_hint": "Plus d'éléments que d'emplacements : les doubles flèches du panneau font défiler les pages.",
+    "scroll_classic_hint": "Plus d'éléments que d'emplacements : les flèches du panneau font défiler les pages.",
     "scroll_presentation": "Défilement des éléments de la page",
     "scroll_type": "Défiler par",
     "scroll_type_half": "Une demi-page",
