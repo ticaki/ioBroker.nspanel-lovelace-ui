@@ -41,6 +41,12 @@ export interface StatusIcon {
 export interface ScreensaverNotify {
     heading: string;
     text: string;
+    /** field 3, RGB565 colour of the heading, `undefined` = not sent (the colour of the main text is used) */
+    headColor?: number;
+    /** field 4, RGB565 colour of the text, `undefined` = not sent (the colour of the main text is used) */
+    textColor?: number;
+    /** field 5, RGB565 background of the notification area, `undefined` = not sent (the page shows through) */
+    background?: number;
 }
 
 export interface ScreensaverModel {
@@ -222,11 +228,30 @@ export function parseClockBlink(args: string[]): boolean {
     return field(args, 6) === '1';
 }
 
-/** `notify~heading~text`; both empty = clear the notification. Line breaks of the text (`\r\n`) are kept. */
+/**
+ * `notify~heading~text~headColor~textColor~background` (colours RGB565, an empty or missing field is not set); heading
+ * and text empty = clear the notification. Line breaks of the text (`\r\n`) are kept.
+ */
 export function parseNotify(args: string[]): ScreensaverNotify | undefined {
     const heading = field(args, 0);
     const text = field(args, 1).replace(/\r\n?/g, '\n');
-    return heading === '' && text === '' ? undefined : { heading, text };
+    if (heading === '' && text === '') {
+        return undefined;
+    }
+    const result: ScreensaverNotify = { heading, text };
+    const headColor = colorField(args, 2);
+    const textColor = colorField(args, 3);
+    const background = colorField(args, 4);
+    if (headColor !== undefined) {
+        result.headColor = headColor;
+    }
+    if (textColor !== undefined) {
+        result.textColor = textColor;
+    }
+    if (background !== undefined) {
+        result.background = background;
+    }
+    return result;
 }
 
 export function handleCommand(

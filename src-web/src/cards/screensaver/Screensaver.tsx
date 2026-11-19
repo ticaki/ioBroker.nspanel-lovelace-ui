@@ -97,6 +97,11 @@ interface NotifyStyle {
     lines: number;
     /** `undefined` = transparent (the notification replaces the row), otherwise drawn over the page */
     cover?: { top: number; height: number };
+    /**
+     * the area of `tNotifyHead` + `tNotifyText` of the HMI (full width) that takes the background of the notification
+     * (field 5 of `notify~`), stage y; default: the cover
+     */
+    area?: { top: number; bottom: number };
     /** `true` in a portrait layout (full stage width), landscape otherwise */
     portrait?: boolean;
 }
@@ -719,6 +724,11 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
         const stage = stageSize(this.panelModel());
         const width = style.portrait ? stage.width : landscapeWidth(this.panelModel());
         const text = notifyTextBox(width, style.portrait === true);
+        const offset = style.cover?.top ?? 0;
+        const area =
+            style.area ?? (style.cover ? { top: style.cover.top, bottom: style.cover.top + style.cover.height } : null);
+        const headColor = this.color(notify.headColor ?? colors?.mainText);
+        const textColor = this.color(notify.textColor ?? colors?.mainText);
         const cover: React.CSSProperties = style.cover
             ? {
                   top: style.cover.top,
@@ -733,17 +743,31 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     position: 'absolute',
                     left: 0,
                     width,
-                    color: this.color(colors?.mainText),
+                    color: textColor,
                     overflow: 'hidden',
                     ...cover,
                 }}
             >
+                {notify.background !== undefined && area ? (
+                    <div
+                        data-role="notifyBackground"
+                        style={{
+                            position: 'absolute',
+                            top: area.top - offset,
+                            left: 0,
+                            width,
+                            height: area.bottom - area.top,
+                            background: color565ToCss(notify.background),
+                        }}
+                    />
+                ) : null}
                 <div
                     style={{
                         position: 'absolute',
-                        top: textTop(style.headingTop, style.headingSize) - (style.cover?.top ?? 0),
+                        top: textTop(style.headingTop, style.headingSize) - offset,
                         left: 8,
                         width: width - 16,
+                        color: headColor,
                         fontSize: style.headingSize,
                         lineHeight: 1,
                         textAlign: 'center',
@@ -752,7 +776,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                         textOverflow: 'ellipsis',
                     }}
                 >
-                    {this.renderRuns(notify.heading, style.headingSize, this.color(colors?.mainText))}
+                    {this.renderRuns(notify.heading, style.headingSize, headColor)}
                 </div>
                 <div
                     style={{
@@ -760,7 +784,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                         top:
                             textTop(style.textTop, style.textSize) -
                             Math.round((style.lineHeight - style.textSize) / 2) -
-                            (style.cover?.top ?? 0),
+                            offset,
                         left: text.left,
                         width: text.width,
                         height: style.lines * style.lineHeight,
@@ -880,6 +904,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                         lineHeight: 24,
                         lines: portrait ? 6 : 2,
                         portrait,
+                        // tNotifyHead y 207 of the eu HMI, tNotifyText down to the lower edge
+                        area: { top: 207, bottom: stageSize(this.panelModel()).height },
                     })
                 ) : (
                     <>
@@ -1206,14 +1232,15 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     valueSize: 18,
                 })}
                 {this.renderBottomStatusIcons(284, width)}
+                {/* the area of the HMI: tNotifyHead y 181, tNotifyText (2 lines) down to the MR icons (y 280) */}
                 {this.renderNotify({
                     headingTop: 200,
                     headingSize: 30,
-                    textTop: 246,
+                    textTop: 234,
                     textSize: 17,
                     lineHeight: 24,
-                    lines: 3,
-                    cover: { top: 184, height: 136 },
+                    lines: 2,
+                    cover: { top: 181, height: 99 },
                 })}
             </>
         );
@@ -1381,6 +1408,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     lineHeight: 24,
                     lines: 2,
                     portrait: true,
+                    // tNotifyHead y 272 to the end of tNotifyText (388) - the bottom row below stays
+                    area: { top: 272, bottom: 388 },
                 })}
             </>
         );
@@ -1425,7 +1454,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     textSize: 17,
                     lineHeight: 24,
                     lines: 5,
-                    cover: { top: 252, height: 186 },
+                    // down to the MR icons (tIcon1/tIcon2 of the HMI from y 440)
+                    cover: { top: 252, height: 188 },
                     portrait: true,
                 })}
             </>
@@ -1465,6 +1495,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                           lineHeight: 24,
                           lines: 9,
                           portrait: true,
+                          // tNotifyHead y 177 to the colour bars (tRelay1/tRelay2 y 475)
+                          area: { top: 177, bottom: 475 },
                       })
                     : this.renderBottom(areas.bottom, uspEasyviewColumns(areas.bottom.length), {
                           labelTop: 184,
@@ -1504,6 +1536,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                           textSize: 17,
                           lineHeight: 24,
                           lines: 3,
+                          // tNotifyHead y 174 to the colour bars (tRelay1/tRelay2 y 315)
+                          area: { top: 174, bottom: 315 },
                       })
                     : this.renderBottom(areas.bottom, columns, {
                           labelTop: 181,
@@ -1548,6 +1582,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                           lineHeight: 24,
                           lines: 6,
                           portrait: true,
+                          // like EasyView of the HMI: 9 px above the heading down to the colour bars
+                          area: { top: 211, bottom: easyviewBars(this.panelModel())[0].top },
                       })
                     : this.renderBottom(areas.bottom, portraitColumns(areas.bottom.length, [212, 412]), {
                           labelTop: 14,
@@ -1609,6 +1645,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                           lineHeight: 24,
                           lines: geo.notify.lines,
                           portrait,
+                          area: geo.notify.area,
                       })
                     : this.renderBottom(areas.bottom, geo.bottom, {
                           labelTop: 7,
