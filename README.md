@@ -173,6 +173,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) screensaver: the notification gets a background area that sets it off from the screensaver (TFT 6.2.0 and web panel, full width down to the lower edge or the bar below it); three new colors in the color theme: notification headline, text and background (white, white and the screensaver background of the theme lightened slightly, default theme gray 56/56/56)
 - (ticaki) screensaver notifications: new option "background blinks" with a second color - the background of the notification alternates every second (TFT 6.2.0 and web panel)
 - (ticaki) Screensaver notification: a change of prefix, unit, suffix or icon states updates it too; a new content is sent at most every 30 s (on/off at once), a notification tapped away stays hidden until the screensaver shows again
+- (ticaki) Web panel: long texts are cut at the field border like on the panel, no own "…" any more
 
 ### 2.4.1 (2026-11-18)
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters

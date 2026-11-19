@@ -640,7 +640,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                         color: color565ToCss(model.modeColor),
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                         pointerEvents: 'none',
                     }}
                 >

@@ -161,7 +161,7 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                     fontSize: g.fontSize,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    textOverflow: 'clip',
                     cursor: visible ? 'pointer' : 'default',
                     visibility: visible ? 'visible' : 'hidden',
                 }}
@@ -205,7 +205,7 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                         fontSize: headingBox.fontSize,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
                     {model.heading}

@@ -103,7 +103,7 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
                             color: theme.foreground,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            textOverflow: 'clip',
                         }}
                     >
                         {entity.displayName}
@@ -137,7 +137,7 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
                             color: theme.foreground,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            textOverflow: 'clip',
                         }}
                     >
                         {entity.optionalValue}

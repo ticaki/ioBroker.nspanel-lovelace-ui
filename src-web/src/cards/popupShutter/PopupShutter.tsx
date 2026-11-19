@@ -316,7 +316,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                         color: theme.foreground,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
                     {text}
@@ -335,7 +335,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                             color: theme.foreground,
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis',
+                            textOverflow: 'clip',
                         }}
                     >
                         {model.text}

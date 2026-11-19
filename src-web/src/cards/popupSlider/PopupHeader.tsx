@@ -127,7 +127,7 @@ export class PopupHeader extends React.Component<PopupHeaderProps> {
                                   color: theme.foreground,
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
+                                  textOverflow: 'clip',
                               }
                             : {
                                   position: 'absolute',
@@ -140,7 +140,7 @@ export class PopupHeader extends React.Component<PopupHeaderProps> {
                                   color: theme.foreground,
                                   whiteSpace: 'nowrap',
                                   overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
+                                  textOverflow: 'clip',
                               }
                     }
                 >

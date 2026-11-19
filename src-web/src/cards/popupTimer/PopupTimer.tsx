@@ -253,7 +253,7 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
                     fontSize: POPUP_FONT_SIZE,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    textOverflow: 'clip',
                     cursor: visible && !disabled ? 'pointer' : 'default',
                     visibility: visible ? 'visible' : 'hidden',
                 }}
