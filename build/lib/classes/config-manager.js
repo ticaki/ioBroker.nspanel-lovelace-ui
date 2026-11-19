@@ -3726,6 +3726,9 @@ class ConfigManager extends import_library.BaseClass {
           if (popup) {
             indicatorPopups.set(result, popup);
           }
+          if (mode === "indicator" && !popup && ConfigManager.isScreensaverLongPressTrigger(item)) {
+            result.longPressTrigger = true;
+          }
           return result;
         }).catch((err) => {
           const msg = `${errorLabel} - ${String(err)}`;
@@ -4569,6 +4572,16 @@ class ConfigManager extends import_library.BaseClass {
     }
     return null;
   }
+  /**
+   * true when a long press of the indicator only writes `buttons.indicatorLong-N` (ScreensaverEntityLongPressTrigger):
+   * button, switch, page and popup of a long press come first.
+   *
+   * @param entity element of the script (script or template)
+   * @returns true for the long press "only trigger the state"
+   */
+  static isScreensaverLongPressTrigger(entity) {
+    return entity.type !== "native" && entity.ScreensaverEntityLongPressTrigger === true && !entity.ScreensaverEntityLongPressButton && !entity.ScreensaverEntityLongPressSwitch && !entity.ScreensaverEntityLongPressNaviToPage && entity.ScreensaverEntityLongPressPopup !== true;
+  }
   /** types of a page item with a popup of the HMI that a long press of an indicator can open */
   static screensaverPopupItemTypes = /* @__PURE__ */ new Set([
     "light",
@@ -4708,7 +4721,8 @@ class ConfigManager extends import_library.BaseClass {
         "ScreensaverEntityLongPressNaviToPage",
         "ScreensaverEntityLongPressButton",
         "ScreensaverEntityLongPressSwitch",
-        "ScreensaverEntityLongPressPopup"
+        "ScreensaverEntityLongPressPopup",
+        "ScreensaverEntityLongPressTrigger"
       ]) {
         delete temp[key];
       }

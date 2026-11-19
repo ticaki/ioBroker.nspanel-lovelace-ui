@@ -12,6 +12,7 @@ import {
     parseColor,
     parseEntityUpd,
     parseNotify,
+    parseLongPressMask,
     parseStatusUpdate,
     parseWeatherUpdate,
     splitAreas,
@@ -338,5 +339,28 @@ describe('screensaver parse', () => {
         ]);
         expect(splitRuns('\u{F045E}')).toEqual([{ kind: 'icon', glyph: '\u{F045E}' }]);
         expect(splitRuns('')).toEqual([]);
+    });
+});
+
+describe('screensaver long press mask (weatherUpdate of screensaver2/screensaver5)', () => {
+    const slots = (n: number): string[] => new Array<string>(n).fill(EMPTY);
+
+    it('the field behind the last entity is the mask, not an entity', () => {
+        const args = parseCommand(wu(e('I', 1, 'n', 'v', '0?1'), ...slots(11), '68')).args;
+        expect(parseWeatherUpdate(args)).toHaveLength(12);
+        expect(parseLongPressMask(args)).toBe(68);
+    });
+
+    it('missing, empty or no number: 0', () => {
+        expect(parseLongPressMask(parseCommand(wu(...slots(12))).args)).toBe(0);
+        expect(parseLongPressMask(parseCommand(wu(...slots(12), '')).args)).toBe(0);
+        expect(parseLongPressMask(parseCommand(wu(...slots(12), 'x')).args)).toBe(0);
+    });
+
+    it('handleCommand keeps it in the model', () => {
+        const model = handleCommand('weatherUpdate', parseCommand(wu(...slots(15), '5')).args, initial(), ctx())!;
+        expect(model.entities).toHaveLength(15);
+        expect(model.longPressMask).toBe(5);
+        expect(initial().longPressMask).toBe(0);
     });
 });

@@ -1346,6 +1346,7 @@
     "screensaver_item_longPress_hint": "Benötigt TFT 6.0.9 oder neuer. Ohne Aktion hier wirkt ein langer Druck wie ein kurzer.",
     "screensaver_item_longPress_popup": "Popup öffnen",
     "screensaver_item_longPress_switchState": "Datenpunkt, der bei langem Drücken umgeschaltet wird",
+    "screensaver_item_longPress_trigger": "Nur Datenpunkt auslösen",
     "screensaver_item_looksFor": "sucht unterhalb des Objekts nach: %s",
     "screensaver_item_notState": "%s ist kein Datenpunkt (Objekttyp: %s) – bitte einen Datenpunkt wählen",
     "screensaver_item_option_socMax": "SOC-Obergrenze (%)",

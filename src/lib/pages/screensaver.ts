@@ -83,6 +83,28 @@ export function resolveScreensaverOptions(options: pages.PageBase): {
     };
 }
 
+/**
+ * TFT version from which on screensaver2/screensaver5 read the long press mask at the end of `weatherUpdate`
+ * (`HMI/tools/indicator_long_press_mask.py`): only the marked indicators start the long press and let the clock blink.
+ */
+export const INDICATOR_LONG_PRESS_MASK_MIN_VERSION = '6.2.0';
+
+/**
+ * The long press mask of the indicator slots as the HMI reads it: bit (N-1) for indicator N (1 -> 1, 3 -> 4, 7 -> 64).
+ *
+ * @param supported per indicator slot as sent: true when its indicator has a long press
+ * @returns the mask as a decimal number
+ */
+export function indicatorLongPressMask(supported: readonly boolean[]): number {
+    let mask = 0;
+    for (let i = 0; i < supported.length; i++) {
+        if (supported[i]) {
+            mask += 2 ** i;
+        }
+    }
+    return mask;
+}
+
 /** Messages of the screensaver that are only sent when their content changed */
 type FilteredMessage = 'weatherUpdate' | 'color' | 'statusUpdate' | 'notify';
 
@@ -752,14 +774,27 @@ export class Screensaver extends Page {
         const model = 'model' in config ? config.model : 'eu';
         const layout = this.mode;
 
-        type AppendResult = { kind: 'append'; place: NSPanel.ScreenSaverPlaces; idx: number; payload: string };
+        type AppendResult = {
+            kind: 'append';
+            place: NSPanel.ScreenSaverPlaces;
+            idx: number;
+            payload: string;
+            item: PageItem;
+        };
         type OverwriteResult = {
             kind: 'overwrite';
             place: NSPanel.ScreenSaverPlaces;
             enabledIndex: number;
             payload: string;
+            item: PageItem;
         };
-        type FillerResult = { kind: 'filler'; place: NSPanel.ScreenSaverPlaces; idx: number; payload: string };
+        type FillerResult = {
+            kind: 'filler';
+            place: NSPanel.ScreenSaverPlaces;
+            idx: number;
+            payload: string;
+            item: PageItem;
+        };
         type Result = AppendResult | OverwriteResult | FillerResult | null;
 
         // Collect results in parallel, but tagged with original index
@@ -789,7 +824,7 @@ export class Screensaver extends Page {
                         if (enabledNum >= 0) {
                             const payload = await pageItem.getPageItemPayload();
                             if (payload !== '') {
-                                return { kind: 'overwrite', place, enabledIndex: enabledNum, payload };
+                                return { kind: 'overwrite', place, enabledIndex: enabledNum, payload, item: pageItem };
                             }
                         }
                         return null;
@@ -801,21 +836,21 @@ export class Screensaver extends Page {
                 if (enabledBool === false) {
                     if (pageItem.config?.fillIfBelowMin) {
                         const payload = await pageItem.getPageItemPayload(true);
-                        return { kind: 'filler', place, idx, payload };
+                        return { kind: 'filler', place, idx, payload, item: pageItem };
                     }
                     return null;
                 }
 
                 // Default: append with original index
                 const payload = await pageItem.getPageItemPayload();
-                return { kind: 'append', place, idx, payload };
+                return { kind: 'append', place, idx, payload, item: pageItem };
             }),
         );
 
         // Apply overwrites and collect appends/fillers grouped by place
         const combinedByPlace: Record<
             NSPanel.ScreenSaverPlaces,
-            Array<{ idx: number; payload: string; isFiller: boolean }>
+            Array<{ idx: number; payload: string; isFiller: boolean; item: PageItem }>
         > = {
             indicator: [],
             left: [],
@@ -828,16 +863,27 @@ export class Screensaver extends Page {
             notify: [],
         };
 
+        // the page item of every indicator slot, parallel to message.options.indicator (long press mask)
+        const indicatorOverwrite: PageItem[] = [];
         for (const r of results) {
             if (!r) {
                 continue;
             }
             if (r.kind === 'overwrite') {
                 overwrite[r.place][r.enabledIndex] = r.payload;
+                if (r.place === 'indicator') {
+                    indicatorOverwrite[r.enabledIndex] = r.item;
+                }
             } else {
-                combinedByPlace[r.place].push({ idx: r.idx, payload: r.payload, isFiller: r.kind === 'filler' });
+                combinedByPlace[r.place].push({
+                    idx: r.idx,
+                    payload: r.payload,
+                    isFiller: r.kind === 'filler',
+                    item: r.item,
+                });
             }
         }
+        let indicatorItems: (PageItem | undefined)[] = [];
 
         // Build message.options per place in original order, then apply overwrites
         for (const key in message.options) {
@@ -857,19 +903,25 @@ export class Screensaver extends Page {
             let fillersLeft = Math.max(0, maxForFill - regularCount);
 
             // Insert items in original order; fillers only where there is still a slot needed
+            const slotItems: (PageItem | undefined)[] = [];
             for (const entry of combined) {
                 if (entry.isFiller) {
                     if (fillersLeft > 0) {
                         message.options[place].push(entry.payload);
+                        slotItems.push(entry.item);
                         fillersLeft--;
                     }
                 } else {
                     message.options[place].push(entry.payload);
+                    slotItems.push(entry.item);
                 }
             }
 
             // Apply overwrites (sparse assignment is fine)
             Object.assign(message.options[place], overwrite[place]);
+            if (place === 'indicator') {
+                Object.assign(slotItems, indicatorOverwrite);
+            }
 
             // Windowing/paging
             let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
@@ -886,6 +938,11 @@ export class Screensaver extends Page {
                 const windowIdx = this.step % windows;
                 items = items.slice(max * windowIdx, max * (windowIdx + 1));
                 message.options[place] = items;
+                if (place === 'indicator') {
+                    indicatorItems = slotItems.slice(max * windowIdx, max * (windowIdx + 1));
+                }
+            } else if (place === 'indicator') {
+                indicatorItems = slotItems;
             }
 
             // Normalize payload fields per slot
@@ -911,6 +968,12 @@ export class Screensaver extends Page {
                     }
                     message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
                 }
+            }
+            if (place === 'indicator') {
+                const sent = message.options.indicator;
+                message.indicatorLongPress = sent.map(
+                    (payload, i) => !!payload.replace(/~/g, '') && this.supportsIndicatorLongPress(indicatorItems[i]),
+                );
             }
         }
 
@@ -1069,6 +1132,27 @@ export class Screensaver extends Page {
     }
 
     /**
+     * A press of an indicator tile (TFT 6.0.8+, `<page>?<n>,button,<taps>`, tap or long press) on a dark display
+     * (standby brightness 0): the first touch of a run of the tap counter (opt 1) only wakes the display - no
+     * `buttons.indicator(Long)-N`, no command, no popup, no long press. Independent of a notification; `dismiss` and
+     * `leave` of {@link onExitTap} do not apply to indicators. Like a `bExit` with opt 1 the touch decides
+     * {@link wakeTapRun}: a notification that stood on the dark display is shown now and the next background tap
+     * (opt 2) takes it away. A press without a tap count (TFT before 6.0.8) is never a wake tap.
+     *
+     * @param opt opt of the event, the taps counted by the HMI
+     * @returns true when the press only woke the display and is done
+     */
+    onIndicatorWakeTap(opt: string): boolean {
+        const taps = Screensaver.tapCount(opt);
+        if (taps === undefined || taps > 1) {
+            return false;
+        }
+        // the start of a run of the counter, the same decision as a background tap with opt 1
+        this.onExitTap(opt);
+        return this.standbyDark();
+    }
+
+    /**
      * @returns true while the HMI drops `weatherUpdate` and `color~`
      */
     private dropsValues(): boolean {
@@ -1207,19 +1291,7 @@ export class Screensaver extends Page {
             return;
         }
 
-        if (message.options.alternate.length > 0) {
-            message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
-        }
-
-        const arr: string[] = [
-            ...(message.options.favorit || []),
-            ...(message.options.left || []),
-            ...(message.options.bottom || []),
-            ...(message.options.alternate || []),
-            ...(message.options.indicator || []),
-        ];
-
-        const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
+        const msg = this.weatherPayload(message);
         if (this.lastSent.get('weatherUpdate') !== msg || this.lastSent.get('color') !== this.colorPayload()) {
             const now = Date.now();
             const wait = this.lastUpdateTs + Screensaver.minUpdateInterval - now;
@@ -1956,8 +2028,60 @@ export class Screensaver extends Page {
     }
 
     /**
+     * The `weatherUpdate` of a message of {@link getData}: favorit, left, bottom, alternate (behind an empty slot) and
+     * indicator slots, then the long press mask when the panel reads it ({@link sendsLongPressMask}).
+     *
+     * @param message the places favorit, left, bottom, alternate and indicator; alternate gets its empty slot here
+     * @returns the message
+     */
+    weatherPayload(message: pages.screensaverMessage): string {
+        if (message.options.alternate.length > 0) {
+            message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
+        }
+
+        const arr: string[] = [
+            ...(message.options.favorit || []),
+            ...(message.options.left || []),
+            ...(message.options.bottom || []),
+            ...(message.options.alternate || []),
+            ...(message.options.indicator || []),
+        ];
+
+        const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
+        if (!this.sendsLongPressMask()) {
+            return msg;
+        }
+        // one more field behind the last indicator slot, see INDICATOR_LONG_PRESS_MASK_MIN_VERSION
+        return tools.getPayload(msg, String(indicatorLongPressMask(message.indicatorLongPress ?? [])));
+    }
+
+    /**
+     * true when a long press of the indicator does something: a long press of its own, a popup
+     * ({@link hasIndicatorLongPress}) or only `buttons.indicatorLong-N` (`longPressTrigger`). From TFT 6.2.0 on only
+     * these indicators start the long press on the panel (long press mask of `weatherUpdate`).
+     *
+     * @param item the indicator item
+     */
+    supportsIndicatorLongPress(item: PageItem | undefined): boolean {
+        return this.hasIndicatorLongPress(item) || item?.config?.longPressTrigger === true;
+    }
+
+    /**
+     * true when `weatherUpdate` carries the long press mask: screensaver2 / screensaver5 on a web panel or a TFT
+     * {@link INDICATOR_LONG_PRESS_MASK_MIN_VERSION}+ (older TFTs and the other screensavers do not read it)
+     */
+    private sendsLongPressMask(): boolean {
+        const card = this.config?.card;
+        if (card !== 'screensaver2' && card !== 'screensaver5') {
+            return false;
+        }
+        return this.basePanel.isVirtual || this.basePanel.meetsVersion(INDICATOR_LONG_PRESS_MASK_MIN_VERSION);
+    }
+
+    /**
      * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`; TFT 6.0.9 to 6.1.x send it
-     * while the finger is still down, the TFT 6.2.0 and the web panel when it is lifted): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
+     * while the finger is still down, the TFT 6.2.0 and the web panel when it is lifted): `buttons.indicatorLong-N` is
+     * always written; with `longPressTrigger` that is all; an indicator with a long press of its own runs it
      * ({@link PageItem.onCommandLongPress}) or opens its popup ({@link openIndicatorPopup}) - the short press is not
      * run then.
      *
@@ -1971,6 +2095,10 @@ export class Screensaver extends Page {
             return false;
         }
         await this.writeIndicatorButton(item, 'indicatorLong');
+        if (item.config?.longPressTrigger === true) {
+            // "only trigger the state": nothing else, also no tap
+            return true;
+        }
         const popupItem = this.longPressPopupItem(item);
         if (popupItem) {
             return this.openIndicatorPopup(popupItem);

@@ -3107,6 +3107,34 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         );
     });
 
+    it('takes the long press "only trigger the state" over (ScreensaverEntityLongPressTrigger)', () => {
+        const element = (more: Record<string, unknown>): any => ({
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'indicator',
+            ...more,
+        });
+        const result = plan(
+            baseConfig({
+                indicatorScreensaverEntity: [
+                    element({ ScreensaverEntityLongPressTrigger: true }),
+                    element({ ScreensaverEntityLongPressNaviToPage: 'main', ScreensaverEntityLongPressTrigger: true }),
+                ],
+            }),
+        );
+        const entry = result.screensaverEntry!;
+        const base = { state: 'bydhvs.0', template: 'text.battery.bydhvs' };
+        expect(entry.indicator.slice(0, 2)).to.deep.equal([
+            { ...base, longPress: { kind: 'trigger' } },
+            // the config manager takes the page first
+            { ...base, longPress: { kind: 'navigate', page: 'main' } },
+        ]);
+        expect(screensaverItemToScript(entry.indicator[0]!, 'indicator')).to.deep.equal(
+            element({ ScreensaverEntityLongPressTrigger: true }),
+        );
+    });
+
     it('keeps readOptions the admin cannot store as raw item', () => {
         const element: any = {
             type: 'template',

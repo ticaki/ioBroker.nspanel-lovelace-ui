@@ -1194,7 +1194,7 @@
       "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
       "timeout": "timeout~15",
-      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~0"
     },
     "states": {
       "0_userdata.0.e2e.blind.ACTUAL": 50,
@@ -1263,7 +1263,7 @@
       "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
       "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
-      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~0"
     },
     "states": {
       "0_userdata.0.e2e.blind.ACTUAL": 50,
@@ -1311,7 +1311,7 @@
       "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
       "pageType": "pageType~screensaver5~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
-      "weatherUpdate": "weatherUpdate~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+      "weatherUpdate": "weatherUpdate~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0"
     },
     "states": {
       "0_userdata.0.e2e.blind.ACTUAL": 50,

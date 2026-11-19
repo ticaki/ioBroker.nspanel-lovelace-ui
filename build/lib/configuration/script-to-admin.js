@@ -1005,6 +1005,7 @@ const screensaverStateKeys = [
   "ScreensaverEntityLongPressButton",
   "ScreensaverEntityLongPressSwitch",
   "ScreensaverEntityLongPressPopup",
+  "ScreensaverEntityLongPressTrigger",
   "ScreensaverEntityIconSelect",
   "ScreensaverEntityEnabled",
   "ScreensaverEntityVisibleCondition",
@@ -1026,7 +1027,8 @@ const screensaverTemplateKeys = [
   "ScreensaverEntityLongPressNaviToPage",
   "ScreensaverEntityLongPressButton",
   "ScreensaverEntityLongPressSwitch",
-  "ScreensaverEntityLongPressPopup"
+  "ScreensaverEntityLongPressPopup",
+  "ScreensaverEntityLongPressTrigger"
 ];
 const nativeTemplateKeys = ["template", "dpInit", "modeScr", "readOptions"];
 function convertReadOptions(value, reason, where) {
@@ -1089,7 +1091,10 @@ function convertIndicatorLongPress(element, reason, where) {
   if (navi) {
     return { kind: "navigate", page: navi };
   }
-  return element.ScreensaverEntityLongPressPopup === true ? { kind: "popup" } : void 0;
+  if (element.ScreensaverEntityLongPressPopup === true) {
+    return { kind: "popup" };
+  }
+  return element.ScreensaverEntityLongPressTrigger === true ? { kind: "trigger" } : void 0;
 }
 function convertScreensaverItem(element, area, where, defaults) {
   var _a, _b, _c, _d;

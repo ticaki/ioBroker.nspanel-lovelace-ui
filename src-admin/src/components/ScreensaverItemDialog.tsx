@@ -132,7 +132,7 @@ let iconMap: Map<string, string> | null = null;
  * @param value value of the select
  */
 function isLongPressKind(value: string): value is ScreensaverItemLongPressAction['kind'] {
-    return value === 'button' || value === 'switch' || value === 'navigate' || value === 'popup';
+    return value === 'button' || value === 'switch' || value === 'navigate' || value === 'popup' || value === 'trigger';
 }
 
 /**
@@ -493,7 +493,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     private longPressBlocked(): boolean {
         const { draft, longPressObj } = this.state;
         const longPress = draft.longPress;
-        if (!screensaverItemFields(this.props.area).action || !longPress || longPress.kind === 'navigate') {
+        if (
+            !screensaverItemFields(this.props.area).action ||
+            !longPress ||
+            longPress.kind === 'navigate' ||
+            longPress.kind === 'trigger'
+        ) {
             return false;
         }
         if (longPress.state?.trim()) {
@@ -514,6 +519,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         }
         if (longPress.kind === 'popup') {
             return this.popupSupported() ? { kind: 'popup' } : undefined;
+        }
+        if (longPress.kind === 'trigger') {
+            return { kind: 'trigger' };
         }
         if (longPress.kind === 'navigate' ? !longPress.page : !longPress.state) {
             return undefined;
@@ -1368,8 +1376,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
-     * the long press of an indicator (TFT 6.0.9+): button, switch, page or the popup of the channel above the state
-     * (only offered when it has one) - without one a long press acts like a tap
+     * the long press of an indicator (TFT 6.0.9+): button, switch, page, the popup of the channel above the state
+     * (only offered when it has one) or only `buttons.indicatorLong-N` (trigger) - without one a long press acts like
+     * a tap (from TFT 6.2.0 on the indicator knows no long press then)
      */
     private renderLongPressSection(): React.JSX.Element {
         const longPress: ScreensaverItemLongPressAction = this.state.draft.longPress ?? { kind: 'button' };
@@ -1395,7 +1404,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                     this.set('longPress', undefined);
                                     return;
                                 }
-                                this.set('longPress', v === 'popup' ? { kind: v } : { ...longPress, kind: v });
+                                this.set(
+                                    'longPress',
+                                    v === 'popup' || v === 'trigger' ? { kind: v } : { ...longPress, kind: v },
+                                );
                             }}
                         >
                             <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
@@ -1405,6 +1417,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             {popupSupported && (
                                 <MenuItem value="popup">{this.getText('screensaver_item_longPress_popup')}</MenuItem>
                             )}
+                            <MenuItem value="trigger">{this.getText('screensaver_item_longPress_trigger')}</MenuItem>
                         </Select>
                     </FormControl>
                     <DocHelp topic="screensaver.longPress" />

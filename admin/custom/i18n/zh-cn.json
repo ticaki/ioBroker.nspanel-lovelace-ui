@@ -1312,6 +1312,7 @@
     "screensaver_item_longPress_hint": "需要 TFT 6.0.9 或更高版本。此处未设置操作时，长按与短按相同。",
     "screensaver_item_longPress_popup": "打开弹窗",
     "screensaver_item_longPress_switchState": "长按时切换的状态",
+    "screensaver_item_longPress_trigger": "仅触发状态",
     "screensaver_item_looksFor": "在对象下查找：%s",
     "screensaver_item_notState": "%s 不是数据点（对象类型：%s）– 请选择一个数据点",
     "screensaver_item_option_socMax": "SOC 上限 (%)",

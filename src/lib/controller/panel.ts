@@ -2671,6 +2671,10 @@ export class Panel extends BaseClass {
                         event.opt !== '' &&
                         this.screenSaver.isIndicatorEvent(event)
                     ) {
+                        // standby brightness 0: the first touch only wakes the display, also for a long press
+                        if (this.screenSaver.onIndicatorWakeTap(event.opt)) {
+                            break;
+                        }
                         // a long press (TFT 6.0.9+) without one of its own acts like a tap
                         if (event.method === 'buttonPress3' && (await this.screenSaver.onIndicatorLongPress(event))) {
                             break;

@@ -36,7 +36,9 @@ var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 var screensaver_exports = {};
 __export(screensaver_exports, {
+  INDICATOR_LONG_PRESS_MASK_MIN_VERSION: () => INDICATOR_LONG_PRESS_MASK_MIN_VERSION,
   Screensaver: () => Screensaver,
+  indicatorLongPressMask: () => indicatorLongPressMask,
   resolveScreensaverOptions: () => resolveScreensaverOptions
 });
 module.exports = __toCommonJS(screensaver_exports);
@@ -67,6 +69,16 @@ function resolveScreensaverOptions(options) {
     options: { ...options, config: { ...config, card: "screensaver", mode: "standard" } },
     rejected: { mode, card }
   };
+}
+const INDICATOR_LONG_PRESS_MASK_MIN_VERSION = "6.2.0";
+function indicatorLongPressMask(supported) {
+  let mask = 0;
+  for (let i = 0; i < supported.length; i++) {
+    if (supported[i]) {
+      mask += 2 ** i;
+    }
+  }
+  return mask;
 }
 const _Screensaver = class _Screensaver extends import_Page.Page {
   //readonly mode: Types.ScreensaverModeType = 'standard';
@@ -731,7 +743,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
             if (enabledNum >= 0) {
               const payload2 = await pageItem.getPageItemPayload();
               if (payload2 !== "") {
-                return { kind: "overwrite", place, enabledIndex: enabledNum, payload: payload2 };
+                return { kind: "overwrite", place, enabledIndex: enabledNum, payload: payload2, item: pageItem };
               }
             }
             return null;
@@ -741,12 +753,12 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         if (enabledBool === false) {
           if ((_d = pageItem.config) == null ? void 0 : _d.fillIfBelowMin) {
             const payload2 = await pageItem.getPageItemPayload(true);
-            return { kind: "filler", place, idx, payload: payload2 };
+            return { kind: "filler", place, idx, payload: payload2, item: pageItem };
           }
           return null;
         }
         const payload = await pageItem.getPageItemPayload();
-        return { kind: "append", place, idx, payload };
+        return { kind: "append", place, idx, payload, item: pageItem };
       })
     );
     const combinedByPlace = {
@@ -760,16 +772,26 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       alternate: [],
       notify: []
     };
+    const indicatorOverwrite = [];
     for (const r of results) {
       if (!r) {
         continue;
       }
       if (r.kind === "overwrite") {
         overwrite[r.place][r.enabledIndex] = r.payload;
+        if (r.place === "indicator") {
+          indicatorOverwrite[r.enabledIndex] = r.item;
+        }
       } else {
-        combinedByPlace[r.place].push({ idx: r.idx, payload: r.payload, isFiller: r.kind === "filler" });
+        combinedByPlace[r.place].push({
+          idx: r.idx,
+          payload: r.payload,
+          isFiller: r.kind === "filler",
+          item: r.item
+        });
       }
     }
+    let indicatorItems = [];
     for (const key in message.options) {
       const place = key;
       if (!places.includes(place)) {
@@ -779,17 +801,23 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const combined = combinedByPlace[place].sort((a, b) => a.idx - b.idx);
       const regularCount = combined.filter((e) => !e.isFiller).length;
       let fillersLeft = Math.max(0, maxForFill - regularCount);
+      const slotItems = [];
       for (const entry of combined) {
         if (entry.isFiller) {
           if (fillersLeft > 0) {
             message.options[place].push(entry.payload);
+            slotItems.push(entry.item);
             fillersLeft--;
           }
         } else {
           message.options[place].push(entry.payload);
+          slotItems.push(entry.item);
         }
       }
       Object.assign(message.options[place], overwrite[place]);
+      if (place === "indicator") {
+        Object.assign(slotItems, indicatorOverwrite);
+      }
       let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
       if (max == null) {
         max = Definition.ScreenSaverConst[layout][place].maxEntries.eu;
@@ -804,6 +832,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         const windowIdx = this.step % windows;
         items = items.slice(max * windowIdx, max * (windowIdx + 1));
         message.options[place] = items;
+        if (place === "indicator") {
+          indicatorItems = slotItems.slice(max * windowIdx, max * (windowIdx + 1));
+        }
+      } else if (place === "indicator") {
+        indicatorItems = slotItems;
       }
       for (let i = 0; i < max; i++) {
         const msg = message.options[place][i];
@@ -824,6 +857,12 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           }
           message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
         }
+      }
+      if (place === "indicator") {
+        const sent = message.options.indicator;
+        message.indicatorLongPress = sent.map(
+          (payload, i) => !!payload.replace(/~/g, "") && this.supportsIndicatorLongPress(indicatorItems[i])
+        );
       }
     }
     return message;
@@ -950,6 +989,25 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return taps === 2 ? "dismiss" : "leave";
   }
   /**
+   * A press of an indicator tile (TFT 6.0.8+, `<page>?<n>,button,<taps>`, tap or long press) on a dark display
+   * (standby brightness 0): the first touch of a run of the tap counter (opt 1) only wakes the display - no
+   * `buttons.indicator(Long)-N`, no command, no popup, no long press. Independent of a notification; `dismiss` and
+   * `leave` of {@link onExitTap} do not apply to indicators. Like a `bExit` with opt 1 the touch decides
+   * {@link wakeTapRun}: a notification that stood on the dark display is shown now and the next background tap
+   * (opt 2) takes it away. A press without a tap count (TFT before 6.0.8) is never a wake tap.
+   *
+   * @param opt opt of the event, the taps counted by the HMI
+   * @returns true when the press only woke the display and is done
+   */
+  onIndicatorWakeTap(opt) {
+    const taps = _Screensaver.tapCount(opt);
+    if (taps === void 0 || taps > 1) {
+      return false;
+    }
+    this.onExitTap(opt);
+    return this.standbyDark();
+  }
+  /**
    * @returns true while the HMI drops `weatherUpdate` and `color~`
    */
   dropsValues() {
@@ -1066,17 +1124,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       await this.sendTimeAfterRender();
       return;
     }
-    if (message.options.alternate.length > 0) {
-      message.options.alternate.unshift(tools.getPayload("", "", "", "", "", ""));
-    }
-    const arr = [
-      ...message.options.favorit || [],
-      ...message.options.left || [],
-      ...message.options.bottom || [],
-      ...message.options.alternate || [],
-      ...message.options.indicator || []
-    ];
-    const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
+    const msg = this.weatherPayload(message);
     if (this.lastSent.get("weatherUpdate") !== msg || this.lastSent.get("color") !== this.colorPayload()) {
       const now = Date.now();
       const wait = this.lastUpdateTs + _Screensaver.minUpdateInterval - now;
@@ -1623,8 +1671,57 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return !!(entry.data.setNaviLongPress || entry.data.longPress);
   }
   /**
+   * The `weatherUpdate` of a message of {@link getData}: favorit, left, bottom, alternate (behind an empty slot) and
+   * indicator slots, then the long press mask when the panel reads it ({@link sendsLongPressMask}).
+   *
+   * @param message the places favorit, left, bottom, alternate and indicator; alternate gets its empty slot here
+   * @returns the message
+   */
+  weatherPayload(message) {
+    var _a;
+    if (message.options.alternate.length > 0) {
+      message.options.alternate.unshift(tools.getPayload("", "", "", "", "", ""));
+    }
+    const arr = [
+      ...message.options.favorit || [],
+      ...message.options.left || [],
+      ...message.options.bottom || [],
+      ...message.options.alternate || [],
+      ...message.options.indicator || []
+    ];
+    const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
+    if (!this.sendsLongPressMask()) {
+      return msg;
+    }
+    return tools.getPayload(msg, String(indicatorLongPressMask((_a = message.indicatorLongPress) != null ? _a : [])));
+  }
+  /**
+   * true when a long press of the indicator does something: a long press of its own, a popup
+   * ({@link hasIndicatorLongPress}) or only `buttons.indicatorLong-N` (`longPressTrigger`). From TFT 6.2.0 on only
+   * these indicators start the long press on the panel (long press mask of `weatherUpdate`).
+   *
+   * @param item the indicator item
+   */
+  supportsIndicatorLongPress(item) {
+    var _a;
+    return this.hasIndicatorLongPress(item) || ((_a = item == null ? void 0 : item.config) == null ? void 0 : _a.longPressTrigger) === true;
+  }
+  /**
+   * true when `weatherUpdate` carries the long press mask: screensaver2 / screensaver5 on a web panel or a TFT
+   * {@link INDICATOR_LONG_PRESS_MASK_MIN_VERSION}+ (older TFTs and the other screensavers do not read it)
+   */
+  sendsLongPressMask() {
+    var _a;
+    const card = (_a = this.config) == null ? void 0 : _a.card;
+    if (card !== "screensaver2" && card !== "screensaver5") {
+      return false;
+    }
+    return this.basePanel.isVirtual || this.basePanel.meetsVersion(INDICATOR_LONG_PRESS_MASK_MIN_VERSION);
+  }
+  /**
    * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`; TFT 6.0.9 to 6.1.x send it
-   * while the finger is still down, the TFT 6.2.0 and the web panel when it is lifted): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
+   * while the finger is still down, the TFT 6.2.0 and the web panel when it is lifted): `buttons.indicatorLong-N` is
+   * always written; with `longPressTrigger` that is all; an indicator with a long press of its own runs it
    * ({@link PageItem.onCommandLongPress}) or opens its popup ({@link openIndicatorPopup}) - the short press is not
    * run then.
    *
@@ -1633,12 +1730,15 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    *     ({@link onIndicatorTap})
    */
   async onIndicatorLongPress(event) {
-    var _a;
+    var _a, _b;
     const item = (_a = this.pageItems) == null ? void 0 : _a[Number(event.id)];
     if (!item || this.unload || this.adapter.unload) {
       return false;
     }
     await this.writeIndicatorButton(item, "indicatorLong");
+    if (((_b = item.config) == null ? void 0 : _b.longPressTrigger) === true) {
+      return true;
+    }
     const popupItem = this.longPressPopupItem(item);
     if (popupItem) {
       return this.openIndicatorPopup(popupItem);
@@ -1819,7 +1919,9 @@ __publicField(_Screensaver, "timerTapWindow", 1e3);
 let Screensaver = _Screensaver;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  INDICATOR_LONG_PRESS_MASK_MIN_VERSION,
   Screensaver,
+  indicatorLongPressMask,
   resolveScreensaverOptions
 });
 //# sourceMappingURL=screensaver.js.map

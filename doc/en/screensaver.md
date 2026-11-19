@@ -317,6 +317,7 @@ From the TFT 6.0.9 on the panel reports the press on an indicator when the finge
 - **If it is no key**, the tap acts like a tap on the **background** of the screensaver: it follows the double click setting, switches a [timer](#timer-instead-of-the-clock) back to the clock, acknowledges a [notification](#13-notifications) and counts for the gestures. The screensaver is no longer left at once.
 - `panels.<panel>.buttons.indicator-<n>` is still written on **every** tap.
 - A **swipe** that starts on an indicator sends the gesture only.
+- **With standby brightness 0 the first press only wakes the display.** When the screensaver display is dark, the first press on an indicator only turns the light on – short or long: no action, no popup, no state `indicator-<n>` or `indicatorLong-<n>`; from the TFT 6.2.0 on the time does not blink either. Only the second press works as usual. So a touch in the dark (at the front door, say) triggers nothing.
 
 With an older TFT the press arrives without the counter: an indicator **with** an action runs it, an indicator **without** one sends the panel to the main page.
 
@@ -326,25 +327,29 @@ In the item dialog of an indicator a second block **Action on long press** stand
 
 | Choice | Effect |
 |---|---|
-| **none** | A long press acts like a short tap. |
+| **none** | A long press acts like a short tap. From the TFT 6.2.0 on the indicator then knows no long press at all: the time does not blink, letting go is always a tap. |
 | **button (writes true)** | writes `true` into the chosen state. |
 | **switch (toggles)** | toggles the chosen state between `true` and `false`. |
 | **open a page** | opens the chosen page of the instance. |
 | **Open popup** | opens the popup of the device the indicator belongs to. Only in the choice when the device has one, see [Open popup](#open-popup). |
+| **Only trigger the state** | only writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` (see below) – nothing else happens, no tap either. For own scripts that react on the long press. |
 
 ![The item dialog of a dimmer indicator with the choice “Action on long press” opened – here with “Open popup”, because the channel is a dimmer](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
-- From the TFT **6.2.0** on the long press fires only when the finger is **lifted**: after **500 ms** of holding the time blinks red and yellow – you can let go now; afterwards the time gets its colour back. Letting go earlier is a short tap; a swipe drops the long press too. With the TFT 6.0.9 to 6.1.x it fires after 500 ms, while the finger is still down. With an action set **only** that action runs – the action of the short press stays out.
+- From the TFT **6.2.0** on the long press fires only when the finger is **lifted**: after **500 ms** of holding the time blinks yellow and green – you can let go now; afterwards the time gets its colour back. Letting go earlier is a short tap; a swipe drops the long press too. With the TFT 6.0.9 to 6.1.x it fires after 500 ms, while the finger is still down. With an action set **only** that action runs – the action of the short press stays out.
+- From the TFT **6.2.0** on only indicators with an **Action on long press** blink (**Only trigger the state** included). With all others the time stays calm, and holding long is a short tap when the finger is lifted. The adapter tells the panel which indicators are meant; with an older TFT every indicator still blinks.
 - **Values to cycle through** does not exist for the long press.
 - Button and switch need a **writable** state; otherwise the dialog says the same as for the action of the short press and does not allow applying. If the state is missing at runtime or is not writable, the adapter warns in the log (*the long press state … does not exist or is not writable - a long press acts like a tap*), and the long press acts like a short one.
 - A [template](#5-templates-as-items) on an indicator place gets the long press as well.
-- In the [raw data](#6-raw-data-json) and in the configuration script the fields are called `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch`, `ScreensaverEntityLongPressNaviToPage` and `ScreensaverEntityLongPressPopup` (`true`); with several of them set, that is the order.
+- In the [raw data](#6-raw-data-json) and in the configuration script the fields are called `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch`, `ScreensaverEntityLongPressNaviToPage`, `ScreensaverEntityLongPressPopup` (`true`) and `ScreensaverEntityLongPressTrigger` (`true`, **Only trigger the state**); with several of them set, that is the order.
 
 > **Example:** An indicator **Light** switches the light on a short tap (**switch**) and opens a page on a long press (**open a page**) – two functions on the same tile.
 
 **A state of its own.** Every long press writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` – the same order as `indicator-<n>`, type `boolean`, read-only, role `button.long`. It is written **always**, even without an action set; without an action the long press acts like a tap on top of that, so **both** states arrive. That makes the long press usable as a trigger for own scripts even without an action in the dialog.
 
-The indicator tiles of the [web panel](WebPanel) send the long press as well.
+> **From the TFT 6.2.0 on the state needs an action.** An indicator without an **Action on long press** then knows no long press any more, `indicatorLong-<n>` stays empty. Whoever used the state as a trigger without an action so far chooses **Only trigger the state**.
+
+The indicator tiles of the [web panel](WebPanel) send the long press as well – like the TFT 6.2.0 only for indicators with an action on long press.
 
 #### Open popup
 
@@ -637,7 +642,7 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 - **Tiles shows no weather in the middle:** This version has no favorite place, the one the others show the current weather on. The ticked extra items still arrive at the bottom.
 - **A status icon looks empty with Tiles:** Only its color is visible there; without a state the bar stays black.
 - **A tap on the indicator does nothing:** Then no **Action on press** is set – a writable state alone is not enough. The state `panels.<panel>.buttons.indicator-<n>` arrives nevertheless; from the TFT 6.0.9 on the tap acts like one on the background, with an older TFT the panel jumps to the main page.
-- **The long press does nothing:** It needs the **TFT 6.0.9** (the dialog says so). `buttons.indicatorLong-<n>` stays empty then. If the state of the action is not writable or does not exist, the log warns and the long press acts like a tap.
+- **The long press does nothing:** It needs the **TFT 6.0.9** (the dialog says so). `buttons.indicatorLong-<n>` stays empty then. From the TFT 6.2.0 on it also needs an **Action on long press** – without one the time does not blink and the state stays empty; for the state alone choose **Only trigger the state**. If the state of the action is not writable or does not exist, the log warns and the long press acts like a tap.
 - **"Open popup" is missing from the choice:** The channel or device of the item has no role that leads to a popup – or the item is a state without a channel above it. Which roles work is listed under [Open popup](#open-popup); a gate (`gate`) is deliberately not among them.
 - **The long press opens no popup but acts like a tap:** At startup the adapter found no popup for the channel – the log names the reason. Or in the script a button, a switch or a page is set for the long press as well; those take precedence.
 - **The indicator always writes the same value:** The list of the action **Values to cycle through** has one entry only – or something else keeps setting the state to a value that is not in the list; then every press starts with the first entry again.

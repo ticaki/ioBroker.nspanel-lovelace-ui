@@ -184,12 +184,52 @@ describe('lib/classes/config-manager - popup on a long press of an indicator', (
     });
 });
 
+describe('lib/classes/config-manager - long press "only trigger the state"', () => {
+    it('isScreensaverLongPressTrigger: only without button, switch, page and popup, never for a native element', () => {
+        const trigger = { ScreensaverEntity: 'alias.0.kueche.Taster', ScreensaverEntityLongPressTrigger: true };
+        expect(ConfigManager.isScreensaverLongPressTrigger(script(trigger))).to.equal(true);
+        expect(
+            ConfigManager.isScreensaverLongPressTrigger(script({ ...trigger, ScreensaverEntityLongPressButton: 'a' })),
+        ).to.equal(false);
+        expect(
+            ConfigManager.isScreensaverLongPressTrigger(script({ ...trigger, ScreensaverEntityLongPressPopup: true })),
+        ).to.equal(false);
+        expect(ConfigManager.isScreensaverLongPressTrigger(script({ ScreensaverEntity: 'x' }))).to.equal(false);
+        expect(ConfigManager.isScreensaverLongPressTrigger({ type: 'native', native: {} } as any)).to.equal(false);
+    });
+
+    it('getScreensaverConfig: the indicator gets longPressTrigger, the field does not reach a template item', async () => {
+        const { configArray } = await manager().getScreensaverConfig({
+            indicatorScreensaverEntity: [
+                script({ ScreensaverEntity: `${INFO}.ACTUAL` }),
+                script({ ScreensaverEntity: `${INFO}.ACTUAL`, ScreensaverEntityLongPressTrigger: true }),
+            ],
+        } as unknown as ScriptConfig.Config);
+        const indicators = (configArray.pageItems ?? []).filter(i => i.modeScr === 'indicator');
+        expect(indicators).to.have.length(2);
+        expect(indicators[0].longPressTrigger).to.equal(undefined);
+        expect(indicators[1].longPressTrigger).to.equal(true);
+    });
+});
+
 describe('lib/configuration/admin-screensaver-item - long press popup', () => {
     it('kind popup becomes ScreensaverEntityLongPressPopup', () => {
         const e = screensaverItemToScript({ state: `${LIGHT}.ON_ACTUAL`, longPress: { kind: 'popup' } }, 'indicator');
         expect(e.type === 'script' && e.ScreensaverEntityLongPressPopup).to.equal(true);
         const bottom = screensaverItemToScript({ state: `${LIGHT}.ON_ACTUAL`, longPress: { kind: 'popup' } }, 'bottom');
         expect(bottom.type === 'script' && bottom.ScreensaverEntityLongPressPopup).to.equal(undefined);
+    });
+
+    it('kind trigger becomes ScreensaverEntityLongPressTrigger, on the indicator only', () => {
+        const e = screensaverItemToScript({ state: `${INFO}.ACTUAL`, longPress: { kind: 'trigger' } }, 'indicator');
+        expect(e.type === 'script' && e.ScreensaverEntityLongPressTrigger).to.equal(true);
+        const t = screensaverItemToScript(
+            { state: 'bydhvs.0', template: 'text.battery.bydhvs', longPress: { kind: 'trigger' } },
+            'indicator',
+        );
+        expect(t.type === 'template' && t.ScreensaverEntityLongPressTrigger).to.equal(true);
+        const bottom = screensaverItemToScript({ state: `${INFO}.ACTUAL`, longPress: { kind: 'trigger' } }, 'bottom');
+        expect(bottom.type === 'script' && bottom.ScreensaverEntityLongPressTrigger).to.equal(undefined);
     });
 
     it('the channel roles with a popup', () => {

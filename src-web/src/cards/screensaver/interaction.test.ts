@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+    indicatorLongPressAllowed,
+    isDarkWakeTouch,
     indicatorRelease,
     indicatorTapTarget,
     longPressBlinkColor,
@@ -63,11 +65,11 @@ describe('screensaver interaction', () => {
     });
 
     describe('longPressBlinkColor', () => {
-        it('starts red and alternates with yellow', () => {
-            expect(longPressBlinkColor(0)).toBe(63488);
-            expect(longPressBlinkColor(1)).toBe(65504);
-            expect(longPressBlinkColor(2)).toBe(63488);
-            expect(longPressBlinkColor(7)).toBe(65504);
+        it('starts yellow and alternates with green', () => {
+            expect(longPressBlinkColor(0)).toBe(65504);
+            expect(longPressBlinkColor(1)).toBe(2016);
+            expect(longPressBlinkColor(2)).toBe(65504);
+            expect(longPressBlinkColor(7)).toBe(2016);
         });
     });
 
@@ -102,5 +104,24 @@ describe('screensaver interaction', () => {
             expect(swipeAction(10, 80)).toBe('swipeDown');
             expect(swipeAction(10, -80)).toBe('swipeUp');
         });
+    });
+});
+
+describe('indicatorLongPressAllowed', () => {
+    it('bit N-1 of the mask for indicator N (index N-1)', () => {
+        expect(indicatorLongPressAllowed(68, 2)).toBe(true);
+        expect(indicatorLongPressAllowed(68, 6)).toBe(true);
+        expect(indicatorLongPressAllowed(68, 0)).toBe(false);
+        expect(indicatorLongPressAllowed(0, 0)).toBe(false);
+        expect(indicatorLongPressAllowed(2048, 11)).toBe(true);
+        expect(indicatorLongPressAllowed(1, -1)).toBe(false);
+    });
+});
+
+describe('isDarkWakeTouch', () => {
+    it('only the touch of the dimmed screensaver with standby brightness 0', () => {
+        expect(isDarkWakeTouch(false, 0)).toBe(true);
+        expect(isDarkWakeTouch(true, 0)).toBe(false);
+        expect(isDarkWakeTouch(false, 20)).toBe(false);
     });
 });

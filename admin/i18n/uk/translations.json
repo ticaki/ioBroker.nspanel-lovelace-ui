@@ -1312,6 +1312,7 @@
     "screensaver_item_longPress_hint": "Потрібен TFT 6.0.9 або новіший. Без дії тут довге натискання діє як коротке.",
     "screensaver_item_longPress_popup": "Відкрити спливаюче вікно",
     "screensaver_item_longPress_switchState": "Стан, що перемикається при довгому натисканні",
+    "screensaver_item_longPress_trigger": "Лише активувати стан",
     "screensaver_item_looksFor": "шукає під об'єктом: %s",
     "screensaver_item_notState": "%s не є станом (тип об'єкта: %s) – виберіть стан",
     "screensaver_item_option_socMax": "Верхня межа SOC (%)",

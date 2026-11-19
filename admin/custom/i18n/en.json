@@ -1346,6 +1346,7 @@
     "screensaver_item_longPress_hint": "Needs TFT 6.0.9 or newer. Without an action here, a long press acts like a short press.",
     "screensaver_item_longPress_popup": "Open popup",
     "screensaver_item_longPress_switchState": "State toggled on long press",
+    "screensaver_item_longPress_trigger": "Only trigger the state",
     "screensaver_item_looksFor": "searches below the object for: %s",
     "screensaver_item_notState": "%s is not a state (object type: %s) - please choose a state",
     "screensaver_item_option_socMax": "SOC upper limit (%)",

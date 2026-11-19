@@ -235,6 +235,9 @@ function setScreensaverIndicatorLongPress(
         case 'popup':
             element.ScreensaverEntityLongPressPopup = true;
             break;
+        case 'trigger':
+            element.ScreensaverEntityLongPressTrigger = true;
+            break;
     }
 }
 

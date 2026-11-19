@@ -912,6 +912,8 @@ export type PageNotifyMessage = {
                 + getState(popupNotifySleepTimeout).val;*/
 export type screensaverMessage = {
     options: Record<NSPanel.ScreenSaverPlaces, string[]>;
+    /** per indicator slot of `options.indicator` as sent: true when its indicator has a long press (long press mask) */
+    indicatorLongPress?: boolean[];
 };
 
 export type PageEntitiesMessage = {

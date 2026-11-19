@@ -1312,6 +1312,7 @@
     "screensaver_item_longPress_hint": "Vereist TFT 6.0.9 of nieuwer. Zonder actie hier werkt lang indrukken als kort indrukken.",
     "screensaver_item_longPress_popup": "Pop-up openen",
     "screensaver_item_longPress_switchState": "Datapunt dat bij lang indrukken wordt omgeschakeld",
+    "screensaver_item_longPress_trigger": "Alleen het datapunt activeren",
     "screensaver_item_looksFor": "zoekt onder het object naar: %s",
     "screensaver_item_notState": "%s is geen datapunt (objecttype: %s) – kies een datapunt",
     "screensaver_item_option_socMax": "SOC-bovengrens (%)",

@@ -164,7 +164,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: icon tab can filter the icons of the large notification (popupNotify3)
 - (ticaki) web panel: shows only what the panel can by default, new option to allow web panel extensions (e.g. all icons in the large notification)
 - (ticaki) notification popup: state `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font); unknown values fall back to 3 - see the new section "Fonts" in the popup documentation
-- (ticaki) screensaver: TFT 6.2.0 and web panel send the long press of an indicator only when the finger is lifted - after 500 ms the time blinks red/yellow as a sign to let go; letting go earlier is a short tap, a swipe drops both
+- (ticaki) screensaver: TFT 6.2.0 and web panel send the long press of an indicator only when the finger is lifted - after 500 ms the time blinks yellow/green as a sign to let go; letting go earlier is a short tap, a swipe drops both
+- (ticaki) screensaver: long press and clock blinking only for indicators with a long press action (TFT 6.2.0 and web panel), new long press option "only trigger the state" - **note:** whoever used `buttons.indicatorLong-N` without a long press action must choose this option with TFT 6.2.0
+- (ticaki) screensaver: with standby brightness 0 the first press on an indicator only wakes the display (no action, no popup, no state, no long press)
 
 ### 2.4.1 (2026-11-18)
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters

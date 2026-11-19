@@ -2298,6 +2298,9 @@ class Panel extends import_library.BaseClass {
             break;
           }
           if (this._activePage === this.screenSaver && event.action === "button" && event.opt !== "" && this.screenSaver.isIndicatorEvent(event)) {
+            if (this.screenSaver.onIndicatorWakeTap(event.opt)) {
+              break;
+            }
             if (event.method === "buttonPress3" && await this.screenSaver.onIndicatorLongPress(event)) {
               break;
             }

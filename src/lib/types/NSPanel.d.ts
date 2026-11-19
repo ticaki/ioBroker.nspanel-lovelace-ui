@@ -1513,6 +1513,11 @@ export namespace NSPanel {
          * press opens - an item without modeScr that is never drawn (config-manager getScreensaverConfig)
          */
         longPressPopup?: number;
+        /**
+         * screensaver indicator: a long press only writes `buttons.indicatorLong-N` (ScreensaverEntityLongPressTrigger,
+         * config-manager getScreensaverConfig)
+         */
+        longPressTrigger?: boolean;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

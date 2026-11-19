@@ -317,6 +317,7 @@ Ab der TFT 6.0.9 meldet das Panel den Druck auf einen Indikator erst beim **Losl
 - **Ist er keine Taste**, wirkt der Tipp wie ein Tipp auf den **Hintergrund** des Bildschirmschoners: Er folgt der Einstellung für den Doppelklick, blendet einen [Timer](#timer-statt-uhrzeit) zurück auf die Uhrzeit, quittiert eine [Benachrichtigung](#13-benachrichtigungen) und zählt für die Gesten. Der Bildschirmschoner wird damit nicht mehr sofort verlassen.
 - `panels.<Panel>.buttons.indicator-<n>` wird weiterhin bei **jedem** Tipp geschrieben.
 - Eine **Wischgeste**, die auf einem Indikator beginnt, sendet nur die Geste.
+- **Bei Standby-Helligkeit 0 weckt der erste Druck nur auf.** Ist das Display im Bildschirmschoner dunkel, schaltet der erste Druck auf einen Indikator nur das Licht ein – kurz oder lang: keine Aktion, kein Popup, kein State `indicator-<n>` oder `indicatorLong-<n>`; ab der TFT 6.2.0 blinkt dabei auch die Uhrzeit nicht. Erst der zweite Druck wirkt wie gewohnt. So löst ein Griff im Dunkeln (etwa an der Haustür) nichts aus.
 
 Mit einer älteren TFT kommt der Druck ohne Zähler an: Ein Indikator **mit** Aktion führt sie aus, ein Indikator **ohne** Aktion schickt das Panel auf die Hauptseite.
 
@@ -326,25 +327,29 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 
 | Auswahl | Wirkung |
 |---|---|
-| **keine** | Ein langer Druck wirkt wie ein kurzer Tipp. |
+| **keine** | Ein langer Druck wirkt wie ein kurzer Tipp. Ab der TFT 6.2.0 kennt der Indikator dann gar keinen langen Druck: Die Uhrzeit blinkt nicht, das Loslassen ist immer ein Tipp. |
 | **Taste (schreibt true)** | schreibt `true` in den gewählten Datenpunkt. |
 | **Schalter (wechselt)** | kippt den gewählten Datenpunkt zwischen `true` und `false`. |
 | **Seite öffnen** | öffnet die gewählte Seite der Instanz. |
 | **Popup öffnen** | öffnet das Popup des Geräts, zu dem der Indikator gehört. Steht nur in der Auswahl, wenn das Gerät eines hat, siehe [Popup öffnen](#popup-öffnen). |
+| **Nur Datenpunkt auslösen** | schreibt nur `true` in `panels.<Panel>.buttons.indicatorLong-<n>` (siehe unten) – sonst passiert nichts, auch kein Tipp. Für eigene Skripte, die auf den langen Druck reagieren. |
 
 ![Der Item-Dialog eines Dimmer-Indikators mit geöffneter Auswahl „Aktion bei langem Drücken“ – hier mit „Popup öffnen“, weil der Kanal ein Dimmer ist](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
-- Ab der TFT **6.2.0** löst der lange Druck erst beim **Loslassen** aus: Liegt der Finger **500 ms**, blinkt die Uhrzeit rot und gelb – jetzt kann man loslassen; danach bekommt die Uhrzeit ihre Farbe zurück. Wer vorher loslässt, tippt kurz; eine Wischgeste verwirft auch den langen Druck. Mit der TFT 6.0.9 bis 6.1.x löst er nach 500 ms aus, noch während der Finger liegt. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
+- Ab der TFT **6.2.0** löst der lange Druck erst beim **Loslassen** aus: Liegt der Finger **500 ms**, blinkt die Uhrzeit gelb und grün – jetzt kann man loslassen; danach bekommt die Uhrzeit ihre Farbe zurück. Wer vorher loslässt, tippt kurz; eine Wischgeste verwirft auch den langen Druck. Mit der TFT 6.0.9 bis 6.1.x löst er nach 500 ms aus, noch während der Finger liegt. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
+- Ab der TFT **6.2.0** blinken nur Indikatoren, die eine **Aktion bei langem Drücken** haben (auch **Nur Datenpunkt auslösen**). Bei allen anderen bleibt die Uhrzeit ruhig, und auch ein langes Halten ist beim Loslassen ein kurzer Tipp. Der Adapter teilt dem Panel mit, welche Indikatoren gemeint sind; mit einer älteren TFT blinkt weiterhin jeder Indikator.
 - **Werte zum Umschalten** gibt es beim langen Druck nicht.
 - Taste und Schalter brauchen einen **beschreibbaren** Datenpunkt; sonst meldet der Dialog dasselbe wie bei der Aktion des kurzen Drucks und lässt nicht übernehmen. Fehlt der Datenpunkt zur Laufzeit oder ist er nicht beschreibbar, warnt der Adapter im Log (*the long press state … does not exist or is not writable – a long press acts like a tap*), und der lange Druck wirkt wie ein kurzer.
 - Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt den langen Druck.
-- In den [Rohdaten](#6-rohdaten-json) und im Konfigurationsskript heißen die Felder `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch`, `ScreensaverEntityLongPressNaviToPage` und `ScreensaverEntityLongPressPopup` (`true`); sind mehrere gesetzt, gilt diese Reihenfolge.
+- In den [Rohdaten](#6-rohdaten-json) und im Konfigurationsskript heißen die Felder `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch`, `ScreensaverEntityLongPressNaviToPage`, `ScreensaverEntityLongPressPopup` (`true`) und `ScreensaverEntityLongPressTrigger` (`true`, **Nur Datenpunkt auslösen**); sind mehrere gesetzt, gilt diese Reihenfolge.
 
 > **Beispiel:** Ein Indikator **Licht** schaltet beim kurzen Tipp das Licht (**Schalter**) und öffnet beim langen Druck eine Seite (**Seite öffnen**) – zwei Funktionen auf derselben Kachel.
 
 **Ein eigener State.** Jeder lange Druck schreibt `true` in `panels.<Panel>.buttons.indicatorLong-<n>` – dieselbe Reihenfolge wie bei `indicator-<n>`, Typ `boolean`, nur lesbar, Rolle `button.long`. Geschrieben wird er **immer**, auch ohne eingestellte Aktion; ohne Aktion wirkt der lange Druck zusätzlich wie ein Tipp, dann kommen **beide** States. So lässt er sich auch ohne Aktion im Dialog als Auslöser für eigene Skripte nutzen.
 
-Die Indikator-Kacheln im [Web-Panel](WebPanel) senden den langen Druck ebenfalls.
+> **Ab der TFT 6.2.0 braucht der State eine Aktion.** Ein Indikator ohne **Aktion bei langem Drücken** kennt dann keinen langen Druck mehr, `indicatorLong-<n>` bleibt leer. Wer den State bisher ohne Aktion als Auslöser genutzt hat, wählt **Nur Datenpunkt auslösen**.
+
+Die Indikator-Kacheln im [Web-Panel](WebPanel) senden den langen Druck ebenfalls – wie die TFT 6.2.0 nur bei Indikatoren mit einer Aktion bei langem Drücken.
 
 #### Popup öffnen
 
@@ -637,7 +642,7 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 - **Kacheln zeigen in der Mitte kein Wetter:** Diese Version hat keinen Favorit-Platz, auf dem die anderen das aktuelle Wetter zeigen. Die angehakten Zusatz-Items kommen unten weiterhin an.
 - **Ein Statussymbol wirkt bei Kacheln leer:** Dort ist von ihm nur die Farbe zu sehen; ohne Datenpunkt bleibt der Balken schwarz.
 - **Ein Tipp auf den Indikator tut nichts:** Dann ist keine **Aktion beim Drücken** eingestellt – ein beschreibbarer Datenpunkt allein genügt nicht. Der State `panels.<Panel>.buttons.indicator-<n>` kommt trotzdem; ab der TFT 6.0.9 wirkt der Tipp wie einer auf den Hintergrund, mit älterer TFT springt das Panel auf die Hauptseite.
-- **Der lange Druck tut nichts:** Er braucht die **TFT 6.0.9** (im Dialog steht der Hinweis). `buttons.indicatorLong-<n>` bleibt dann leer. Ist der State der Aktion nicht beschreibbar oder gar nicht vorhanden, warnt das Log und der lange Druck wirkt wie ein Tipp.
+- **Der lange Druck tut nichts:** Er braucht die **TFT 6.0.9** (im Dialog steht der Hinweis). `buttons.indicatorLong-<n>` bleibt dann leer. Ab der TFT 6.2.0 braucht er außerdem eine **Aktion bei langem Drücken** – ohne sie blinkt die Uhrzeit nicht, und der State bleibt leer; für den State allein **Nur Datenpunkt auslösen** wählen. Ist der State der Aktion nicht beschreibbar oder gar nicht vorhanden, warnt das Log und der lange Druck wirkt wie ein Tipp.
 - **„Popup öffnen“ fehlt in der Auswahl:** Der Kanal oder das Gerät des Items hat keine Rolle, die zu einem Popup führt – oder das Item ist ein State ohne Kanal darüber. Welche Rollen gehen, steht unter [Popup öffnen](#popup-öffnen); ein Tor (`gate`) ist bewusst nicht dabei.
 - **Der lange Druck öffnet kein Popup, sondern wirkt wie ein Tipp:** Beim Start hat der Adapter zu dem Kanal kein Popup gefunden – das Log nennt den Grund. Oder im Skript ist zusätzlich eine Taste, ein Schalter oder eine Seite für den langen Druck gesetzt; die haben Vorrang.
 - **Der Indikator schreibt immer denselben Wert:** Die Liste der Aktion **Werte zum Umschalten** hat nur einen Eintrag – oder etwas anderes setzt den Datenpunkt laufend auf einen Wert, der nicht in der Liste steht; dann beginnt jeder Druck wieder beim ersten Eintrag.

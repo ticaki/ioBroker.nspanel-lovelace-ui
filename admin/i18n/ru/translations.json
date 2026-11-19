@@ -1312,6 +1312,7 @@
     "screensaver_item_longPress_hint": "Требуется TFT 6.0.9 или новее. Без действия здесь долгое нажатие работает как короткое.",
     "screensaver_item_longPress_popup": "Открыть всплывающее окно",
     "screensaver_item_longPress_switchState": "Состояние, переключаемое при долгом нажатии",
+    "screensaver_item_longPress_trigger": "Только активировать состояние",
     "screensaver_item_looksFor": "ищет под объектом: %s",
     "screensaver_item_notState": "%s не является состоянием (тип объекта: %s) – выберите состояние",
     "screensaver_item_option_socMax": "Верхний предел SOC (%)",

@@ -1312,6 +1312,7 @@
     "screensaver_item_longPress_hint": "Richiede TFT 6.0.9 o successivo. Senza un’azione qui, una pressione lunga agisce come una breve.",
     "screensaver_item_longPress_popup": "Apri popup",
     "screensaver_item_longPress_switchState": "Stato commutato con pressione lunga",
+    "screensaver_item_longPress_trigger": "Attiva solo lo stato",
     "screensaver_item_looksFor": "cerca sotto l'oggetto: %s",
     "screensaver_item_notState": "%s non è un punto dati (tipo di oggetto: %s) – scegliere un punto dati",
     "screensaver_item_option_socMax": "Limite superiore SOC (%)",

@@ -727,11 +727,15 @@ export type ScreensaverItemAction = {
 
 /**
  * what an indicator does when it is held (TFT 6.0.9+; ScreensaverEntityLongPressButton / ...Switch / ...NaviToPage /
- * ...Popup of the script). Without one a long press acts like a tap.
+ * ...Popup / ...Trigger of the script). Without one a long press acts like a tap; from TFT 6.2.0 on the indicator
+ * then knows no long press at all (no blinking clock, the release is a tap).
  */
 export type ScreensaverItemLongPressAction = {
-    /** popup: the popup of the channel / device itself or the one above the state ({@link isScreensaverPopupChannelRole}) */
-    kind: 'button' | 'switch' | 'navigate' | 'popup';
+    /**
+     * popup: the popup of the channel / device itself or the one above the state ({@link isScreensaverPopupChannelRole});
+     * trigger: only `buttons.indicatorLong-N` is written (ScreensaverEntityLongPressTrigger)
+     */
+    kind: 'button' | 'switch' | 'navigate' | 'popup' | 'trigger';
     /** state written on a long press (button: true, switch: toggled) */
     state?: string;
     /** page opened on a long press */

@@ -42,14 +42,37 @@ export function indicatorTapTarget(entityId: string): 'indicator' | 'none' {
  */
 export const INDICATOR_LONG_PRESS_MS = 500;
 
+/**
+ * true when the indicator starts a long press: its bit (index) is set in the long press mask of `weatherUpdate`
+ * (`indicator_long_press_mask.py`). Without it the tile knows no long press, its release is always a tap.
+ *
+ * @param mask the long press mask
+ * @param index position of the indicator in its area, 0 = indicator 1
+ */
+export function indicatorLongPressAllowed(mask: number, index: number): boolean {
+    return index >= 0 && index < 31 && (mask & (1 << index)) !== 0;
+}
+
+/**
+ * true for a touch of the dimmed screensaver whose standby brightness is 0: it only wakes the dark display, an
+ * indicator starts no long press then (HMI 6.2.0: `vaWake` of `tc0` 'down' in `f<N>Icon` 'down'; the adapter
+ * swallows the press, `Screensaver.onIndicatorWakeTap`).
+ *
+ * @param awake the display was woken (`global.awake`)
+ * @param standby active standby brightness (`global.dim.standby`)
+ */
+export function isDarkWakeTouch(awake: boolean, standby: number): boolean {
+    return !awake && standby <= 0;
+}
+
 /** One phase of the blinking clock while a held indicator tile is armed for the long press */
 export const LONG_PRESS_BLINK_MS = 200;
 
 /**
- * RGB565 colours of the blinking clock: red (first phase, right when the hold time is over), then yellow - on no
- * background colour are both invisible at the same time
+ * RGB565 colours of the blinking clock: yellow (first phase, right when the hold time is over), then green - like the
+ * HMI (`indicator_long_press_mask.py`); red would read like 'something is wrong'
  */
-export const LONG_PRESS_BLINK_COLORS: readonly [number, number] = [63488, 65504];
+export const LONG_PRESS_BLINK_COLORS: readonly [number, number] = [65504, 2016];
 
 /**
  * The colour of the clock in a phase of the blinking - 'you can let go now'

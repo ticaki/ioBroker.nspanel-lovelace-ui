@@ -489,11 +489,12 @@ class PayloadValidator {
             p.check(false, `weatherUpdate on page ${JSON.stringify(this.card)}`);
             return;
         }
-        if ((f.length - 1) % 6 !== 0) {
-            p.check(false, `weatherUpdate: slots of 6 fields expected, got ${f.length - 1} fields`);
+        const fields = weatherSlotFields(f, this.card);
+        if (!fields) {
+            p.check(false, `weatherUpdate: slots of 6 fields (and a long press mask) expected, got ${f.length - 1} fields`);
             return;
         }
-        const slots = (f.length - 1) / 6;
+        const slots = fields.slots.length / 6;
         const layout = screensaverLayout(this.card, slots);
         if (!layout) {
             p.check(false, `weatherUpdate: ${slots} slots fit no layout of ${this.card}`);
@@ -529,6 +530,30 @@ class PayloadValidator {
     }
 }
 
+/**
+ * The slot fields of a `weatherUpdate`: screensaver2 / screensaver5 of a web panel or a TFT 6.2.0+ carry the long press
+ * mask of the indicators as one more field behind the last slot (decimal, bit N-1 = indicator N).
+ *
+ * @param {string[]} f fields of the payload, `f[0]` = `weatherUpdate`
+ * @param {string} card HMI page
+ * @returns {{ slots: string[], mask: number | undefined } | undefined} the fields of the slots (without `f[0]`) and the
+ *     mask, undefined when the count fits no slots (or the mask is no number)
+ */
+function weatherSlotFields(f, card) {
+    const rest = f.slice(1);
+    if (rest.length % 6 === 0) {
+        return { slots: rest, mask: undefined };
+    }
+    if (rest.length % 6 === 1 && (card === 'screensaver2' || card === 'screensaver5')) {
+        const raw = rest[rest.length - 1];
+        if (!/^\d+$/.test(raw)) {
+            return undefined;
+        }
+        return { slots: rest.slice(0, -1), mask: Number(raw) };
+    }
+    return undefined;
+}
+
 module.exports = {
     PayloadValidator,
     SCREENSAVER_AREAS,
@@ -536,6 +561,7 @@ module.exports = {
     MENU_ITEMS,
     screensaverLayout,
     slotAreas,
+    weatherSlotFields,
     isGlyph,
     isColor,
 };

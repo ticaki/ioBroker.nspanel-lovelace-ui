@@ -1481,6 +1481,7 @@ const screensaverStateKeys = [
     'ScreensaverEntityLongPressButton',
     'ScreensaverEntityLongPressSwitch',
     'ScreensaverEntityLongPressPopup',
+    'ScreensaverEntityLongPressTrigger',
     'ScreensaverEntityIconSelect',
     'ScreensaverEntityEnabled',
     'ScreensaverEntityVisibleCondition',
@@ -1503,6 +1504,7 @@ const screensaverTemplateKeys = [
     'ScreensaverEntityLongPressButton',
     'ScreensaverEntityLongPressSwitch',
     'ScreensaverEntityLongPressPopup',
+    'ScreensaverEntityLongPressTrigger',
 ] as const;
 /** keys of a native screensaver element that make it the same as a template element (see convertScreensaverItem) */
 const nativeTemplateKeys: readonly string[] = ['template', 'dpInit', 'modeScr', 'readOptions'];
@@ -1582,8 +1584,8 @@ function convertIndicatorAction(
 }
 
 /**
- * The long press of an indicator as the admin stores it. The config manager takes the first of button, switch, page
- * and popup - the others have no effect.
+ * The long press of an indicator as the admin stores it. The config manager takes the first of button, switch, page,
+ * popup and trigger - the others have no effect.
  *
  * @param element Element of the script (script or template).
  * @param reason Reason to report when a field is no text.
@@ -1615,7 +1617,10 @@ function convertIndicatorLongPress(
     if (navi) {
         return { kind: 'navigate', page: navi };
     }
-    return element.ScreensaverEntityLongPressPopup === true ? { kind: 'popup' } : undefined;
+    if (element.ScreensaverEntityLongPressPopup === true) {
+        return { kind: 'popup' };
+    }
+    return element.ScreensaverEntityLongPressTrigger === true ? { kind: 'trigger' } : undefined;
 }
 
 /**

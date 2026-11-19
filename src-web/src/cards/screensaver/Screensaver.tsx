@@ -8,7 +8,9 @@ import type { CardProps } from '../CardContract';
 import {
     INDICATOR_LONG_PRESS_MS,
     LONG_PRESS_BLINK_MS,
+    indicatorLongPressAllowed,
     indicatorRelease,
+    isDarkWakeTouch,
     longPressBlinkColor,
     longPressStillPossible,
     nextTap,
@@ -147,6 +149,18 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     }
 
     /**
+     * The display dimmed again (`global.awake` true -> false): the tap counter starts again like `vaTap` of the HMI
+     * (`tmSleep` sets it to 0), so the next touch is the first one - the wake touch of a dark display.
+     *
+     * @param prevProps the props before the update
+     */
+    componentDidUpdate(prevProps: Readonly<CardProps<ScreensaverModel>>): void {
+        if (prevProps.global.awake && !this.props.global.awake) {
+            this.tap = { tapCount: 0 };
+        }
+    }
+
+    /**
      * Forgets the held tile: stops the long press timer and the blinking, the clock gets its colour back.
      *
      * @param redraw false while unmounting - no state change then
@@ -170,15 +184,24 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
 
     /**
      * A touch on an indicator tile starts the long press timer like the HMI (`tmLP`): after
-     * {@link INDICATOR_LONG_PRESS_MS} the long press is armed and the clock blinks red/yellow
+     * {@link INDICATOR_LONG_PRESS_MS} the long press is armed and the clock blinks yellow/green
      * ({@link LONG_PRESS_BLINK_MS} per phase) until the finger is lifted; the release sends
-     * `event,buttonPress3,<id>,button,<taps>` ({@link indicatorRelease}).
+     * `event,buttonPress3,<id>,button,<taps>` ({@link indicatorRelease}). Only an indicator whose bit is set in the
+     * long press mask starts it; any other knows no long press, its release is a tap.
      *
      * @param entityId id of the indicator entity (empty when none)
+     * @param index position of the indicator in its area (bit of the long press mask)
      * @param e the pointer event of the touch
      */
-    private indicatorDown(entityId: string, e: React.PointerEvent): void {
+    private indicatorDown(entityId: string, index: number, e: React.PointerEvent): void {
         this.clearLongPress();
+        if (!indicatorLongPressAllowed(this.props.model.longPressMask, index)) {
+            return;
+        }
+        if (isDarkWakeTouch(this.props.global.awake, this.props.global.dim.standby)) {
+            // the first touch of a dark display (standby brightness 0) only wakes it: no long press
+            return;
+        }
         this.heldIndicator = entityId;
         this.longPressStart = { x: e.clientX, y: e.clientY };
         this.longPressTimer = setTimeout(() => {
@@ -201,7 +224,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     };
 
     /**
-     * css colour of the clock: red/yellow while the long press of a held indicator tile is armed, otherwise its
+     * css colour of the clock: yellow/green while the long press of a held indicator tile is armed, otherwise its
      * `color~` field
      *
      * @param value the `color~` field of the clock
@@ -902,7 +925,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
 
     /**
      * An indicator: a tap on its box sends `event,buttonPress2,<id>,button,<taps>`, a release after holding it for
-     * {@link INDICATOR_LONG_PRESS_MS} `event,buttonPress3,<id>,button,<taps>` - both on release.
+     * {@link INDICATOR_LONG_PRESS_MS} `event,buttonPress3,<id>,button,<taps>` (only with its bit in the long press
+     * mask) - both on release.
      *
      * @param entity the indicator
      * @param index position in the indicator area
@@ -922,7 +946,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
             <div
                 key={index}
                 data-role={`indicator${index + 1}`}
-                onPointerDown={(e): void => this.indicatorDown(entity.id, e)}
+                onPointerDown={(e): void => this.indicatorDown(entity.id, index, e)}
                 onPointerUp={(e): void => {
                     e.stopPropagation();
                     const long = this.longPressArmed;
