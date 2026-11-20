@@ -13,6 +13,7 @@ import {
     longPressStillPossible,
     nextTap,
     swipeAction,
+    touchClearsNotify,
 } from './interaction';
 
 describe('screensaver interaction', () => {
@@ -163,6 +164,21 @@ describe('isDarkWakeTouch', () => {
 
         it('a touch of a dark display sends the tap as well (the adapter only wakes)', () => {
             expect(infoIconRelease({ tapCount: 0 }, 0, 0).press).toEqual(['bInfo', 'button', 1]);
+        });
+    });
+    describe('touchClearsNotify', () => {
+        it('every touch of a display that is not dark clears a shown notification', () => {
+            expect(touchClearsNotify(true, false, 20)).toBe(true);
+            expect(touchClearsNotify(true, true, 20)).toBe(true);
+            expect(touchClearsNotify(true, true, 0)).toBe(true);
+        });
+
+        it('the first touch of a dark display (standby brightness 0) only wakes it', () => {
+            expect(touchClearsNotify(true, false, 0)).toBe(false);
+        });
+
+        it('without a notification there is nothing to clear', () => {
+            expect(touchClearsNotify(false, true, 20)).toBe(false);
         });
     });
 });

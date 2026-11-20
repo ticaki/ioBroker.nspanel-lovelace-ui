@@ -19,6 +19,7 @@ import {
     nextTap,
     notifyBackground,
     swipeAction,
+    touchClearsNotify,
     type TapState,
 } from './interaction';
 import {
@@ -49,6 +50,7 @@ import {
     type ScreensaverAreas,
     type ScreensaverLayout,
     type ScreensaverModel,
+    type ScreensaverNotify,
     type StatusIcon,
 } from './parse';
 
@@ -127,6 +129,11 @@ interface ScreensaverState {
     alertPhase: number | undefined;
     /** phase of the blinking background of the notification (fields 5/6 of `notify~`), undefined: off */
     notifyPhase: number | undefined;
+    /**
+     * the notification was cleared by a touch like on the HMI ({@link touchClearsNotify}) - hidden until the next
+     * `notify~` or `pageType~` gives a new one
+     */
+    notifyCleared: boolean;
 }
 
 /** Top of a text box whose capital letters start at `capTop` */
@@ -146,7 +153,12 @@ function textTop(capTop: number, fontSize: number): number {
  * (`doc/web-panel/MISSING_PICTURES.md`).
  */
 export class Screensaver extends React.Component<CardProps<ScreensaverModel>, ScreensaverState> {
-    state: ScreensaverState = { blinkPhase: undefined, alertPhase: undefined, notifyPhase: undefined };
+    state: ScreensaverState = {
+        blinkPhase: undefined,
+        alertPhase: undefined,
+        notifyPhase: undefined,
+        notifyCleared: false,
+    };
     private tap: TapState = { tapCount: 0 };
     private pointerStart: PointerStart | undefined;
     /** timer of the long press of a held indicator tile ({@link INDICATOR_LONG_PRESS_MS}) */
@@ -157,6 +169,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
     private heldIndicator: string | undefined;
     /** the hold time of the current touch is over: its release sends the long press */
     private longPressArmed = false;
+    /** the current touch clears the notification on its release (`vaClear` of the HMI, {@link touchClearsNotify}) */
+    private clearNotifyOnRelease = false;
     /** timer of the blinking clock while the long press is armed ({@link LONG_PRESS_BLINK_MS}) */
     private blinkTimer: ReturnType<typeof setInterval> | undefined;
     /** timer of the red/white blinking the adapter asks for ({@link CLOCK_BLINK_MS}) */
@@ -248,6 +262,10 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
             this.updateAlert();
         }
         if (prevProps.model.notify !== this.props.model.notify) {
+            // a new notify~ (or the new model of a pageType~) shows the notification again
+            if (this.state.notifyCleared) {
+                this.setState({ notifyCleared: false });
+            }
             this.updateNotifyBlink();
         }
     }
@@ -336,7 +354,32 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
 
     private readonly onPointerDown = (e: React.PointerEvent): void => {
         this.pointerStart = { x: e.clientX, y: e.clientY };
+        // every touch of the page passes here (tiles and the info icon too); `global.awake` is still as before the
+        // touch, the store wakes the display with the press of the release
+        this.clearNotifyOnRelease = touchClearsNotify(
+            this.shownNotify() !== undefined,
+            this.props.global.awake,
+            this.props.global.dim.standby,
+        );
     };
+
+    /**
+     * The end of every touch of the page: clears the notification when the touch started on a shown one of a display
+     * that was not dark (`tc0` 'up' of the HMI, behind the send) - heading, text and the blinking background.
+     */
+    private releaseNotify(): void {
+        if (!this.clearNotifyOnRelease) {
+            return;
+        }
+        this.clearNotifyOnRelease = false;
+        this.stopNotifyBlink(true);
+        this.setState({ notifyCleared: true });
+    }
+
+    /** the notification as shown: undefined when there is none or a touch cleared it */
+    private shownNotify(): ScreensaverNotify | undefined {
+        return this.state.notifyCleared ? undefined : this.props.model.notify;
+    }
 
     private readonly onPointerUp = (e: React.PointerEvent): void => {
         // the release of a held indicator tile outside of it (mouse): the timer stops, an armed long press is sent
@@ -346,6 +389,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
         if (held !== undefined) {
             this.indicatorTap(held, e, true);
             this.pointerStart = undefined;
+            this.releaseNotify();
             return;
         }
         const start = this.pointerStart;
@@ -356,9 +400,10 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
         const action = swipeAction(e.clientX - start.x, e.clientY - start.y);
         if (action) {
             this.props.press('screensaver', action);
-            return;
+        } else {
+            this.screensaverTap();
         }
-        this.screensaverTap();
+        this.releaseNotify();
     };
 
     /** a tap on the screensaver itself: `bExit,<taps>`, counted since the screensaver was shown */
@@ -412,6 +457,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
 
     private readonly onPointerCancel = (): void => {
         this.pointerStart = undefined;
+        this.clearNotifyOnRelease = false;
         this.clearLongPress();
     };
 
@@ -557,6 +603,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     this.clearLongPress();
                     this.infoIconTap(e);
                     this.pointerStart = undefined;
+                    this.releaseNotify();
                 }}
                 style={{ position: 'absolute', top, left, width: size, height: size }}
             >
@@ -758,7 +805,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
      * @param style position of heading and text
      */
     private renderNotify(style: NotifyStyle): React.JSX.Element | null {
-        const { notify, colors } = this.props.model;
+        const { colors } = this.props.model;
+        const notify = this.shownNotify();
         if (!notify) {
             return null;
         }
@@ -927,7 +975,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
         columns: Column[],
         favorit: React.JSX.Element | null,
     ): React.JSX.Element {
-        const { model } = this.props;
         const portrait = isWebPortrait(this.panelModel());
         const width = portrait ? stageSize(this.panelModel()).width : landscapeWidth(this.panelModel());
         const barLeft = portrait ? 20 : 60;
@@ -938,7 +985,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                 {this.renderTimeIcon(138, Math.round(width / 2) - 14, 28)}
                 {this.renderDate({ top: textTop(172, 29), left: 0, width, textAlign: 'center', fontSize: 29 })}
                 {this.renderBar(201, barLeft, width - 2 * barLeft)}
-                {model.notify ? (
+                {this.shownNotify() ? (
                     this.renderNotify({
                         headingTop: 216,
                         headingSize: 38,
@@ -1100,6 +1147,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     this.clearLongPress();
                     this.indicatorTap(entity.id, e, long);
                     this.pointerStart = undefined;
+                    this.releaseNotify();
                 }}
                 style={{
                     position: 'absolute',
@@ -1409,7 +1457,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                 {this.renderDate({ top: textTop(202, 29), left: 0, width, textAlign: 'center', fontSize: 29 })}
                 {this.renderBar(245, 53, 215)}
                 {this.renderTopStatusIcons(235, [0, 0], true)}
-                {model.notify ? null : alternate ? (
+                {this.shownNotify() ? null : alternate ? (
                     <>
                         {this.renderIconAboveValue(
                             areas.favorit,
@@ -1513,7 +1561,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
      * @param areas the areas of the payload
      */
     private renderEasyviewUsp(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
         const width = stageSize(this.panelModel()).width;
         return (
             <>
@@ -1529,7 +1576,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     fontSize: 36,
                 })}
                 {this.renderBar(172, 20, 280)}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: 185,
                           headingSize: 38,
@@ -1561,7 +1608,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
         if (isWebPortrait(this.panelModel())) {
             return this.renderEasyviewPortrait(areas);
         }
-        const { model } = this.props;
         const width = landscapeWidth(this.panelModel());
         // the three columns of the eu panel sit at 95, 240 and 385 - narrower than a third of the width
         const columns = easyviewColumns(areas.bottom.length, width);
@@ -1571,7 +1617,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                 {this.renderTimeIcon(45, 31 + Math.round((width - 480) / 2), 40)}
                 {this.renderDate({ top: textTop(127, 36), left: 0, width, textAlign: 'center', fontSize: 36 })}
                 {this.renderBar(167, 60, width - 120)}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: 182,
                           headingSize: 38,
@@ -1602,7 +1648,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
      * @param areas the areas of the payload
      */
     private renderEasyviewPortrait(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
         const width = stageSize(this.panelModel()).width;
         return (
             <>
@@ -1616,7 +1661,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     fontSize: 36,
                 })}
                 {this.renderBar(205, 20, width - 40)}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: 220,
                           headingSize: 38,
@@ -1651,7 +1696,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
      * @param areas the areas of the payload
      */
     private renderTiles(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
         const geo = tilesGeometry(this.panelModel());
         const portrait = isPortrait(this.panelModel());
         // an icon in another font (`¬<n>`) keeps the centre of the icon in font 4 in the middle of its cell
@@ -1679,7 +1723,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>, Sc
                     const cell: Box | undefined = geo.indicators[i];
                     return cell ? this.renderIndicator(entity, i, cell, iconOf(entity, cell)) : null;
                 })}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: geo.notify.headingTop,
                           headingSize: 38,

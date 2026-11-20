@@ -65,6 +65,20 @@ export function isDarkWakeTouch(awake: boolean, standby: number): boolean {
     return !awake && standby <= 0;
 }
 
+/**
+ * true when a touch of the screensaver clears the notification on its release, like `tc0` of the HMI (6.1.0+,
+ * `notify_release_clear.py`): every touch of the page (tap, swipe, tile, info icon) while a notification is shown -
+ * except the first touch of a dark display (standby brightness 0, `dim==0`), which only wakes it. The notification
+ * comes back with the next `notify~` or `pageType~`.
+ *
+ * @param shown a notification is shown when the finger goes down
+ * @param awake the display was woken (`global.awake`) when the finger went down
+ * @param standby active standby brightness (`global.dim.standby`)
+ */
+export function touchClearsNotify(shown: boolean, awake: boolean, standby: number): boolean {
+    return shown && !isDarkWakeTouch(awake, standby);
+}
+
 /** One phase of the blinking clock while a held indicator tile is armed for the long press */
 export const LONG_PRESS_BLINK_MS = 200;
 

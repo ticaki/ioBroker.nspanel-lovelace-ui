@@ -1,12 +1,13 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { color565ToCss } from '../../protocol/color';
 import type { PanelModel } from '../../protocol/types';
 import { initialGlobalState } from '../../store/PanelStore';
+import type { CardProps } from '../CardContract';
 import { Screensaver } from './Screensaver';
 import { NOTIFY_BLINK_MS, notifyBackground } from './interaction';
-import { handleCommand, initial, parseNotify, type ScreensaverNotify } from './parse';
+import { handleCommand, initial, parseNotify, type ScreensaverModel, type ScreensaverNotify } from './parse';
 
 /** RGB 56/56/56, the background of the default theme */
 const GRAY = 14791;
@@ -137,4 +138,127 @@ describe('screensaver notification: fields 3-5', () => {
             expect(area(html)).toEqual({ top, height: bottom - top, background: color565ToCss(GRAY) });
         });
     }
+});
+
+/** a pointer event at a position of the stage */
+function pointer(x: number, y: number): React.PointerEvent {
+    return { clientX: x, clientY: y, stopPropagation: (): void => undefined } as unknown as React.PointerEvent;
+}
+
+interface Harness {
+    card: Screensaver;
+    presses: unknown[][];
+    /** markup of the card as it is now */
+    html: () => string;
+    /** a touch of the background: down at (0, 0), up `dy` px lower; the store wakes the display with the press */
+    touch: (dy?: number) => void;
+    /** new props for the card, like the store gives them (componentDidUpdate runs) */
+    update: (change: Partial<CardProps<ScreensaverModel>>) => void;
+}
+
+/**
+ * An unmounted screensaver card whose setState applies at once
+ *
+ * @param standby standby brightness of `dimmode`
+ * @param notify the notification
+ */
+function harness(standby: number, notify: ScreensaverNotify): Harness {
+    const presses: unknown[][] = [];
+    const global = initialGlobalState('eu');
+    const props: CardProps<ScreensaverModel> = {
+        model: { ...initial(), notify },
+        ctx: { pageType: 'screensaver', pageArgs: [] },
+        global: { ...global, dim: { ...global.dim, standby } },
+        send: () => undefined,
+        press: (...args) => void presses.push(args),
+        openPopup: () => undefined,
+    };
+    const card = new Screensaver(props);
+    card.setState = (update: unknown): void => {
+        const patch: unknown = typeof update === 'function' ? update(card.state, card.props) : update;
+        card.state = { ...card.state, ...(patch as object) };
+    };
+    const update = (change: Partial<CardProps<ScreensaverModel>>): void => {
+        const prev = card.props;
+        Object.assign(card, { props: { ...prev, ...change } });
+        card.componentDidUpdate(prev);
+    };
+    const root = (): React.ReactElement<{
+        onPointerDown: (e: React.PointerEvent) => void;
+        onPointerUp: (e: React.PointerEvent) => void;
+    }> => card.render() as React.ReactElement<never>;
+    return {
+        card,
+        presses,
+        html: () => renderToStaticMarkup(card.render()),
+        touch: (dy = 0): void => {
+            root().props.onPointerDown(pointer(0, 0));
+            root().props.onPointerUp(pointer(0, dy));
+            if (!card.props.global.awake) {
+                update({ global: { ...card.props.global, awake: true } });
+            }
+        },
+        update,
+    };
+}
+
+describe('screensaver notification: a touch clears it like the HMI', () => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it('the first tap clears it when the standby display is not dark', () => {
+        const h = harness(20, { heading: 'H', text: 'T' });
+        expect(h.html()).toContain('data-role="notify"');
+        h.touch();
+        expect(h.presses).toEqual([['screensaver', 'bExit', 1]]);
+        expect(h.html()).not.toContain('data-role="notify"');
+    });
+
+    it('standby brightness 0: the first tap only wakes, the second clears', () => {
+        const h = harness(0, { heading: 'H', text: 'T' });
+        h.touch();
+        expect(h.html()).toContain('data-role="notify"');
+        h.touch();
+        expect(h.presses).toEqual([
+            ['screensaver', 'bExit', 1],
+            ['screensaver', 'bExit', 2],
+        ]);
+        expect(h.html()).not.toContain('data-role="notify"');
+    });
+
+    it('a swipe clears it as well', () => {
+        const h = harness(20, { heading: 'H', text: 'T' });
+        h.touch(-120);
+        expect(h.presses).toEqual([['screensaver', 'swipeUp']]);
+        expect(h.html()).not.toContain('data-role="notify"');
+    });
+
+    it('the blinking stops with it', () => {
+        const h = harness(20, { heading: 'H', text: 'T', background: GRAY, blink: RED });
+        h.card.componentDidMount();
+        expect(h.card.state.notifyPhase).toBe(0);
+        h.touch();
+        expect(h.card.state.notifyPhase).toBeUndefined();
+        vi.advanceTimersByTime(3000);
+        expect(h.card.state.notifyPhase).toBeUndefined();
+        h.card.componentWillUnmount();
+    });
+
+    it('comes back with the next notify~ and with the model of a pageType~', () => {
+        const h = harness(20, { heading: 'H', text: 'T' });
+        h.touch();
+        h.update({ model: { ...h.card.props.model, notify: { heading: 'H', text: 'T2' } } });
+        expect(h.html()).toContain('T2');
+        h.touch();
+        expect(h.html()).not.toContain('data-role="notify"');
+        // pageType~: a new model without notification, then its notify~
+        h.update({ model: initial() });
+        h.update({ model: { ...initial(), notify: { heading: 'H', text: 'T3' } } });
+        expect(h.html()).toContain('T3');
+        h.card.componentWillUnmount();
+    });
 });
