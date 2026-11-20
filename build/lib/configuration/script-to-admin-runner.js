@@ -455,7 +455,7 @@ class ScriptToAdminRunner {
    * @param dryRun Whether this is a dry run.
    */
   logPlan(planned, dryRun) {
-    var _a;
+    var _a, _b;
     const plan = planned.result.plan;
     const info = (text) => dryRun ? this.log.debug(text) : this.log.info(text);
     const warn = (text) => dryRun ? this.log.debug(text) : this.log.warn(text);
@@ -481,6 +481,9 @@ class ScriptToAdminRunner {
       info(
         `Screensaver '${s.name}' (${s.mode}, ${s.itemCount} items, ${s.notifyCount} notifications): converted to the admin screensaver configuration`
       );
+      for (const text of (_b = s.dropped) != null ? _b : []) {
+        warn(`Screensaver '${s.name}': ${text}`);
+      }
     } else if (plan.screensaverSkipped) {
       const s = plan.screensaverSkipped;
       (s.reason === "screensaverEmpty" ? info : warn)(`Screensaver skipped: ${reasonText(s.reason, s.detail)}`);

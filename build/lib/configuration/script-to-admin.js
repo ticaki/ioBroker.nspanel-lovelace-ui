@@ -1417,7 +1417,7 @@ const notifyKeys = [
   "Enabled",
   "VisibleCondition"
 ];
-function convertNotify(element, where) {
+function convertNotify(element, where, dropped) {
   const reason = "screensaverItemNotSupported";
   if (!isDict(element)) {
     throw new ConvertError(reason, `${where}: expected an object`);
@@ -1483,7 +1483,10 @@ function convertNotify(element, where) {
   if ((0, import_adminShareConfig.isHexColor)(blink)) {
     cfg.backgroundBlink = blink;
   } else if (blink !== void 0 && blink !== null && blink !== "") {
-    throw new ConvertError(reason, `${where}.BackgroundBlink: expected a color #rrggbb`);
+    const shown = typeof blink === "string" ? blink : JSON.stringify(blink);
+    dropped.push(
+      `${where}.BackgroundBlink: ${shown} is no color #rrggbb - dropped, the notification does not blink`
+    );
   }
   return cfg;
 }
@@ -1568,6 +1571,7 @@ function convertScreensaver(input) {
     const mrIcon2 = convertMrIcon(raw.mrIcon2ScreensaverEntity, "mrIcon2ScreensaverEntity");
     const notifyList = raw.notifyScreensaverEntity;
     const notify = [];
+    const dropped = [];
     if (notifyList !== void 0 && notifyList !== null) {
       if (!Array.isArray(notifyList)) {
         throw new ConvertError("screensaverItemNotSupported", "notifyScreensaverEntity: expected a list");
@@ -1575,7 +1579,7 @@ function convertScreensaver(input) {
       const existing = [...input.screensaverNotify];
       notifyList.forEach((element, index) => {
         var _a2;
-        const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`);
+        const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`, dropped);
         const id = ((_a2 = input.notifyIdFactory) != null ? _a2 : import_adminShareConfig.newScreensaverNotifyId)(existing);
         const full = { id, name: `${panel.name} ${index + 1}`, ...cfg };
         existing.push(full);
@@ -1630,7 +1634,7 @@ function convertScreensaver(input) {
     if (weatherItems) {
       entry.weatherAddDefaultItems = weatherItems;
     }
-    return { entry, notify, rawItems };
+    return { entry, notify, rawItems, dropped };
   } catch (error) {
     if (error instanceof ConvertError) {
       return { skipped: { reason: error.reason, detail: error.detail } };
@@ -2148,6 +2152,9 @@ function planScriptToAdmin(input) {
     };
     if (screensaver.rawItems.length) {
       plan.screensaver.rawItems = screensaver.rawItems;
+    }
+    if (screensaver.dropped.length) {
+      plan.screensaver.dropped = screensaver.dropped;
     }
   }
   const buttons = {};

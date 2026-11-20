@@ -247,7 +247,7 @@ class Navigation extends import_library.BaseClass {
             this.infityCounter = 0;
             return;
           }
-          this.go(d);
+          this.go(d, true);
           return;
         }
         this.infityCounter = 0;
