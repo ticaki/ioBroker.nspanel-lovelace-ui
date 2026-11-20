@@ -841,7 +841,7 @@ export class Controller extends Library.BaseClass {
         }
         // a web clone shares name and internal states with its hardware panel - once per name
         const names = uniquePanelNames(panels);
-        temp.global = details.global && names.length > 1;
+        details.global = details.global && names.length > 1;
         for (const name of names) {
             await this.statesControler.setInternalState(
                 `${name}/cmd/popupNotificationCustom`,

@@ -372,6 +372,18 @@ describe('lib/controller/controller - sendTo screensaverNotify', () => {
         expect(JSON.parse(String(f.writes[0].val))).to.include({ global: false });
     });
 
+    it('setPopupNotification: global only with more than one panel name, topic finds the panel', async () => {
+        const f = setup();
+        await f.controller.setPopupNotification({ id: 'a', headline: 'H', panel: 'nspanel/hall' });
+        await f.controller.setPopupNotification({ id: 'b', headline: 'H' });
+        expect(f.writes.map(w => w.id)).to.deep.equal([
+            'hall/cmd/popupNotificationCustom',
+            'kitchen/cmd/popupNotificationCustom',
+            'hall/cmd/popupNotificationCustom',
+        ]);
+        expect(f.writes.map(w => JSON.parse(String(w.val)).global)).to.deep.equal([false, true, true]);
+    });
+
     it('answers with an error when no panel is found', async () => {
         const f = setup();
         expect(await f.controller.screensaverNotify({ panel: 'nope', heading: 'H' })).to.equal(false);
