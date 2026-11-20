@@ -145,6 +145,31 @@ describe('lib/classes/navigation - locked (hidden) page', () => {
         expect(f.popups).to.have.length(0);
     });
 
+    it('swiping over a locked page with a long-press target goes on over the simple target', async () => {
+        const nodes: Record<string, unknown>[] = [
+            { name: 'main', page: 'main', left: { single: 'wecker' }, right: { single: 'geheim' } },
+            {
+                name: 'geheim',
+                page: 'geheim',
+                left: { single: 'main', double: 'extra' },
+                right: { single: 'wecker', double: 'extra' },
+            },
+            { name: 'wecker', page: 'wecker', left: { single: 'geheim' }, right: { single: 'main' } },
+            { name: 'extra', page: 'extra', left: { single: 'main' }, right: { single: 'main' } },
+        ];
+        const f = setup(nodes, ['geheim'], true);
+        await f.nav.init();
+        f.nav.currentItem = indexOf(f.nav, 'main');
+        f.nav.goRight(true);
+        await tick();
+        await tick();
+        expect(f.shown).to.deep.equal(['wecker']);
+        f.nav.goLeft(true);
+        await tick();
+        await tick();
+        expect(f.shown).to.deep.equal(['wecker', 'main']);
+    });
+
     it('without hideCards hidden has no effect', async () => {
         const f = setup(chain(), ['geheim'], false);
         await f.nav.init();

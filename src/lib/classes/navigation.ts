@@ -301,7 +301,8 @@ export class Navigation extends BaseClass {
                         this.infityCounter = 0;
                         return;
                     }
-                    this.go(d);
+                    // always the simple target (next/prev) of the skipped page, never its long-press target
+                    this.go(d, true);
                     return;
                 }
                 this.infityCounter = 0;
