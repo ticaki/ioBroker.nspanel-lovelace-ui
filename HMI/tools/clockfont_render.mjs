@@ -1,12 +1,14 @@
 // usage: node clockfont_render.mjs job.json out.json
-// job: {font, height, chars, size?, baseline?, fit?: {chars: {char: {w, px}}}} -> alpha (0..7) of each character, with the
+// job: {font, height, chars, size?, baseline?, fit?: {chars: {char: {w, px}}}, puppeteerPath?} -> alpha (0..7) of each character, with the
 // font rendered in Chrome canvas. With `fit` the size and baseline are searched against given glyphs first.
 /* global document, FontFace, OffscreenCanvas -- they run inside the browser page (page.evaluate) */
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
-const require = createRequire(process.env.PUPPETEER_PATH ?? import.meta.url);
-const puppeteer = require('puppeteer');
 const job = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+// job.puppeteerPath: directory with node_modules/puppeteer (ending with /), set by the Python caller from PUPPETEER_PATH
+const require = createRequire(job.puppeteerPath ?? import.meta.url);
+// @repochecker: optional dependency 'puppeteer'
+const puppeteer = require('puppeteer');
 const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
 const page = await browser.newPage();
 const b64 = fs.readFileSync(job.font).toString('base64');

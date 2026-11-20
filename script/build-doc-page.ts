@@ -19,6 +19,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
+// @repochecker: optional dependency 'markdown-it'
 import MarkdownIt from 'markdown-it';
 import { replaceHeadings, slug, uniqueAnchor } from '../src-admin/src/docAnchors';
 
@@ -413,7 +414,7 @@ if (warnings.length) {
         console.log(`  ${w}`);
     }
     if (strict) {
-        process.exit(1);
+        process.exitCode = 1;
     }
 } else {
     console.log('no dead internal links or anchors');

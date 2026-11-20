@@ -29,7 +29,10 @@ def render(width, height, params, paths):
         job = os.path.join(tmp, 'job.json')
         out = os.path.join(tmp, 'out.bin')
         with open(job, 'w') as f:
-            json.dump({'W': width, 'H': height, 'variants': [params], 'paths': paths}, f)
+            data = {'W': width, 'H': height, 'variants': [params], 'paths': paths}
+            if os.environ.get('PUPPETEER_PATH'):
+                data['puppeteerPath'] = os.environ['PUPPETEER_PATH']
+            json.dump(data, f)
         subprocess.run(['node', os.path.join(HERE, 'render.mjs'), job, out], check=True)
         raw = open(out, 'rb').read()
     n = width * height

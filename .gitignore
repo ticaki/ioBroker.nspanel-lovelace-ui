@@ -1,7 +1,12 @@
 # No dot-directories except github/vscode
 .*/
-.vscode/
 !.github/
+# .vscode: only the shared files are tracked
+!.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
 
 *.code-workspace
 node_modules
@@ -20,7 +25,6 @@ admin/i18n/flat.txt
 admin/i18n/*/flat.txt
 src/lib/password.ts
 .eslintcache
-.gitignore
 .commitinfo
 _site/
 # Python caches

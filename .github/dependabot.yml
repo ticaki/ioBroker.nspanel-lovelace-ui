@@ -9,6 +9,7 @@ updates:
     directories:
       - '/'
       - 'src-admin/'
+      - 'src-web/'
     schedule:
       interval: 'cron'
       cronjob: '5 4 14 * *'

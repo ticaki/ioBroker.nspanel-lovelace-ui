@@ -1,11 +1,13 @@
 // usage: node render.mjs job.json out.bin
 /* global OffscreenCanvas, Path2D -- they run inside the browser page (page.evaluate) */
-// job: {W,H,variants:[{s,dx,dy}], paths:[d,...]} -> out: for each variant, for each path W*H alpha bytes (0..255)
+// job: {W,H,variants:[{s,dx,dy}], paths:[d,...], puppeteerPath?} -> out: for each variant, for each path W*H alpha bytes (0..255)
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
-const require = createRequire(process.env.PUPPETEER_PATH ?? import.meta.url);
-const puppeteer = require('puppeteer');
 const job = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
+// job.puppeteerPath: directory with node_modules/puppeteer (ending with /), set by the Python caller from PUPPETEER_PATH
+const require = createRequire(job.puppeteerPath ?? import.meta.url);
+// @repochecker: optional dependency 'puppeteer'
+const puppeteer = require('puppeteer');
 const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
 const page = await browser.newPage();
 const out = fs.openSync(process.argv[3], 'w');
