@@ -1362,7 +1362,7 @@
     "screensaver_item_instances": "Instanzen des Adapters:",
     "screensaver_item_longPress": "Aktion bei langem Drücken",
     "screensaver_item_longPress_buttonState": "Datenpunkt, der bei langem Drücken geschrieben wird",
-    "screensaver_item_longPress_hint": "Benötigt TFT 6.0.9 oder neuer. Ohne Aktion hier wirkt ein langer Druck wie ein kurzer.",
+    "screensaver_item_longPress_hint": "Benötigt TFT 6.0.9 oder neuer. Ohne Aktion hier zählt jeder Druck als kurzer Tipp: bis TFT 6.1.x wirkt ein langer Druck wie ein kurzer, ab 6.2.0 erkennt das Panel dann keinen langen Druck.",
     "screensaver_item_longPress_popup": "Popup öffnen",
     "screensaver_item_longPress_switchState": "Datenpunkt, der bei langem Drücken umgeschaltet wird",
     "screensaver_item_longPress_trigger": "Nur Datenpunkt auslösen",

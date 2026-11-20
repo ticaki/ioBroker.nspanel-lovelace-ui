@@ -1328,7 +1328,7 @@
     "screensaver_item_instances": "Instances de l'adaptateur :",
     "screensaver_item_longPress": "Action sur appui long",
     "screensaver_item_longPress_buttonState": "État écrit sur appui long",
-    "screensaver_item_longPress_hint": "Nécessite le TFT 6.0.9 ou plus récent. Sans action ici, un appui long agit comme un appui court.",
+    "screensaver_item_longPress_hint": "Nécessite le TFT 6.0.9 ou plus récent. Sans action ici, chaque appui compte comme un appui court : jusqu’au TFT 6.1.x un appui long agit comme un appui court, à partir de 6.2.0 le panneau ne détecte alors aucun appui long.",
     "screensaver_item_longPress_popup": "Ouvrir la fenêtre contextuelle",
     "screensaver_item_longPress_switchState": "État basculé sur appui long",
     "screensaver_item_longPress_trigger": "Déclencher uniquement l'état",

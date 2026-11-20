@@ -1328,7 +1328,7 @@
     "screensaver_item_instances": "Экземпляры адаптера:",
     "screensaver_item_longPress": "Действие при долгом нажатии",
     "screensaver_item_longPress_buttonState": "Состояние, записываемое при долгом нажатии",
-    "screensaver_item_longPress_hint": "Требуется TFT 6.0.9 или новее. Без действия здесь долгое нажатие работает как короткое.",
+    "screensaver_item_longPress_hint": "Требуется TFT 6.0.9 или новее. Без действия здесь каждое нажатие считается коротким: до TFT 6.1.x долгое нажатие работает как короткое, начиная с 6.2.0 панель тогда не распознаёт долгое нажатие.",
     "screensaver_item_longPress_popup": "Открыть всплывающее окно",
     "screensaver_item_longPress_switchState": "Состояние, переключаемое при долгом нажатии",
     "screensaver_item_longPress_trigger": "Только активировать состояние",

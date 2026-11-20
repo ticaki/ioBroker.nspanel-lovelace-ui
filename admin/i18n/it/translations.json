@@ -1328,7 +1328,7 @@
     "screensaver_item_instances": "Istanze dell'adattatore:",
     "screensaver_item_longPress": "Azione con pressione lunga",
     "screensaver_item_longPress_buttonState": "Stato scritto con pressione lunga",
-    "screensaver_item_longPress_hint": "Richiede TFT 6.0.9 o successivo. Senza un’azione qui, una pressione lunga agisce come una breve.",
+    "screensaver_item_longPress_hint": "Richiede TFT 6.0.9 o successivo. Senza un’azione qui, ogni pressione conta come un tocco breve: fino al TFT 6.1.x una pressione lunga agisce come una breve, dal 6.2.0 il pannello non rileva alcuna pressione lunga.",
     "screensaver_item_longPress_popup": "Apri popup",
     "screensaver_item_longPress_switchState": "Stato commutato con pressione lunga",
     "screensaver_item_longPress_trigger": "Attiva solo lo stato",

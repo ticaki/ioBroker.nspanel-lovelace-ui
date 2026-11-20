@@ -1328,7 +1328,7 @@
     "screensaver_item_instances": "适配器实例：",
     "screensaver_item_longPress": "长按时的操作",
     "screensaver_item_longPress_buttonState": "长按时写入的状态",
-    "screensaver_item_longPress_hint": "需要 TFT 6.0.9 或更高版本。此处未设置操作时，长按与短按相同。",
+    "screensaver_item_longPress_hint": "需要 TFT 6.0.9 或更高版本。此处未设置操作时，每次按压都算作短按：TFT 6.1.x 及以前长按与短按相同，从 6.2.0 起面板不再识别长按。",
     "screensaver_item_longPress_popup": "打开弹窗",
     "screensaver_item_longPress_switchState": "长按时切换的状态",
     "screensaver_item_longPress_trigger": "仅触发状态",

@@ -1328,7 +1328,7 @@
     "screensaver_item_instances": "Instâncias do adaptador:",
     "screensaver_item_longPress": "Ação ao manter pressionado",
     "screensaver_item_longPress_buttonState": "Estado escrito ao manter pressionado",
-    "screensaver_item_longPress_hint": "Requer TFT 6.0.9 ou mais recente. Sem uma ação aqui, um toque longo age como um curto.",
+    "screensaver_item_longPress_hint": "Requer TFT 6.0.9 ou mais recente. Sem uma ação aqui, cada toque conta como um toque curto: até o TFT 6.1.x um toque longo age como um curto, a partir do 6.2.0 o painel não deteta nenhum toque longo.",
     "screensaver_item_longPress_popup": "Abrir pop-up",
     "screensaver_item_longPress_switchState": "Estado alternado ao manter pressionado",
     "screensaver_item_longPress_trigger": "Apenas acionar o estado",

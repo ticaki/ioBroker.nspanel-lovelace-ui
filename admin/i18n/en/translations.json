@@ -1362,7 +1362,7 @@
     "screensaver_item_instances": "Instances of the adapter:",
     "screensaver_item_longPress": "Action on long press",
     "screensaver_item_longPress_buttonState": "State written on long press",
-    "screensaver_item_longPress_hint": "Needs TFT 6.0.9 or newer. Without an action here, a long press acts like a short press.",
+    "screensaver_item_longPress_hint": "Needs TFT 6.0.9 or newer. Without an action here, every press counts as a short tap: up to TFT 6.1.x a long press acts like a short one, from 6.2.0 on the panel then detects no long press.",
     "screensaver_item_longPress_popup": "Open popup",
     "screensaver_item_longPress_switchState": "State toggled on long press",
     "screensaver_item_longPress_trigger": "Only trigger the state",
