@@ -2545,6 +2545,17 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
                 write: true,
             },
         },
+        'cmd/screensaverNotificationCustom': {
+            val: JSON.stringify({}),
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: true,
+            },
+        },
         'cmd/screensaverClockBlink': {
             val: false,
             ack: true,

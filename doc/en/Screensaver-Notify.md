@@ -19,6 +19,7 @@ Contents:
 - [If something does not look as expected](#9-if-something-does-not-look-as-expected)
 - [Colours: headline, text and background](#10-colours-headline-text-and-background)
   - [Background blinks](#background-blinks)
+- [From a script: sendTo `screensaverNotify`](#11-from-a-script-sendto-screensavernotify)
 
 ## 1. The list
 ![The screensaver editor with the button bar below the panel picture](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
@@ -79,7 +80,7 @@ When the value of a state in **any** of the content fields changes – icon, hea
 
 A **dismissed** message stays hidden, also when its content changes – it only comes back when its state goes off and on again (see [Dismissing](#5-dismissing-and-the-group-id)).
 
-A message set by `sendTo` (`screensaverNotify`) or through `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` is not configured in the admin and is not throttled.
+A message set by `sendTo` (`screensaverNotify`) **without `id`** or through `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` is not configured in the admin and is not throttled. A message by `sendTo` **with `id`** is throttled like one of the list, see [From a script](#11-from-a-script-sendto-screensavernotify).
 
 ## 3. When to show: states and condition
 ![States, condition, priority, dismissing and buzzer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
@@ -175,7 +176,7 @@ On the panel this becomes a headline line (icon + prefix + value/text + unit) an
 
 ## 10. Colours: headline, text and background
 
-The colours of the notification are not set in the dialog but by the [colour theme](colorTheme#colours-of-the-notification) of the instance. They apply to all notifications and also to a notification a script sets via `sendTo` or through `cmd`.
+The colours of the notification are not set in the dialog but by the [colour theme](colorTheme#colours-of-the-notification) of the instance. They apply to all notifications and also to a notification a script sets via `sendTo` or through `cmd` – only a message by `sendTo` with `id` can bring font colours of its own with `colorHeadline`/`colorText`.
 
 | Colour | Meaning |
 |---|---|
@@ -198,4 +199,47 @@ A single notification can draw attention to itself on top: its background then a
 
 The panel blinks by itself – the adapter sends the message only once. The blinking ends as soon as the notification disappears (state off, tapped away) or another one without blinking takes its place.
 
-> **Only from TFT 6.2.0 on and on the web panel.** Older TFTs show no background at all and therefore no blinking either. A notification that a script sets via `sendTo` or through `cmd` never blinks.
+> **Only from TFT 6.2.0 on and on the web panel.** Older TFTs show no background at all and therefore no blinking either. A notification that a script sets via `sendTo` without `id` or through `cmd` never blinks; via `sendTo` with `id` it blinks with `backgroundBlink`.
+
+## 11. From a script: sendTo `screensaverNotify`
+
+A script or another adapter can also set a notification via `sendTo`. The message understands largely the same fields as the popup (`setPopupNotification`, see [popup](pagePopup)), so the same JSON can go to both. Answer: `{ result: 'ok' }` or `{ error: 'sendToAnyError' }` (no panel found).
+
+```js
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', {
+    id: 'washer',
+    priority: 40,
+    headline: 'Washing machine',
+    text: 'done',
+    icon: 'washing-machine',
+    type: 'acknowledge',
+    buzzer: true,
+});
+// remove
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { id: 'washer', priority: 0 });
+```
+
+| Field | Meaning |
+|---|---|
+| `panel` | Target: name, friendly name or MQTT topic of the panel, a string or an array. **Without it the message goes to all panels.** |
+| `id` | Id of the message. **With `id`** the message goes into a queue of the panel (see below), **without `id`** the old way applies. |
+| `priority` | Only with `id`. Lower = more important, default **50**. `<= 0` removes the message with this `id`, `<= -100` all messages whose `id` starts with it. |
+| `headline` | Headline; `heading` is accepted as well (`heading` wins on the old way, `headline` on the new one). |
+| `text` | Second line. |
+| `enabled` | Old way: `true` shows the message, missing or `false` switches it off. With `id`: `false` removes the message. |
+| `icon` | Only with `id`. MDI name, in front of the headline like the icon of the list. |
+| `colorHeadline`, `colorText` | Only with `id`. Font colour as `{r,g,b}` or `"#rrggbb"` instead of the colour of the colour theme. |
+| `backgroundBlink` | Only with `id`. `"#rrggbb"`: second background colour, see [Background blinks](#background-blinks). |
+| `buzzer` | Only with `id`. `true` = default tone, a string = own tone sequence – like the [buzzer](#6-buzzer) of the list (not at night, only with `cmd.isBuzzerAllowed`). |
+| `type` | Only with `id`. `acknowledge`: a tap removes the message from the queue and takes the tap like a dismissible message of the list. `information` (default): a tap acts as with a message that cannot be dismissed. |
+| `global` | Only with `id` and `acknowledge`: dismissing on one panel removes the message on all panels. Default: yes when the message went to several panels. |
+
+Fields of the popup only (buttons, `largeIcon`, `iconColor`, `textSize`, `alwaysOn`) are skipped without an error.
+
+**With `id` – the queue:**
+
+- At most 10 messages per panel; the same `id` replaces the previous one. After a restart of the adapter it is empty.
+- It is mixed with the active notifications of the list: the lowest priority wins. **On a tie the message by `sendTo` wins**; among `sendTo` messages of the same priority the older one.
+- A new content of a shown message is throttled like with the list (at most every 30 seconds), see [When the message changes on the panel](#when-the-message-changes-on-the-panel).
+
+**Without `id` – the old way:** `{ panel, heading, text, enabled }` takes a single slot – the same as `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification`. While it is active it covers all other notifications.

@@ -55,6 +55,7 @@ import type { PageDumpKind } from '../types/pageDump';
 import { isEmulatorDriverVersion, parseDriverVersion } from '../const/berry-driver';
 import { POPUP_NOTIFY3 } from '../pages/popupNotify3';
 import { SCREENSAVER_INFO_ICON_ID } from '../pages/screensaver-info-icon';
+import { parseScreensaverNotifyDetails } from '../pages/screensaver-notify-queue';
 import type { NSPanel } from '../types/NSPanel';
 import {
     buildDisplayDiagnosisMessage,
@@ -3230,6 +3231,21 @@ export class Panel extends BaseClass {
                             !!state.val,
                             definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification,
                         );
+                    }
+                    break;
+                }
+                case 'cmd/screensaverNotificationCustom': {
+                    if (this.screenSaver && typeof state.val === 'string') {
+                        let message: unknown = undefined;
+                        try {
+                            message = JSON.parse(state.val);
+                        } catch {
+                            this.log.warn(`Invalid screensaver notification: ${state.val}`);
+                        }
+                        const details = parseScreensaverNotifyDetails(message);
+                        if (details) {
+                            await this.screenSaver.setQueuedNotify(details);
+                        }
                     }
                     break;
                 }

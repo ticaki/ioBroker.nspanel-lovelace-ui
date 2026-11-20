@@ -19,6 +19,7 @@ Inhalt:
 - [Wenn etwas nicht wie erwartet aussieht](#9-wenn-etwas-nicht-wie-erwartet-aussieht)
 - [Farben: Überschrift, Text und Hintergrund](#10-farben-überschrift-text-und-hintergrund)
   - [Hintergrund blinkt](#hintergrund-blinkt)
+- [Per Skript: sendTo `screensaverNotify`](#11-per-skript-sendto-screensavernotify)
 
 ## 1. Die Liste
 ![Der Screensaver-Editor mit der Knopfleiste unter dem Panelbild](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
@@ -79,7 +80,7 @@ Ganz oben im Dialog steht die **Beschreibung**, darunter die Vorschau, dann der 
 
 Eine **quittierte** Meldung bleibt ausgeblendet, auch wenn sich ihr Inhalt ändert – sie kommt erst wieder, wenn ihr Datenpunkt aus- und wieder angeht (siehe [Quittieren](#5-quittieren-und-gruppen-id)).
 
-Eine Meldung, die per `sendTo` (`screensaverNotify`) oder über `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` gesetzt wird, ist nicht im Admin konfiguriert und wird nicht gebremst.
+Eine Meldung, die per `sendTo` (`screensaverNotify`) **ohne `id`** oder über `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` gesetzt wird, ist nicht im Admin konfiguriert und wird nicht gebremst. Eine Meldung per `sendTo` **mit `id`** wird gebremst wie eine aus der Liste, siehe [Per Skript](#11-per-skript-sendto-screensavernotify).
 
 ## 3. Wann anzeigen: Datenpunkte und Bedingung
 ![Datenpunkte, Bedingung, Priorität, Quittieren und Summer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
@@ -175,7 +176,7 @@ Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Te
 
 ## 10. Farben: Überschrift, Text und Hintergrund
 
-Die Farben der Schlagzeile stellt nicht der Dialog ein, sondern das [Farbthema](colorTheme#farben-der-schlagzeile) der Instanz. Sie gelten für alle Benachrichtigungen und auch für eine Schlagzeile, die ein Skript per `sendTo` oder über `cmd` setzt.
+Die Farben der Schlagzeile stellt nicht der Dialog ein, sondern das [Farbthema](colorTheme#farben-der-schlagzeile) der Instanz. Sie gelten für alle Benachrichtigungen und auch für eine Schlagzeile, die ein Skript per `sendTo` oder über `cmd` setzt – nur eine Meldung per `sendTo` mit `id` kann mit `colorHeadline`/`colorText` eigene Schriftfarben mitbringen.
 
 | Farbe | Bedeutung |
 |---|---|
@@ -198,4 +199,47 @@ Eine einzelne Benachrichtigung kann zusätzlich auf sich aufmerksam machen: Ihr 
 
 Das Panel blinkt selbst – der Adapter schickt die Meldung nur einmal. Das Blinken endet, sobald die Benachrichtigung verschwindet (Datenpunkt aus, weggetippt) oder eine andere ohne Blinken an ihre Stelle tritt.
 
-> **Nur ab TFT 6.2.0 und auf dem Web-Panel.** Ältere TFTs zeigen gar keinen Hintergrund und damit auch kein Blinken. Eine Schlagzeile, die ein Skript per `sendTo` oder über `cmd` setzt, blinkt nie.
+> **Nur ab TFT 6.2.0 und auf dem Web-Panel.** Ältere TFTs zeigen gar keinen Hintergrund und damit auch kein Blinken. Eine Schlagzeile, die ein Skript per `sendTo` ohne `id` oder über `cmd` setzt, blinkt nie; per `sendTo` mit `id` blinkt sie mit `backgroundBlink`.
+
+## 11. Per Skript: sendTo `screensaverNotify`
+
+Ein Skript oder ein anderer Adapter kann eine Schlagzeile auch per `sendTo` setzen. Die Nachricht versteht weitgehend dieselben Felder wie das Popup (`setPopupNotification`, siehe [Popup](pagePopup)), dieselbe JSON kann also an beide gehen. Antwort: `{ result: 'ok' }` oder `{ error: 'sendToAnyError' }` (kein Panel gefunden).
+
+```js
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', {
+    id: 'waschmaschine',
+    priority: 40,
+    headline: 'Waschmaschine',
+    text: 'fertig',
+    icon: 'washing-machine',
+    type: 'acknowledge',
+    buzzer: true,
+});
+// entfernen
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { id: 'waschmaschine', priority: 0 });
+```
+
+| Feld | Bedeutung |
+|---|---|
+| `panel` | Ziel: Name, Anzeigename oder MQTT-Topic des Panels, ein String oder ein Array. **Fehlt es, gilt die Meldung für alle Panels.** |
+| `id` | Kennung der Meldung. **Mit `id`** kommt die Meldung in eine Warteschlange des Panels (siehe unten), **ohne `id`** gilt der alte Weg. |
+| `priority` | Nur mit `id`. Kleiner = wichtiger, Standard **50**. `<= 0` entfernt die Meldung mit dieser `id`, `<= -100` alle Meldungen, deren `id` damit beginnt. |
+| `headline` | Überschrift; `heading` wird ebenso angenommen (`heading` hat beim alten Weg Vorrang, `headline` beim neuen). |
+| `text` | Zweite Zeile. |
+| `enabled` | Alter Weg: `true` zeigt die Meldung, fehlt oder `false` schaltet sie aus. Mit `id`: `false` entfernt die Meldung. |
+| `icon` | Nur mit `id`. MDI-Name, steht wie das Symbol der Liste vor der Überschrift. |
+| `colorHeadline`, `colorText` | Nur mit `id`. Schriftfarbe als `{r,g,b}` oder `"#rrggbb"` statt der Farbe aus dem Farbthema. |
+| `backgroundBlink` | Nur mit `id`. `"#rrggbb"`: zweite Hintergrundfarbe, siehe [Hintergrund blinkt](#hintergrund-blinkt). |
+| `buzzer` | Nur mit `id`. `true` = Standardton, ein String = eigene Tonfolge – wie beim [Summer](#6-summer) der Liste (nicht nachts, nur mit `cmd.isBuzzerAllowed`). |
+| `type` | Nur mit `id`. `acknowledge`: Antippen entfernt die Meldung aus der Warteschlange und nimmt den Tipp wie eine quittierbare Meldung der Liste. `information` (Standard): Antippen wirkt wie bei einer Meldung ohne Quittieren. |
+| `global` | Nur mit `id` und `acknowledge`: Quittieren auf einem Panel entfernt die Meldung auf allen Panels. Standard: ja, wenn die Meldung an mehrere Panels ging. |
+
+Felder nur für das Popup (Tasten, `largeIcon`, `iconColor`, `textSize`, `alwaysOn`) werden ohne Fehler übergangen.
+
+**Mit `id` – die Warteschlange:**
+
+- Je Panel höchstens 10 Meldungen; dieselbe `id` ersetzt die vorige. Nach einem Neustart des Adapters ist sie leer.
+- Sie wird mit den aktiven Meldungen der Liste gemischt: Es gewinnt die kleinste Priorität. **Bei Gleichstand gewinnt die Meldung per `sendTo`**; unter `sendTo`-Meldungen gleicher Priorität die ältere.
+- Neuer Inhalt einer angezeigten Meldung wird gebremst wie bei der Liste (höchstens alle 30 Sekunden), siehe [Wann sich die Meldung am Panel ändert](#wann-sich-die-meldung-am-panel-ändert).
+
+**Ohne `id` – der alte Weg:** `{ panel, heading, text, enabled }` belegt einen einzelnen Platz – derselbe wie `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification`. Solange er aktiv ist, überdeckt er alle anderen Meldungen.

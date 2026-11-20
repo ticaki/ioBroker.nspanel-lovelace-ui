@@ -157,6 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+- (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) hardware buttons: new mode "navigation" with target next/prev/home/parent - a press acts like the matching navigation arrow of the page shown (next/prev short, home/parent long press); an open popup is closed first; the screensaver is never left - a popup on top of it is only closed (admin, script and script-to-admin)

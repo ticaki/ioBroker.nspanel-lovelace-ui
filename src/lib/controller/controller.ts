@@ -16,6 +16,8 @@ import * as adminShareConfig from '../types/adminShareConfig';
 import type { PanelChannel } from '../classes/panel-channel';
 import type { VirtualPanelManager } from '../web/virtual-panel-manager';
 import { duplicatePanelIdIndexes, panelIndexForMqttClient } from '../tools/panel-setup';
+import { resolvePanelTargets, uniquePanelNames } from './panel-target';
+import { parseScreensaverNotifyDetails } from '../pages/screensaver-notify-queue';
 
 export type ControllerOptions = {
     mqttClient: MQTT.MQTTClientClass;
@@ -833,24 +835,12 @@ export class Controller extends Library.BaseClass {
              buzzer?: boolean | string;
          };
          */
-        let panels: Panel.Panel[] = [];
-        if (!temp.panel) {
-            panels = this.panels;
-        } else {
-            if (!Array.isArray(temp.panel)) {
-                temp.panel = [temp.panel];
-            }
-            for (const pName of temp.panel) {
-                const panel = this.panels.find(p => p.name === pName || p.friendlyName === pName);
-                if (!panel) {
-                    this.log.error(`setPopupMessage: Panel ${pName} not found`);
-                    continue;
-                }
-                panels.push(panel);
-            }
+        const { panels, missing } = resolvePanelTargets(this.panels, temp.panel);
+        for (const pName of missing) {
+            this.log.error(`setPopupMessage: Panel ${pName} not found`);
         }
         // a web clone shares name and internal states with its hardware panel - once per name
-        const names = [...new Set(panels.map(p => p.name))];
+        const names = uniquePanelNames(panels);
         temp.global = details.global && names.length > 1;
         for (const name of names) {
             await this.statesControler.setInternalState(
@@ -860,6 +850,70 @@ export class Controller extends Library.BaseClass {
             );
         }
     }
+    /**
+     * sendTo `screensaverNotify`: without `id` the single notification of the screensaver (heading/headline, text,
+     * enabled - as the `cmd.screenSaver.*Notification` states), with `id` an entry of the queue of the screensaver
+     * (fields of `setPopupNotification`). `panel`: name, friendlyName or topic, string or array, missing = all panels.
+     *
+     * @param data the message of the sendTo
+     * @returns true when at least one panel got the message
+     */
+    async screensaverNotify(data: unknown): Promise<boolean> {
+        if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+            this.log.warn(`Invalid message in screensaverNotify: ${JSON.stringify(data)}`);
+            return false;
+        }
+        const message: Record<string, unknown> = { ...data };
+        const { panels, missing } = resolvePanelTargets(this.panels, message.panel);
+        for (const pName of missing) {
+            this.log.warn(`Panel ${pName} not exists!`);
+        }
+        const names = uniquePanelNames(panels.filter(p => p.screenSaver));
+        if (names.length === 0) {
+            return false;
+        }
+        const details = parseScreensaverNotifyDetails(message);
+        if (details) {
+            details.global = details.global && names.length > 1;
+            for (const name of names) {
+                await this.statesControler.setInternalState(
+                    `${name}/cmd/screensaverNotificationCustom`,
+                    JSON.stringify(details),
+                    false,
+                );
+            }
+            return true;
+        }
+        const heading =
+            typeof message.heading === 'string'
+                ? message.heading
+                : typeof message.headline === 'string'
+                  ? message.headline
+                  : undefined;
+        for (const name of names) {
+            if (heading !== undefined) {
+                await this.statesControler.setInternalState(
+                    `${name}/cmd/screensaverHeadingNotification`,
+                    heading,
+                    false,
+                );
+            }
+            if (typeof message.text === 'string') {
+                await this.statesControler.setInternalState(
+                    `${name}/cmd/screensaverTextNotification`,
+                    message.text,
+                    false,
+                );
+            }
+            await this.statesControler.setInternalState(
+                `${name}/cmd/screensaverActivateNotification`,
+                !!message.enabled,
+                false,
+            );
+        }
+        return true;
+    }
+
     async notificationToPanel(): Promise<void> {
         if (!this.panels) {
             return;

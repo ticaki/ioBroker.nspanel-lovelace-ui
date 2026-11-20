@@ -2600,39 +2600,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 case 'screensaverNotify': {
                     // sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });
+                    // with `id`: a queue entry with the fields of setPopupNotification (headline, priority, icon, type ...)
                     let notifySent = false;
-                    if (obj.message?.panel && this.controller?.panels) {
-                        const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
-                        if (panel?.screenSaver) {
-                            if (typeof obj.message.heading === 'string') {
-                                await panel.statesControler.setInternalState(
-                                    `${panel.name}/cmd/screensaverHeadingNotification`,
-                                    obj.message.heading,
-                                    false,
-                                );
-                            }
-                            if (typeof obj.message.text === 'string') {
-                                await panel.statesControler.setInternalState(
-                                    `${panel.name}/cmd/screensaverTextNotification`,
-                                    obj.message.text,
-                                    false,
-                                );
-                            }
-                            await panel.statesControler.setInternalState(
-                                `${panel.name}/cmd/screensaverActivateNotification`,
-                                !!obj.message.enabled,
-                                false,
-                            );
-                            notifySent = true;
-                            //panel.screenSaver.textNotification = obj.message.text || '';
-                            //panel.screenSaver.sendNotify(!!obj.message.enabled);
-                        } else {
-                            this.log.warn(`Panel ${obj.message.panel} not exists!`);
-                        }
+                    if (this.controller?.panels) {
+                        notifySent = await this.controller.screensaverNotify(obj.message);
                     } else {
-                        this.log.warn(
-                            `Missing panel in screensaverNotify: ${JSON.stringify(obj.message)} or controller not ready!`,
-                        );
+                        this.log.warn(`screensaverNotify: ${JSON.stringify(obj.message)} - controller not ready!`);
                     }
                     this.answerMessage(obj, notifySent ? { result: 'ok' } : { error: 'sendToAnyError' });
                     break;
