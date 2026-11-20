@@ -171,7 +171,12 @@ def render(paths):
     with tempfile.TemporaryDirectory() as tmp:
         job, out = os.path.join(tmp, 'job.json'), os.path.join(tmp, 'out.bin')
         variant = {'s': HEIGHT / 24, 'dx': 0, 'dy': 0}
-        json.dump({'W': HEIGHT, 'H': HEIGHT, 'variants': [variant], 'paths': paths}, open(job, 'w'))
+        data = {'W': HEIGHT, 'H': HEIGHT, 'variants': [variant], 'paths': paths}
+        # render.mjs reads the puppeteer location from the job (no process.env in scanned files)
+        if os.environ.get('PUPPETEER_PATH'):
+            data['puppeteerPath'] = os.environ['PUPPETEER_PATH']
+        with open(job, 'w') as f:
+            json.dump(data, f)
         subprocess.run(['node', os.path.join(HERE, 'render.mjs'), job, out], check=True)
         raw = open(out, 'rb').read()
     n = HEIGHT * HEIGHT
