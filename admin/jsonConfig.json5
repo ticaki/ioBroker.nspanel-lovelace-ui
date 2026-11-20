@@ -1110,7 +1110,11 @@
                 "_webPanelHeader": {
                     "type": "staticText",
                     "text": "webPanelInfo",
-                    "xs": 12
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 // documentation of the web panels in the ioBroker system language (German -> de, else en)
                 "_webPanelDoc": {
@@ -1258,7 +1262,11 @@
                     "text": "webFidoRequirements",
                     "hidden": "!data.webFido",
                     "newLine": true,
-                    "xs": 12
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 12,
+                    "lg": 12,
+                    "xl": 12
                 },
                 "_webFidoKeys": {
                     "type": "custom",
