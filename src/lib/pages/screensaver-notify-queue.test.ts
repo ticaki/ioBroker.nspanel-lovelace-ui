@@ -347,11 +347,12 @@ describe('lib/controller/controller - sendTo screensaverNotify', () => {
         const f = setup();
         await f.controller.screensaverNotify({ panel: 'Flur', headline: 'X' });
         await f.controller.screensaverNotify({ panel: 'hall', headline: 'X', heading: 'H' });
+        // off: switched off before the new content, so it does not show up for a moment
         expect(f.writes).to.deep.equal([
+            { id: 'hall/cmd/screensaverActivateNotification', val: false },
             { id: 'hall/cmd/screensaverHeadingNotification', val: 'X' },
             { id: 'hall/cmd/screensaverActivateNotification', val: false },
             { id: 'hall/cmd/screensaverHeadingNotification', val: 'H' },
-            { id: 'hall/cmd/screensaverActivateNotification', val: false },
         ]);
     });
 

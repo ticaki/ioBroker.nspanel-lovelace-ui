@@ -890,7 +890,16 @@ export class Controller extends Library.BaseClass {
                 : typeof message.headline === 'string'
                   ? message.headline
                   : undefined;
+        const enabled = !!message.enabled;
         for (const name of names) {
+            // off: switch off first - a new heading/text must not show up for a moment before
+            if (!enabled) {
+                await this.statesControler.setInternalState(
+                    `${name}/cmd/screensaverActivateNotification`,
+                    false,
+                    false,
+                );
+            }
             if (heading !== undefined) {
                 await this.statesControler.setInternalState(
                     `${name}/cmd/screensaverHeadingNotification`,
@@ -905,11 +914,9 @@ export class Controller extends Library.BaseClass {
                     false,
                 );
             }
-            await this.statesControler.setInternalState(
-                `${name}/cmd/screensaverActivateNotification`,
-                !!message.enabled,
-                false,
-            );
+            if (enabled) {
+                await this.statesControler.setInternalState(`${name}/cmd/screensaverActivateNotification`, true, false);
+            }
         }
         return true;
     }
