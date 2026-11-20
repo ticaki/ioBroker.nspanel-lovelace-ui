@@ -924,6 +924,7 @@
     "nav_edit_drag_source": "Arrastar para definir '%s'",
     "nav_edit_generated_page": "Página gerada automaticamente – a navegação não pode ser alterada",
     "nav_edit_legend_generated": "página gerada (navegação apenas de leitura)",
+    "nav_edit_legend_hidden": "oculta – bloqueada no painel enquanto «Ocultar páginas» estiver ativo",
     "nav_edit_legend_hint": "Arraste os pontos de origem (esquerda/cima/baixo) para outra página, clique numa ligação para a remover; pálido = derivado pelo adaptador",
     "nav_edit_legend_override": "página de script com navegação substituída no admin",
     "nav_edit_legend_override_stale": "substituída – a navegação do script mudou desde então",

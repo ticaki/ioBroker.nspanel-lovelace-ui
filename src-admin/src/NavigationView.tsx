@@ -51,7 +51,11 @@ import {
     type FlowEdge,
     type FlowNode,
 } from './navigationFlowConst';
-import NavigationFlowNode, { GeneratedPageMarker, OverrideMarker } from './components/NavigationFlowNode';
+import NavigationFlowNode, {
+    GeneratedPageMarker,
+    HiddenPageMarker,
+    OverrideMarker,
+} from './components/NavigationFlowNode';
 import NavigationScopeDialog from './components/NavigationScopeDialog';
 import NavigationOverrideStaleDialog, {
     type StaleOverrideDecision,
@@ -3069,6 +3073,17 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             sx={{ whiteSpace: 'nowrap' }}
                         >
                             {I18n.t('nav_edit_legend_override_stale')}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span className="legend-marker">
+                            <HiddenPageMarker />
+                        </span>
+                        <Typography
+                            variant="caption"
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            {I18n.t('nav_edit_legend_hidden')}
                         </Typography>
                         <DocHelp topic="navigation.legend" />
                     </Box>

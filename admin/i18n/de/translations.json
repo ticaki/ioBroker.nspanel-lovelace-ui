@@ -932,6 +932,7 @@
     "nav_edit_drag_source": "Ziehen, um „%s“ zu setzen",
     "nav_edit_generated_page": "Automatisch erzeugte Seite – Navigation nicht änderbar",
     "nav_edit_legend_generated": "erzeugte Seite (Navigation nicht änderbar)",
+    "nav_edit_legend_hidden": "versteckt – am Panel gesperrt, solange „Seiten verbergen“ an ist",
     "nav_edit_legend_hint": "Quell-Handles (links/oben/unten) auf eine andere Seite ziehen, Kante anklicken zum Entfernen; blass = vom Adapter abgeleitet",
     "nav_edit_legend_override": "Skript-Seite mit im Admin überschriebener Navigation",
     "nav_edit_legend_override_stale": "überschrieben – Skript-Navigation hat sich seitdem geändert",

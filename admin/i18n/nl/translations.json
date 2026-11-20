@@ -924,6 +924,7 @@
     "nav_edit_drag_source": "Slepen om '%s' in te stellen",
     "nav_edit_generated_page": "Automatisch gegenereerde pagina – navigatie kan niet worden gewijzigd",
     "nav_edit_legend_generated": "gegenereerde pagina (navigatie alleen-lezen)",
+    "nav_edit_legend_hidden": "verborgen – op het paneel vergrendeld zolang „Verberg pagina's” aan staat",
     "nav_edit_legend_hint": "Sleep de bronpunten (links/boven/onder) naar een andere pagina, klik op een verbinding om deze te verwijderen; bleek = afgeleid door de adapter",
     "nav_edit_legend_override": "scriptpagina met in de admin overschreven navigatie",
     "nav_edit_legend_override_stale": "overschreven – scriptnavigatie is sindsdien gewijzigd",

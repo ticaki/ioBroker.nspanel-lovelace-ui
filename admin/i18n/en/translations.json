@@ -932,6 +932,7 @@
     "nav_edit_drag_source": "Drag to set '%s'",
     "nav_edit_generated_page": "Automatically generated page – navigation cannot be changed",
     "nav_edit_legend_generated": "generated page (navigation read-only)",
+    "nav_edit_legend_hidden": "hidden – locked on the panel while “Hide pages” is on",
     "nav_edit_legend_hint": "Drag the source handles (left/top/bottom) to another page, click an edge to remove it; pale = derived by the adapter",
     "nav_edit_legend_override": "script page with navigation overridden in the admin",
     "nav_edit_legend_override_stale": "overridden – script navigation changed since",

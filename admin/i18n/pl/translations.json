@@ -924,6 +924,7 @@
     "nav_edit_drag_source": "Przeciągnij, aby ustawić '%s'",
     "nav_edit_generated_page": "Strona wygenerowana automatycznie – nawigacji nie można zmienić",
     "nav_edit_legend_generated": "strona wygenerowana (nawigacja tylko do odczytu)",
+    "nav_edit_legend_hidden": "ukryta – zablokowana na panelu, dopóki „Ukryj strony” jest włączone",
     "nav_edit_legend_hint": "Przeciągnij punkty źródłowe (lewo/góra/dół) na inną stronę, kliknij połączenie, aby je usunąć; blade = wyprowadzone przez adapter",
     "nav_edit_legend_override": "strona skryptu z nawigacją nadpisaną w adminie",
     "nav_edit_legend_override_stale": "nadpisana – nawigacja skryptu od tego czasu się zmieniła",

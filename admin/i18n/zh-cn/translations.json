@@ -924,6 +924,7 @@
     "nav_edit_drag_source": "拖动以设置 '%s'",
     "nav_edit_generated_page": "自动生成的页面 – 导航不可更改",
     "nav_edit_legend_generated": "生成的页面（导航只读）",
+    "nav_edit_legend_hidden": "隐藏 – 面板上“隐藏页面”开启时被锁定",
     "nav_edit_legend_hint": "将源连接点（左/上/下）拖到另一个页面，点击连线以删除；淡色 = 由适配器推导",
     "nav_edit_legend_override": "脚本页面，导航已在管理界面中覆盖",
     "nav_edit_legend_override_stale": "已覆盖 – 脚本导航此后已更改",
