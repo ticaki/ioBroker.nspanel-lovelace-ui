@@ -205,6 +205,8 @@ While *Hide pages* is on, every page with the *Hidden* box ticked behaves like t
 - **A targeted navigation** — a navigation item, `cmd.goToNavigationPoint`, a hardware button with *Go to a navigation point* — does not open it. The panel stays on the page shown and reports *"Page locked"*: from TFT 6.2.0 with a large prohibition icon, on older TFTs as a classic popup.
 - **The lock message goes away with the cross or by itself**, not through a tap on the icon or the text — it has no buttons. By itself it disappears after the screensaver timeout of the panel (default 15 seconds, `panels.<panel>.cmd.screenSaver.timeout`); the page shown before is then back. This applies to both presentations alike.
 - **After ten skipped pages it stops.** If a chain of locked pages runs in a circle, the adapter gives up after ten jumps, writes an error to the log (*Infinite loop detected in navigation*) and sends the panel to the start page.
+![The page list in the admin: the page thermoTest carries a crossed-out eye behind its name because it is hidden](../Pictures/pageConfig/pageconfig-09-versteckt-liste.png)
+
 - **In the admin** a closed eye marks such pages, in the page list and in the [navigation flow](naviFlow); the tooltip reads *Locked (hidden): only reachable on the panel while “Hide pages” is off*. The eye is shown regardless of whether *Hide pages* is currently on.
 
 While *Hide pages* is off, hidden pages behave like all others. Typical use: maintenance or expert pages that should only be reachable at times — the datapoint can, for example, be tied to presence or the time of day by a script.

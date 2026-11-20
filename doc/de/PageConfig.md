@@ -205,6 +205,8 @@ Ist *Seiten verbergen* eingeschaltet, gilt für jede Seite mit dem Haken *Verste
 - **Ein gezieltes Ziel** — ein Navigations-Element, `cmd.goToNavigationPoint`, ein Hardware-Taster mit *Zu einem Navigationspunkt wechseln* — öffnet sie nicht. Das Panel bleibt auf der angezeigten Seite und meldet *„Seite gesperrt“*: ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup.
 - **Die Sperrmeldung geht per Kreuz oder von selbst weg**, nicht durch einen Tipp auf Symbol oder Text — sie hat keine Knöpfe. Von selbst verschwindet sie nach dem Bildschirmschoner-Timeout des Panels (Vorgabe 15 Sekunden, `panels.<Panel>.cmd.screenSaver.timeout`); danach steht die zuvor angezeigte Seite wieder da. Für beide Darstellungen gilt das gleichermaßen.
 - **Nach zehn übersprungenen Seiten ist Schluss.** Führt eine Kette gesperrter Seiten im Kreis, bricht der Adapter nach zehn Sprüngen ab, schreibt einen Fehler ins Log (*Infinite loop detected in navigation*) und schickt das Panel auf die Startseite.
+![Die Seitenliste im Admin: die Seite thermoTest trägt hinter dem Namen ein durchgestrichenes Auge, weil sie versteckt ist](../Pictures/pageConfig/pageconfig-09-versteckt-liste.png)
+
 - **Im Admin** zeigt ein geschlossenes Auge solche Seiten, in der Seitenliste und im [Navigation Flow](naviFlow); der Tooltip lautet *Gesperrt (versteckt): auf dem Panel nur erreichbar, wenn „Seiten verbergen“ aus ist*. Das Auge erscheint unabhängig davon, ob *Seiten verbergen* gerade eingeschaltet ist.
 
 Ist *Seiten verbergen* ausgeschaltet, verhalten sich versteckte Seiten wie alle anderen. Typischer Einsatz: Wartungs- oder Expertenseiten, die nur zeitweise erreichbar sein sollen — der Datenpunkt lässt sich dafür z. B. per Skript an eine Anwesenheit oder Uhrzeit koppeln.

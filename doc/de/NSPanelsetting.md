@@ -89,6 +89,10 @@ Die beiden Tasten unter dem Display sind seit 2.0.0 im Admin einstellbar. **HW-B
 
 ![Der Dialog Hardware-Button links mit entkoppeltem Relais und gewählter Aktion](../Pictures/nspanelSetting/hw-button-dialog-entkoppelt.png)
 
+Mit der Aktion **Navigation (wie ein Pfeil der Seite)** kommt darunter das Feld **Pfeil** dazu: *Weiter (next)*, *Zurück (prev)*, *Startseite (home)* oder *Übergeordnet (parent)*. Die Taste wirkt dann wie der Navigationspfeil der gerade angezeigten Seite — *next* wie ein kurzer Druck auf den rechten Pfeil, *home* wie ein langer. Ein offenes Popup wird vorher geschlossen; auf dem Bildschirmschoner passiert nichts.
+
+![Derselbe Dialog mit der Aktion „Navigation (wie ein Pfeil der Seite)“ und dem zusätzlichen Feld Pfeil, hier auf „Weiter (next)“](../Pictures/nspanelSetting/hw-button-dialog-pfeil.png)
+
 **Der Admin überschreibt das Skript.** Beim Aufbau der Panel-Konfiguration legt der Adapter die Aktionen des Admins über die des Konfigurationsskripts, und zwar getrennt für jede Seite:
 
 - Eine im Admin eingestellte Seite **gewinnt** gegen das Skript.

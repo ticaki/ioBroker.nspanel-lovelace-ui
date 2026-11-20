@@ -89,6 +89,10 @@ The two buttons below the display can be configured in the admin since 2.0.0. **
 
 ![The Hardware button left dialog with a decoupled relay and a chosen action](../Pictures/nspanelSetting/hw-button-dialog-entkoppelt.png)
 
+With the action **Navigation (like an arrow of the page)** the field **Arrow** appears below it: *next*, *prev*, *home* or *parent*. The button then acts like the navigation arrow of the page currently shown — *next* like a short press on the right arrow, *home* like a long one. An open popup is closed first; on the screensaver nothing happens.
+
+![The same dialog with the action “Navigation (like an arrow of the page)” and the additional field Arrow, here on “next”](../Pictures/nspanelSetting/hw-button-dialog-pfeil.png)
+
 **The admin overrides the script.** When building the panel configuration the adapter lays the actions of the admin over those of the configuration script, separately for each side:
 
 - A side configured in the admin **wins** against the script.
