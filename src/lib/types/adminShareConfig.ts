@@ -4512,6 +4512,8 @@ export type ConvertScriptPlan = {
         notifyCount: number;
         /** items taken over as raw items, see {@link ConvertRawItem} */
         rawItems?: ConvertRawItem[];
+        /** invalid fields that were dropped instead of converted (e.g. a blink color), one text each */
+        dropped?: string[];
     };
     screensaverSkipped?: { reason: ConvertSkipReason; detail?: string };
     buttons: { left?: AdminButtonFunction; right?: AdminButtonFunction };

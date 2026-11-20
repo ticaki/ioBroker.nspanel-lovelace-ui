@@ -2944,6 +2944,30 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(ok.cleanedRaw.notifyScreensaverEntity).to.equal(undefined);
     });
 
+    it('drops an invalid blink color of a notification and keeps the screensaver', () => {
+        const element = {
+            type: 'script' as const,
+            Enabled: '0_userdata.0.alarm',
+            Priority: 1,
+            Headline: 'h',
+            Text: 't',
+            BackgroundBlink: 'red',
+        };
+        const result = plan(baseConfig({ notifyScreensaverEntity: [element] }));
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.screensaverEntry).to.not.equal(undefined);
+        expect(result.newNotify).to.have.length(1);
+        expect(result.newNotify[0]).to.not.have.property('backgroundBlink');
+        expect(result.newNotify[0]).to.deep.include({ enabled: ['0_userdata.0.alarm'], headline: 'h', text: 't' });
+        expect(result.plan.screensaver!.dropped).to.deep.equal([
+            'notifyScreensaverEntity[0].BackgroundBlink: red is no color #rrggbb - dropped, the notification does not blink',
+        ]);
+
+        const valid = plan(baseConfig({ notifyScreensaverEntity: [{ ...element, BackgroundBlink: '#ff0000' }] }));
+        expect(valid.newNotify[0]).to.deep.include({ backgroundBlink: '#ff0000' });
+        expect(valid.plan.screensaver!.dropped).to.equal(undefined);
+    });
+
     it('skips the screensaver when the panel already has one, when it is empty or when an element cannot be placed', () => {
         const exists = plan(templateConfig(), {
             screensaverConfig: [{ name: 'x', mode: 'standard', panels: [topic], left: [], bottom: [], indicator: [] }],

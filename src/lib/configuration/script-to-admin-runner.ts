@@ -735,6 +735,9 @@ export class ScriptToAdminRunner {
                 `Screensaver '${s.name}' (${s.mode}, ${s.itemCount} items, ${s.notifyCount} notifications): ` +
                     `converted to the admin screensaver configuration`,
             );
+            for (const text of s.dropped ?? []) {
+                warn(`Screensaver '${s.name}': ${text}`);
+            }
         } else if (plan.screensaverSkipped) {
             const s = plan.screensaverSkipped;
             (s.reason === 'screensaverEmpty' ? info : warn)(`Screensaver skipped: ${reasonText(s.reason, s.detail)}`);

@@ -2029,8 +2029,9 @@ const notifyKeys = [
  *
  * @param element Element of the script.
  * @param where Prefix for the detail.
+ * @param dropped Collects the fields that were dropped instead of converted (logged by the caller).
  */
-function convertNotify(element: unknown, where: string): Omit<ScreensaverNotifyConfig, 'id'> {
+function convertNotify(element: unknown, where: string, dropped: string[]): Omit<ScreensaverNotifyConfig, 'id'> {
     const reason: ConvertSkipReason = 'screensaverItemNotSupported';
     if (!isDict(element)) {
         throw new ConvertError(reason, `${where}: expected an object`);
@@ -2101,7 +2102,11 @@ function convertNotify(element: unknown, where: string): Omit<ScreensaverNotifyC
     if (isHexColor(blink)) {
         cfg.backgroundBlink = blink;
     } else if (blink !== undefined && blink !== null && blink !== '') {
-        throw new ConvertError(reason, `${where}.BackgroundBlink: expected a color #rrggbb`);
+        // the config manager ignores an invalid color (no blinking) - only the color is dropped
+        const shown = typeof blink === 'string' ? blink : JSON.stringify(blink);
+        dropped.push(
+            `${where}.BackgroundBlink: ${shown} is no color #rrggbb - dropped, the notification does not blink`,
+        );
     }
     return cfg;
 }
@@ -2129,7 +2134,7 @@ function weatherItemsOf(value: unknown): ScreensaverWeatherItems | undefined {
 }
 
 type ScreensaverResult =
-    | { entry: ScreensaverEntry; notify: ScreensaverNotifyConfig[]; rawItems: ConvertRawItem[] }
+    | { entry: ScreensaverEntry; notify: ScreensaverNotifyConfig[]; rawItems: ConvertRawItem[]; dropped: string[] }
     | { skipped: { reason: ConvertSkipReason; detail?: string } };
 
 /**
@@ -2209,13 +2214,14 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         const mrIcon2 = convertMrIcon(raw.mrIcon2ScreensaverEntity, 'mrIcon2ScreensaverEntity');
         const notifyList = raw.notifyScreensaverEntity;
         const notify: ScreensaverNotifyConfig[] = [];
+        const dropped: string[] = [];
         if (notifyList !== undefined && notifyList !== null) {
             if (!Array.isArray(notifyList)) {
                 throw new ConvertError('screensaverItemNotSupported', 'notifyScreensaverEntity: expected a list');
             }
             const existing = [...input.screensaverNotify];
             notifyList.forEach((element: unknown, index) => {
-                const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`);
+                const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`, dropped);
                 const id = (input.notifyIdFactory ?? newScreensaverNotifyId)(existing);
                 const full: ScreensaverNotifyConfig = { id, name: `${panel.name} ${index + 1}`, ...cfg };
                 existing.push(full);
@@ -2285,7 +2291,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         if (weatherItems) {
             entry.weatherAddDefaultItems = weatherItems;
         }
-        return { entry, notify, rawItems };
+        return { entry, notify, rawItems, dropped };
     } catch (error) {
         if (error instanceof ConvertError) {
             return { skipped: { reason: error.reason, detail: error.detail } };
@@ -2974,6 +2980,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
         };
         if (screensaver.rawItems.length) {
             plan.screensaver.rawItems = screensaver.rawItems;
+        }
+        if (screensaver.dropped.length) {
+            plan.screensaver.dropped = screensaver.dropped;
         }
     }
 
