@@ -317,7 +317,6 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         <Select
                             id="color-theme-select"
                             value={colorTheme}
-                            label={this.getText('colorTheme')}
                             onChange={this.handleSelectNumberChange('colorTheme')}
                         >
                             <MenuItem value={0}>{this.getText('default')}</MenuItem>

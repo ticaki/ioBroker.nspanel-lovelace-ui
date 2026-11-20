@@ -570,7 +570,7 @@
     "getRandomMqttCredentials": "Vul MQTT -referenties en poort",
     "getRandomMqttCredentialsHelp": "Genereer willekeurige MQTT -referenties en krijg een gratis poort",
     "headerCardThermo": "cardThermo2-instellingen",
-    "headerColorTheme": "Kleurthema -instellingen",
+    "headerColorTheme": "Kleurthema-instellingen",
     "headerDateFormat": "Datumformaat",
     "headerMaintain": "Onderhoud",
     "headerShutter": "Sluiterregeling",

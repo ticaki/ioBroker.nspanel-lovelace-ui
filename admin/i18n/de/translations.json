@@ -577,7 +577,7 @@
     "getRandomMqttCredentials": "Fülle automatisch MQTT-Anmeldeinformationen und Port aus",
     "getRandomMqttCredentialsHelp": "Generiert zufällige MQTT-Anmeldeinformationen und fügt einen freien Port ein",
     "headerCardThermo": "cardThermo2 Einstellungen",
-    "headerColorTheme": "Farbthema -Einstellungen",
+    "headerColorTheme": "Farbthema-Einstellungen",
     "headerDateFormat": "Datumsformat",
     "headerMaintain": "Wartung",
     "headerShutter": "Rollladensteuerung",
