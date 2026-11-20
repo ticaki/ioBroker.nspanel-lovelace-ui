@@ -181,6 +181,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) navigation: when the long press of a navigation arrow is reached (0.5 s), the heading and the arrows blink yellow/green until the finger is lifted - letting go then leads to home/parent (TFT 6.2.0 and web panel; the web panel now knows the long press of the arrows too)
 - (ticaki) TFT 6.2.0: shorter id buffers of the navigation, cardMedia and the detail popups free page RAM (cardMedia 540 bytes, other cards 120, popups 60) for further features; buffers that can receive long values from the script (cardEntities/Grid/Schedule/Thermo/Thermo2/Alarm/QR items, popupThermo, popupNotify) keep their size
 - (ticaki) TFT 6.2.0: cardThermo2 - holding a navigation arrow no longer repeats it like the temperature buttons, so the long press (home/parent) and its blinking work there too; cardEntities and cardThermo2 (EU) no longer send an empty button press of an arrow when the page loads
+- (ticaki) navigation: swiping over a locked (hidden) page always goes on over its simple target (next/prev), no longer over home/parent when the skipped page has both
+- (ticaki) web panel: a touch of the screensaver clears the notification like the panel does (the first touch of a dark display only wakes it), it no longer stays with frozen content and keeps blinking
+- (ticaki) script conversion: an invalid blink color of a notification only drops the color (with a warning), the screensaver is converted anyway
+- (ticaki) admin: the long press hint of screensaver items explains TFT 6.2.0 (without an action the panel detects no long press), the navigation flow legend shows the closed eye of hidden pages
 
 ### 2.4.1 (2026-11-18)
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
