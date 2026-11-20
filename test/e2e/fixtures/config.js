@@ -45,6 +45,8 @@ const IDS = {
     humidity: `${BASE}.humidity`,
     power: `${BASE}.power`,
     window: `${BASE}.window`,
+    /** switches the notification of the admin list (scenario 08) - not in STATES, so not in the snapshots */
+    notifyAdmin: `${BASE}.notifyAdmin`,
 };
 
 /** display names - the tests find the items of a page by them */
@@ -108,6 +110,7 @@ const OBJECTS = {
     [IDS.humidity]: state('Humidity', 'number', 'value.humidity', false, { unit: '%' }),
     [IDS.power]: state('Power', 'number', 'value.power', false, { unit: 'W' }),
     [IDS.window]: state('Window', 'boolean', 'sensor.window', false),
+    [IDS.notifyAdmin]: state('Notify admin', 'boolean', 'switch', true),
 };
 
 /** start values of the test states */
@@ -125,6 +128,24 @@ const STATES = {
     [IDS.humidity]: 48,
     [IDS.power]: 1234,
     [IDS.window]: false,
+};
+
+/**
+ * Start values of states that are not part of the snapshots (a new entry in STATES would change every snapshot).
+ * Set before the adapter starts like STATES; the scenario that uses one sets it back itself.
+ */
+const EXTRA_STATES = {
+    [IDS.notifyAdmin]: false,
+};
+
+/** notification of the admin list (`native.screensaverNotify`), switched on by IDS.notifyAdmin (scenario 08) */
+const ADMIN_NOTIFY = {
+    id: 'e2e-admin-notify',
+    name: 'E2E admin notification',
+    headline: 'Admin',
+    text: 'from the list',
+    /** same as the default of sendTo - for the tie of sendTo and admin list */
+    priority: 50,
 };
 
 /**
@@ -235,6 +256,7 @@ const SCREENSAVER_CONFIG = [
         ],
         weatherEntity: '',
         rotationTime: 0,
+        notify: [ADMIN_NOTIFY.id],
     },
 ];
 
@@ -279,8 +301,30 @@ function nativeConfig(ports) {
         ],
         pageConfig: PAGE_CONFIG,
         screensaverConfig: SCREENSAVER_CONFIG,
-        screensaverNotify: [],
+        screensaverNotify: [
+            {
+                id: ADMIN_NOTIFY.id,
+                name: ADMIN_NOTIFY.name,
+                enabled: [IDS.notifyAdmin],
+                headline: ADMIN_NOTIFY.headline,
+                text: ADMIN_NOTIFY.text,
+                priority: ADMIN_NOTIFY.priority,
+            },
+        ],
     };
 }
 
-module.exports = { NSPANEL, WEBPANEL, MQTT, IDS, NAMES, HEADLINES, OBJECTS, STATES, SCREENSAVER, nativeConfig };
+module.exports = {
+    NSPANEL,
+    WEBPANEL,
+    MQTT,
+    IDS,
+    NAMES,
+    HEADLINES,
+    OBJECTS,
+    STATES,
+    EXTRA_STATES,
+    SCREENSAVER,
+    ADMIN_NOTIFY,
+    nativeConfig,
+};

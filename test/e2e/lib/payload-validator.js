@@ -303,7 +303,12 @@ class PayloadValidator {
                 p.check(f.length === 2 && f[1] !== '', 'date~<text>');
                 break;
             case 'notify':
-                p.check(f.length === 3, `notify~heading~text has 2 fields, got ${f.length - 1}`);
+                // notify~heading~text[~headColor~textColor~background~blink]: fields 3..6 RGB565 or empty
+                // (HMI/tools/notify_background.py, notify_blink.py; old adapters send 2 fields)
+                p.check(f.length >= 3 && f.length <= 7, `notify~heading~text has 2 to 6 fields, got ${f.length - 1}`);
+                for (let i = 3; i < f.length; i++) {
+                    p.field(f, i, s => s === '' || isColor(s), 'color or empty');
+                }
                 break;
             default:
                 break;

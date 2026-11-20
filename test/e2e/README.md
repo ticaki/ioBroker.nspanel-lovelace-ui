@@ -94,6 +94,8 @@ Nicht pauschal länger warten (`settle(3000)`): das macht den Test langsamer und
 
 2. In `index.js` in die Liste `scenarios` eintragen.
 3. Neue States/Seiten in `fixtures/config.js` ergänzen (`OBJECTS`, `STATES`, `PAGE_CONFIG`, `SCREENSAVER_CONFIG`).
+   States, die nicht in jedem Snapshot stehen sollen (ein neuer Eintrag in `STATES` ändert alle Snapshots), kommen in
+   `EXTRA_STATES` – sie werden wie `STATES` vor dem Start gesetzt, das Szenario setzt sie selbst zurück.
 
 Regeln: Assertions **positionsgenau** auf einzelne Felder (`lib/protocol.js`: `parseMenuUpdate`,
 `parseWeatherUpdate`, `parseLightDetail`, `parseShutterDetail`; `lib/steps.js`: `menuItemAt`, `expectScreensaver`) oder

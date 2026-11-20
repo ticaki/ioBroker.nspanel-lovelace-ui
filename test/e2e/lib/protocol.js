@@ -227,6 +227,30 @@ function parseShutterDetail(payload) {
 }
 
 /**
+ * `notify~heading~text[~headColor~textColor~background~blink]` - the notification of the screensaver (Schlagzeile).
+ * Fields 3..6 are RGB565 numbers (HMI/tools/notify_background.py, notify_blink.py, src-web parseNotify); heading and
+ * text empty = no notification.
+ *
+ * @param {string} payload the notify payload
+ * @returns {{ heading: string, text: string, headColor: string | undefined, textColor: string | undefined, background: string | undefined, blink: string | undefined, count: number }} parsed
+ */
+function parseNotify(payload) {
+    const f = payload.split('~');
+    if (f[0] !== 'notify') {
+        throw new Error(`no notify: ${payload}`);
+    }
+    return {
+        heading: f[1] ?? '',
+        text: f[2] ?? '',
+        headColor: f[3],
+        textColor: f[4],
+        background: f[5],
+        blink: f[6],
+        count: f.length - 1,
+    };
+}
+
+/**
  * Button event of the display.
  *
  * @param {string} id internal name (`intNameEntity`) or navigation id
@@ -249,6 +273,7 @@ module.exports = {
     weatherLayout,
     parseLightDetail,
     parseShutterDetail,
+    parseNotify,
     menuItem,
     isMenuUpdate,
     buttonPress,
