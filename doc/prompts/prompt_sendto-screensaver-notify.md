@@ -39,7 +39,7 @@ sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', message, answer => { /* ...
 | `priority` | number | Kleiner = wichtiger. Standard **50**. `<= 0` **entfernt** die Meldung mit dieser `id`; `<= -100` entfernt **alle** Meldungen, deren `id` mit dieser `id` beginnt (Präfix). |
 | `headline` | string | Überschrift. Bei der Schlagzeile wird auch der alte Name `heading` angenommen. |
 | `text` | string | Text der Meldung. |
-| `panel` | string \| string[] | Ziel-Panel(s): Name, Anzeigename (friendlyName) oder MQTT-Topic. **Fehlt es, geht die Meldung an alle Panels.** |
+| `panel` | string \| string[] | Ziel-Panel(s): Panel-ID (die ID aus der Panel-Tabelle im Admin, z. B. `A0_B7_A5_E2_E0_01`), Anzeigename (friendlyName) oder MQTT-Topic. **Fehlt es, geht die Meldung an alle Panels.** |
 | `icon` | string | MDI-Iconname (ohne `mdi:`), z. B. `washing-machine`. Schlagzeile: steht vor der Überschrift. |
 | `colorHeadline`, `colorText` | `{r,g,b}` oder `"#rrggbb"` | Farbe von Überschrift/Text. Fehlt = Farbe des Farbthemas. |
 | `buzzer` | boolean \| string | Tonsignal beim Erscheinen. `true` = Standardton, String = eigene Tasmota-Buzzer-Folge (z. B. `"1,2,3,0xF54"`). Das Panel kann Töne nachts oder per Einstellung unterdrücken. |
@@ -88,7 +88,8 @@ alle Panels). Dieser Platz überdeckt alle anderen Meldungen, solange er aktiv i
 - `screensaverNotify`: `{ result: 'ok' }`, sobald mindestens ein Ziel-Panel die Meldung bekommen hat, sonst
   `{ error: 'sendToAnyError' }` (kein Panel gefunden, Adapter noch nicht bereit). Unbekannte Panel-Namen in einer Liste
   landen nur im Log von `nspanel-lovelace-ui`.
-- `setPopupNotification`: `[]` bei Erfolg oder `{ error: 'No Panels Online' }`.
+- `setPopupNotification`: `[]`, sobald irgendein Panel online ist – auch wenn ein genanntes Panel nicht existiert (das
+  landet nur im Log von `nspanel-lovelace-ui`). `{ error: 'No Panels Online' }` nur, wenn gar kein Panel online ist.
 
 Werte nur aus, ob ein `error`-Feld vorhanden ist, und logge es als Warnung. Kein Wiederholen in einer Schleife.
 
