@@ -174,7 +174,7 @@ Symbol vor der Überschrift.
 
 | Unwetter mit zwei Knöpfen | Besetzt, ohne Knöpfe | Langer Text in einer Zeile | 24 px in zwei Zeilen |
 |---|---|---|---|
-| ![Großes orangefarbenes Gewittersymbol, links ein grüner Knopf mit Haken, rechts ein grauer Knopf mit Wecker, darunter „Unwetterwarnung“](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Rotes Verbotsschild ohne Knöpfe, darunter „WC besetzt“](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Waschmaschine mit Warnzeichen und einem Knopf rechts, darunter „Waschmaschine: Störung“ über die ganze Breite](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![Mit textSize 0 steht der Text kleiner in zwei Zeilen](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
+| ![Großes orangefarbenes Gewittersymbol, links ein grauer Knopf mit Wecker (später), rechts ein grüner Knopf mit Haken (quittieren), darunter „Unwetterwarnung“](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Rotes Verbotsschild ohne Knöpfe, darunter „WC besetzt“](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Waschmaschine mit Warnzeichen und einem Knopf rechts, darunter „Waschmaschine: Störung“ über die ganze Breite](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![Mit textSize 0 steht der Text kleiner in zwei Zeilen](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
 
 Voraussetzung ist ein Panel mit **TFT 6.2.0 oder neuer** oder ein Web-Panel. Ein Panel mit älterer TFT zeigt
 dieselbe Meldung klassisch.

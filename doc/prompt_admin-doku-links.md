@@ -234,7 +234,9 @@ beide Seiten dieselbe Struktur vorfinden.
 ### Bilder
 
 - Ablage `doc/Pictures/<thema>/<nr>-<kurzname>.png` — ein Ordner je Seite/Thema (`maintain`, `developer`,
-  `pageConfigDialoge`, `screensaverAdmin` …), fortlaufende Nummer, deutscher Kurzname, nur PNG.
+  `pageConfigDialoge`, `screensaverAdmin` …), fortlaufende Nummer, deutscher Kurzname. **PNG hat Vorrang.**
+  **GIF nur für Animationen**, die ein Standbild nicht zeigen kann (Blinken, Farbwechsel, Ablauf) — als kurze Schleife
+  mit wenigen Frames, Maß wie die Standbilder daneben. Alles andere bleibt PNG.
 - **Ein Bild für beide Sprachen:** derselbe Pfad in DE und EN, nur der Alt-Text ist übersetzt.
   Einbinden mit `![Alt-Text](../Pictures/<thema>/<datei>.png)`; Roh-`<img>` nur, wenn die Breite begrenzt werden muss.
 - Der Alt-Text beschreibt, **was zu sehen ist und warum** („Die Karte eines Panels mit dem Feld Berry-Treiber und

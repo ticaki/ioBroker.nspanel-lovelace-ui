@@ -85,7 +85,7 @@ A **dismissed** message stays hidden, also when its content changes – it only 
 A message set by `sendTo` (`screensaverNotify`) **without `id`** or through `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` is not configured in the admin and is not throttled. A message by `sendTo` **with `id`** is throttled like one of the list, see [From a script](#11-from-a-script-sendto-screensavernotify).
 
 ## 3. When to show: states and condition
-![States, condition, priority, dismissing and buzzer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+![The lower part of the dialog: states, condition, priority, dismissing, group id, buzzer and the section Blinking with the tick “Background blinks”](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
 
 | Field | Effect |
@@ -198,6 +198,8 @@ A single notification can draw attention to itself on top: its background then a
 |---|---|
 | **Background blinks** | Switches the blinking on for this notification. Without the tick nothing blinks. |
 | **Second colour** | Appears with the tick, preset to dark red (`#9c201a`). The first colour is always the background of the colour theme. |
+
+![The headline on the panel: its background alternates between the grey of the colour theme and the second colour (animated)](../Pictures/screensaverAdmin/notify-04-blinken.gif)
 
 The panel blinks by itself – the adapter sends the message only once. The blinking ends as soon as the notification disappears (state off, tapped away) or another one without blinking takes its place.
 

@@ -193,7 +193,9 @@ The three paging rows appear on **menu pages** (Grid, Grid2, Grid3, Entities, Sc
 | Where | How |
 |---|---|
 | **Datapoint** | `nspanel-lovelace-ui.0.panels.<id>.cmd.hideCards` (`true`/`false`, default `false`) — e.g. in the *Objects* tab, by script or Blockly, written without acknowledgement (`ack: false`). The change takes effect at once, without a restart, and is kept over restarts. |
-| **On the panel** | On the service pages (protected by the *Service PIN* from the [global settings](globelSettings)): *Overview* → *System* → switch *Hide Cards*. Green = on. |
+| **On the panel** | On the service pages (protected by the *Service PIN* from the [global settings](globelSettings)): *Overview* → *System* → switch *Hide Cards*. **The icon** on the left turns green once it is on and red once it is off — the switch itself stays blue. |
+
+![The service page System on the panel: the entry Hide Cards with a green icon and the switch turned on](../Pictures/pageConfig/pageconfig-08-hide-cards-panel.png)
 
 **The page `///unlock` leads to the service pages.** It is not a code to type in but a navigation target: enter `///unlock` on a page as *next*, *prev*, *home* or *parent* — it is always in the list, even without *Show system pages*. On the panel it asks for the *Service PIN* on a number pad and, after the right entry, leads once to *Overview*. There is no unlock for a period of time: every new visit asks for the PIN again. After a wrong entry the number pad is blocked for a short while, and twice as long with every further failed attempt. If no *Service PIN* is set, access is open — the adapter then warns in the log at startup.
 

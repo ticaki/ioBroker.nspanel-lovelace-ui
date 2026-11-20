@@ -193,7 +193,9 @@ Die drei Blätter-Zeilen erscheinen bei **Menü-Seiten** (Grid, Grid2, Grid3, En
 | Wo | Wie |
 |---|---|
 | **Datenpunkt** | `nspanel-lovelace-ui.0.panels.<ID>.cmd.hideCards` (`true`/`false`, Vorgabe `false`) — etwa im Tab *Objekte*, per Skript oder Blockly, ohne Bestätigung (`ack: false`) geschrieben. Die Änderung wirkt sofort, ohne Neustart, und bleibt über Neustarts erhalten. |
-| **Am Panel** | Auf den Serviceseiten (geschützt mit dem *Service-Pin* aus den [globalen Einstellungen](globelSettings)): *Overview* → *System* → Schalter *Hide Cards*. Grün = eingeschaltet. |
+| **Am Panel** | Auf den Serviceseiten (geschützt mit dem *Service-Pin* aus den [globalen Einstellungen](globelSettings)): *Overview* → *System* → Schalter *Hide Cards*. **Das Symbol** links wird grün, sobald eingeschaltet ist, und rot, sobald aus — der Schalter selbst bleibt blau. |
+
+![Die Serviceseite System am Panel: der Eintrag Hide Cards mit grünem Symbol und eingeschaltetem Schalter](../Pictures/pageConfig/pageconfig-08-hide-cards-panel.png)
 
 **Auf die Serviceseiten führt die Seite `///unlock`.** Sie ist kein Code zum Eintippen, sondern ein Navigationsziel: Trage `///unlock` bei einer Seite als *next*, *prev*, *home* oder *parent* ein — in der Auswahl steht sie immer, auch ohne *Systemseiten anzeigen*. Am Panel fragt sie den *Service-Pin* auf einem Ziffernblock ab und führt nach der richtigen Eingabe einmal auf *Overview*. Eine Freischaltung auf Zeit gibt es nicht: Jeder neue Besuch verlangt den Pin erneut. Nach einer falschen Eingabe sperrt der Ziffernblock kurz, mit jedem weiteren Fehlversuch doppelt so lange. Ist kein *Service-Pin* gesetzt, ist der Zugang offen — der Adapter warnt dann beim Start im Log.
 

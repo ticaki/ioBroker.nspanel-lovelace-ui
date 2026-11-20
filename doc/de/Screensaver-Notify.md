@@ -85,7 +85,7 @@ Eine **quittierte** Meldung bleibt ausgeblendet, auch wenn sich ihr Inhalt ände
 Eine Meldung, die per `sendTo` (`screensaverNotify`) **ohne `id`** oder über `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` gesetzt wird, ist nicht im Admin konfiguriert und wird nicht gebremst. Eine Meldung per `sendTo` **mit `id`** wird gebremst wie eine aus der Liste, siehe [Per Skript](#11-per-skript-sendto-screensavernotify).
 
 ## 3. Wann anzeigen: Datenpunkte und Bedingung
-![Datenpunkte, Bedingung, Priorität, Quittieren und Summer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+![Der untere Teil des Dialogs: Datenpunkte, Bedingung, Priorität, Quittieren, Gruppen-ID, Summer und der Abschnitt Blinken mit dem Haken „Hintergrund blinkt“](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
 
 | Feld | Wirkung |
@@ -198,6 +198,8 @@ Eine einzelne Benachrichtigung kann zusätzlich auf sich aufmerksam machen: Ihr 
 |---|---|
 | **Hintergrund blinkt** | Schaltet das Blinken für diese Benachrichtigung ein. Ohne Haken blinkt nichts. |
 | **Zweite Farbe** | Erscheint mit dem Haken, vorbelegt mit Dunkelrot (`#9c201a`). Die erste Farbe ist immer der Hintergrund aus dem Farbthema. |
+
+![Die Schlagzeile am Panel: Ihr Hintergrund wechselt zwischen dem Grau des Farbthemas und der zweiten Farbe (animiert)](../Pictures/screensaverAdmin/notify-04-blinken.gif)
 
 Das Panel blinkt selbst – der Adapter schickt die Meldung nur einmal. Das Blinken endet, sobald die Benachrichtigung verschwindet (Datenpunkt aus, weggetippt) oder eine andere ohne Blinken an ihre Stelle tritt.
 

@@ -336,7 +336,7 @@ In the item dialog of an indicator a second block **Action on long press** stand
 | **Open popup** | opens the popup of the device the indicator belongs to. Only in the choice when the device has one, see [Open popup](#open-popup). |
 | **Only trigger the state** | only writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` (see below) – nothing else happens, no tap either. For own scripts that react on the long press. |
 
-![The item dialog of a dimmer indicator with the choice “Action on long press” opened – here with “Open popup”, because the channel is a dimmer](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
+![The item dialog of an indicator with the choice “Action on long press” opened – the six entries from “none” to “Only trigger the state”](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - From the TFT **6.2.0** on the long press fires only when the finger is **lifted**: after **500 ms** of holding the time blinks yellow and green – you can let go now; afterwards the time gets its colour back. Letting go earlier is a short tap; a swipe drops the long press too. With the TFT 6.0.9 to 6.1.x it fires after 500 ms, while the finger is still down. With an action set **only** that action runs – the action of the short press stays out.
 - From the TFT **6.2.0** on only indicators with an **Action on long press** blink (**Only trigger the state** included). With all others the time stays calm, and holding long is a short tap when the finger is lifted. The adapter tells the panel which indicators are meant; with an older TFT every indicator still has a long press – the time never blinks there.
@@ -653,6 +653,8 @@ The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in
 
 - **Which icon is shown follows this order:** a running timer displaces everything, then comes the development firmware; the firmware update icon appears only when no own info icon is set. While the screensaver shows one of those icons, the state `buttons.infoIcon` stays away. A [web panel](WebPanel) has no TFT firmware and never shows the two firmware icons.
 - The popup is the usual notification popup with a small icon (see [Popups](pagePopup)). It closes with the cross or after the timeout of the panel; then the screensaver is back.
+
+![The popup of your own info icon on the panel: the blue bell on the left, the text from infoText next to it, the cross at the top right; at the bottom left the button Next, because another message is waiting](../Pictures/screensaverAdmin/admin-31-infoicon-popup.png)
 - The icon in the popup has the color the info icon has on the screensaver at that moment (orange or red with the timer).
 - The text uses font 2 (32 px) – one size above the 24 px font the panel takes without a setting – and is wrapped at word borders, not inside a word. If it does not fit completely, the lines change every few seconds as in every popup.
 

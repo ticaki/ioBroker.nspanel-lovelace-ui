@@ -173,7 +173,7 @@ in front of the headline.
 
 | Severe weather with two buttons | Occupied, no buttons | Long text in one line | 24 px in two lines |
 |---|---|---|---|
-| ![Big orange thunderstorm icon, a green button with a tick on the left, a grey button with an alarm clock on the right, "Unwetterwarnung" below](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Red prohibition sign without buttons, "WC besetzt" below](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Washing machine with an alert sign and one button on the right, "Waschmaschine: Störung" below across the full width](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![With textSize 0 the text is smaller and in two lines](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
+| ![Big orange thunderstorm icon, a grey button with an alarm clock (later) on the left, a green button with a tick (dismiss) on the right, "Unwetterwarnung" below](../Pictures/pageNotify/popupNotify3-01-unwetter.png) | ![Red prohibition sign without buttons, "WC besetzt" below](../Pictures/pageNotify/popupNotify3-02-besetzt.png) | ![Washing machine with an alert sign and one button on the right, "Waschmaschine: Störung" below across the full width](../Pictures/pageNotify/popupNotify3-03-waschmaschine.png) | ![With textSize 0 the text is smaller and in two lines](../Pictures/pageNotify/popupNotify3-04-zweizeilig-24px.png) |
 
 It needs a panel with **TFT 6.2.0 or newer** or a web panel. A panel with an older TFT shows the same message the
 classic way.

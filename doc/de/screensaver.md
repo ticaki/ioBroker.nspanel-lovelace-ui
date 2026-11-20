@@ -336,7 +336,7 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 | **Popup öffnen** | öffnet das Popup des Geräts, zu dem der Indikator gehört. Steht nur in der Auswahl, wenn das Gerät eines hat, siehe [Popup öffnen](#popup-öffnen). |
 | **Nur Datenpunkt auslösen** | schreibt nur `true` in `panels.<Panel>.buttons.indicatorLong-<n>` (siehe unten) – sonst passiert nichts, auch kein Tipp. Für eigene Skripte, die auf den langen Druck reagieren. |
 
-![Der Item-Dialog eines Dimmer-Indikators mit geöffneter Auswahl „Aktion bei langem Drücken“ – hier mit „Popup öffnen“, weil der Kanal ein Dimmer ist](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
+![Der Item-Dialog eines Indikators mit geöffneter Auswahl „Aktion bei langem Drücken“ – die sechs Einträge von „keine“ bis „Nur Datenpunkt auslösen“](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - Ab der TFT **6.2.0** löst der lange Druck erst beim **Loslassen** aus: Liegt der Finger **500 ms**, blinkt die Uhrzeit gelb und grün – jetzt kann man loslassen; danach bekommt die Uhrzeit ihre Farbe zurück. Wer vorher loslässt, tippt kurz; eine Wischgeste verwirft auch den langen Druck. Mit der TFT 6.0.9 bis 6.1.x löst er nach 500 ms aus, noch während der Finger liegt. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
 - Ab der TFT **6.2.0** blinken nur Indikatoren, die eine **Aktion bei langem Drücken** haben (auch **Nur Datenpunkt auslösen**). Bei allen anderen bleibt die Uhrzeit ruhig, und auch ein langes Halten ist beim Loslassen ein kurzer Tipp. Der Adapter teilt dem Panel mit, welche Indikatoren gemeint sind; mit einer älteren TFT hat weiterhin jeder Indikator einen langen Druck – dort blinkt die Uhrzeit nie.
@@ -653,6 +653,8 @@ Das Infoicon neben der Uhrzeit lässt sich mit der **TFT 6.2.0** antippen – au
 
 - **Welches Symbol zu sehen ist, entscheidet diese Reihenfolge:** Ein laufender Timer verdrängt alles, danach kommt die Entwickler-Firmware; das Symbol für das Firmware-Update erscheint nur, wenn kein eigenes Infoicon gesetzt ist. Zeigt der Bildschirmschoner eines dieser Symbole, bleibt der State `buttons.infoIcon` aus. Ein [Web-Panel](WebPanel) hat keine TFT-Firmware und zeigt die beiden Firmware-Symbole nie.
 - Das Popup ist das gewohnte Meldungs-Popup mit kleinem Symbol (siehe [Popups](pagePopup)). Es schließt mit dem Kreuz oder nach dem Timeout des Panels; danach steht der Bildschirmschoner wieder da.
+
+![Das Popup zum eigenen Infoicon am Panel: links die blaue Glocke, daneben der Text aus infoText, oben rechts das Kreuz; unten links der Knopf Next, weil noch eine weitere Meldung ansteht](../Pictures/screensaverAdmin/admin-31-infoicon-popup.png)
 - Das Symbol im Popup hat die Farbe, die das Infoicon gerade auf dem Bildschirmschoner hat (beim Timer orange bzw. rot).
 - Der Text steht in Schrift 2 (32 px) – eine Stufe über der 24-px-Schrift, die das Panel ohne Angabe nimmt – und wird an Wortgrenzen umbrochen, nicht mitten im Wort. Passt er nicht ganz hinein, wechseln die Zeilen alle paar Sekunden wie bei jedem Popup.
 
