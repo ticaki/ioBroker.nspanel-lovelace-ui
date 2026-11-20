@@ -413,7 +413,7 @@ if (warnings.length) {
         console.log(`  ${w}`);
     }
     if (strict) {
-        process.exit(1);
+        process.exitCode = 1;
     }
 } else {
     console.log('no dead internal links or anchors');

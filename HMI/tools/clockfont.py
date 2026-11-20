@@ -29,7 +29,10 @@ def main(source, target):
     head = bytearray(Hmi(open(source, 'rb').read()).files['2.zi'][:0x2C])
     with tempfile.TemporaryDirectory() as tmp:
         job, out = os.path.join(tmp, 'job.json'), os.path.join(tmp, 'out.json')
-        json.dump({'font': WOFF, 'height': HEIGHT, 'chars': CHARS, 'size': SIZE, 'baseline': BASELINE}, open(job, 'w'))
+        data = {'font': WOFF, 'height': HEIGHT, 'chars': CHARS, 'size': SIZE, 'baseline': BASELINE}
+        if os.environ.get('PUPPETEER_PATH'):
+            data['puppeteerPath'] = os.environ['PUPPETEER_PATH']
+        json.dump(data, open(job, 'w'))
         subprocess.run(['node', os.path.join(HERE, 'clockfont_render.mjs'), job, out], check=True)
         glyphs = json.load(open(out))['chars']
     table, data = bytearray(), bytearray()

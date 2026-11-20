@@ -870,16 +870,18 @@ async function main(): Promise<void> {
                     resolve();
                 } catch (e) {
                     reject(e instanceof Error ? e : new Error(String(e)));
+                } finally {
+                    // close the connection, otherwise it keeps the process alive
+                    await client.destroy();
                 }
             },
         });
     });
-    process.exit(0);
 }
 
 if (require.main === module) {
     main().catch(e => {
         console.error(e);
-        process.exit(1);
+        process.exitCode = 1;
     });
 }

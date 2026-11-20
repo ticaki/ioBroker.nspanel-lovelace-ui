@@ -1383,7 +1383,7 @@
                     "newLine": true,
                     "xs": 12,
                     "sm": 12,
-                    "md": 6,
+                    "md": 4,
                     "lg": 4,
                     "xl": 4
                 },
@@ -1392,7 +1392,7 @@
                     "text": "createTestStatesHelp",
                     "xs": 12,
                     "sm": 12,
-                    "md": 6,
+                    "md": 8,
                     "lg": 8,
                     "xl": 8
                 },
