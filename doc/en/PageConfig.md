@@ -142,6 +142,8 @@ There are four fields for the panel **clicked** in the list. They belong to the 
 
 If only one of the two targets of an arrow is set on a page (e.g. only *home*), the short press or the swipe leads there as well.
 
+**Which icon an arrow carries is decided by its long-press target.** If only *prev* or *next* is set, the panel shows the plain arrow to the left or right. As soon as *parent* is set the left button carries an **up arrow**, and as soon as *home* is set the right one carries a **house** — even when *prev* or *next* is set as well. The short press still leads to *prev*/*next*, the icon just does not show it. Both targets on one arrow only come about through the admin; a script configuration always yields just one of the two.
+
 As soon as the long press is reached, the heading and the arrows blink yellow/green: letting go now leads to *home* or *parent* (TFT 6.2.0 and newer and in the web panel).
 
 The choices are the pages this panel knows about and the admin pages assigned to it — the page itself is excluded. The **Show system pages** checkbox adds the internal pages (`///…`) to the list; the unlock page `///unlock` is never hidden. A target already entered always stays visible, even when it is a system page.
@@ -193,10 +195,14 @@ The three paging rows appear on **menu pages** (Grid, Grid2, Grid3, Entities, Sc
 | **Datapoint** | `nspanel-lovelace-ui.0.panels.<id>.cmd.hideCards` (`true`/`false`, default `false`) — e.g. in the *Objects* tab, by script or Blockly, written without acknowledgement (`ack: false`). The change takes effect at once, without a restart, and is kept over restarts. |
 | **On the panel** | On the service pages (protected by the *Service PIN* from the [global settings](globelSettings)): *Overview* → *System* → switch *Hide Cards*. Green = on. |
 
+**The page `///unlock` leads to the service pages.** It is not a code to type in but a navigation target: enter `///unlock` on a page as *next*, *prev*, *home* or *parent* — it is always in the list, even without *Show system pages*. On the panel it asks for the *Service PIN* on a number pad and, after the right entry, leads once to *Overview*. There is no unlock for a period of time: every new visit asks for the PIN again. After a wrong entry the number pad is blocked for a short while, and twice as long with every further failed attempt. If no *Service PIN* is set, access is open — the adapter then warns in the log at startup.
+
 While *Hide pages* is on, every page with the *Hidden* box ticked behaves like this:
 
 - **Swiping and the arrows** skip it – the long press as well; paging goes on from the skipped page in the same direction, without a lock message.
 - **A targeted navigation** — a navigation item, `cmd.goToNavigationPoint`, a hardware button with *Go to a navigation point* — does not open it. The panel stays on the page shown and reports *"Page locked"*: from TFT 6.2.0 with a large prohibition icon, on older TFTs as a classic popup.
+- **The lock message goes away with the cross or by itself**, not through a tap on the icon or the text — it has no buttons. By itself it disappears after the screensaver timeout of the panel (default 15 seconds, `panels.<panel>.cmd.screenSaver.timeout`); the page shown before is then back. This applies to both presentations alike.
+- **After ten skipped pages it stops.** If a chain of locked pages runs in a circle, the adapter gives up after ten jumps, writes an error to the log (*Infinite loop detected in navigation*) and sends the panel to the start page.
 - **In the admin** a closed eye marks such pages, in the page list and in the [navigation flow](naviFlow); the tooltip reads *Locked (hidden): only reachable on the panel while “Hide pages” is off*. The eye is shown regardless of whether *Hide pages* is currently on.
 
 While *Hide pages* is off, hidden pages behave like all others. Typical use: maintenance or expert pages that should only be reachable at times — the datapoint can, for example, be tied to presence or the time of day by a script.

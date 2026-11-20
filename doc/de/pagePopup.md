@@ -125,8 +125,10 @@ Zahl steht vorn. Das Panel zeigt immer die vorderste.
 ## 4. Die drei Knöpfe, das X und die Rückmeldungen
 
 Die drei Knöpfe sind **Antwortknöpfe**: Beschriftung und Farbe kommen aus `buttonLeft`, `buttonMid`,
-`buttonRight` und `colorButton…` (ohne Farbangabe links gelb, Mitte rot, rechts grün); ein Knopf ohne
-Beschriftung erscheint nicht. Was ein Druck tut, ist fest – und bei jedem Knopf anders:
+`buttonRight` und `colorButton…`; ein Knopf ohne Beschriftung erscheint nicht. **Welche Farbe ein Knopf ohne
+Angabe bekommt, hängt am Weg:** Über `sendTo` bleibt eine nicht genannte Farbe offen, und es gelten die
+Vorgaben links **gelb**, Mitte **rot**, rechts **grün**. Über die Datenpunkte stehen die drei `colorButton…`
+auf **weiß** und werden immer mitgeschickt – dort sind alle Knöpfe weiß, bis du die Datenpunkte änderst. Was ein Druck tut, ist fest – und bei jedem Knopf anders:
 
 | Knopf | Warteschlange | Danach |
 |---|---|---|
@@ -157,6 +159,8 @@ Was gedrückt wurde, steht hinterher in Datenpunkten – **nicht** unter `cmd`:
 - **Langer Text rotiert.** Passt der Text nicht in die Zeilen, die `textSize` erlaubt, blättert das Panel
   ihn durch (etwa 3 Sekunden je Abschnitt, bei der Rückkehr zum Anfang kürzer).
 - **Nur ein leeres Symbolfeld bleibt leer.** Einen unbekannten Namen reicht der Adapter unverändert ans Panel durch; im Log steht dazu nur ein Eintrag der Stufe *debug*.
+- **Eine Tilde wird zum Bindestrich.** `~` trennt die Felder in der Nachricht ans Panel. Der Adapter ersetzt sie
+  deshalb in **jedem** Feld durch `-` – in Überschrift, Text und den Knopfbeschriftungen gleichermaßen.
 - **`alwaysOn: true` hält das Popup offen**, sonst greift der Panel-Timeout und der Bildschirmschoner
   übernimmt. Tippt man den Bildschirmschoner an, holt das Panel ein offenes Popup zurück.
 
@@ -178,8 +182,8 @@ dieselbe Meldung klassisch.
 | Feld | Bedeutung |
 |---|---|
 | **`largeIcon`** | `true` schaltet die Darstellung mit großem Symbol ein. |
-| **`icon`** / **`iconColor`** | Das große Symbol und seine Farbe (Vorgabe weiß). Das Panel hat nur die Symbole der Liste unten; ein Web-Panel ebenso, jedes andere Symbol nur mit der Instanz-Option **Web-Panel: Erweiterungen gegenüber dem Hardware-Panel erlauben** (siehe [Web-Panel](WebPanel#1-einschalten-und-adresse)). Ohne gültiges Symbol erscheint das Info-Symbol `information-outline`. |
-| **`text`** / **`colorText`** | Die Textzeile. Zu langer Text wird mit `...` gekürzt, er blättert nicht. `headline` erscheint hier nicht. |
+| **`icon`** / **`iconColor`** | Das große Symbol und seine Farbe (Vorgabe weiß). Das Panel hat nur die Symbole der Liste unten; ein Web-Panel ebenso, jedes andere Symbol nur mit der Instanz-Option **Web-Panel: Erweiterungen gegenüber dem Hardware-Panel erlauben** (siehe [Web-Panel](WebPanel#1-einschalten-und-adresse)); die Option bleibt ausgegraut, solange **Web-Panels aktivieren** aus ist, und sie gilt auch für den **Browser-Klon** eines Hardware-Panels – der zeigt dann jedes Symbol, obwohl das Panel selbst nur die Liste unten kann. Ohne gültiges Symbol erscheint das Info-Symbol `information-outline`. |
+| **`text`** / **`colorText`** | Die Textzeile. Zu langer Text wird mit `...` gekürzt, er blättert nicht. Nach dem Umbruch gilt zusätzlich eine Grenze von **199 Byte** – gezählt werden UTF-8-Bytes, nicht Zeichen, ein Umlaut zählt also doppelt. Was darüber steht, schneidet der Adapter stillschweigend ab (kein Hinweis im Log). `headline` erscheint hier nicht. Das klassische Popup aus Abschnitt 4 hat diese Grenze **nicht**. |
 | **`textSize`** | `3` (Vorgabe) = 48 px und `2` (auch `1`) = 32 px, je **eine** Zeile; `0` = 24 px in **zwei** Zeilen. `4`, `5` und `8` gelten als `3`. Das hochkant gebaute us-p zeigt mehr Zeilen. |
 | **`buttonLeftIcon`** / **`colorButtonLeft`** | Linker Knopf: Symbol und Hintergrundfarbe. Wirkt wie der linke Knopf aus Abschnitt 4 – **„Nein / Weiter“**: Rückmeldung in `.buttonLeft`, eine `acknowledge`-Meldung wird **nicht** quittiert. Passend: `close-thick` oder `alarm-snooze`. |
 | **`buttonRightIcon`** / **`colorButtonRight`** | Rechter Knopf: Symbol und Hintergrundfarbe. Wirkt wie der rechte Knopf aus Abschnitt 4 – **„Ja / OK“**: Rückmeldung in `.buttonRight`, die Meldung ist quittiert. Passend: `check-bold`. |
@@ -187,7 +191,8 @@ dieselbe Meldung klassisch.
 Ohne Knopf-Symbol richtet sich ein Knopf nach der Beschriftung von Abschnitt 4: Steht in `buttonLeft` ein Text,
 zeigt der linke Knopf `close-thick`; steht in `buttonRight` einer (bei `acknowledge` automatisch `ok`), zeigt der
 rechte `check-bold`. Warten mehrere Meldungen, zeigt der linke Knopf `arrow-right-bold` („weiter“). Sonst bleibt der
-Knopf weg. Passende Knopf-Symbole: OK `check-bold`, Bestätigen `check-circle-outline`, Später `alarm-snooze`, Öffnen
+Knopf weg. Umgekehrt genügt das **Symbol allein**: Ein gesetztes `buttonLeftIcon` oder `buttonRightIcon` erzeugt den
+Knopf auch ganz ohne Beschriftung – anders als im klassischen Popup, wo ein Knopf ohne Text unsichtbar bleibt. Passende Knopf-Symbole: OK `check-bold`, Bestätigen `check-circle-outline`, Später `alarm-snooze`, Öffnen
 `door-open` oder `lock-open-variant-outline`, Ablehnen `close-thick`.
 
 > **Haken nach rechts.** Die Knöpfe behalten ihre Rolle aus Abschnitt 4, egal welches Symbol darauf steht: Der

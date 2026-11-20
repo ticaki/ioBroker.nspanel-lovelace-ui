@@ -124,8 +124,10 @@ first. The panel always shows the front one.
 ## 4. The three buttons, the X and the feedback states
 
 The three buttons are **answer buttons**: label and colour come from `buttonLeft`, `buttonMid`,
-`buttonRight` and `colorButton…` (without a colour: left yellow, middle red, right green); a button without a
-label is not shown. What a press does is fixed – and different for each button:
+`buttonRight` and `colorButton…`; a button without a label is not shown. **Which colour a button gets without
+an entry depends on the way:** over `sendTo` a colour that is not named stays open and the defaults apply –
+left **yellow**, middle **red**, right **green**. Over the datapoints the three `colorButton…` hold **white**
+and are always sent along – there every button is white until you change the datapoints. What a press does is fixed – and different for each button:
 
 | Button | Queue | Afterwards |
 |---|---|---|
@@ -156,6 +158,8 @@ What was pressed ends up in states – **not** below `cmd`:
 - **Long text rotates.** If the text does not fit into the lines `textSize` allows, the panel pages through
   it (about 3 seconds per block, shorter when it wraps back to the start).
 - **Only an empty icon field stays empty.** An unknown name is passed on to the panel unchanged; the log only gets a *debug* entry.
+- **A tilde becomes a hyphen.** `~` separates the fields in the message to the panel, so the adapter replaces it
+  with `-` in **every** field – in the headline, the text and the button labels alike.
 - **`alwaysOn: true` keeps the popup open**, otherwise the panel timeout applies and the screensaver takes
   over. Tapping the screensaver brings an open popup back.
 
@@ -177,8 +181,8 @@ classic way.
 | Field | Meaning |
 |---|---|
 | **`largeIcon`** | `true` switches on the look with the big icon. |
-| **`icon`** / **`iconColor`** | The big icon and its colour (default white). The panel only has the icons of the list below; so does a web panel, any other icon only with the instance option **Web panel: allow extensions over the hardware panel** (see [web panel](WebPanel#1-switching-on-and-address)). Without a valid icon the info icon `information-outline` appears. |
-| **`text`** / **`colorText`** | The text line. Text that is too long is cut with `...`, it does not page. `headline` is not shown here. |
+| **`icon`** / **`iconColor`** | The big icon and its colour (default white). The panel only has the icons of the list below; so does a web panel, any other icon only with the instance option **Web panel: allow extensions over the hardware panel** (see [web panel](WebPanel#1-switching-on-and-address)); the option stays greyed out as long as **Enable web panels** is off, and it also applies to the **browser clone** of a hardware panel – that one then shows every icon although the panel itself only has the list below. Without a valid icon the info icon `information-outline` appears. |
+| **`text`** / **`colorText`** | The text line. Text that is too long is cut with `...`, it does not page. After the line break a limit of **199 bytes** applies on top – UTF-8 bytes are counted, not characters, so an umlaut counts twice. Anything beyond that the adapter cuts off silently (no log entry). `headline` is not shown here. The classic popup of section 4 does **not** have this limit. |
 | **`textSize`** | `3` (default) = 48 px and `2` (also `1`) = 32 px, **one** line each; `0` = 24 px in **two** lines. `4`, `5` and `8` count as `3`. The upright us-p shows more lines. |
 | **`buttonLeftIcon`** / **`colorButtonLeft`** | Left button: icon and background colour. Acts like the left button of section 4 – **"No / Next"**: feedback in `.buttonLeft`, an `acknowledge` message is **not** acknowledged. Fitting: `close-thick` or `alarm-snooze`. |
 | **`buttonRightIcon`** / **`colorButtonRight`** | Right button: icon and background colour. Acts like the right button of section 4 – **"Yes / OK"**: feedback in `.buttonRight`, the message is acknowledged. Fitting: `check-bold`. |
@@ -186,6 +190,8 @@ classic way.
 Without a button icon a button follows the labels of section 4: if `buttonLeft` has a text, the left button shows
 `close-thick`; if `buttonRight` has one (with `acknowledge` automatically `ok`), the right one shows `check-bold`. If
 more messages are waiting, the left button shows `arrow-right-bold` ("next"). Otherwise the button is left out.
+The other way round the **icon alone** is enough: a `buttonLeftIcon` or `buttonRightIcon` that is set creates the
+button without any label – unlike the classic popup, where a button without text stays invisible.
 Button icons that fit: OK `check-bold`, confirm `check-circle-outline`, later `alarm-snooze`, open `door-open` or
 `lock-open-variant-outline`, decline `close-thick`.
 

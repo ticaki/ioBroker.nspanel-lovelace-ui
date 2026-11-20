@@ -73,10 +73,12 @@ Ganz oben im Dialog steht die **Beschreibung**, darunter die Vorschau, dann der 
 
 | Was sich ändert | Wann es am Panel ankommt |
 |---|---|
-| **Inhalt** der angezeigten Meldung | **Höchstens alle 30 Sekunden.** Liegt das letzte Senden länger zurück, sofort; sonst einmal am Ende der 30 Sekunden mit den Werten von dann. Zwischenstände entfallen. So überflutet ein Wert, der sich sekündlich ändert (etwa eine Spannung), das Panel nicht. |
+| **Inhalt** der angezeigten Meldung | **Höchstens alle 30 Sekunden.** Liegt das letzte Senden länger zurück, sofort; sonst einmal am Ende der 30 Sekunden mit den Werten von dann. Zwischenstände entfallen. So überflutet ein Wert, der sich sekündlich ändert (etwa eine Spannung), das Panel nicht. Die 30 Sekunden laufen **je Panel** – zwei Panels mit derselben Meldung bremsen sich nicht gegenseitig. |
 | **An/Aus** über die Datenpunkte und die Bedingung aus [Abschnitt 3](#3-wann-anzeigen-datenpunkte-und-bedingung) | **Sofort:** die Meldung erscheint oder verschwindet, und eine andere Meldung kommt durch ihre [Priorität](#4-priorität-welche-meldung-das-panel-zeigt) sofort an die Reihe. |
 
 > **Weggetippt bleibt weggetippt.** Jede Berührung des Bildschirmschoners blendet die Meldung am Panel aus – das macht das Display selbst. Bleibt der Bildschirmschoner dabei stehen (etwa bei einem Wisch oder einem einzelnen Tipp mit eingeschaltetem Doppelklick), bleibt die Meldung auch bei neuem Inhalt ausgeblendet. Sie kommt zurück, wenn der Bildschirmschoner das nächste Mal erscheint, also nach dem nächsten Abdunkeln. Kommt über ihre Datenpunkte eine andere Meldung an die Reihe, erscheint diese sofort. Steht die Standby-Helligkeit des gerade geltenden Modus (Tag oder Nacht) auf 0, hat der erste Tipp auf das dunkle Display nichts ausgeblendet – dann kommt auch neuer Inhalt weiter an.
+
+Als neuer Inhalt zählt auch eine **neue Farbe**: Wechselt eine angezeigte Meldung ihre Schrift-, Hintergrund- oder Blinkfarbe, wird dieser Wechsel genauso gebremst wie ein neuer Text. Und ist der Bildschirmschoner gerade gar nicht zu sehen, weil das Panel auf einer anderen Seite steht, verfällt ein am Ende der 30 Sekunden fälliger Nachtrag – verloren ist dadurch nichts, denn sobald der Bildschirmschoner wieder erscheint, schickt der Adapter alles neu.
 
 Eine **quittierte** Meldung bleibt ausgeblendet, auch wenn sich ihr Inhalt ändert – sie kommt erst wieder, wenn ihr Datenpunkt aus- und wieder angeht (siehe [Quittieren](#5-quittieren-und-gruppen-id)).
 

@@ -73,10 +73,12 @@ When the value of a state in **any** of the content fields changes – icon in f
 
 | What changes | When it reaches the panel |
 |---|---|
-| **Content** of the displayed message | **At most every 30 seconds.** If the last send is longer ago, at once; otherwise once at the end of the 30 seconds with the values of then. Intermediate values are dropped. So a value that changes every second (a voltage, say) does not flood the panel. |
+| **Content** of the displayed message | **At most every 30 seconds.** If the last send is longer ago, at once; otherwise once at the end of the 30 seconds with the values of then. Intermediate values are dropped. So a value that changes every second (a voltage, say) does not flood the panel. The 30 seconds run **per panel** – two panels with the same message do not slow each other down. |
 | **On/off** through the states and the condition of [section 3](#3-when-to-show-states-and-condition) | **At once:** the message appears or disappears, and another message takes its turn by its [priority](#4-priority-which-message-the-panel-shows) at once. |
 
 > **Tapped away stays away.** Every touch of the screensaver hides the message on the panel – the display does that by itself. If the screensaver stays (a swipe, say, or a single tap with double click switched on), the message stays hidden, also with a new content. It comes back the next time the screensaver appears, that is after the next dimming. If its states bring another message up, that one appears at once. With a standby brightness of 0 in the current mode (day or night) the first tap on the dark display hid nothing – then new content still arrives.
+
+A **new colour** counts as new content as well: if a displayed message changes its font, background or blink colour, that change is throttled just like a new text. And if the screensaver is not visible at all because the panel sits on another page, a follow-up due at the end of the 30 seconds falls away – nothing is lost by that, because as soon as the screensaver appears again the adapter sends everything anew.
 
 A **dismissed** message stays hidden, also when its content changes – it only comes back when its state goes off and on again (see [Dismissing](#5-dismissing-and-the-group-id)).
 
