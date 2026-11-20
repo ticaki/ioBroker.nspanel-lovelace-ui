@@ -211,7 +211,7 @@ The browser wraps the text itself; there is no fixed number of characters per li
   holding opens the detail popup — like on the real panel. On an **indicator of the screensaver** with an action on long press the time
   blinks yellow and green after 0.5 seconds of holding, and the release fires the
   [action on long press](screensaver#action-on-long-press), [Open popup](screensaver#open-popup) included – like on the panel with the TFT 6.2.0; unlike on the real
-  panel a movement of more than about 20 pixels cancels the long press. An indicator without such an action knows no
+  panel a movement of more than about 20 pixels cancels the long press during the first 0.5 seconds. An indicator without such an action knows no
   long press, letting go is a tap.
 - **The two hardware buttons** are bars below the display. They trigger the action configured for the
   buttons and set `panels.<panel>.buttons.left`/`right`. **They do not switch relays.** In the browser view

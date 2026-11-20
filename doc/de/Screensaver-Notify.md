@@ -69,21 +69,23 @@ Ganz oben im Dialog steht die **Beschreibung**, darunter die Vorschau, dann der 
 
 ### Wann sich die Meldung am Panel ändert
 
-Ändert sich der Wert eines Datenpunkts in **einem** der Inhaltsfelder – Icon, Überschrift-Präfix, Überschrift, Überschrift-Einheit, Text-Präfix, Text oder Text-Suffix –, schickt der Adapter die Meldung mit dem neuen Inhalt ans Panel.
+Ändert sich der Wert eines Datenpunkts in **einem** der Inhaltsfelder – Icon vor der Überschrift, Überschrift-Präfix, Überschrift, Überschrift-Einheit, Text-Präfix, Text oder Text-Suffix –, schickt der Adapter die Meldung mit dem neuen Inhalt ans Panel.
 
 | Was sich ändert | Wann es am Panel ankommt |
 |---|---|
-| **Inhalt** der angezeigten Meldung | **Höchstens alle 30 Sekunden.** Liegt das letzte Senden länger zurück, sofort; sonst einmal am Ende der 30 Sekunden mit den Werten von dann. Zwischenstände entfallen. So überflutet ein Wert, der sich sekündlich ändert (etwa eine Spannung), das Panel nicht. |
+| **Inhalt** der angezeigten Meldung | **Höchstens alle 30 Sekunden.** Liegt das letzte Senden länger zurück, sofort; sonst einmal am Ende der 30 Sekunden mit den Werten von dann. Zwischenstände entfallen. So überflutet ein Wert, der sich sekündlich ändert (etwa eine Spannung), das Panel nicht. Die 30 Sekunden laufen **je Panel** – zwei Panels mit derselben Meldung bremsen sich nicht gegenseitig. |
 | **An/Aus** über die Datenpunkte und die Bedingung aus [Abschnitt 3](#3-wann-anzeigen-datenpunkte-und-bedingung) | **Sofort:** die Meldung erscheint oder verschwindet, und eine andere Meldung kommt durch ihre [Priorität](#4-priorität-welche-meldung-das-panel-zeigt) sofort an die Reihe. |
 
-> **Weggetippt bleibt weggetippt.** Jede Berührung des Bildschirmschoners blendet die Meldung am Panel aus – das macht das Display selbst. Bleibt der Bildschirmschoner dabei stehen (etwa bei einem Wisch oder einem einzelnen Tipp mit eingeschaltetem Doppelklick), bleibt die Meldung auch bei neuem Inhalt ausgeblendet. Sie kommt zurück, wenn der Bildschirmschoner das nächste Mal erscheint, also nach dem nächsten Abdunkeln. Kommt über ihre Datenpunkte eine andere Meldung an die Reihe, erscheint diese sofort. Ist die Standby-Helligkeit 0, hat der erste Tipp auf das dunkle Display nichts ausgeblendet – dann kommt auch neuer Inhalt weiter an.
+> **Weggetippt bleibt weggetippt.** Jede Berührung des Bildschirmschoners blendet die Meldung am Panel aus – das macht das Display selbst. Bleibt der Bildschirmschoner dabei stehen (etwa bei einem Wisch oder einem einzelnen Tipp mit eingeschaltetem Doppelklick), bleibt die Meldung auch bei neuem Inhalt ausgeblendet. Sie kommt zurück, wenn der Bildschirmschoner das nächste Mal erscheint, also nach dem nächsten Abdunkeln. Kommt über ihre Datenpunkte eine andere Meldung an die Reihe, erscheint diese sofort. Steht die Standby-Helligkeit des gerade geltenden Modus (Tag oder Nacht) auf 0, hat der erste Tipp auf das dunkle Display nichts ausgeblendet – dann kommt auch neuer Inhalt weiter an.
+
+Als neuer Inhalt zählt auch eine **neue Farbe**: Wechselt eine angezeigte Meldung ihre Schrift-, Hintergrund- oder Blinkfarbe, wird dieser Wechsel genauso gebremst wie ein neuer Text. Und ist der Bildschirmschoner gerade gar nicht zu sehen, weil das Panel auf einer anderen Seite steht, verfällt ein am Ende der 30 Sekunden fälliger Nachtrag – verloren ist dadurch nichts, denn sobald der Bildschirmschoner wieder erscheint, schickt der Adapter alles neu.
 
 Eine **quittierte** Meldung bleibt ausgeblendet, auch wenn sich ihr Inhalt ändert – sie kommt erst wieder, wenn ihr Datenpunkt aus- und wieder angeht (siehe [Quittieren](#5-quittieren-und-gruppen-id)).
 
 Eine Meldung, die per `sendTo` (`screensaverNotify`) **ohne `id`** oder über `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` gesetzt wird, ist nicht im Admin konfiguriert und wird nicht gebremst. Eine Meldung per `sendTo` **mit `id`** wird gebremst wie eine aus der Liste, siehe [Per Skript](#11-per-skript-sendto-screensavernotify).
 
 ## 3. Wann anzeigen: Datenpunkte und Bedingung
-![Datenpunkte, Bedingung, Priorität, Quittieren und Summer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+![Der untere Teil des Dialogs: Datenpunkte, Bedingung, Priorität, Quittieren, Gruppen-ID, Summer und der Abschnitt Blinken mit dem Haken „Hintergrund blinkt“](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
 
 | Feld | Wirkung |
@@ -182,7 +184,7 @@ Die Farben der Schlagzeile stellt nicht der Dialog ein, sondern das [Farbthema](
 |---|---|
 | **Überschrift** | Schriftfarbe der oberen Zeile. Im Admin: **Schlagzeile Überschrift**. |
 | **Text** | Schriftfarbe der Zeile darunter. Im Admin: **Schlagzeile Text**. |
-| **Hintergrund** | Fläche hinter beiden Zeilen, damit sich die Schlagzeile vom Bildschirmschoner abhebt. Sie reicht über die volle Breite von der Überschrift bis zum unteren Rand des Displays – liegt darunter noch etwas, das sichtbar bleibt (die Leiste mit den Symbolen beim erweiterten Screensaver, die Farbbalken bei EasyView und den Kacheln), endet sie davor. Im Admin: **Schlagzeile Hintergrund**. |
+| **Hintergrund** | Fläche hinter beiden Zeilen, damit sich die Schlagzeile vom Bildschirmschoner abhebt. Sie reicht über die volle Breite von der Überschrift bis zum unteren Rand des Displays, soweit darunter nichts sichtbar bleibt. Bleibt dort etwas stehen – die Leiste mit den Symbolen beim erweiterten Screensaver, die Farbbalken bei EasyView und den Kacheln, beim US-Hochformat die untere Zeile des Standard-Bildschirmschoners –, endet sie davor; das hängt am Modell. Im Admin: **Schlagzeile Hintergrund**. |
 
 Mit den fertigen Themen sind Überschrift und Text weiß wie bisher; der Hintergrund ist der Hintergrund des Bildschirmschoners, leicht aufgehellt – beim Standardthema Grau (RGB 56/56/56). Eigene Werte gibt es mit dem Farbthema **Benutzer Farben** im Bereich **Screensaver**.
 
@@ -196,6 +198,8 @@ Eine einzelne Benachrichtigung kann zusätzlich auf sich aufmerksam machen: Ihr 
 |---|---|
 | **Hintergrund blinkt** | Schaltet das Blinken für diese Benachrichtigung ein. Ohne Haken blinkt nichts. |
 | **Zweite Farbe** | Erscheint mit dem Haken, vorbelegt mit Dunkelrot (`#9c201a`). Die erste Farbe ist immer der Hintergrund aus dem Farbthema. |
+
+![Die Schlagzeile am Panel: Ihr Hintergrund wechselt zwischen dem Grau des Farbthemas und der zweiten Farbe (animiert)](../Pictures/screensaverAdmin/notify-04-blinken.gif)
 
 Das Panel blinkt selbst – der Adapter schickt die Meldung nur einmal. Das Blinken endet, sobald die Benachrichtigung verschwindet (Datenpunkt aus, weggetippt) oder eine andere ohne Blinken an ihre Stelle tritt.
 

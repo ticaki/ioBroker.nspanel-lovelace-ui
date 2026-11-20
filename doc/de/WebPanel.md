@@ -212,7 +212,7 @@ Der Browser bricht den Text selbst um; eine feste Zeichenzahl pro Zeile gibt es 
 - **Halten** (ab etwa 0,6 Sekunden) ist der lange Druck: Auf einer Kachel einer Menüseite schaltet ein
   kurzer Druck, Halten öffnet das Detail-Popup — wie am echten Panel. Auf einem **Indikator des
   Bildschirmschoners** mit einer Aktion bei langem Drücken blinkt nach 0,5 Sekunden Halten die Uhrzeit gelb und grün, und das Loslassen löst die
-  [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken) aus, auch [Popup öffnen](screensaver#popup-öffnen) – wie am Panel mit der TFT 6.2.0; anders als am echten Panel bricht eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab. Ein Indikator ohne
+  [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken) aus, auch [Popup öffnen](screensaver#popup-öffnen) – wie am Panel mit der TFT 6.2.0; anders als am echten Panel bricht in den ersten 0,5 Sekunden eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab. Ein Indikator ohne
   solche Aktion kennt keinen langen Druck, das Loslassen ist ein Tipp.
 - **Die zwei Hardwaretasten** liegen als Leisten unter dem Display. Sie lösen die Aktion aus, die für die
   Tasten eingestellt ist, und setzen `panels.<Panel>.buttons.left`/`right`. **Relais schalten sie nicht.**

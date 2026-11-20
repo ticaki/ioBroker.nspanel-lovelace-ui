@@ -319,7 +319,7 @@ From the TFT 6.0.9 on the panel reports the press on an indicator when the finge
 - **If it is no key**, the tap acts like a tap on the **background** of the screensaver: it follows the double click setting, switches a [timer](#timer-instead-of-the-clock) back to the clock, acknowledges a [notification](#13-notifications) and counts for the gestures. The screensaver is no longer left at once.
 - `panels.<panel>.buttons.indicator-<n>` is still written on **every** tap.
 - A **swipe** that starts on an indicator sends the gesture only.
-- **With standby brightness 0 the first press only wakes the display.** When the screensaver display is dark, the first press on an indicator only turns the light on – short or long: no action, no popup, no state `indicator-<n>` or `indicatorLong-<n>`; from the TFT 6.2.0 on the time does not blink either. Only the second press works as usual. So a touch in the dark (at the front door, say) triggers nothing.
+- **With standby brightness 0 the first press only wakes the display.** When the screensaver display is dark (the standby brightness of the current mode – day or night – is 0), the first press on an indicator only turns the light on – short or long: no action, no popup, no state `indicator-<n>` or `indicatorLong-<n>`; from the TFT 6.2.0 on the time does not blink either. Only the second press works as usual. So a touch in the dark (at the front door, say) triggers nothing.
 
 With an older TFT the press arrives without the counter: an indicator **with** an action runs it, an indicator **without** one sends the panel to the main page.
 
@@ -336,10 +336,10 @@ In the item dialog of an indicator a second block **Action on long press** stand
 | **Open popup** | opens the popup of the device the indicator belongs to. Only in the choice when the device has one, see [Open popup](#open-popup). |
 | **Only trigger the state** | only writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` (see below) – nothing else happens, no tap either. For own scripts that react on the long press. |
 
-![The item dialog of a dimmer indicator with the choice “Action on long press” opened – here with “Open popup”, because the channel is a dimmer](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
+![The item dialog of an indicator with the choice “Action on long press” opened – the six entries from “none” to “Only trigger the state”](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - From the TFT **6.2.0** on the long press fires only when the finger is **lifted**: after **500 ms** of holding the time blinks yellow and green – you can let go now; afterwards the time gets its colour back. Letting go earlier is a short tap; a swipe drops the long press too. With the TFT 6.0.9 to 6.1.x it fires after 500 ms, while the finger is still down. With an action set **only** that action runs – the action of the short press stays out.
-- From the TFT **6.2.0** on only indicators with an **Action on long press** blink (**Only trigger the state** included). With all others the time stays calm, and holding long is a short tap when the finger is lifted. The adapter tells the panel which indicators are meant; with an older TFT every indicator still blinks.
+- From the TFT **6.2.0** on only indicators with an **Action on long press** blink (**Only trigger the state** included). With all others the time stays calm, and holding long is a short tap when the finger is lifted. The adapter tells the panel which indicators are meant; with an older TFT every indicator still has a long press – the time never blinks there.
 - **Values to cycle through** does not exist for the long press.
 - Button and switch need a **writable** state; otherwise the dialog says the same as for the action of the short press and does not allow applying. If the state is missing at runtime or is not writable, the adapter warns in the log (*the long press state … does not exist or is not writable - a long press acts like a tap*), and the long press acts like a short one.
 - A [template](#5-templates-as-items) on an indicator place gets the long press as well.
@@ -347,7 +347,7 @@ In the item dialog of an indicator a second block **Action on long press** stand
 
 > **Example:** An indicator **Light** switches the light on a short tap (**switch**) and opens a page on a long press (**open a page**) – two functions on the same tile.
 
-**A state of its own.** Every long press writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` – the same order as `indicator-<n>`, type `boolean`, read-only, role `button.long`. It is written **always**, even without an action set; without an action the long press acts like a tap on top of that, so **both** states arrive. That makes the long press usable as a trigger for own scripts even without an action in the dialog.
+**A state of its own.** Every long press writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` – the same order as `indicator-<n>`, type `boolean`, read-only, role `button.long`. With the TFT 6.0.9 to 6.1.x it is written **always**, even without an action set; without an action the long press acts like a tap on top of that there, so **both** states arrive. That makes the long press usable as a trigger for own scripts even without an action in the dialog.
 
 > **From the TFT 6.2.0 on the state needs an action.** An indicator without an **Action on long press** then knows no long press any more, `indicatorLong-<n>` stays empty. Whoever used the state as a trigger without an action so far chooses **Only trigger the state**.
 
@@ -642,21 +642,25 @@ Two ways switch it on and off:
 
 ## 18. Tapping the info icon
 
-The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in the [web panel](WebPanel). The tap counts like an indicator without a long press: it is sent on release, a swipe that starts on the icon stays a swipe. Without an icon the spot is part of the background. A tap on the clock itself works as before (with a timer it switches to the clock, see [Timer instead of the clock](#timer-instead-of-the-clock)).
+The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in the [web panel](WebPanel). The tap is sent on release as with an indicator, and a swipe that starts on the icon stays a swipe. Unlike a tap on the background it does not count for the double click and does not switch a timer back to the clock; a notification shown is nevertheless taken as seen. Without an icon the spot is part of the background. A tap on the clock itself works as before (with a timer it switches to the clock, see [Timer instead of the clock](#timer-instead-of-the-clock)).
 
 | Icon | What the tap shows |
 |---|---|
 | `timer-sand`, `timer-pause`, `timer-alert` | A popup with the icon: *A timer is running.*, *A timer is paused.* or *A timer has expired.* |
 | `cog-refresh-outline` | A popup: *The display is running a development firmware.* |
 | `wrench-clock` | A popup: *A firmware update is available for the display.* |
-| own info icon (`panels.<panel>.cmd.screenSaver.infoIcon`) | The adapter **always** writes `true` to `panels.<panel>.buttons.infoIcon` (read only, role `button.press`). A popup with the own icon opens only when `panels.<panel>.cmd.screenSaver.infoText` (text, writable) is not empty – the text of the popup is its content. |
+| own info icon (`panels.<panel>.cmd.screenSaver.infoIcon`) | While the own icon is shown, the adapter writes `true` to `panels.<panel>.buttons.infoIcon` (read only, role `button.press`). A popup with the own icon opens only when `panels.<panel>.cmd.screenSaver.infoText` (text, writable) is not empty – the text of the popup is its content. |
 
+- **Which icon is shown follows this order:** a running timer displaces everything, then comes the development firmware; the firmware update icon appears only when no own info icon is set. While the screensaver shows one of those icons, the state `buttons.infoIcon` stays away. A [web panel](WebPanel) has no TFT firmware and never shows the two firmware icons.
 - The popup is the usual notification popup with a small icon (see [Popups](pagePopup)). It closes with the cross or after the timeout of the panel; then the screensaver is back.
+
+![The popup of your own info icon on the panel: the blue bell on the left, the text from infoText next to it, the cross at the top right; at the bottom left the button Next, because another message is waiting](../Pictures/screensaverAdmin/admin-31-infoicon-popup.png)
 - The icon in the popup has the color the info icon has on the screensaver at that moment (orange or red with the timer).
-- The text appears one size larger than in other popups (font 2, 32 px) and is wrapped at word borders, not inside a word. If it does not fit completely, the lines change every few seconds as in every popup.
+- The text uses font 2 (32 px) – one size above the 24 px font the panel takes without a setting – and is wrapped at word borders, not inside a word. If it does not fit completely, the lines change every few seconds as in every popup.
 
 | Datapoint | Meaning |
 |---|---|
+| **`panels.<panel>.cmd.screenSaver.infoIcon`** | Your own icon (text, writable). Expected is the **name of a Material Design icon** – the value list of the datapoint offers nine common ones: empty for *no icon*, `clock-alert-outline`, `weather-sunny-alert`, `bell-ring-outline`, `calendar-alert`, `alarm`, `information-outline`, `alert-circle-outline` and `alert-circle`. The list is only a help, any other icon name is accepted just as well. **A name the adapter does not know is passed on to the panel unchanged** – that text then stands next to the clock, with only a *debug* line in the log. Empty means no icon; tapping the spot then does nothing. |
 | **`panels.<panel>.cmd.screenSaver.infoTextFont`** | Font of the text of the own info icon (number, writable): `0` 24 px, `1` 32 px (Western European characters only), `2` 32 px, `3` 48 px (Western European characters only), `4` 80 px bold (Western European characters only), `5` 128 px bold (ASCII only). Empty or any other value gives `2`; the adapter acknowledges the datapoint with the font used. Applies to `infoText` only – the texts of the adapter (timer, firmware) always use font `2`. |
 
 - **With standby brightness 0 the first tap only wakes the display**, as with the indicators: no popup, no state. Only the second tap works.
@@ -676,6 +680,7 @@ The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in
 - **A hidden item still stands on the panel:** **Fill free slots even when hidden** is ticked for it, and the area has fewer visible items than places. Untick it if the item should really disappear – see [Filling free slots](#filling-free-slots).
 - **Places stay empty after taking over the script:** In the script, hidden items filled free places on their own; in the admin only with the checkbox. Tick **Fill free slots even when hidden** at these items.
 - **Items are reported after a version change:** They lie in areas the new version does not have (message at the top of the editor); switch the version back or **Remove them**. More items than places **in an existing** area does not trigger this message.
+- **A long press on an indicator does nothing, and the clock does not blink with it:** Which indicators have a long press is something the adapter tells the panel in a field of its own – and only if the panel has **reported its display version** and that version is **6.2.0 or newer**. Without the version the panel knows no long press at all and treats every hold as a short tap. This affects the time right after the start, until the panel has reported in, and permanently a developer firmware (version `0.0.0`). With the next build-up of the screensaver the adapter sends everything again; if the panel never reports in, the short tap is all there is. [Web panels](WebPanel) are not affected, they always get the field.
 - **Easyview has no favorite:** For Easyview the editor only draws the area **Bottom**. A favorite item from another version is therefore reported as an item without a place on the change.
 - **Tiles is chosen, the panel does not show it:** The TFT of the panel does not have the page `screensaver5`. The admin does not warn about it – see [Tiles](#16-tiles).
 - **Tiles shows no weather in the middle:** This version has no favorite place, the one the others show the current weather on. The ticked extra items still arrive at the bottom.

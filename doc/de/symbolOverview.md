@@ -19,7 +19,7 @@ Eine Nachschlagehilfe: Hier stehen alle Symbole, die der Adapter mitbringt, mit 
 | **Alle Icons** | Die ganze Sammlung (Vorgabe). |
 | **Große Benachrichtigung (popupNotify3)** | Nur die Symbole, die das Panel in der [Benachrichtigung mit großem Symbol](pagePopup#6-großes-symbol-ab-tft-620) zeigen kann. Der Tooltip am Knopf sagt es so: *Nur diese Icons können in der Benachrichtigung groß dargestellt werden, jedes andere Icon fällt auf information-outline zurück*. |
 
-Der Filter **Symbole filtern** wirkt in beiden Ansichten. Daneben steht, wie viele Symbole gerade zu sehen sind (*„… Icons“*).
+Der Filter **Symbole filtern** wirkt in beiden Ansichten. Rechts neben den Knöpfen steht, wie viele Symbole gerade zu sehen sind (*„… Icons“*).
 
 ## Hinweise
 

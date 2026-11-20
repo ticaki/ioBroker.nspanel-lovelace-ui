@@ -69,21 +69,23 @@ At the very top of the dialog stands the **Description**, below it the preview, 
 
 ### When the message changes on the panel
 
-When the value of a state in **any** of the content fields changes – icon, headline prefix, headline, headline unit, text prefix, text or text suffix – the adapter sends the message with the new content to the panel.
+When the value of a state in **any** of the content fields changes – icon in front of the headline, headline prefix, headline, headline unit, text prefix, text or text suffix – the adapter sends the message with the new content to the panel.
 
 | What changes | When it reaches the panel |
 |---|---|
-| **Content** of the displayed message | **At most every 30 seconds.** If the last send is longer ago, at once; otherwise once at the end of the 30 seconds with the values of then. Intermediate values are dropped. So a value that changes every second (a voltage, say) does not flood the panel. |
+| **Content** of the displayed message | **At most every 30 seconds.** If the last send is longer ago, at once; otherwise once at the end of the 30 seconds with the values of then. Intermediate values are dropped. So a value that changes every second (a voltage, say) does not flood the panel. The 30 seconds run **per panel** – two panels with the same message do not slow each other down. |
 | **On/off** through the states and the condition of [section 3](#3-when-to-show-states-and-condition) | **At once:** the message appears or disappears, and another message takes its turn by its [priority](#4-priority-which-message-the-panel-shows) at once. |
 
-> **Tapped away stays away.** Every touch of the screensaver hides the message on the panel – the display does that by itself. If the screensaver stays (a swipe, say, or a single tap with double click switched on), the message stays hidden, also with a new content. It comes back the next time the screensaver appears, that is after the next dimming. If its states bring another message up, that one appears at once. With a standby brightness of 0 the first tap on the dark display hid nothing – then new content still arrives.
+> **Tapped away stays away.** Every touch of the screensaver hides the message on the panel – the display does that by itself. If the screensaver stays (a swipe, say, or a single tap with double click switched on), the message stays hidden, also with a new content. It comes back the next time the screensaver appears, that is after the next dimming. If its states bring another message up, that one appears at once. With a standby brightness of 0 in the current mode (day or night) the first tap on the dark display hid nothing – then new content still arrives.
+
+A **new colour** counts as new content as well: if a displayed message changes its font, background or blink colour, that change is throttled just like a new text. And if the screensaver is not visible at all because the panel sits on another page, a follow-up due at the end of the 30 seconds falls away – nothing is lost by that, because as soon as the screensaver appears again the adapter sends everything anew.
 
 A **dismissed** message stays hidden, also when its content changes – it only comes back when its state goes off and on again (see [Dismissing](#5-dismissing-and-the-group-id)).
 
 A message set by `sendTo` (`screensaverNotify`) **without `id`** or through `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` is not configured in the admin and is not throttled. A message by `sendTo` **with `id`** is throttled like one of the list, see [From a script](#11-from-a-script-sendto-screensavernotify).
 
 ## 3. When to show: states and condition
-![States, condition, priority, dismissing and buzzer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+![The lower part of the dialog: states, condition, priority, dismissing, group id, buzzer and the section Blinking with the tick “Background blinks”](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
 
 | Field | Effect |
@@ -182,7 +184,7 @@ The colours of the notification are not set in the dialog but by the [colour the
 |---|---|
 | **Headline** | Font colour of the upper line. In the admin: **Notification headline**. |
 | **Text** | Font colour of the line below. In the admin: **Notification text**. |
-| **Background** | Area behind both lines, so that the notification stands out from the screensaver. It spans the full width from the headline down to the lower edge of the display – if something lies below it that stays visible (the bar with the icons of the advanced screensaver, the colour bars of EasyView and the tiles), it ends above it. In the admin: **Notification background**. |
+| **Background** | Area behind both lines, so that the notification stands out from the screensaver. It spans the full width from the headline down to the lower edge of the display, as far as nothing below stays visible. If something stays there – the bar with the icons of the advanced screensaver, the colour bars of EasyView and the tiles, on US portrait the bottom row of the standard screensaver –, it ends above it; that depends on the model. In the admin: **Notification background**. |
 
 With the ready-made themes headline and text are white as before; the background is the background of the screensaver, slightly lightened – grey (RGB 56/56/56) with the default theme. Own values come with the colour theme **User colors** in the section **Screensaver**.
 
@@ -196,6 +198,8 @@ A single notification can draw attention to itself on top: its background then a
 |---|---|
 | **Background blinks** | Switches the blinking on for this notification. Without the tick nothing blinks. |
 | **Second colour** | Appears with the tick, preset to dark red (`#9c201a`). The first colour is always the background of the colour theme. |
+
+![The headline on the panel: its background alternates between the grey of the colour theme and the second colour (animated)](../Pictures/screensaverAdmin/notify-04-blinken.gif)
 
 The panel blinks by itself – the adapter sends the message only once. The blinking ends as soon as the notification disappears (state off, tapped away) or another one without blinking takes its place.
 

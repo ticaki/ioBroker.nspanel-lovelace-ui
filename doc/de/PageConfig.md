@@ -133,7 +133,7 @@ Im Auswahlfeld ein Panel wählen und mit **+** hinzufügen. Zusätzlich gibt es 
 
 Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie gehören zu den beiden Navigationspfeilen oben am Panel:
 
-| Feld | Geste am Panel |
+| Feld | Bedienung am Panel |
 |---|---|
 | **next** | rechten Pfeil kurz drücken oder nach rechts wischen |
 | **prev** | linken Pfeil kurz drücken oder nach links wischen |
@@ -141,6 +141,8 @@ Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie gehören zu
 | **parent** | linken Pfeil lang drücken (mindestens 0,5 s) |
 
 Ist auf einer Seite für einen Pfeil nur eines der beiden Ziele belegt (z. B. nur *home*), führt auch der kurze Druck bzw. das Wischen dorthin.
+
+**Welches Symbol ein Pfeil trägt, bestimmt sein Langdruck-Ziel.** Ist nur *prev* oder *next* belegt, zeigt das Panel den einfachen Pfeil nach links bzw. rechts. Sobald *parent* belegt ist, trägt der linke Knopf einen **Aufwärtspfeil**, und sobald *home* belegt ist, der rechte ein **Haus** — auch dann, wenn *prev* bzw. *next* zusätzlich belegt sind. Der kurze Druck führt trotzdem auf *prev*/*next*, man sieht es dem Symbol nur nicht an. Beide Ziele an einem Pfeil entstehen ausschließlich über den Admin; aus einer Skript-Konfiguration kommt immer nur eines von beiden.
 
 Sobald der lange Druck erreicht ist, blinken Überschrift und Pfeile gelb/grün: Loslassen führt jetzt zu *home* bzw. *parent* (ab TFT 6.2.0 und im Web-Panel).
 
@@ -191,12 +193,20 @@ Die drei Blätter-Zeilen erscheinen bei **Menü-Seiten** (Grid, Grid2, Grid3, En
 | Wo | Wie |
 |---|---|
 | **Datenpunkt** | `nspanel-lovelace-ui.0.panels.<ID>.cmd.hideCards` (`true`/`false`, Vorgabe `false`) — etwa im Tab *Objekte*, per Skript oder Blockly, ohne Bestätigung (`ack: false`) geschrieben. Die Änderung wirkt sofort, ohne Neustart, und bleibt über Neustarts erhalten. |
-| **Am Panel** | Auf den Serviceseiten (geschützt mit dem *Service-Pin* aus den [globalen Einstellungen](globelSettings)): *Overview* → *System* → Schalter *Hide Cards*. Grün = eingeschaltet. |
+| **Am Panel** | Auf den Serviceseiten (geschützt mit dem *Service-Pin* aus den [globalen Einstellungen](globelSettings)): *Overview* → *System* → Schalter *Hide Cards*. **Das Symbol** links wird grün, sobald eingeschaltet ist, und rot, sobald aus — der Schalter selbst bleibt blau. |
+
+![Die Serviceseite System am Panel: der Eintrag Hide Cards mit grünem Symbol und eingeschaltetem Schalter](../Pictures/pageConfig/pageconfig-08-hide-cards-panel.png)
+
+**Auf die Serviceseiten führt die Seite `///unlock`.** Sie ist kein Code zum Eintippen, sondern ein Navigationsziel: Trage `///unlock` bei einer Seite als *next*, *prev*, *home* oder *parent* ein — in der Auswahl steht sie immer, auch ohne *Systemseiten anzeigen*. Am Panel fragt sie den *Service-Pin* auf einem Ziffernblock ab und führt nach der richtigen Eingabe einmal auf *Overview*. Eine Freischaltung auf Zeit gibt es nicht: Jeder neue Besuch verlangt den Pin erneut. Nach einer falschen Eingabe sperrt der Ziffernblock kurz, mit jedem weiteren Fehlversuch doppelt so lange. Ist kein *Service-Pin* gesetzt, ist der Zugang offen — der Adapter warnt dann beim Start im Log.
 
 Ist *Seiten verbergen* eingeschaltet, gilt für jede Seite mit dem Haken *Versteckt*:
 
-- **Wischen und die Pfeile** überspringen sie; es geht mit der nächsten Seite in derselben Richtung weiter.
-- **Ein gezieltes Ziel** — ein Navigations-Element, ein *parent*/*home*-Sprung, `cmd.goToNavigationPoint` — öffnet sie nicht. Das Panel bleibt auf der angezeigten Seite und meldet *„Seite gesperrt“*: ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup.
+- **Wischen und die Pfeile** überspringen sie – auch der lange Druck; es geht von der übersprungenen Seite aus in derselben Richtung weiter, eine Sperrmeldung gibt es dabei nicht.
+- **Ein gezieltes Ziel** — ein Navigations-Element, `cmd.goToNavigationPoint`, ein Hardware-Taster mit *Zu einem Navigationspunkt wechseln* — öffnet sie nicht. Das Panel bleibt auf der angezeigten Seite und meldet *„Seite gesperrt“*: ab TFT 6.2.0 mit großem Verbotssymbol, auf älteren TFTs als klassisches Popup.
+- **Die Sperrmeldung geht per Kreuz oder von selbst weg**, nicht durch einen Tipp auf Symbol oder Text — sie hat keine Knöpfe. Von selbst verschwindet sie nach dem Bildschirmschoner-Timeout des Panels (Vorgabe 15 Sekunden, `panels.<Panel>.cmd.screenSaver.timeout`); danach steht die zuvor angezeigte Seite wieder da. Für beide Darstellungen gilt das gleichermaßen.
+- **Nach zehn übersprungenen Seiten ist Schluss.** Führt eine Kette gesperrter Seiten im Kreis, bricht der Adapter nach zehn Sprüngen ab, schreibt einen Fehler ins Log (*Infinite loop detected in navigation*) und schickt das Panel auf die Startseite.
+![Die Seitenliste im Admin: die Seite thermoTest trägt hinter dem Namen ein durchgestrichenes Auge, weil sie versteckt ist](../Pictures/pageConfig/pageconfig-09-versteckt-liste.png)
+
 - **Im Admin** zeigt ein geschlossenes Auge solche Seiten, in der Seitenliste und im [Navigation Flow](naviFlow); der Tooltip lautet *Gesperrt (versteckt): auf dem Panel nur erreichbar, wenn „Seiten verbergen“ aus ist*. Das Auge erscheint unabhängig davon, ob *Seiten verbergen* gerade eingeschaltet ist.
 
 Ist *Seiten verbergen* ausgeschaltet, verhalten sich versteckte Seiten wie alle anderen. Typischer Einsatz: Wartungs- oder Expertenseiten, die nur zeitweise erreichbar sein sollen — der Datenpunkt lässt sich dafür z. B. per Skript an eine Anwesenheit oder Uhrzeit koppeln.
