@@ -799,7 +799,15 @@ class Controller extends Library.BaseClass {
       return true;
     }
     const heading = typeof message.heading === "string" ? message.heading : typeof message.headline === "string" ? message.headline : void 0;
+    const enabled = !!message.enabled;
     for (const name of names) {
+      if (!enabled) {
+        await this.statesControler.setInternalState(
+          `${name}/cmd/screensaverActivateNotification`,
+          false,
+          false
+        );
+      }
       if (heading !== void 0) {
         await this.statesControler.setInternalState(
           `${name}/cmd/screensaverHeadingNotification`,
@@ -814,11 +822,9 @@ class Controller extends Library.BaseClass {
           false
         );
       }
-      await this.statesControler.setInternalState(
-        `${name}/cmd/screensaverActivateNotification`,
-        !!message.enabled,
-        false
-      );
+      if (enabled) {
+        await this.statesControler.setInternalState(`${name}/cmd/screensaverActivateNotification`, true, false);
+      }
     }
     return true;
   }
