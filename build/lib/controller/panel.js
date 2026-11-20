@@ -68,6 +68,7 @@ var import_no_script = require("../configuration/no-script");
 var import_berry_driver = require("../const/berry-driver");
 var import_popupNotify3 = require("../pages/popupNotify3");
 var import_screensaver_info_icon = require("../pages/screensaver-info-icon");
+var import_screensaver_notify_queue = require("../pages/screensaver-notify-queue");
 var import_display_diagnosis = require("./display-diagnosis");
 const DefaultOptions = {
   format: {
@@ -2827,6 +2828,21 @@ class Panel extends import_library.BaseClass {
               !!state.val,
               definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
             );
+          }
+          break;
+        }
+        case "cmd/screensaverNotificationCustom": {
+          if (this.screenSaver && typeof state.val === "string") {
+            let message = void 0;
+            try {
+              message = JSON.parse(state.val);
+            } catch {
+              this.log.warn(`Invalid screensaver notification: ${state.val}`);
+            }
+            const details = (0, import_screensaver_notify_queue.parseScreensaverNotifyDetails)(message);
+            if (details) {
+              await this.screenSaver.setQueuedNotify(details);
+            }
           }
           break;
         }

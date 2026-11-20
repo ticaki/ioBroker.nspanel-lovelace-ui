@@ -53,6 +53,7 @@ var import_pageItem = require("./pageItem");
 var import_Color = require("../const/Color");
 var import_screensaver_info_icon = require("./screensaver-info-icon");
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_screensaver_notify_queue = require("./screensaver-notify-queue");
 var import_screensaver_timer = require("./screensaver-timer");
 var _Screensaver_instances, sendNotify_fn;
 function isScreensaverConfig(config) {
@@ -157,6 +158,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "headingNotification", "");
     __publicField(this, "textNotification", "");
     __publicField(this, "customNotification", false);
+    /** notifications of the sendTo `screensaverNotify` with an id, see screensaver-notify-queue */
+    __publicField(this, "notifyQueue", []);
+    __publicField(this, "notifyQueueSeq", 0);
     /** text of the popup a tap on the icon of the user opens (`cmd.screenSaver.infoText`), empty: no popup */
     __publicField(this, "infoText", "");
     /** font of {@link infoText} in the popup (`cmd.screenSaver.infoTextFont`), see {@link screensaverInfoFont} */
@@ -924,10 +928,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * @param text text of the notification
    * @param blink second background (RGB565) of the notification, undefined = no blinking. Like the colors of the
    * theme it is part of the payload: a new color of the shown notification counts as a new content.
+   * @param colors headline/text colors instead of the ones of the theme (queue of the sendTo)
    */
-  sendConfiguredNotify(id, heading, text, blink) {
+  sendConfiguredNotify(id, heading, text, blink, colors) {
     if (this.shownNotifyId === id && this.activeNotification) {
-      if (this.notifyHidden || this.lastSent.get("notify") === this.notifyPayload(true, heading, text, blink)) {
+      if (this.notifyHidden || this.lastSent.get("notify") === this.notifyPayload(true, heading, text, blink, colors)) {
         return;
       }
       const wait = this.notifyContentTs + _Screensaver.notifyContentInterval - Date.now();
@@ -937,7 +942,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       }
     }
     this.clearNotifyContentTimer();
-    if (__privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text, blink)) {
+    if (__privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text, blink, colors)) {
       this.notifyContentTs = Date.now();
     }
     this.shownNotifyId = this.activeNotification ? id : "";
@@ -970,12 +975,19 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * @param heading headline
    * @param text text
    * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+   * @param custom headline/text colors instead of the ones of the theme (queue of the sendTo)
    */
-  notifyPayload(enabled, heading, text, blink) {
+  notifyPayload(enabled, heading, text, blink, custom) {
+    var _a, _b;
     if (!enabled) {
       return tools.getPayload("notify", "", "");
     }
-    const colors = { head: import_Color.Color.fgNotifyHead, text: import_Color.Color.fgNotifyText, background: import_Color.Color.bgNotify, blink };
+    const colors = {
+      head: (_a = custom == null ? void 0 : custom.head) != null ? _a : import_Color.Color.fgNotifyHead,
+      text: (_b = custom == null ? void 0 : custom.text) != null ? _b : import_Color.Color.fgNotifyText,
+      background: import_Color.Color.bgNotify,
+      blink
+    };
     return screensaverNotifyPayload(heading, text, colors, this.sendsNotifyBackground());
   }
   /**
@@ -1566,7 +1578,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (message === null) {
       return;
     }
-    const notifyList = message.options.notify.map((n) => n.split("~")).filter((n) => n[4] !== "" || n[5] !== "").map((n) => {
+    const adminList = message.options.notify.map((n) => n.split("~")).filter((n) => n[4] !== "" || n[5] !== "").map((n) => {
       var _a;
       const s = n[5].split("<sp!it>");
       const { heading, text } = (0, import_adminShareConfig.screensaverNotifyLines)({ icon: n[2], headline: s[0], text: n[4] });
@@ -1577,6 +1589,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const id = n[1];
       return { heading, text, prio, id, buzzer, blink };
     }).sort((a, b) => a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1);
+    const notifyList = (0, import_screensaver_notify_queue.mergeScreensaverNotify)(
+      this.notifyQueue.map(import_screensaver_notify_queue.screensaverNotifyQueueCandidate).filter((n) => n.heading !== "" || n.text !== ""),
+      adminList
+    );
     if (this.customNotification === true) {
       this.clearNotifyContentTimer();
       this.shownNotifyId = "";
@@ -1585,16 +1601,50 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const heading = notifyList[0].heading;
       const text = notifyList[0].text;
       if (heading !== "" || text !== "") {
-        if (this.activeNotifyId != notifyList[0].id && this.lastSent.get("notify") !== this.notifyPayload(true, heading, text, notifyList[0].blink) && notifyList[0].buzzer && this.basePanel.dim.dayMode && this.basePanel.isBuzzerAllowed) {
+        if (this.activeNotifyId != notifyList[0].id && this.lastSent.get("notify") !== this.notifyPayload(true, heading, text, notifyList[0].blink, notifyList[0].colors) && notifyList[0].buzzer && this.basePanel.dim.dayMode && this.basePanel.isBuzzerAllowed) {
           this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
         }
         this.activeNotifyId = notifyList[0].id;
-        this.sendConfiguredNotify(notifyList[0].id, heading, text, notifyList[0].blink);
+        this.sendConfiguredNotify(notifyList[0].id, heading, text, notifyList[0].blink, notifyList[0].colors);
       }
     } else {
       this.activeNotifyId = "";
       this.clearNotifyContentTimer();
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, false);
+    }
+  }
+  /**
+   * A notification of the sendTo `screensaverNotify` with an id: into the queue (or out of it), then the
+   * notification to show is chosen again.
+   *
+   * @param details the details of the sendTo
+   */
+  async setQueuedNotify(details) {
+    this.notifyQueue = (0, import_screensaver_notify_queue.applyScreensaverNotify)(this.notifyQueue, details, ++this.notifyQueueSeq);
+    await this.HandleNotification();
+  }
+  /**
+   * A tap acknowledged an entry of the queue: it leaves the queue of this panel and of a web clone with the same
+   * name, with `global` of all panels.
+   *
+   * @param entry the acknowledged entry
+   */
+  async removeQueuedNotify(entry) {
+    this.notifyQueue = this.notifyQueue.filter((e) => e.id !== entry.id);
+    const names = /* @__PURE__ */ new Set([this.basePanel.name]);
+    if (entry.global) {
+      for (const panel of this.basePanel.controller.panels) {
+        if (!panel.unload) {
+          names.add(panel.name);
+        }
+      }
+    }
+    for (const name of names) {
+      await this.basePanel.statesControler.setInternalState(
+        `${name}/cmd/screensaverNotificationCustom`,
+        JSON.stringify({ id: entry.id, priority: -1 }),
+        false
+      );
     }
   }
   async setGlobalNotificationDismiss(id) {
@@ -1633,8 +1683,15 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     var _a, _b;
     if (this.activeNotifyId) {
       let dismissed = false;
-      const id = this.activeNotifyId.split("?")[1];
-      if (id && !isNaN(parseInt(id, 10))) {
+      const queueId = (0, import_screensaver_notify_queue.screensaverNotifyQueueId)(this.activeNotifyId);
+      const id = queueId === void 0 ? this.activeNotifyId.split("?")[1] : void 0;
+      if (queueId !== void 0) {
+        const entry = this.notifyQueue.find((e) => e.id === queueId);
+        if (entry == null ? void 0 : entry.acknowledge) {
+          dismissed = true;
+          await this.removeQueuedNotify(entry);
+        }
+      } else if (id && !isNaN(parseInt(id, 10))) {
         const item = (_a = this.pageItems) == null ? void 0 : _a[parseInt(id, 10)];
         if (item && ((_b = item.config) == null ? void 0 : _b.role) === "isDismissiblePerEvent") {
           item.setDismissiblePerEvent();
@@ -2079,9 +2136,10 @@ _Screensaver_instances = new WeakSet();
  * @param heading heading of the notification
  * @param text text of the notification
  * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+ * @param colors headline/text colors instead of the ones of the theme (queue of the sendTo)
  * @returns true when a message went out
  */
-sendNotify_fn = function(enabled, heading = "", text = "", blink) {
+sendNotify_fn = function(enabled, heading = "", text = "", blink, colors) {
   if (!this.basePanel.isOnline) {
     return false;
   }
@@ -2093,7 +2151,10 @@ sendNotify_fn = function(enabled, heading = "", text = "", blink) {
   if (!this.activeNotification && !wasActive) {
     return false;
   }
-  const sent = this.sendIfChanged("notify", this.notifyPayload(this.activeNotification, heading, text, blink));
+  const sent = this.sendIfChanged(
+    "notify",
+    this.notifyPayload(this.activeNotification, heading, text, blink, colors)
+  );
   if (sent) {
     this.notifyHidden = false;
   }
