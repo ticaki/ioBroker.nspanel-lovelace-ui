@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID della notifica salvaschermo chiusa",
     "StateObjects.scriptName": "Nome della sceneggiatura",
     "StateObjects.status": "Stato JSON",
+    "StateObjects.TasmotaRestart": "Riavvia Tasmota",
     "StateObjects.tempOffset": "Compensazione della temperatura",
     "StateObjects.uptime": "Tempo di attività",
     "Success": "Successo",

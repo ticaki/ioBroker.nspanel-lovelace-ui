@@ -722,6 +722,11 @@ class Panel extends import_library.BaseClass {
       "",
       definition.genericStateObjects.panel.panels.cmd.buzzer
     );
+    await this.library.writedp(
+      `panels.${this.name}.cmd.TasmotaRestart`,
+      false,
+      definition.genericStateObjects.panel.panels.cmd.TasmotaRestart
+    );
     state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
     if (state && state.val != null) {
       this.detach.right = !!state.val;
@@ -1417,6 +1422,15 @@ class Panel extends import_library.BaseClass {
         }
         case "power2": {
           this.sendToTasmota(`${this.topic}/cmnd/POWER2`, state.val ? "ON" : "OFF");
+          break;
+        }
+        case "TasmotaRestart": {
+          await this.restartTasmota();
+          await this.library.writedp(
+            `panels.${this.name}.cmd.TasmotaRestart`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.TasmotaRestart
+          );
           break;
         }
         case "mainNavigationPoint": {
@@ -2607,6 +2621,20 @@ class Panel extends import_library.BaseClass {
     this.screenSaver && await this.screenSaver.HandleScreensaverStatusIcons();
     await this.writeInfo();
   }
+  /**
+   * Restarts Tasmota and sets the panel offline - from the internal state `cmd/TasmotaRestart` and from the
+   * state `panels.<name>.cmd.TasmotaRestart`.
+   */
+  async restartTasmota() {
+    if (this.isVirtual) {
+      this.log.info("A web panel has no Tasmota to restart");
+      return;
+    }
+    this.sendToTasmota(`${this.topic}/cmnd/Restart`, "1");
+    this.log.info("Going offline because of Tasmota restart!");
+    this.isOnline = false;
+    await this.setStatus("offline");
+  }
   onInternalCommand = async (id, state) => {
     var _a, _b, _c, _d, _e;
     if (!id.startsWith(this.name)) {
@@ -2812,14 +2840,7 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cmd/TasmotaRestart": {
-          if (this.isVirtual) {
-            this.log.info("A web panel has no Tasmota to restart");
-            break;
-          }
-          this.sendToTasmota(`${this.topic}/cmnd/Restart`, "1");
-          this.log.info("Going offline because of Tasmota restart!");
-          this.isOnline = false;
-          await this.setStatus("offline");
+          await this.restartTasmota();
           break;
         }
         case "cmd/screenSaverRotationTime": {

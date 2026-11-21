@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID der weggetippten Screensaver-Schlagzeile",
     "StateObjects.scriptName": "Skriptname",
     "StateObjects.status": "Status JSON",
+    "StateObjects.TasmotaRestart": "Tasmota neu starten",
     "StateObjects.tempOffset": "Temperaturoffset",
     "StateObjects.uptime": "Betriebszeit",
     "Success": "Erfolg",

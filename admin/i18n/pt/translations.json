@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID da notificação do protetor de tela dispensada",
     "StateObjects.scriptName": "Nome do roteiro",
     "StateObjects.status": "Status JSON",
+    "StateObjects.TasmotaRestart": "Reiniciar Tasmota",
     "StateObjects.tempOffset": "Deslocamento de temperatura",
     "StateObjects.uptime": "Tempo de atividade",
     "Success": "Sucesso",

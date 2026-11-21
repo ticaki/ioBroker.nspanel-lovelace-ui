@@ -872,6 +872,12 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.buzzer,
         );
 
+        await this.library.writedp(
+            `panels.${this.name}.cmd.TasmotaRestart`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.TasmotaRestart,
+        );
+
         state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
         if (state && state.val != null) {
             this.detach.right = !!state.val;
@@ -1686,6 +1692,16 @@ export class Panel extends BaseClass {
                 }
                 case 'power2': {
                     this.sendToTasmota(`${this.topic}/cmnd/POWER2`, state.val ? 'ON' : 'OFF');
+                    break;
+                }
+                case 'TasmotaRestart': {
+                    // a button: every write without ack fires, the value does not matter
+                    await this.restartTasmota();
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.TasmotaRestart`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.TasmotaRestart,
+                    );
                     break;
                 }
                 case 'mainNavigationPoint': {
@@ -3009,6 +3025,21 @@ export class Panel extends BaseClass {
         await this.writeInfo();
     }
 
+    /**
+     * Restarts Tasmota and sets the panel offline - from the internal state `cmd/TasmotaRestart` and from the
+     * state `panels.<name>.cmd.TasmotaRestart`.
+     */
+    async restartTasmota(): Promise<void> {
+        if (this.isVirtual) {
+            this.log.info('A web panel has no Tasmota to restart');
+            return;
+        }
+        this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
+        this.log.info('Going offline because of Tasmota restart!');
+        this.isOnline = false;
+        await this.setStatus('offline');
+    }
+
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (!id.startsWith(this.name)) {
             return null;
@@ -3216,14 +3247,7 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/TasmotaRestart': {
-                    if (this.isVirtual) {
-                        this.log.info('A web panel has no Tasmota to restart');
-                        break;
-                    }
-                    this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
-                    this.log.info('Going offline because of Tasmota restart!');
-                    this.isOnline = false;
-                    await this.setStatus('offline');
+                    await this.restartTasmota();
                     break;
                 }
                 case 'cmd/screenSaverRotationTime': {

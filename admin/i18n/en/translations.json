@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID of the dismissed screensaver notification",
     "StateObjects.scriptName": "Script name",
     "StateObjects.status": "Status json",
+    "StateObjects.TasmotaRestart": "Restart Tasmota",
     "StateObjects.tempOffset": "Temperature offset",
     "StateObjects.uptime": "Uptime",
     "Success": "Success",

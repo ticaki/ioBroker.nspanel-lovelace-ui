@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID van de weggetikte schermbeveiligingsmelding",
     "StateObjects.scriptName": "Scriptnaam",
     "StateObjects.status": "Status JSON",
+    "StateObjects.TasmotaRestart": "Tasmota herstarten",
     "StateObjects.tempOffset": "Temperatuurcompensatie",
     "StateObjects.uptime": "Uptime",
     "Success": "Succes",

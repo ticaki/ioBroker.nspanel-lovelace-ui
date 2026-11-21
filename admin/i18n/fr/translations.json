@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID de la notification de l'économiseur d'écran fermée",
     "StateObjects.scriptName": "Nom du script",
     "StateObjects.status": "Statut json",
+    "StateObjects.TasmotaRestart": "Redémarrer Tasmota",
     "StateObjects.tempOffset": "Décalage de température",
     "StateObjects.uptime": "Durée de la baisse",
     "Success": "Succès",

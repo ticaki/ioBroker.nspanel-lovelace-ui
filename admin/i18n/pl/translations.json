@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID odrzuconego powiadomienia wygaszacza ekranu",
     "StateObjects.scriptName": "Nazwa skryptu",
     "StateObjects.status": "Status Json",
+    "StateObjects.TasmotaRestart": "Uruchom ponownie Tasmota",
     "StateObjects.tempOffset": "Przesunięcie temperatury",
     "StateObjects.uptime": "Czas aktu",
     "Success": "Sukces",

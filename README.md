@@ -161,6 +161,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) notification popup: `global` is only set when the notification went to more than one panel - acknowledging a popup sent to a single panel no longer removes the same id on the other panels; `panel` also accepts the MQTT topic
 - (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
+### **WORK IN PROGRESS**
+- (ticaki) the panel's own states `cmd.power1`, `cmd.power2` and the new button `cmd.TasmotaRestart` can be selected as data points (e.g. screensaver indicator) - they show and switch the relays / restart Tasmota
+
 ### 2.5.0 (2026-11-21)
 - (ticaki) beta TFT 6.2.0, notification popup: new option `largeIcon` - big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`); older TFTs show the classic popup, without `largeIcon` nothing changes; the admin icon tab can filter these icons; `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font)
 - (ticaki) screensaver: the long press of an indicator is sent when the finger is lifted (TFT 6.2.0 and web panel), after 500 ms the clock blinks yellow/green as a sign to let go; only indicators with a long press action detect it, new long press option "only trigger the state" - **note:** whoever used `buttons.indicatorLong-N` without a long press action must choose this option with TFT 6.2.0

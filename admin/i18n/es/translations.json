@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID de la notificación del salvapantallas descartada",
     "StateObjects.scriptName": "Nombre del guión",
     "StateObjects.status": "Estado JSON",
+    "StateObjects.TasmotaRestart": "Reiniciar Tasmota",
     "StateObjects.tempOffset": "Compensación de temperatura",
     "StateObjects.uptime": "Tiempo de actividad",
     "Success": "Éxito",

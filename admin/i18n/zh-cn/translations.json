@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "已关闭的屏幕保护通知的 ID",
     "StateObjects.scriptName": "脚本名称",
     "StateObjects.status": "状态JSON",
+    "StateObjects.TasmotaRestart": "重启 Tasmota",
     "StateObjects.tempOffset": "温度偏移",
     "StateObjects.uptime": "正常运行时间",
     "Success": "成功",

@@ -131,6 +131,7 @@
     "StateObjects.screensaverNotify.id": "ID закрытого уведомления заставки",
     "StateObjects.scriptName": "Имя сценария",
     "StateObjects.status": "Статус JSON",
+    "StateObjects.TasmotaRestart": "Перезапустить Tasmota",
     "StateObjects.tempOffset": "Смещение температуры",
     "StateObjects.uptime": "Время безотказной работы",
     "Success": "Успех",
