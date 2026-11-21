@@ -212,6 +212,11 @@ export interface NavigationMapEntry {
      */
     generated?: boolean;
     /**
+     * The page has `hidden: true`: locked while the panel hides pages (`hideCards`) - swiping skips it, a
+     * targeted navigation shows the popup "page locked". The admin marks it with a closed eye.
+     */
+    hidden?: boolean;
+    /**
      * Links the script configuration gives the page, before any override. Only set for pages with
      * `origin === 'script'` or `'global'` - they are the ones an override can be made for.
      */
@@ -722,11 +727,15 @@ export type ScreensaverItemAction = {
 
 /**
  * what an indicator does when it is held (TFT 6.0.9+; ScreensaverEntityLongPressButton / ...Switch / ...NaviToPage /
- * ...Popup of the script). Without one a long press acts like a tap.
+ * ...Popup / ...Trigger of the script). Without one a long press acts like a tap; from TFT 6.2.0 on the indicator
+ * then knows no long press at all (no blinking clock, the release is a tap).
  */
 export type ScreensaverItemLongPressAction = {
-    /** popup: the popup of the channel / device itself or the one above the state ({@link isScreensaverPopupChannelRole}) */
-    kind: 'button' | 'switch' | 'navigate' | 'popup';
+    /**
+     * popup: the popup of the channel / device itself or the one above the state ({@link isScreensaverPopupChannelRole});
+     * trigger: only `buttons.indicatorLong-N` is written (ScreensaverEntityLongPressTrigger)
+     */
+    kind: 'button' | 'switch' | 'navigate' | 'popup' | 'trigger';
     /** state written on a long press (button: true, switch: toggled) */
     state?: string;
     /** page opened on a long press */
@@ -978,7 +987,21 @@ export type ScreensaverNotifyConfig = {
     dismissibleId?: string;
     /** buzzer when shown: true = {@link screensaverNotifyDefaultBuzzer}, a string = own tone sequence */
     buzzer?: boolean | string;
+    /**
+     * second background colour `#rrggbb`: set = the background of the notification alternates every second between the
+     * background of the color theme and this colour (TFT 6.2.0+ and web panel), missing = no blinking
+     */
+    backgroundBlink?: string;
 };
+
+/**
+ * true for a colour `#rrggbb` (the second background of a notification, {@link ScreensaverNotifyConfig.backgroundBlink})
+ *
+ * @param value any value
+ */
+export function isHexColor(value: unknown): value is string {
+    return typeof value === 'string' && /^#[0-9a-fA-F]{6}$/.test(value);
+}
 
 /**
  * a number as the panel prints a value (tools getValueEntryString): without grouping, with fixed decimals when given
@@ -4301,11 +4324,34 @@ export type AdminButtonFunction =
           /** id of the datapoint */
           state: string;
       }
+    | {
+          /** act like a navigation arrow of the page shown, see {@link ButtonNavigationTarget} */
+          mode: 'navigation';
+          target: ButtonNavigationTarget;
+      }
     | null;
+
+/**
+ * Target of the hardware button mode 'navigation': which navigation arrow of the page shown the button presses
+ * (next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long).
+ */
+export type ButtonNavigationTarget = 'next' | 'prev' | 'home' | 'parent';
+
+/** All targets of the hardware button mode 'navigation' in the order the admin dialog offers them. */
+export const BUTTON_NAVIGATION_TARGETS: readonly ButtonNavigationTarget[] = ['next', 'prev', 'home', 'parent'];
+
+/**
+ * @param value anything
+ * @returns true for a target of the hardware button mode 'navigation'
+ */
+export function isButtonNavigationTarget(value: unknown): value is ButtonNavigationTarget {
+    return typeof value === 'string' && BUTTON_NAVIGATION_TARGETS.some(t => t === value);
+}
 
 /** Modes of `AdminButtonFunction` in the order the admin dialog offers them. */
 export const ADMIN_BUTTON_MODES = [
     'page',
+    'navigation',
     'switch',
     'button',
     'buttonOnDelayOff',
@@ -4466,6 +4512,8 @@ export type ConvertScriptPlan = {
         notifyCount: number;
         /** items taken over as raw items, see {@link ConvertRawItem} */
         rawItems?: ConvertRawItem[];
+        /** invalid fields that were dropped instead of converted (e.g. a blink color), one text each */
+        dropped?: string[];
     };
     screensaverSkipped?: { reason: ConvertSkipReason; detail?: string };
     buttons: { left?: AdminButtonFunction; right?: AdminButtonFunction };

@@ -41,6 +41,7 @@ __export(panelConfigImport_exports, {
 module.exports = __toCommonJS(panelConfigImport_exports);
 var import_adminShareConfig = require("./adminShareConfig");
 var import_panelConfigExport = require("./panelConfigExport");
+var import_screensaver_info_font = require("../const/screensaver-info-font");
 function isDict(value) {
   return !!value && typeof value === "object" && !Array.isArray(value);
 }
@@ -207,6 +208,8 @@ const panelSettingDefaults = {
   "screenSaver.timeout": 15,
   "screenSaver.doubleClick": true,
   "screenSaver.infoIcon": "",
+  "screenSaver.infoText": "",
+  "screenSaver.infoTextFont": import_screensaver_info_font.SCREENSAVER_INFO_FONT_DEFAULT,
   "dim.standby": 15,
   "dim.active": 80,
   "dim.dayMode": true,

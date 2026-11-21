@@ -1,6 +1,6 @@
 'use strict';
 
-const { screensaverLayout, slotAreas } = require('./payload-validator');
+const { screensaverLayout, slotAreas, weatherSlotFields } = require('./payload-validator');
 const { Icons } = require('../../../build/lib/const/icon_mapping');
 const { Color } = require('../../../build/lib/const/Color');
 
@@ -124,22 +124,32 @@ function parsePageType(payload) {
  *
  * @param {string} payload the weatherUpdate payload
  * @param {string} card the screensaver page it was sent to
- * @returns {{ layout: string, slots: ReturnType<typeof toItem>[], favorit?: ReturnType<typeof toItem>, left: ReturnType<typeof toItem>[], bottom: ReturnType<typeof toItem>[], alternate?: ReturnType<typeof toItem>, indicator: ReturnType<typeof toItem>[] }} parsed
+ * @returns {{ layout: string, slots: ReturnType<typeof toItem>[], longPressMask: number | undefined, favorit?: ReturnType<typeof toItem>, left: ReturnType<typeof toItem>[], bottom: ReturnType<typeof toItem>[], alternate?: ReturnType<typeof toItem>, indicator: ReturnType<typeof toItem>[] }} parsed
  */
 function parseWeatherUpdate(payload, card) {
     const f = payload.split('~');
-    if (f[0] !== 'weatherUpdate' || (f.length - 1) % 6 !== 0) {
+    const fields = f[0] === 'weatherUpdate' ? weatherSlotFields(f, card) : undefined;
+    if (!fields) {
         throw new Error(`no weatherUpdate of 6 field slots: ${payload}`);
     }
     const slots = [];
-    for (let i = 1; i < f.length; i += 6) {
-        slots.push(toItem(f.slice(i, i + 6)));
+    for (let i = 0; i < fields.slots.length; i += 6) {
+        slots.push(toItem(fields.slots.slice(i, i + 6)));
     }
     const layout = screensaverLayout(card, slots.length);
     if (!layout) {
         throw new Error(`weatherUpdate with ${slots.length} slots fits no layout of ${card}: ${payload}`);
     }
-    const out = { layout, slots, favorit: undefined, left: [], bottom: [], alternate: undefined, indicator: [] };
+    const out = {
+        layout,
+        slots,
+        longPressMask: fields.mask,
+        favorit: undefined,
+        left: [],
+        bottom: [],
+        alternate: undefined,
+        indicator: [],
+    };
     slotAreas(layout).forEach((area, i) => {
         if (area === 'favorit' || area === 'alternate') {
             out[area] = slots[i];
@@ -157,10 +167,11 @@ function parseWeatherUpdate(payload, card) {
  */
 function weatherLayout(payload, card) {
     const f = payload.split('~');
-    if (f[0] !== 'weatherUpdate' || (f.length - 1) % 6 !== 0) {
+    const fields = f[0] === 'weatherUpdate' ? weatherSlotFields(f, card) : undefined;
+    if (!fields) {
         return undefined;
     }
-    return screensaverLayout(card, (f.length - 1) / 6);
+    return screensaverLayout(card, fields.slots.length / 6);
 }
 
 /**
@@ -216,6 +227,30 @@ function parseShutterDetail(payload) {
 }
 
 /**
+ * `notify~heading~text[~headColor~textColor~background~blink]` - the notification of the screensaver (Schlagzeile).
+ * Fields 3..6 are RGB565 numbers (HMI/tools/notify_background.py, notify_blink.py, src-web parseNotify); heading and
+ * text empty = no notification.
+ *
+ * @param {string} payload the notify payload
+ * @returns {{ heading: string, text: string, headColor: string | undefined, textColor: string | undefined, background: string | undefined, blink: string | undefined, count: number }} parsed
+ */
+function parseNotify(payload) {
+    const f = payload.split('~');
+    if (f[0] !== 'notify') {
+        throw new Error(`no notify: ${payload}`);
+    }
+    return {
+        heading: f[1] ?? '',
+        text: f[2] ?? '',
+        headColor: f[3],
+        textColor: f[4],
+        background: f[5],
+        blink: f[6],
+        count: f.length - 1,
+    };
+}
+
+/**
  * Button event of the display.
  *
  * @param {string} id internal name (`intNameEntity`) or navigation id
@@ -238,6 +273,7 @@ module.exports = {
     weatherLayout,
     parseLightDetail,
     parseShutterDetail,
+    parseNotify,
     menuItem,
     isMenuUpdate,
     buttonPress,

@@ -852,6 +852,10 @@ class NspanelLovelaceUi extends utils.Adapter {
       try {
         const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
         if (state && typeof state.val === "number" && state.val >= 100) {
+          if (await this.isTasmotaFlashing(tasmota.ip)) {
+            this.log.info(`Panel with ip ${tasmota.ip} is flashing a TFT right now - no restart sent.`);
+            return;
+          }
           this.log.debug(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
           await this.fetch(
             `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart 1`
@@ -877,6 +881,27 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     await this.setState("info.connection", true, true);
   };
+  /**
+   * Asks the berry driver of a Tasmota device whether it is flashing a TFT right now.
+   *
+   * @param tasmotaIP ip of the Tasmota device
+   * @returns true only if the driver answered `{"Br":"1"}` - false for any other answer or error
+   */
+  async isTasmotaFlashing(tasmotaIP) {
+    try {
+      const result = await this.fetch(
+        (0, import_berry_install.getTasmotaCommandUrl)(tasmotaIP, import_berry_install.BERRY_FLASH_MODE_COMMAND, this.getTasmotaLogin()),
+        void 0,
+        5e3
+      );
+      return (0, import_berry_install.isBerryFlashing)(result);
+    } catch (e) {
+      this.log.debug(
+        `Panel with ip ${tasmotaIP}: flash mode query failed: ${e instanceof Error ? e.message : String(e)}`
+      );
+      return false;
+    }
+  }
   async fetch(url, init, timeout = 3e4) {
     var _a;
     const controller = new AbortController();
@@ -1124,7 +1149,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug((0, import_redact.stringifyForLog)(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -2200,42 +2225,38 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         case "screensaverNotify": {
           let notifySent = false;
-          if (((_K = obj.message) == null ? void 0 : _K.panel) && ((_L = this.controller) == null ? void 0 : _L.panels)) {
+          if ((_K = this.controller) == null ? void 0 : _K.panels) {
+            notifySent = await this.controller.screensaverNotify(obj.message);
+          } else {
+            this.log.warn(`screensaverNotify: ${JSON.stringify(obj.message)} - controller not ready!`);
+          }
+          this.answerMessage(obj, notifySent ? { result: "ok" } : { error: "sendToAnyError" });
+          break;
+        }
+        case "screensaverClockBlink": {
+          let blinkSent = false;
+          if (((_L = obj.message) == null ? void 0 : _L.panel) && ((_M = this.controller) == null ? void 0 : _M.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel == null ? void 0 : panel.screenSaver) {
-              if (typeof obj.message.heading === "string") {
-                await panel.statesControler.setInternalState(
-                  `${panel.name}/cmd/screensaverHeadingNotification`,
-                  obj.message.heading,
-                  false
-                );
-              }
-              if (typeof obj.message.text === "string") {
-                await panel.statesControler.setInternalState(
-                  `${panel.name}/cmd/screensaverTextNotification`,
-                  obj.message.text,
-                  false
-                );
-              }
               await panel.statesControler.setInternalState(
-                `${panel.name}/cmd/screensaverActivateNotification`,
+                `${panel.name}/cmd/screensaverClockBlink`,
                 !!obj.message.enabled,
                 false
               );
-              notifySent = true;
+              blinkSent = true;
             } else {
               this.log.warn(`Panel ${obj.message.panel} not exists!`);
             }
           } else {
             this.log.warn(
-              `Missing panel in screensaverNotify: ${JSON.stringify(obj.message)} or controller not ready!`
+              `Missing panel in screensaverClockBlink: ${JSON.stringify(obj.message)} or controller not ready!`
             );
           }
-          this.answerMessage(obj, notifySent ? { result: "ok" } : { error: "sendToAnyError" });
+          this.answerMessage(obj, blinkSent ? { result: "ok" } : { error: "sendToAnyError" });
           break;
         }
         case "buzzer": {
-          if (((_M = obj.message) == null ? void 0 : _M.panel) && ((_N = this.controller) == null ? void 0 : _N.panels)) {
+          if (((_N = obj.message) == null ? void 0 : _N.panel) && ((_O = this.controller) == null ? void 0 : _O.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(

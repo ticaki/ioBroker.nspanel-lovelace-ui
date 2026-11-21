@@ -24,6 +24,7 @@ import {
     isWebModel,
     menuMaxItems,
     notifyLines,
+    popupTextSize,
     webButtonsVisible,
     setTriggeredToState,
     shortenHeadline,
@@ -475,6 +476,23 @@ describe('lib/const/tools', () => {
         it('notifyLines falls back to textSize 0 for unknown sizes', () => {
             expect(notifyLines(Number(undefined), 'eu')).to.equal(7);
             expect(notifyLines(9, 'web-p')).to.equal(20);
+        });
+
+        it('notifyLines: 8 (clock font) shows one line like 5, 6/7 like the default 3', () => {
+            expect([6, 7, 8].map(t => notifyLines(t, 'eu'))).to.deep.equal([4, 4, 1]);
+            expect([6, 7, 8].map(t => notifyLines(t, 'web-p'))).to.deep.equal([10, 10, 3]);
+        });
+
+        it('popupTextSize keeps 0…5 and 8, maps 6/7 and invalid values to 3, missing to undefined', () => {
+            expect(['0', '1', '2', '3', '4', '5', '8'].map(t => popupTextSize(t))).to.deep.equal([0, 1, 2, 3, 4, 5, 8]);
+            expect(popupTextSize(8)).to.equal(8);
+            expect(popupTextSize('6')).to.equal(3);
+            expect(popupTextSize(7)).to.equal(3);
+            expect(popupTextSize('9')).to.equal(3);
+            expect(popupTextSize('2.5')).to.equal(3);
+            expect(popupTextSize('x')).to.equal(3);
+            expect(popupTextSize(undefined)).to.equal(undefined);
+            expect(popupTextSize('')).to.equal(undefined);
         });
 
         it('ScreenSaverConst has the web slots of SMARTPHONE.md (bottom / indicator / left)', () => {

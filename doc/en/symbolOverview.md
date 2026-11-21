@@ -10,6 +10,17 @@ A lookup aid: it lists every icon the adapter ships with, together with its name
 - **Copy a name:** clicking an icon puts **its name** on the clipboard (not the image). The tooltip of the icon reads `Click to copy: <name>`, and after the click the message `<name> copied` confirms it briefly. From there the name can be pasted into any icon field.
 - The overview is read-only — clicking changes nothing in the configuration.
 
+## Large notification (popupNotify3)
+
+Above the list there are two buttons:
+
+| Button | Meaning |
+|---|---|
+| **All icons** | The whole collection (default). |
+| **Large notification (popupNotify3)** | Only the icons the panel can show in the [notification with a big icon](pagePopup#6-big-icon-from-tft-620). The tooltip of the button puts it like this: *Only these icons can be shown large in the notification, any other icon falls back to information-outline*. |
+
+The filter **Filter icons** works in both views. To the right of the buttons stands how many icons are visible right now (*"… icons"*).
+
 ## Notes
 
 - The collection is large (several thousand icons); the filter is the fastest way in. Typing `thermometer`, for instance, leaves the temperature variants.

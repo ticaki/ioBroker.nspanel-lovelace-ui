@@ -3,7 +3,7 @@ import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import { type StateRole } from '../types/pages';
 import { arrayOfAll, normalizeIconColorElement } from '../types/function-and-const';
 import type { ConfigButtonFunction } from '../types/types';
-import type { IconColorElement, PageBaseItemSimple } from '../types/adminShareConfig';
+import { isButtonNavigationTarget, type IconColorElement, type PageBaseItemSimple } from '../types/adminShareConfig';
 
 export const CustomTemplates: ConfigManager.CustomTemplate[] = [
     {
@@ -35,6 +35,8 @@ export function isButton(F: any): F is ConfigButtonFunction {
     switch (mode) {
         case 'page':
             return !!F.page;
+        case 'navigation':
+            return isButtonNavigationTarget(F.target);
         case 'switch':
         case 'button':
         case 'buttonOnDelayOff':

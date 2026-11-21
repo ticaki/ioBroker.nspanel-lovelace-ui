@@ -102,6 +102,9 @@ class ColorBase {
   static fgTimeAdd = "default.color.from.start.foreground";
   static fgForecast = "default.color.from.start.foreground";
   static fgBar = "default.color.from.start.foreground";
+  static fgNotifyHead = "default.color.from.start.fgNotifyHead";
+  static fgNotifyText = "default.color.from.start.fgNotifyText";
+  static bgNotify = "default.color.from.start.bgNotify";
   static solar = "default.color.from.start.solar";
   static temperature = "default.color.from.start.temperature";
   static gust = "default.color.from.start.gust";
@@ -135,6 +138,17 @@ class Color extends ColorBase {
   // very dark cool header strip
   static DarkBlue = { r: 0, g: 0, b: 146 };
   // dark blue accents
+  // notification box on the screensaver: the background of the theme + 27 per channel (HMIDark 29 -> 56, tested)
+  static NotifyGray = { r: 56, g: 56, b: 56 };
+  // on HMIDark (default)
+  static NotifySlate = { r: 37, g: 40, b: 57 };
+  // on DarkGrayBlue (technical)
+  static NotifyPlum = { r: 75, g: 54, b: 90 };
+  // on 48/27/63 (sunset)
+  static NotifyOcean = { r: 27, g: 87, b: 147 };
+  // on DeepOcean (topical)
+  static NotifyLava = { r: 207, g: 49, b: 27 };
+  // on LavaCore (volcano)
   // ——— Grays / Neutrals ———
   static DarkGray = { r: 64, g: 64, b: 64 };
   // disabled controls, muted icons
@@ -442,6 +456,12 @@ class Color extends ColorBase {
           return Color.fgForecast;
         case "default.color.from.start.fgBar":
           return Color.fgBar;
+        case "default.color.from.start.fgNotifyHead":
+          return Color.fgNotifyHead;
+        case "default.color.from.start.fgNotifyText":
+          return Color.fgNotifyText;
+        case "default.color.from.start.bgNotify":
+          return Color.bgNotify;
         case "default.color.from.start.solar":
           return Color.solar;
         case "default.color.from.start.temperature":
@@ -535,6 +555,9 @@ class Color extends ColorBase {
     fgTimeAdd: Color.HMIOn,
     fgForecast: Color.LightGray,
     fgBar: Color.LightGray,
+    fgNotifyHead: Color.White,
+    fgNotifyText: Color.White,
+    bgNotify: Color.NotifyGray,
     // Media-spezifisch
     mediaArtistOn: Color.Yellow,
     mediaArtistOff: Color.Gray,
@@ -606,6 +629,9 @@ class Color extends ColorBase {
     fgTimeAdd: Color.Turquoise,
     fgForecast: Color.Sand,
     fgBar: Color.Sand,
+    fgNotifyHead: Color.White,
+    fgNotifyText: Color.White,
+    bgNotify: Color.NotifyOcean,
     solar: Color.Sun,
     temperature: Color.Sunset,
     // Media-spezifisch
@@ -681,6 +707,9 @@ class Color extends ColorBase {
     fgTimeAdd: Color.Cyan,
     fgForecast: Color.BlueLight,
     fgBar: Color.DarkGray,
+    fgNotifyHead: Color.White,
+    fgNotifyText: Color.White,
+    bgNotify: Color.NotifySlate,
     // Media-spezifisch
     mediaArtistOn: Color.TechMint,
     mediaArtistOff: Color.AshGray,
@@ -754,6 +783,9 @@ class Color extends ColorBase {
     fgTimeAdd: Color.Magenta,
     fgForecast: Color.colorSonos,
     fgBar: Color.Off,
+    fgNotifyHead: Color.White,
+    fgNotifyText: Color.White,
+    bgNotify: Color.NotifyPlum,
     // Media-spezifisch
     mediaArtistOn: Color.Sunset,
     mediaArtistOff: Color.Gray,
@@ -833,6 +865,9 @@ class Color extends ColorBase {
     fgForecast: Color.FlameYellow,
     // Forecast-Werte hellgelb für Kontrast
     fgBar: Color.AshGray,
+    fgNotifyHead: Color.White,
+    fgNotifyText: Color.White,
+    bgNotify: Color.NotifyLava,
     // Media-spezifisch
     mediaArtistOn: Color.LavaCore,
     mediaArtistOff: Color.AshGray,

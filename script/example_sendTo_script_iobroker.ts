@@ -686,7 +686,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.21.8';
+const version = '0.21.9';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1529,6 +1529,15 @@ declare namespace ScriptConfig {
            */
           state: string;
       }
+        | {
+            /**
+             * Mode for acting like a navigation arrow of the page shown:
+             * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long.
+             * An open popup is closed first, on the screensaver nothing happens.
+             */
+            mode: 'navigation';
+            target: 'next' | 'prev' | 'home' | 'parent';
+        }
         | null;
 
     export type Config = {

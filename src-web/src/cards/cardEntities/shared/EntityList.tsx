@@ -16,6 +16,8 @@ export interface EntityListProps {
     /** the card draws compact rows on the hardware models (cardSchedule) */
     compact?: boolean;
     press: (id: string, action: string, value?: string | number) => void;
+    /** sends a raw display event (the long press of a navigation arrow) */
+    send: (event: string) => void;
     openPopup: (popup: string, id: string, title?: string, icon?: string, iconColor?: number) => void;
 }
 
@@ -117,6 +119,7 @@ export class EntityList extends React.Component<EntityListProps> {
                     navigation={model.navigation}
                     model={global.model}
                     press={press}
+                    send={this.props.send}
                 />
                 <div
                     data-rows=""

@@ -54,7 +54,7 @@ class E2EContext {
         for (const [id, obj] of Object.entries(config.OBJECTS)) {
             await harness.objects.setObject(id, { _id: id, ...obj });
         }
-        for (const [id, val] of Object.entries(config.STATES)) {
+        for (const [id, val] of Object.entries({ ...config.STATES, ...config.EXTRA_STATES })) {
             await harness.states.setState(id, { val, ack: true });
         }
         // the adapter's MQTT broker runs TLS: without stored keys it creates a 4096 bit RSA key at every start

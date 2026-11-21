@@ -227,10 +227,10 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        // neighbouring names keep a gap, a long name ends with an ellipsis
+                        // neighbouring names keep a gap, a long name is cut at the border like on the panel (no own …)
                         padding: '0 3px',
                         boxSizing: 'border-box',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
                     {entity.displayName}
@@ -261,6 +261,7 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                     navigation={model.navigation}
                     model={global.model}
                     press={press}
+                    send={this.props.send}
                 />
                 <div
                     data-tiles=""

@@ -254,7 +254,9 @@ class PanelSend extends import_library.BaseClass {
   };
   addMessage = (payload, ackForType, force, opt) => {
     var _a;
-    this.warnIfTooLong(payload);
+    if (this.isTooLong(payload)) {
+      return;
+    }
     const lastPageType = this.messageDb.findLastIndex((a) => a.payload.startsWith("pageType~"));
     if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.slice(lastPageType + 1).some((a) => a.payload === payload && a.opt === opt)) {
       if (this.adapter.config.debugLogMqtt) {
@@ -388,22 +390,27 @@ class PanelSend extends import_library.BaseClass {
     return `${(0, import_crc16.crcPrefix)(msg.crc)}${msg.payload}`;
   }
   /**
-   * Logs a warning when the payload does not fit into the receive buffer of the display.
-   * Only a warning - the message is sent anyway.
+   * Checks whether the payload fits into the receive buffer of the display. A longer message hangs the display,
+   * so it is never queued - it is dropped with an error log. Measured is the UTF-8 payload without the crc
+   * prefix `^XXXX^`: the Berry driver strips that prefix, the display receives only the payload.
+   * A web panel has no such buffer and is never limited.
    *
-   * @param payload the message for the panel
+   * @param payload the message for the panel (without crc prefix)
+   * @returns true if the message must be dropped
    */
-  warnIfTooLong(payload) {
+  isTooLong(payload) {
     var _a;
     if ((_a = this.panel) == null ? void 0 : _a.isVirtual) {
-      return;
+      return false;
     }
     const bytes = Buffer.byteLength(payload, "utf8");
-    if (bytes > import_definition.MAX_PANEL_PAYLOAD_BYTES) {
-      this.log.warn(
-        `Message to the panel has ${bytes} bytes, the display can receive only ${import_definition.MAX_PANEL_PAYLOAD_BYTES} bytes: ${payload.slice(0, 60)}...`
-      );
+    if (bytes <= import_definition.MAX_PANEL_PAYLOAD_BYTES) {
+      return false;
     }
+    this.log.error(
+      `Message to the panel has ${bytes} bytes, the display can receive only ${import_definition.MAX_PANEL_PAYLOAD_BYTES} bytes - message dropped: ${payload.slice(0, 60)}...`
+    );
+    return true;
   }
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {

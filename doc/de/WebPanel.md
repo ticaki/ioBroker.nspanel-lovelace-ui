@@ -36,6 +36,7 @@ welcher Adresse die Panels erreichbar sind.
 | **Bind-Adresse** | Netzwerkschnittstelle, auf der der Server lauscht. `0.0.0.0` (Vorgabe) = alle. |
 | **Hostname für die Links** | Nur für die Links im Admin, die Adressvorschau und die Meldung im Log. Leer = der Adapter ermittelt ihn selbst. Bei HTTPS den Namen aus dem Zertifikat eintragen. |
 | **PIN**, **HTTPS**, **FIDO2** | siehe [Abschnitt 6](#6-zugang-schützen-pin-https-sicherheitsschlüssel) |
+| **Web-Panel: Erweiterungen gegenüber dem Hardware-Panel erlauben** | **Ab Werk aus:** Ein Web-Panel zeigt nur, was auch das Hardware-Panel kann — z. B. zeigt die große Benachrichtigung (popupNotify3) auch dort nur ihre eigenen Icons, jedes andere wird zu `information-outline`. An: Das Web-Panel nutzt zusätzliche Möglichkeiten, derzeit alle MDI-Icons in der großen Benachrichtigung. |
 
 Jedes Panel hat eine eigene Adresse, gebildet aus seinem **Topic**:
 
@@ -172,7 +173,8 @@ Plätzen rutschen die Elemente auf die folgenden Seiten.“
 
 Auch die **Überschrift** einer Seite ist unterschiedlich breit: Sie wird auf 28 Zeichen im Querformat,
 13 im US-Hochformat, 16 bei *Smartphone hochkant* und 45 bei *Smartphone quer* gekürzt; längerer Text
-endet mit „…“.
+endet mit „…“. Jeder andere Text, der nicht in sein Feld passt, endet wie am Panel an der Feldgrenze – auch
+mitten in einem Buchstaben; ein „…“ zeichnet das Web-Panel nicht selbst dazu.
 
 ### Plätze des Bildschirmschoners
 
@@ -209,8 +211,9 @@ Der Browser bricht den Text selbst um; eine feste Zeichenzahl pro Zeile gibt es 
 - **Tippen oder Klicken** wirkt wie ein Druck aufs Display — mit Maus und Touch gleich.
 - **Halten** (ab etwa 0,6 Sekunden) ist der lange Druck: Auf einer Kachel einer Menüseite schaltet ein
   kurzer Druck, Halten öffnet das Detail-Popup — wie am echten Panel. Auf einem **Indikator des
-  Bildschirmschoners** löst das Halten nach 0,5 Sekunden die [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken)
-  aus, auch [Popup öffnen](screensaver#popup-öffnen); anders als am echten Panel bricht eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab.
+  Bildschirmschoners** mit einer Aktion bei langem Drücken blinkt nach 0,5 Sekunden Halten die Uhrzeit gelb und grün, und das Loslassen löst die
+  [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken) aus, auch [Popup öffnen](screensaver#popup-öffnen) – wie am Panel mit der TFT 6.2.0; anders als am echten Panel bricht in den ersten 0,5 Sekunden eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab. Ein Indikator ohne
+  solche Aktion kennt keinen langen Druck, das Loslassen ist ein Tipp.
 - **Die zwei Hardwaretasten** liegen als Leisten unter dem Display. Sie lösen die Aktion aus, die für die
   Tasten eingestellt ist, und setzen `panels.<Panel>.buttons.left`/`right`. **Relais schalten sie nicht.**
   Beim Browser-Bild eines echten Panels sind die Leisten immer da; bei einem eigenständigen Web-Panel

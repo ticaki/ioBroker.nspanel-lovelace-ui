@@ -6,12 +6,20 @@ import type { Entity6, GlobalState } from '../../protocol/types';
 import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import {
+    CLOCK_BLINK_MS,
     INDICATOR_LONG_PRESS_MS,
-    indicatorLongPress,
+    LONG_PRESS_BLINK_MS,
+    NOTIFY_BLINK_MS,
+    clockColor,
+    indicatorLongPressAllowed,
     indicatorRelease,
+    infoIconRelease,
+    isDarkWakeTouch,
     longPressStillPossible,
     nextTap,
+    notifyBackground,
     swipeAction,
+    touchClearsNotify,
     type TapState,
 } from './interaction';
 import {
@@ -42,6 +50,7 @@ import {
     type ScreensaverAreas,
     type ScreensaverLayout,
     type ScreensaverModel,
+    type ScreensaverNotify,
     type StatusIcon,
 } from './parse';
 
@@ -92,6 +101,11 @@ interface NotifyStyle {
     lines: number;
     /** `undefined` = transparent (the notification replaces the row), otherwise drawn over the page */
     cover?: { top: number; height: number };
+    /**
+     * the area of `tNotifyHead` + `tNotifyText` of the HMI (full width) that takes the background of the notification
+     * (field 5 of `notify~`), stage y; default: the cover
+     */
+    area?: { top: number; bottom: number };
     /** `true` in a portrait layout (full stage width), landscape otherwise */
     portrait?: boolean;
 }
@@ -99,6 +113,27 @@ interface NotifyStyle {
 interface PointerStart {
     x: number;
     y: number;
+}
+
+/** state of the screensaver card */
+interface ScreensaverState {
+    /**
+     * phase of the blinking clock while a held indicator tile is armed for the long press
+     * ({@link longPressBlinkColor}), undefined: not armed, the clock has its colour
+     */
+    blinkPhase: number | undefined;
+    /**
+     * phase of the red/white blinking of the clock the adapter asks for (field 7 of `statusUpdate`), undefined: off.
+     * A long press ({@link blinkPhase}) has priority.
+     */
+    alertPhase: number | undefined;
+    /** phase of the blinking background of the notification (fields 5/6 of `notify~`), undefined: off */
+    notifyPhase: number | undefined;
+    /**
+     * the notification was cleared by a touch like on the HMI ({@link touchClearsNotify}) - hidden until the next
+     * `notify~` or `pageType~` gives a new one
+     */
+    notifyCleared: boolean;
 }
 
 /** Top of a text box whose capital letters start at `capTop` */
@@ -117,48 +152,176 @@ function textTop(capTop: number, fontSize: number): number {
  * Positions and sizes are measured on the pictures of the Nextion emulator
  * (`doc/web-panel/MISSING_PICTURES.md`).
  */
-export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
+export class Screensaver extends React.Component<CardProps<ScreensaverModel>, ScreensaverState> {
+    state: ScreensaverState = {
+        blinkPhase: undefined,
+        alertPhase: undefined,
+        notifyPhase: undefined,
+        notifyCleared: false,
+    };
     private tap: TapState = { tapCount: 0 };
     private pointerStart: PointerStart | undefined;
     /** timer of the long press of a held indicator tile ({@link INDICATOR_LONG_PRESS_MS}) */
     private longPressTimer: ReturnType<typeof setTimeout> | undefined;
     /** where the held indicator tile was touched - a clear movement cancels the long press */
     private longPressStart: PointerStart | undefined;
-    /** the long press of the current touch was sent: its release sends nothing more */
-    private longPressFired = false;
+    /** id of the held indicator tile (empty when it has none), undefined: no tile held */
+    private heldIndicator: string | undefined;
+    /** the hold time of the current touch is over: its release sends the long press */
+    private longPressArmed = false;
+    /** the current touch clears the notification on its release (`vaClear` of the HMI, {@link touchClearsNotify}) */
+    private clearNotifyOnRelease = false;
+    /** timer of the blinking clock while the long press is armed ({@link LONG_PRESS_BLINK_MS}) */
+    private blinkTimer: ReturnType<typeof setInterval> | undefined;
+    /** timer of the red/white blinking the adapter asks for ({@link CLOCK_BLINK_MS}) */
+    private alertTimer: ReturnType<typeof setInterval> | undefined;
+    /** timer of the blinking background of the notification ({@link NOTIFY_BLINK_MS}) */
+    private notifyTimer: ReturnType<typeof setInterval> | undefined;
 
-    componentWillUnmount(): void {
-        this.clearLongPress();
+    componentDidMount(): void {
+        this.updateAlert();
+        this.updateNotifyBlink();
     }
 
-    private clearLongPress(): void {
+    componentWillUnmount(): void {
+        this.clearLongPress(false);
+        this.stopAlert(false);
+        this.stopNotifyBlink(false);
+    }
+
+    /**
+     * Starts the blinking background of the notification anew with every `notify~` that has fields 5 and 6 (like
+     * `tmNotBg` of the HMI), ends it with a notification without field 6 or with the clearing one.
+     */
+    private updateNotifyBlink(): void {
+        const notify = this.props.model.notify;
+        this.stopNotifyBlink(true);
+        if (notify?.background !== undefined && notify.blink !== undefined) {
+            this.setState({ notifyPhase: 0 });
+            this.notifyTimer = setInterval(() => {
+                this.setState(prev => ({ notifyPhase: (prev.notifyPhase ?? 0) + 1 }));
+            }, NOTIFY_BLINK_MS);
+        }
+    }
+
+    /**
+     * Ends the blinking background of the notification.
+     *
+     * @param redraw false while unmounting - no state change then
+     */
+    private stopNotifyBlink(redraw: boolean): void {
+        if (this.notifyTimer !== undefined) {
+            clearInterval(this.notifyTimer);
+            this.notifyTimer = undefined;
+        }
+        if (redraw && this.state.notifyPhase !== undefined) {
+            this.setState({ notifyPhase: undefined });
+        }
+    }
+
+    /** starts or ends the red/white blinking of the clock with field 7 of `statusUpdate` */
+    private updateAlert(): void {
+        if (this.props.model.clockBlink) {
+            if (this.alertTimer === undefined) {
+                this.setState({ alertPhase: 0 });
+                this.alertTimer = setInterval(() => {
+                    this.setState(prev => ({ alertPhase: (prev.alertPhase ?? 0) + 1 }));
+                }, CLOCK_BLINK_MS);
+            }
+        } else {
+            this.stopAlert(true);
+        }
+    }
+
+    /**
+     * Ends the red/white blinking, the clock gets its colour back.
+     *
+     * @param redraw false while unmounting - no state change then
+     */
+    private stopAlert(redraw: boolean): void {
+        if (this.alertTimer !== undefined) {
+            clearInterval(this.alertTimer);
+            this.alertTimer = undefined;
+        }
+        if (redraw && this.state.alertPhase !== undefined) {
+            this.setState({ alertPhase: undefined });
+        }
+    }
+
+    /**
+     * The display dimmed again (`global.awake` true -> false): the tap counter starts again like `vaTap` of the HMI
+     * (`tmSleep` sets it to 0), so the next touch is the first one - the wake touch of a dark display.
+     *
+     * @param prevProps the props before the update
+     */
+    componentDidUpdate(prevProps: Readonly<CardProps<ScreensaverModel>>): void {
+        if (prevProps.global.awake && !this.props.global.awake) {
+            this.tap = { tapCount: 0 };
+        }
+        if (prevProps.model.clockBlink !== this.props.model.clockBlink) {
+            this.updateAlert();
+        }
+        if (prevProps.model.notify !== this.props.model.notify) {
+            // a new notify~ (or the new model of a pageType~) shows the notification again
+            if (this.state.notifyCleared) {
+                this.setState({ notifyCleared: false });
+            }
+            this.updateNotifyBlink();
+        }
+    }
+
+    /**
+     * Forgets the held tile: stops the long press timer and the blinking, the clock gets its colour back.
+     *
+     * @param redraw false while unmounting - no state change then
+     */
+    private clearLongPress(redraw = true): void {
         if (this.longPressTimer !== undefined) {
             clearTimeout(this.longPressTimer);
             this.longPressTimer = undefined;
         }
+        if (this.blinkTimer !== undefined) {
+            clearInterval(this.blinkTimer);
+            this.blinkTimer = undefined;
+        }
         this.longPressStart = undefined;
+        this.heldIndicator = undefined;
+        this.longPressArmed = false;
+        if (redraw && this.state.blinkPhase !== undefined) {
+            this.setState({ blinkPhase: undefined });
+        }
     }
 
     /**
      * A touch on an indicator tile starts the long press timer like the HMI (`tmLP`): after
-     * {@link INDICATOR_LONG_PRESS_MS} `event,buttonPress3,<id>,button,<taps>` goes out while the finger is still down.
+     * {@link INDICATOR_LONG_PRESS_MS} the long press is armed and the clock blinks yellow/green
+     * ({@link LONG_PRESS_BLINK_MS} per phase) until the finger is lifted; the release sends
+     * `event,buttonPress3,<id>,button,<taps>` ({@link indicatorRelease}). Only an indicator whose bit is set in the
+     * long press mask starts it; any other knows no long press, its release is a tap.
      *
      * @param entityId id of the indicator entity (empty when none)
+     * @param index position of the indicator in its area (bit of the long press mask)
      * @param e the pointer event of the touch
      */
-    private indicatorDown(entityId: string, e: React.PointerEvent): void {
+    private indicatorDown(entityId: string, index: number, e: React.PointerEvent): void {
         this.clearLongPress();
-        this.longPressFired = false;
+        if (!indicatorLongPressAllowed(this.props.model.longPressMask, index)) {
+            return;
+        }
+        if (isDarkWakeTouch(this.props.global.awake, this.props.global.dim.standby)) {
+            // the first touch of a dark display (standby brightness 0) only wakes it: no long press
+            return;
+        }
+        this.heldIndicator = entityId;
         this.longPressStart = { x: e.clientX, y: e.clientY };
         this.longPressTimer = setTimeout(() => {
             this.longPressTimer = undefined;
             this.longPressStart = undefined;
-            this.longPressFired = true;
-            const { tap, event } = indicatorLongPress(this.tap, entityId);
-            this.tap = tap;
-            if (event) {
-                this.props.send(event);
-            }
+            this.longPressArmed = true;
+            this.setState({ blinkPhase: 0 });
+            this.blinkTimer = setInterval(() => {
+                this.setState(prev => ({ blinkPhase: (prev.blinkPhase ?? 0) + 1 }));
+            }, LONG_PRESS_BLINK_MS);
         }, INDICATOR_LONG_PRESS_MS);
     }
 
@@ -170,6 +333,20 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         }
     };
 
+    /**
+     * css colour of the clock: yellow/green while the long press of a held indicator tile is armed, red/white while
+     * the adapter lets it blink, otherwise its `color~` field ({@link clockColor})
+     *
+     * @param value the `color~` field of the clock
+     */
+    private timeColor(value: number | undefined): string {
+        const { blinkPhase, alertPhase } = this.state;
+        if (blinkPhase === undefined && alertPhase === undefined) {
+            return this.color(value);
+        }
+        return color565ToCss(clockColor(value ?? this.props.global.dim.text, blinkPhase, alertPhase));
+    }
+
     /** css colour of a `color~` field, the text colour of `dimmode` when the field is missing */
     private color(value: number | undefined): string {
         return color565ToCss(value ?? this.props.global.dim.text);
@@ -177,26 +354,56 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
 
     private readonly onPointerDown = (e: React.PointerEvent): void => {
         this.pointerStart = { x: e.clientX, y: e.clientY };
+        // every touch of the page passes here (tiles and the info icon too); `global.awake` is still as before the
+        // touch, the store wakes the display with the press of the release
+        this.clearNotifyOnRelease = touchClearsNotify(
+            this.shownNotify() !== undefined,
+            this.props.global.awake,
+            this.props.global.dim.standby,
+        );
     };
 
-    private readonly onPointerUp = (e: React.PointerEvent): void => {
-        const start = this.pointerStart;
-        this.pointerStart = undefined;
-        // the release of a held indicator tile outside of it (mouse): the timer stops, a sent long press ends it
-        this.clearLongPress();
-        if (this.longPressFired) {
-            this.longPressFired = false;
+    /**
+     * The end of every touch of the page: clears the notification when the touch started on a shown one of a display
+     * that was not dark (`tc0` 'up' of the HMI, behind the send) - heading, text and the blinking background.
+     */
+    private releaseNotify(): void {
+        if (!this.clearNotifyOnRelease) {
             return;
         }
+        this.clearNotifyOnRelease = false;
+        this.stopNotifyBlink(true);
+        this.setState({ notifyCleared: true });
+    }
+
+    /** the notification as shown: undefined when there is none or a touch cleared it */
+    private shownNotify(): ScreensaverNotify | undefined {
+        return this.state.notifyCleared ? undefined : this.props.model.notify;
+    }
+
+    private readonly onPointerUp = (e: React.PointerEvent): void => {
+        // the release of a held indicator tile outside of it (mouse): the timer stops, an armed long press is sent
+        // like the HMI does (tc0 'up' gets every release)
+        const held = this.longPressArmed ? this.heldIndicator : undefined;
+        this.clearLongPress();
+        if (held !== undefined) {
+            this.indicatorTap(held, e, true);
+            this.pointerStart = undefined;
+            this.releaseNotify();
+            return;
+        }
+        const start = this.pointerStart;
+        this.pointerStart = undefined;
         if (!start) {
             return;
         }
         const action = swipeAction(e.clientX - start.x, e.clientY - start.y);
         if (action) {
             this.props.press('screensaver', action);
-            return;
+        } else {
+            this.screensaverTap();
         }
-        this.screensaverTap();
+        this.releaseNotify();
     };
 
     /** a tap on the screensaver itself: `bExit,<taps>`, counted since the screensaver was shown */
@@ -207,30 +414,51 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
 
     /**
      * The release of a touch that started on an indicator icon: the tile tap counts with the taps of the background
-     * and sends `<id>,button,<taps>`, a swipe from the tile is a swipe ({@link indicatorRelease}); the wake-up
-     * happens in the store with the press.
+     * and sends `<id>,button,<taps>`, after the hold time the long press `event,buttonPress3,<id>,button,<taps>`, a
+     * swipe from the tile is a swipe ({@link indicatorRelease}); the wake-up happens in the store with the press.
      *
      * @param entityId id of the indicator entity (empty when none)
      * @param e the pointer event of the release
+     * @param long true when the long press was armed
      */
-    private indicatorTap(entityId: string, e: React.PointerEvent): void {
+    private indicatorTap(entityId: string, e: React.PointerEvent, long: boolean): void {
         const start = this.pointerStart;
-        const { tap, press } = indicatorRelease(
+        const { tap, send } = indicatorRelease(
             this.tap,
             entityId,
             start ? e.clientX - start.x : 0,
             start ? e.clientY - start.y : 0,
+            long,
         );
         this.tap = tap;
-        if (press) {
-            this.props.press(...press);
+        if (send?.kind === 'press') {
+            this.props.press(...send.press);
+        } else if (send?.kind === 'event') {
+            this.props.send(send.event);
         }
+    }
+
+    /**
+     * The release of a touch that started on the info icon next to the clock: `bInfo,button,<taps>` like an indicator
+     * without long press, a swipe from the icon is a swipe ({@link infoIconRelease})
+     *
+     * @param e the pointer event of the release
+     */
+    private infoIconTap(e: React.PointerEvent): void {
+        const start = this.pointerStart;
+        const { tap, press } = infoIconRelease(
+            this.tap,
+            start ? e.clientX - start.x : 0,
+            start ? e.clientY - start.y : 0,
+        );
+        this.tap = tap;
+        this.props.press(...press);
     }
 
     private readonly onPointerCancel = (): void => {
         this.pointerStart = undefined;
+        this.clearNotifyOnRelease = false;
         this.clearLongPress();
-        this.longPressFired = false;
     };
 
     private renderIcon(entity: Entity6, size: number, style?: React.CSSProperties): React.JSX.Element | null {
@@ -313,7 +541,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     whiteSpace: 'nowrap',
                 }}
             >
-                <span style={{ fontSize, fontWeight, lineHeight: 1, color: this.color(colors?.time) }}>{time}</span>
+                <span style={{ fontSize, fontWeight, lineHeight: 1, color: this.timeColor(colors?.time) }}>{time}</span>
                 {ampm !== '' && !ampmBelow ? (
                     <span
                         style={{
@@ -355,7 +583,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     /**
      * The info icon of `time~HH:MM~icon` (colour `tTimeAdd`): below the time in the
      * standard and alternate layout, above it in the advanced layout and left of it in
-     * EasyView and tiles.
+     * EasyView and tiles. A tap on it sends `bInfo,button,<taps>` ({@link infoIconTap}).
      *
      * @param top top edge of the icon box
      * @param left left edge of the icon box
@@ -367,12 +595,25 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
             return null;
         }
         return (
-            <Icon
-                glyph={global.timeIcon}
-                size={size}
-                color={this.color(model.colors?.timeAdd)}
-                style={{ position: 'absolute', top, left }}
-            />
+            <div
+                data-role="infoIcon"
+                onPointerDown={(): void => this.clearLongPress()}
+                onPointerUp={(e): void => {
+                    e.stopPropagation();
+                    this.clearLongPress();
+                    this.infoIconTap(e);
+                    this.pointerStart = undefined;
+                    this.releaseNotify();
+                }}
+                style={{ position: 'absolute', top, left, width: size, height: size }}
+            >
+                <Icon
+                    glyph={global.timeIcon}
+                    size={size}
+                    color={this.color(model.colors?.timeAdd)}
+                    style={{ display: 'block' }}
+                />
+            </div>
         );
     }
 
@@ -521,7 +762,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 width: column.width,
                 textAlign: 'center',
                 overflow: 'hidden',
-                textOverflow: 'ellipsis',
+                textOverflow: 'clip',
             };
             result.push(
                 <div
@@ -564,13 +805,19 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
      * @param style position of heading and text
      */
     private renderNotify(style: NotifyStyle): React.JSX.Element | null {
-        const { notify, colors } = this.props.model;
+        const { colors } = this.props.model;
+        const notify = this.shownNotify();
         if (!notify) {
             return null;
         }
         const stage = stageSize(this.panelModel());
         const width = style.portrait ? stage.width : landscapeWidth(this.panelModel());
         const text = notifyTextBox(width, style.portrait === true);
+        const offset = style.cover?.top ?? 0;
+        const area =
+            style.area ?? (style.cover ? { top: style.cover.top, bottom: style.cover.top + style.cover.height } : null);
+        const headColor = this.color(notify.headColor ?? colors?.mainText);
+        const textColor = this.color(notify.textColor ?? colors?.mainText);
         const cover: React.CSSProperties = style.cover
             ? {
                   top: style.cover.top,
@@ -585,26 +832,42 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     position: 'absolute',
                     left: 0,
                     width,
-                    color: this.color(colors?.mainText),
+                    color: textColor,
                     overflow: 'hidden',
                     ...cover,
                 }}
             >
+                {notify.background !== undefined && area ? (
+                    <div
+                        data-role="notifyBackground"
+                        style={{
+                            position: 'absolute',
+                            top: area.top - offset,
+                            left: 0,
+                            width,
+                            height: area.bottom - area.top,
+                            background: color565ToCss(
+                                notifyBackground(notify.background, notify.blink, this.state.notifyPhase),
+                            ),
+                        }}
+                    />
+                ) : null}
                 <div
                     style={{
                         position: 'absolute',
-                        top: textTop(style.headingTop, style.headingSize) - (style.cover?.top ?? 0),
+                        top: textTop(style.headingTop, style.headingSize) - offset,
                         left: 8,
                         width: width - 16,
+                        color: headColor,
                         fontSize: style.headingSize,
                         lineHeight: 1,
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
-                    {this.renderRuns(notify.heading, style.headingSize, this.color(colors?.mainText))}
+                    {this.renderRuns(notify.heading, style.headingSize, headColor)}
                 </div>
                 <div
                     style={{
@@ -612,7 +875,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         top:
                             textTop(style.textTop, style.textSize) -
                             Math.round((style.lineHeight - style.textSize) / 2) -
-                            (style.cover?.top ?? 0),
+                            offset,
                         left: text.left,
                         width: text.width,
                         height: style.lines * style.lineHeight,
@@ -712,7 +975,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         columns: Column[],
         favorit: React.JSX.Element | null,
     ): React.JSX.Element {
-        const { model } = this.props;
         const portrait = isWebPortrait(this.panelModel());
         const width = portrait ? stageSize(this.panelModel()).width : landscapeWidth(this.panelModel());
         const barLeft = portrait ? 20 : 60;
@@ -723,7 +985,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 {this.renderTimeIcon(138, Math.round(width / 2) - 14, 28)}
                 {this.renderDate({ top: textTop(172, 29), left: 0, width, textAlign: 'center', fontSize: 29 })}
                 {this.renderBar(201, barLeft, width - 2 * barLeft)}
-                {model.notify ? (
+                {this.shownNotify() ? (
                     this.renderNotify({
                         headingTop: 216,
                         headingSize: 38,
@@ -732,6 +994,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         lineHeight: 24,
                         lines: portrait ? 6 : 2,
                         portrait,
+                        // tNotifyHead y 207 of the eu HMI, tNotifyText down to the lower edge
+                        area: { top: 207, bottom: stageSize(this.panelModel()).height },
                     })
                 ) : (
                     <>
@@ -854,8 +1118,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     /**
-     * An indicator: a tap on its box sends `event,buttonPress2,<id>,button,<taps>`, holding it
-     * `event,buttonPress3,<id>,button,<taps>` (then the release sends nothing).
+     * An indicator: a tap on its box sends `event,buttonPress2,<id>,button,<taps>`, a release after holding it for
+     * {@link INDICATOR_LONG_PRESS_MS} `event,buttonPress3,<id>,button,<taps>` (only with its bit in the long press
+     * mask) - both on release.
      *
      * @param entity the indicator
      * @param index position in the indicator area
@@ -875,17 +1140,14 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
             <div
                 key={index}
                 data-role={`indicator${index + 1}`}
-                onPointerDown={(e): void => this.indicatorDown(entity.id, e)}
+                onPointerDown={(e): void => this.indicatorDown(entity.id, index, e)}
                 onPointerUp={(e): void => {
                     e.stopPropagation();
+                    const long = this.longPressArmed;
                     this.clearLongPress();
-                    if (this.longPressFired) {
-                        // the long press went out while the finger was down - the release sends nothing
-                        this.longPressFired = false;
-                    } else {
-                        this.indicatorTap(entity.id, e);
-                    }
+                    this.indicatorTap(entity.id, e, long);
                     this.pointerStart = undefined;
+                    this.releaseNotify();
                 }}
                 style={{
                     position: 'absolute',
@@ -964,7 +1226,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         top: textTop(top + 5 + i * 33, 17),
                         left: valueLeft,
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                         width: valueWidth,
                         fontSize: 17,
                         color: this.color(colors?.mainText),
@@ -1061,14 +1323,15 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     valueSize: 18,
                 })}
                 {this.renderBottomStatusIcons(284, width)}
+                {/* the area of the HMI: tNotifyHead y 181, tNotifyText (2 lines) down to the MR icons (y 280) */}
                 {this.renderNotify({
                     headingTop: 200,
                     headingSize: 30,
-                    textTop: 246,
+                    textTop: 234,
                     textSize: 17,
                     lineHeight: 24,
-                    lines: 3,
-                    cover: { top: 184, height: 136 },
+                    lines: 2,
+                    cover: { top: 181, height: 99 },
                 })}
             </>
         );
@@ -1194,7 +1457,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 {this.renderDate({ top: textTop(202, 29), left: 0, width, textAlign: 'center', fontSize: 29 })}
                 {this.renderBar(245, 53, 215)}
                 {this.renderTopStatusIcons(235, [0, 0], true)}
-                {model.notify ? null : alternate ? (
+                {this.shownNotify() ? null : alternate ? (
                     <>
                         {this.renderIconAboveValue(
                             areas.favorit,
@@ -1236,6 +1499,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     lineHeight: 24,
                     lines: 2,
                     portrait: true,
+                    // tNotifyHead y 272 to the end of tNotifyText (388) - the bottom row below stays
+                    area: { top: 272, bottom: 388 },
                 })}
             </>
         );
@@ -1280,7 +1545,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     textSize: 17,
                     lineHeight: 24,
                     lines: 5,
-                    cover: { top: 252, height: 186 },
+                    // down to the MR icons (tIcon1/tIcon2 of the HMI from y 440)
+                    cover: { top: 252, height: 188 },
                     portrait: true,
                 })}
             </>
@@ -1295,7 +1561,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
      * @param areas the areas of the payload
      */
     private renderEasyviewUsp(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
         const width = stageSize(this.panelModel()).width;
         return (
             <>
@@ -1311,7 +1576,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     fontSize: 36,
                 })}
                 {this.renderBar(172, 20, 280)}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: 185,
                           headingSize: 38,
@@ -1320,6 +1585,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                           lineHeight: 24,
                           lines: 9,
                           portrait: true,
+                          // tNotifyHead y 177 to the colour bars (tRelay1/tRelay2 y 475)
+                          area: { top: 177, bottom: 475 },
                       })
                     : this.renderBottom(areas.bottom, uspEasyviewColumns(areas.bottom.length), {
                           labelTop: 184,
@@ -1341,7 +1608,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         if (isWebPortrait(this.panelModel())) {
             return this.renderEasyviewPortrait(areas);
         }
-        const { model } = this.props;
         const width = landscapeWidth(this.panelModel());
         // the three columns of the eu panel sit at 95, 240 and 385 - narrower than a third of the width
         const columns = easyviewColumns(areas.bottom.length, width);
@@ -1351,7 +1617,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 {this.renderTimeIcon(45, 31 + Math.round((width - 480) / 2), 40)}
                 {this.renderDate({ top: textTop(127, 36), left: 0, width, textAlign: 'center', fontSize: 36 })}
                 {this.renderBar(167, 60, width - 120)}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: 182,
                           headingSize: 38,
@@ -1359,6 +1625,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                           textSize: 17,
                           lineHeight: 24,
                           lines: 3,
+                          // tNotifyHead y 174 to the colour bars (tRelay1/tRelay2 y 315)
+                          area: { top: 174, bottom: 315 },
                       })
                     : this.renderBottom(areas.bottom, columns, {
                           labelTop: 181,
@@ -1380,7 +1648,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
      * @param areas the areas of the payload
      */
     private renderEasyviewPortrait(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
         const width = stageSize(this.panelModel()).width;
         return (
             <>
@@ -1394,7 +1661,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     fontSize: 36,
                 })}
                 {this.renderBar(205, 20, width - 40)}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: 220,
                           headingSize: 38,
@@ -1403,6 +1670,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                           lineHeight: 24,
                           lines: 6,
                           portrait: true,
+                          // like EasyView of the HMI: 9 px above the heading down to the colour bars
+                          area: { top: 211, bottom: easyviewBars(this.panelModel())[0].top },
                       })
                     : this.renderBottom(areas.bottom, portraitColumns(areas.bottom.length, [212, 412]), {
                           labelTop: 14,
@@ -1427,7 +1696,6 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
      * @param areas the areas of the payload
      */
     private renderTiles(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
         const geo = tilesGeometry(this.panelModel());
         const portrait = isPortrait(this.panelModel());
         // an icon in another font (`¬<n>`) keeps the centre of the icon in font 4 in the middle of its cell
@@ -1455,7 +1723,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     const cell: Box | undefined = geo.indicators[i];
                     return cell ? this.renderIndicator(entity, i, cell, iconOf(entity, cell)) : null;
                 })}
-                {model.notify
+                {this.shownNotify()
                     ? this.renderNotify({
                           headingTop: geo.notify.headingTop,
                           headingSize: 38,
@@ -1464,6 +1732,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                           lineHeight: 24,
                           lines: geo.notify.lines,
                           portrait,
+                          area: geo.notify.area,
                       })
                     : this.renderBottom(areas.bottom, geo.bottom, {
                           labelTop: 7,

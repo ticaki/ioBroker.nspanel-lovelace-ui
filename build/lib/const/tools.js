@@ -29,6 +29,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var tools_exports = {};
 __export(tools_exports, {
   GetIconColor: () => GetIconColor,
+  POPUP_TEXT_SIZE_DEFAULT: () => POPUP_TEXT_SIZE_DEFAULT,
   alignText: () => alignText,
   buildScrollingText: () => buildScrollingText,
   compareVersions: () => compareVersions,
@@ -76,6 +77,7 @@ __export(tools_exports, {
   menuMaxItems: () => menuMaxItems,
   messageItemDefault: () => messageItemDefault,
   notifyLines: () => notifyLines,
+  popupTextSize: () => popupTextSize,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
   setScaledNumber: () => setScaledNumber,
@@ -1176,16 +1178,34 @@ function menuMaxItems(card, model) {
   return MENU_MAX_ITEMS[card][model];
 }
 const NOTIFY_LINES = {
-  eu: [7, 5, 5, 4, 2, 1],
-  "us-l": [7, 5, 5, 4, 2, 1],
-  "us-p": [7, 5, 5, 4, 2, 1],
-  "web-l": [7, 5, 5, 4, 2, 1],
-  "web-p": [20, 15, 15, 10, 6, 3]
+  eu: [7, 5, 5, 4, 2, 1, 4, 4, 1],
+  "us-l": [7, 5, 5, 4, 2, 1, 4, 4, 1],
+  "us-p": [7, 5, 5, 4, 2, 1, 4, 4, 1],
+  "web-l": [7, 5, 5, 4, 2, 1, 4, 4, 1],
+  "web-p": [20, 15, 15, 10, 6, 3, 10, 10, 3]
 };
 function notifyLines(textSize, model) {
   var _a;
   const lines = NOTIFY_LINES[model];
   return (_a = lines[textSize]) != null ? _a : lines[0];
+}
+const POPUP_TEXT_SIZE_DEFAULT = 3;
+function isPopupTextSize(n) {
+  return n === 0 || n === 1 || n === 2 || n === 3 || n === 4 || n === 5 || n === 8;
+}
+function popupTextSize(textSize) {
+  let n = Number.NaN;
+  if (typeof textSize === "number") {
+    n = textSize;
+  } else if (typeof textSize === "string") {
+    if (textSize.trim() === "") {
+      return void 0;
+    }
+    n = Number(textSize);
+  } else if (textSize == null) {
+    return void 0;
+  }
+  return isPopupTextSize(n) ? n : POPUP_TEXT_SIZE_DEFAULT;
 }
 function webButtonsVisible(model, webButtons) {
   return webButtons != null ? webButtons : !isWebModel(model);
@@ -1214,6 +1234,7 @@ function shortenHeadline(text, model) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
+  POPUP_TEXT_SIZE_DEFAULT,
   alignText,
   buildScrollingText,
   compareVersions,
@@ -1260,6 +1281,7 @@ function shortenHeadline(text, model) {
   menuMaxItems,
   messageItemDefault,
   notifyLines,
+  popupTextSize,
   setHuefromRGB,
   setRGBThreefromRGB,
   setScaledNumber,

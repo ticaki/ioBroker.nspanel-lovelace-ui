@@ -1,7 +1,14 @@
 import { isChartDetailsExternal, PageChart, type ChartData } from './pageChart';
 import { buildLineScale } from './chart-scale';
+import { thinLinePoints, type LinePoint } from './chart-thin';
 import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
+
+/** the whole entityUpd of the line chart must not be larger (the display takes at most 1017 bytes, #925) */
+export const LINE_CHART_MAX_MESSAGE_BYTES = 1000;
+
+/** one point of the value string: `x:y` with integers */
+const POINT_PATTERN = /^(-?\d+):(-?\d+)$/;
 
 export class PageChartLine extends PageChart {
     constructor(config: PageInterface, options: pages.PageBase) {
@@ -124,5 +131,38 @@ export class PageChartLine extends PageChart {
         }
 
         return { ticksChart, valuesChart, factor };
+    }
+
+    /**
+     * Builds the entityUpd; if it is larger than LINE_CHART_MAX_MESSAGE_BYTES, points of the line are removed
+     * until it fits (see chart-thin.ts). The value string is `<x ticks>~x:y~x:y…`.
+     *
+     * @param message fields of the entityUpd
+     */
+    protected getMessage(message: Partial<pages.PageChartMessage>): string {
+        const payload = super.getMessage(message);
+        const bytesBefore = Buffer.byteLength(payload, 'utf8');
+        if (bytesBefore <= LINE_CHART_MAX_MESSAGE_BYTES || typeof message.value !== 'string') {
+            return payload;
+        }
+        const parts = message.value.split('~');
+        const head = parts[0];
+        const points: LinePoint[] = [];
+        for (const part of parts.slice(1)) {
+            const match = POINT_PATTERN.exec(part);
+            if (!match) {
+                // not the expected format - leave the message as it is
+                return payload;
+            }
+            points.push({ x: Number(match[1]), y: Number(match[2]) });
+        }
+        const headBytes = Buffer.byteLength(super.getMessage({ ...message, value: head }), 'utf8');
+        const thinned = thinLinePoints(points, LINE_CHART_MAX_MESSAGE_BYTES - headBytes);
+        const value = [head, ...thinned.map(p => `${p.x}:${p.y}`)].join('~');
+        const result = super.getMessage({ ...message, value });
+        this.log.debug(
+            `Line chart thinned out: ${points.length} -> ${thinned.length} points, ${bytesBefore} -> ${Buffer.byteLength(result, 'utf8')} bytes`,
+        );
+        return result;
     }
 }

@@ -18,11 +18,15 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageChartLine_exports = {};
 __export(pageChartLine_exports, {
+  LINE_CHART_MAX_MESSAGE_BYTES: () => LINE_CHART_MAX_MESSAGE_BYTES,
   PageChartLine: () => PageChartLine
 });
 module.exports = __toCommonJS(pageChartLine_exports);
 var import_pageChart = require("./pageChart");
 var import_chart_scale = require("./chart-scale");
+var import_chart_thin = require("./chart-thin");
+const LINE_CHART_MAX_MESSAGE_BYTES = 1e3;
+const POINT_PATTERN = /^(-?\d+):(-?\d+)$/;
 class PageChartLine extends import_pageChart.PageChart {
   constructor(config, options) {
     super(config, options);
@@ -120,9 +124,41 @@ class PageChartLine extends import_pageChart.PageChart {
     }
     return { ticksChart, valuesChart, factor };
   }
+  /**
+   * Builds the entityUpd; if it is larger than LINE_CHART_MAX_MESSAGE_BYTES, points of the line are removed
+   * until it fits (see chart-thin.ts). The value string is `<x ticks>~x:y~x:y…`.
+   *
+   * @param message fields of the entityUpd
+   */
+  getMessage(message) {
+    const payload = super.getMessage(message);
+    const bytesBefore = Buffer.byteLength(payload, "utf8");
+    if (bytesBefore <= LINE_CHART_MAX_MESSAGE_BYTES || typeof message.value !== "string") {
+      return payload;
+    }
+    const parts = message.value.split("~");
+    const head = parts[0];
+    const points = [];
+    for (const part of parts.slice(1)) {
+      const match = POINT_PATTERN.exec(part);
+      if (!match) {
+        return payload;
+      }
+      points.push({ x: Number(match[1]), y: Number(match[2]) });
+    }
+    const headBytes = Buffer.byteLength(super.getMessage({ ...message, value: head }), "utf8");
+    const thinned = (0, import_chart_thin.thinLinePoints)(points, LINE_CHART_MAX_MESSAGE_BYTES - headBytes);
+    const value = [head, ...thinned.map((p) => `${p.x}:${p.y}`)].join("~");
+    const result = super.getMessage({ ...message, value });
+    this.log.debug(
+      `Line chart thinned out: ${points.length} -> ${thinned.length} points, ${bytesBefore} -> ${Buffer.byteLength(result, "utf8")} bytes`
+    );
+    return result;
+  }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  LINE_CHART_MAX_MESSAGE_BYTES,
   PageChartLine
 });
 //# sourceMappingURL=pageChartLine.js.map

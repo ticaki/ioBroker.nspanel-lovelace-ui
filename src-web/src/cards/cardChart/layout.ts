@@ -4,8 +4,8 @@ import type { ChartModel } from './parse';
 import { leadingInt } from './parse';
 
 /**
- * Geometry of the chart pages, transcribed from the Nextion script of `cardChart` / `cardLChart`
- * (HMI 5.1.1). The script works with signed 32 bit integers, evaluates expressions strictly from
+ * Geometry of the chart pages, transcribed from the Nextion script of `cardChart` (HMI 6.2.0, the
+ * axis logic is the same since 6.0.3) and `cardLChart` (HMI 5.1.1). The script works with signed 32 bit integers, evaluates expressions strictly from
  * left to right and truncates divisions - `idiv` and the explicit parentheses below keep that.
  */
 
@@ -20,15 +20,16 @@ export interface PlotArea {
 /** hotspot of `cardLChart` (wiki picture `pageChart/Linechart.png`) */
 export const PLOT: PlotArea = { x: 20, y: 90, w: 410, h: 220 };
 /**
- * hotspot of `cardChart` (emulator picture `cardChart.png`): the axis is at x 63, the
- * first bar starts at x 73, the top of the axis is at y 75; the base line is at 286 like the line chart
+ * hotspot `m0` of `cardChart` in `HMI/nspanel-v6.2.0.HMI`: the y-axis is at x 85, the first bar
+ * starts at x 95, the plot bottom is at 286 like the line chart
  */
-export const PLOT_BAR: PlotArea = { x: 8, y: 75, w: 433, h: 235 };
+export const PLOT_BAR: PlotArea = { x: 8, y: 75, w: 434, h: 235 };
 
 /**
  * Portrait (us-p 320x480, also web-p, which draws the charts as us-p): the hotspot `m0` of
  * `cardChart` and `cardLChart` in `HMI/us-p/nspanel-us-p-v6.0.8.screensaver5.HMI` is 10,90 300x370
- * (eu: 8,75 434x235); the drawing code of both pages is the same as on eu, only relative to `m0`.
+ * (eu: 8,75 434x235, the same in 6.2.0); the drawing code of both pages is the same as on eu, only
+ * relative to `m0`.
  * The bar chart uses `m0` like on eu, the line chart keeps the offset of the eu plot to its `m0`
  * (+12, +15, -24, -15).
  */
@@ -73,17 +74,30 @@ export type Primitive =
           rotated: boolean;
       };
 
+/**
+ * Geometry of the bar chart (HMI since 6.0.3, transcribed from 6.2.0: `entityUpd` branch of
+ * `tmSerial` and `m0` down of `cardChart`).
+ * All y values are integers in the x10 space of the panel.
+ */
 export interface BarGeometry {
-    /** width of one unit in 1/100 px, a bar is 4 units wide, the gap 1 unit */
+    /** width of one unit in 1/100 px (`vaUnit`), a bar is 7 units wide, the step from bar to bar 10 units */
     unit: number;
-    /** left edge of the first bar in 1/100 px */
+    /** left edge of the first bar in 1/100 px (`vaLeft`) */
     left: number;
-    /** y of the base line */
+    /** y of the bottom of the plot (`vaBottom`) */
     bottom: number;
-    /** pixels per x10 unit */
-    yUnit: number;
-    /** largest value */
+    /** height of the plot in pixels the axis spans (`m0.h-24`) */
+    height: number;
+    /** lower end of the y-axis, <= 0 */
+    min: number;
+    /** upper end of the y-axis (`vMax` after rounding) */
     max: number;
+    /** span of the y-axis, `max - min` (`vaYUnit`) */
+    span: number;
+    /** distance of the y ticks (`vStrLen` while drawing the ticks) */
+    step: number;
+    /** y of the zero line (`recvCrc` after the axis has been computed) */
+    zeroY: number;
 }
 
 export interface ChartLayout {
@@ -101,7 +115,7 @@ export function idiv(a: number, b: number): number {
 }
 
 /**
- * The text of a y-axis tick like the HMI: integer part, then `.` and the last digit when it is not 0.
+ * The text of a y-axis tick of the line chart like the HMI: integer part, then `.` and the last digit when it is not 0.
  * `20` -> `2`, `25` -> `2.5`, `5` -> `.5`, `0` -> ``, negative ticks lose their integer part.
  *
  * @param tick x10 value
@@ -190,50 +204,150 @@ function yAxisLabel(plot: PlotArea, label: string, step: number, width: number):
 }
 
 /**
- * Bar chart: every value is `yUnit` pixels per x10 unit high, `yUnit` is `(h-24) / max` rounded down,
- * so the tallest bar fills the plot as far as whole pixels allow. Ticks above the maximum are not drawn.
+ * The text of a y tick of the bar chart (HMI since 6.0.3): integer part, `.` and the last digit.
+ * `215` -> `21.5`, `0` -> `0.0`, `-5` -> `-0.5`, `-25` -> `-2.5`.
+ *
+ * @param tick x10 value
+ */
+export function formatBarTick(tick: number): string {
+    const last = Math.abs(tick) % 10;
+    const integer = idiv(tick, 10);
+    const head = tick < 0 && integer === 0 ? '-0' : String(integer);
+    return `${head}.${last}`;
+}
+
+/** width of the box of a y tick label of the bar chart (`xstr m0.x+22,…,48,20`) */
+const BAR_TICK_WIDTH = 48;
+
+/**
+ * The y-axis of the bar chart like the HMI since 6.0.3: from min(0, smallest value) to
+ * max(0, largest value), a 1-2-5 step with at most about 5 intervals, both ends rounded outwards
+ * to the step.
+ *
+ * @param values x10 values of the bars
+ * @param plot the plot area
+ */
+export function barGeometry(values: readonly number[], plot: PlotArea = PLOT_BAR): BarGeometry {
+    const n = values.length;
+    let max = 0;
+    let min = 0;
+    for (const value of values) {
+        if (value > max) {
+            max = value;
+        }
+        if (value < min) {
+            min = value;
+        }
+    }
+    const unit = idiv((plot.w - 87) * 100, n * 10 - 3);
+    const bottom = plot.y + plot.h - 24;
+    const left = (plot.x + 87) * 100;
+    const height = plot.h - 24;
+
+    let span = max - min;
+    if (span < 1) {
+        max = 10;
+        span = 10;
+    }
+    // step 1, 2, 5, 10, 20, 50, … until there are at most 5 intervals
+    let step = 1;
+    let decade = 1;
+    let mantissa = 0;
+    while (idiv(span, step) > 5) {
+        mantissa++;
+        if (mantissa === 3) {
+            mantissa = 0;
+            decade *= 10;
+        }
+        step = mantissa === 1 ? decade * 2 : mantissa === 2 ? decade * 5 : decade;
+    }
+    max = idiv(max + step - 1, step) * step;
+    min = 0 - idiv(0 - min + step - 1, step) * step;
+    span = max - min;
+    const zeroY = bottom - idiv(height * (0 - min), span);
+    return { unit, left, bottom, height, min, max, span, step, zeroY };
+}
+
+/** vertical extent of a bar: top and bottom edge, used for the colour of the grid line */
+interface BarExtent {
+    top: number;
+    bottom: number;
+}
+
+/** height of a bar in pixels, at least 2 (the sign of the value decides the direction) */
+function barHeight(geometry: BarGeometry, value: number): number {
+    const h = Math.abs(idiv(geometry.height * value, geometry.span));
+    return h < 2 ? 2 : h;
+}
+
+/**
+ * Draws a bar in its normal state: dark fill, light top (bottom for negative values) and outline,
+ * a value of 0 is a line on the zero line in the dark colour.
+ */
+function drawBar(out: Primitive[], model: ChartModel, geometry: BarGeometry, index: number, value: number): BarExtent {
+    const start = index * 10 * geometry.unit + geometry.left;
+    const x = idiv(start, 100);
+    const right = idiv(geometry.unit * 7 + start, 100);
+    const w = idiv(geometry.unit * 7, 100);
+    const zero = geometry.zeroY;
+    if (value > 0) {
+        const h = barHeight(geometry, value);
+        const top = zero - h;
+        out.push({ kind: 'fill', x: x + 1, y: top + 1, w, h: h - 1, color: model.colorDark });
+        out.push(hLine(x + 1, right - 1, top, model.color));
+        out.push({ kind: 'rect', x1: x, y1: top + 1, x2: right, y2: zero, color: model.color });
+        return { top, bottom: zero };
+    }
+    if (value < 0) {
+        const h = barHeight(geometry, value);
+        out.push({ kind: 'fill', x: x + 1, y: zero + 1, w, h: h - 1, color: model.colorDark });
+        out.push(hLine(x + 1, right - 1, zero + h, model.color));
+        out.push({ kind: 'rect', x1: x, y1: zero, x2: right, y2: zero + h - 1, color: model.color });
+        return { top: zero, bottom: zero + h };
+    }
+    out.push(hLine(x, right, zero, model.colorDark));
+    return { top: zero, bottom: zero };
+}
+
+/**
+ * Bar chart like the HMI since 6.0.3: the y-axis is computed from the values (see
+ * {@link barGeometry}), the ticks of the payload only decide about "No Data". Bars grow from the
+ * zero line, negative ones downwards, every bar is at least 2 px high.
  *
  * @param model the parsed page
  * @param plot the plot area
  */
 export function layoutBar(model: ChartModel, plot: PlotArea = PLOT_BAR): ChartLayout {
     const out: Primitive[] = [];
-    const n = model.bars.length;
-    let max = 0;
-    for (const bar of model.bars) {
-        if (bar.value > max) {
-            max = bar.value;
-        }
-    }
-    const unit = idiv((plot.w - 65) * 100, n * 4 + n - 1);
-    const bottom = plot.y + plot.h - 24;
-    const left = (plot.x + 65) * 100;
-    const yUnit = idiv(plot.h - 24, max);
-    const geometry: BarGeometry = { unit, left, bottom, yUnit, max };
+    const geometry = barGeometry(
+        model.bars.map(bar => bar.value),
+        plot,
+    );
+    const { bottom, zeroY } = geometry;
+    const axisX = plot.x + 77;
 
-    // y-axis with the zero tick
-    out.push(vLine(plot.x + 55, plot.y, bottom + 10, AXIS_COLOR));
-    out.push(hLine(plot.x + 60, plot.x + 50, bottom, AXIS_COLOR));
-    for (const tickText of model.yTicks) {
-        if (tickText === '') {
-            break;
-        }
-        const tick = leadingInt(tickText);
-        if (tick <= max) {
-            const y = -1 * yUnit * tick + bottom;
-            out.push(hLine(plot.x + 60, plot.x + 50, y, AXIS_COLOR));
-            out.push(yTickLabel(plot, y, formatTick(tick)));
-        }
+    // y-axis and zero line
+    out.push(vLine(axisX, plot.y, bottom + 10, AXIS_COLOR));
+    out.push(hLine(axisX, plot.x + plot.w, zeroY, AXIS_COLOR));
+    for (let tick = geometry.min; tick <= geometry.max; tick += geometry.step) {
+        const y = zeroY - idiv(geometry.height * tick, geometry.span);
+        out.push(hLine(plot.x + 82, plot.x + 72, y, AXIS_COLOR));
+        out.push({
+            kind: 'text',
+            x: plot.x + 22,
+            y: y - 10,
+            w: BAR_TICK_WIDTH,
+            h: 20,
+            align: 'right',
+            text: fitText(formatBarTick(tick), BAR_TICK_WIDTH),
+            rotated: false,
+        });
     }
     out.push(...yAxisLabel(plot, model.yLabel, 12, 30));
 
-    for (let i = 0; i < n; i++) {
-        const bar = model.bars[i];
-        const start = i * 5 * unit + left;
-        const x = idiv(start, 100);
-        const right = idiv(unit * 4 + start, 100);
-        const centre = idiv(unit * 2 + start, 100);
-        const top = -1 * yUnit * bar.value + bottom;
+    model.bars.forEach((bar, i) => {
+        const start = i * 10 * geometry.unit + geometry.left;
+        const centre = idiv(idiv(geometry.unit * 7, 2) + start, 100);
         if (bar.label !== '') {
             out.push({
                 kind: 'text',
@@ -246,41 +360,23 @@ export function layoutBar(model: ChartModel, plot: PlotArea = PLOT_BAR): ChartLa
                 rotated: false,
             });
         }
-        if (bar.value === 0) {
-            out.push(hLine(x, right, bottom, model.colorDark));
-        } else if (bar.value > 0) {
-            out.push({
-                kind: 'fill',
-                x: x + 1,
-                y: top + 1,
-                w: idiv(unit * 4, 100),
-                h: yUnit * bar.value - 1,
-                color: model.colorDark,
-            });
-            out.push(hLine(x + 1, right - 1, top, model.color));
-            out.push({ kind: 'rect', x1: x, y1: top + 1, x2: right, y2: bottom, color: model.color });
-        }
+        const extent = drawBar(out, model, geometry, i, bar.value);
         if (bar.label !== '') {
-            // dashed grid line, light inside the bar, grey above it
+            // dashed grid line: a dash overlapping the bar is light, the others grey
             for (let y = bottom - 5; y > plot.y; y -= 10) {
                 const y2 = y + 5;
-                if (y >= top) {
-                    out.push(vLine(centre, y, y2, model.color));
-                } else if (y2 >= top) {
-                    out.push(vLine(centre, y, top - 1, AXIS_COLOR));
-                    out.push(vLine(centre, top, y2, model.color));
-                } else {
-                    out.push(vLine(centre, y, y2, AXIS_COLOR));
-                }
+                const inside = y2 > extent.top && y < extent.bottom;
+                out.push(vLine(centre, y, y2, inside ? model.color : AXIS_COLOR));
             }
         }
-    }
+    });
     return { primitives: out, bar: geometry };
 }
 
 /**
  * The bar under a touch at stage x `touchX`, -1 when the touch hit a gap or no bar
- * (the HMI highlights that bar and shows its value).
+ * (the HMI highlights that bar and shows its value). Like the HMI a touch up to one unit left of
+ * the first bar still counts as bar 0 (the division truncates towards zero).
  *
  * @param geometry the bar geometry of the layout
  * @param touchX x of the touch in stage pixels
@@ -288,16 +384,16 @@ export function layoutBar(model: ChartModel, plot: PlotArea = PLOT_BAR): ChartLa
  * @param plot the plot area
  */
 export function barAt(geometry: BarGeometry, touchX: number, count: number, plot: PlotArea = PLOT_BAR): number {
-    const units = idiv((Math.trunc(touchX) - plot.x - 65) * 100, geometry.unit);
-    if (units < 0 || units % 5 >= 4) {
+    const units = idiv((Math.trunc(touchX) - plot.x - 87) * 100, geometry.unit);
+    if (units < 0 || units % 10 >= 7 || idiv(units, 10) >= count) {
         return -1;
     }
-    const index = idiv(units, 5);
-    return index < count ? index : -1;
+    return idiv(units, 10);
 }
 
 /**
- * The highlight of a touched bar: filled with the light colour (`fill` of the touch handler).
+ * The highlight of a touched bar: filled with the light colour (`fill` of the touch handler),
+ * a value of 0 is a light line on the zero line.
  *
  * @param model the parsed page
  * @param geometry the bar geometry of the layout
@@ -308,23 +404,17 @@ export function highlightBar(model: ChartModel, geometry: BarGeometry, index: nu
     if (!bar) {
         return [];
     }
-    const start = index * 5 * geometry.unit + geometry.left;
+    const start = index * 10 * geometry.unit + geometry.left;
     const x = idiv(start, 100);
-    const right = idiv(geometry.unit * 4 + start, 100);
-    const value = Math.abs(bar.value);
-    if (value === 0) {
-        return [hLine(x, right, geometry.bottom, model.color)];
+    const right = idiv(geometry.unit * 7 + start, 100);
+    const w = idiv(geometry.unit * 7, 100);
+    const zero = geometry.zeroY;
+    if (bar.value === 0) {
+        return [hLine(x, right, zero, model.color)];
     }
-    return [
-        {
-            kind: 'fill',
-            x: x + 1,
-            y: -1 * geometry.yUnit * value + geometry.bottom + 1,
-            w: idiv(geometry.unit * 4, 100),
-            h: geometry.yUnit * value - 1,
-            color: model.color,
-        },
-    ];
+    const h = barHeight(geometry, bar.value);
+    const y = bar.value > 0 ? zero - h + 1 : zero + 1;
+    return [{ kind: 'fill', x: x + 1, y, w, h: h - 1, color: model.color }];
 }
 
 /** Range of the y-axis of the line chart: the data, widened to the enclosing ticks */

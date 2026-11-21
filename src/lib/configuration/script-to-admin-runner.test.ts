@@ -745,6 +745,24 @@ describe('lib/configuration - script-to-admin-runner', () => {
             expect(warns, 'dry run logs on debug only').to.deep.equal([]);
         });
 
+        it('warns about a dropped blink color and converts the screensaver anyway', async () => {
+            const notify = {
+                type: 'script' as const,
+                Enabled: '0_userdata.0.alarm',
+                Priority: 1,
+                Headline: 'h',
+                Text: 't',
+                BackgroundBlink: 'red',
+            };
+            const w = world({ raw: rawConfig({ notifyScreensaverEntity: [notify] }) });
+            const result = asResult(await run(w, false));
+            expect(result.screensaverSkipped).to.equal(undefined);
+            expect(result.screensaver?.notifyCount).to.equal(1);
+            const warns = w.logs.filter(l => l[0] === 'warn').map(l => l[1]);
+            expect(warns.some(t => t.includes('notifyScreensaverEntity[0].BackgroundBlink: red is no color'))).to.be
+                .true;
+        });
+
         it('reports a rejected configuration in the result and writes the admin entries anyway', async () => {
             const store: ScriptConfigStore = {
                 setScriptConfig: async () => ({ messages: ['Abort: test'], panelConfig: undefined }),

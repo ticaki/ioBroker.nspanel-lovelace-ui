@@ -11,12 +11,24 @@ const TOPIC = 'tasmota/test';
  * @param panel additional properties of the fake panel
  * @returns the PanelSend, the published payloads and the logged warnings
  */
-function setup(panel: Record<string, unknown> = {}): { send: PanelSend; published: string[]; warnings: string[] } {
+function setup(panel: Record<string, unknown> = {}): {
+    send: PanelSend;
+    published: string[];
+    warnings: string[];
+    errors: string[];
+} {
     const noop = (): void => undefined;
     const published: string[] = [];
     const warnings: string[] = [];
+    const errors: string[] = [];
     const adapter: any = {
-        log: { silly: noop, debug: noop, info: noop, warn: (m: string) => warnings.push(m), error: noop },
+        log: {
+            silly: noop,
+            debug: noop,
+            info: noop,
+            warn: (m: string) => warnings.push(m),
+            error: (m: string) => errors.push(m),
+        },
         config: { debugLogMqtt: false, additionalLog: false },
         unload: false,
         setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms),
@@ -35,7 +47,7 @@ function setup(panel: Record<string, unknown> = {}): { send: PanelSend; publishe
         topic: TOPIC,
         panel: { isOnline: true, ...panel } as any,
     });
-    return { send, published, warnings };
+    return { send, published, warnings, errors };
 }
 
 describe('lib/controller/panel-message - PanelSend ack handling', () => {
@@ -343,26 +355,61 @@ describe('lib/controller/panel-message - PanelSend message size', () => {
         clock.restore();
     });
 
-    it('warns once for a message longer than 1017 bytes and sends it anyway', async () => {
-        const { send, published, warnings } = setup();
-        // 339 icons of 3 bytes each = 1017 bytes - fits
-        send.addMessage('\ue000'.repeat(339), false);
-        expect(warnings).to.have.length(0);
-        const long = `entityUpd~${'\ue000'.repeat(339)}`;
+    it('drops a message longer than 1017 bytes with an error, the queue goes on', async () => {
+        const { send, published, warnings, errors } = setup();
+        // 339 icons of 3 bytes each = 1017 bytes - fits (bytes, not characters: only 339 characters)
+        const fits = '\ue000'.repeat(339);
+        send.addMessage(fits, false);
+        expect(errors).to.have.length(0);
+        // 1018 bytes - the size that hung the display
+        const long = `x${'\ue000'.repeat(339)}`;
         send.addMessage(long, false);
-        expect(warnings).to.have.length(1);
-        expect(warnings[0]).to.contain('1027 bytes').and.contain('1017');
+        expect(errors).to.have.length(1);
+        expect(errors[0]).to.contain('1018 bytes').and.contain('1017').and.contain('dropped');
+        send.addMessage('next', false);
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal([fits]);
         await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
         await clock.tickAsync(300);
-        expect(published).to.include(long);
-        expect(warnings).to.have.length(1);
+        expect(published).to.deep.equal([fits, 'next']);
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+        // no resend of the dropped message
+        await clock.tickAsync(30_000);
+        expect(published).to.deep.equal([fits, 'next']);
+        expect(errors).to.have.length(1);
+        expect(warnings).to.have.length(0);
         await send.delete();
     });
 
-    it('does not warn for a virtual panel', async () => {
-        const { send, warnings } = setup({ isVirtual: true });
-        send.addMessage('x'.repeat(2000), false);
-        expect(warnings).to.have.length(0);
+    it('an only too long message does not start the send loop', async () => {
+        const { send, published, errors } = setup();
+        send.addMessage('x'.repeat(1018), false);
+        await clock.tickAsync(30_000);
+        expect(published).to.have.length(0);
+        expect(errors).to.have.length(1);
+        send.addMessage('ok', false);
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['ok']);
+        await send.delete();
+    });
+
+    it('the crc prefix does not count: 1017 bytes payload with driver 12+ is sent', async () => {
+        const { send, published, errors } = setup({ info: { nspanel: { berryDriverVersion: 12 } } });
+        const payload = 'x'.repeat(1017);
+        send.addMessage(payload, false);
+        await clock.tickAsync(20);
+        expect(errors).to.have.length(0);
+        expect(published).to.deep.equal([`${crcPrefix(panelFrameCrc(payload))}${payload}`]);
+        await send.delete();
+    });
+
+    it('does not limit a virtual (web) panel', async () => {
+        const { send, published, errors } = setup({ isVirtual: true });
+        const payload = 'x'.repeat(2000);
+        send.addMessage(payload, false);
+        await clock.tickAsync(20);
+        expect(errors).to.have.length(0);
+        expect(published).to.deep.equal([payload]);
         await send.delete();
     });
 });

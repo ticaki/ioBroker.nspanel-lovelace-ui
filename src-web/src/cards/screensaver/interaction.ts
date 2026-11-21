@@ -36,12 +36,71 @@ export function indicatorTapTarget(entityId: string): 'indicator' | 'none' {
     return entityId !== '' ? 'indicator' : 'none';
 }
 
-/** Hold time of an indicator tile after which the HMI sends its long press (`tmLP` of screensaver2/5, TFT 6.0.9) */
+/**
+ * Hold time of an indicator tile after which its release sends the long press (`tmLP` of screensaver2/5, TFT 6.2.0,
+ * `indicator_long_press_release.py`)
+ */
 export const INDICATOR_LONG_PRESS_MS = 500;
 
 /**
- * Pointer movement from this distance on cancels the long press of an indicator tile: the finger is on its way to
- * a swipe (the real HMI has no such check, but there a swipe on a tile is rare)
+ * true when the indicator starts a long press: its bit (index) is set in the long press mask of `weatherUpdate`
+ * (`indicator_long_press_mask.py`). Without it the tile knows no long press, its release is always a tap.
+ *
+ * @param mask the long press mask
+ * @param index position of the indicator in its area, 0 = indicator 1
+ */
+export function indicatorLongPressAllowed(mask: number, index: number): boolean {
+    return index >= 0 && index < 31 && (mask & (1 << index)) !== 0;
+}
+
+/**
+ * true for a touch of the dimmed screensaver whose standby brightness is 0: it only wakes the dark display, an
+ * indicator starts no long press then (HMI 6.2.0: `vaWake` of `tc0` 'down' in `f<N>Icon` 'down'; the adapter
+ * swallows the press, `Screensaver.onIndicatorWakeTap`).
+ *
+ * @param awake the display was woken (`global.awake`)
+ * @param standby active standby brightness (`global.dim.standby`)
+ */
+export function isDarkWakeTouch(awake: boolean, standby: number): boolean {
+    return !awake && standby <= 0;
+}
+
+/**
+ * true when a touch of the screensaver clears the notification on its release, like `tc0` of the HMI (6.1.0+,
+ * `notify_release_clear.py`): every touch of the page (tap, swipe, tile, info icon) while a notification is shown -
+ * except the first touch of a dark display (standby brightness 0, `dim==0`), which only wakes it. The notification
+ * comes back with the next `notify~` or `pageType~`.
+ *
+ * @param shown a notification is shown when the finger goes down
+ * @param awake the display was woken (`global.awake`) when the finger went down
+ * @param standby active standby brightness (`global.dim.standby`)
+ */
+export function touchClearsNotify(shown: boolean, awake: boolean, standby: number): boolean {
+    return shown && !isDarkWakeTouch(awake, standby);
+}
+
+/** One phase of the blinking clock while a held indicator tile is armed for the long press */
+export const LONG_PRESS_BLINK_MS = 200;
+
+/**
+ * RGB565 colours of the blinking clock: yellow (first phase, right when the hold time is over), then green - like the
+ * HMI (`indicator_long_press_mask.py`); red would read like 'something is wrong'
+ */
+export const LONG_PRESS_BLINK_COLORS: readonly [number, number] = [65504, 2016];
+
+/**
+ * The colour of the clock in a phase of the blinking - 'you can let go now'
+ *
+ * @param phase number of {@link LONG_PRESS_BLINK_MS} phases since the hold time was over, 0 = the first
+ * @returns the RGB565 colour
+ */
+export function longPressBlinkColor(phase: number): number {
+    return LONG_PRESS_BLINK_COLORS[phase % 2 === 0 ? 0 : 1];
+}
+
+/**
+ * Pointer movement from this distance on cancels the long press of an indicator tile before its hold time is over:
+ * the finger is on its way to a swipe (the real HMI has no such check, but there a swipe on a tile is rare)
  */
 export const LONG_PRESS_MOVE_PX = 20;
 
@@ -55,55 +114,48 @@ export function longPressStillPossible(dx: number, dy: number): boolean {
     return Math.hypot(dx, dy) < LONG_PRESS_MOVE_PX;
 }
 
-/**
- * The long press of an indicator tile (HMI 6.0.9, `indicator_long_press.py`): sent while the finger is still down,
- * with the tap counter that counts this touch too - `event,buttonPress3,<id>,button,<taps>`; the release sends
- * nothing more. A tile without id counts but sends nothing.
- *
- * @param prev the tap state before the touch
- * @param entityId id of the indicator entity, empty when none
- * @returns the new tap state and the event to send, undefined for a tile without id
- */
-export function indicatorLongPress(prev: TapState, entityId: string): { tap: TapState; event: string | undefined } {
-    const tap = nextTap(prev);
-    return {
-        tap,
-        event:
-            indicatorTapTarget(entityId) === 'indicator'
-                ? `event,buttonPress3,${entityId},button,${tap.tapCount}`
-                : undefined,
-    };
-}
-
-/** what the release on an indicator tile sends: `[id, action, taps]` */
+/** what the release on an indicator tile sends with `press`: `[id, action, taps]` (`buttonPress2`) */
 export type IndicatorPress = [string, string, number?];
 
 /**
- * The release of a touch that started on an indicator tile (HMI 6.0.8+, `indicator_long_press.py`): the HMI counts
- * every touch in the same counter (`tc0` 'down', also tiles), so the tile tap sends
- * `buttonPress2,<id>,button,<taps>`. A swipe that starts on the tile is sent as swipe, the tile tap is dropped. A
- * tile without id counts but sends nothing. The long press is {@link indicatorLongPress}.
+ * What the release of a touch that started on an indicator tile sends: a `buttonPress2` (tap or swipe) or the raw
+ * event of the long press
+ */
+export type IndicatorSend = { kind: 'press'; press: IndicatorPress } | { kind: 'event'; event: string };
+
+/**
+ * The release of a touch that started on an indicator tile (HMI 6.2.0, `indicator_long_press_release.py`): the HMI
+ * counts every touch in the same counter (`tc0` 'down', also tiles). Released before
+ * {@link INDICATOR_LONG_PRESS_MS} the tile tap sends `buttonPress2,<id>,button,<taps>`, released after it the long
+ * press `event,buttonPress3,<id>,button,<taps>` - both only on release. A swipe that starts on the tile is sent as
+ * swipe, the tile tap or long press is dropped. A tile without id counts but sends nothing.
  *
  * @param prev the tap state before the touch
  * @param entityId id of the indicator entity, empty when none
  * @param dx horizontal movement in px since the touch started
  * @param dy vertical movement in px
+ * @param long true when the tile was held for {@link INDICATOR_LONG_PRESS_MS}
+ * @returns the new tap state and what to send, undefined for a tile without id
  */
 export function indicatorRelease(
     prev: TapState,
     entityId: string,
     dx: number,
     dy: number,
-): { tap: TapState; press: IndicatorPress | undefined } {
+    long: boolean,
+): { tap: TapState; send: IndicatorSend | undefined } {
     const tap = nextTap(prev);
     const swipe = swipeAction(dx, dy);
     if (swipe) {
-        return { tap, press: ['screensaver', swipe] };
+        return { tap, send: { kind: 'press', press: ['screensaver', swipe] } };
     }
-    return {
-        tap,
-        press: indicatorTapTarget(entityId) === 'indicator' ? [entityId, 'button', tap.tapCount] : undefined,
-    };
+    if (indicatorTapTarget(entityId) !== 'indicator') {
+        return { tap, send: undefined };
+    }
+    if (long) {
+        return { tap, send: { kind: 'event', event: `event,buttonPress3,${entityId},button,${tap.tapCount}` } };
+    }
+    return { tap, send: { kind: 'press', press: [entityId, 'button', tap.tapCount] } };
 }
 
 /**
@@ -120,4 +172,75 @@ export function swipeAction(dx: number, dy: number): 'swipeUp' | 'swipeDown' | '
         return dx > 0 ? 'swipeRight' : 'swipeLeft';
     }
     return dy > 0 ? 'swipeDown' : 'swipeUp';
+}
+
+/** One phase of the blinking clock the adapter asks for (field 7 of `statusUpdate`, HMI 6.2.0 `tmBlink`) */
+export const CLOCK_BLINK_MS = 500;
+
+/** One phase of the blinking background of a notification (fields 5/6 of `notify~`, HMI 6.2.0 `tmNotBg`) */
+export const NOTIFY_BLINK_MS = 1000;
+
+/**
+ * The background of a notification in a phase of its blinking: field 5 in the even phases, field 6 in the odd ones.
+ *
+ * @param background field 5, RGB565
+ * @param blink field 6, RGB565, undefined = no blinking
+ * @param phase number of {@link NOTIFY_BLINK_MS} phases since the notification arrived, undefined = not blinking
+ */
+export function notifyBackground(background: number, blink: number | undefined, phase: number | undefined): number {
+    return blink !== undefined && phase !== undefined && phase % 2 === 1 ? blink : background;
+}
+
+/** RGB565 colours of the blinking clock the adapter asks for: red first, then white */
+export const CLOCK_BLINK_COLORS: readonly [number, number] = [63488, 65535];
+
+/**
+ * The colour of the clock in a phase of the blinking the adapter asks for
+ *
+ * @param phase number of {@link CLOCK_BLINK_MS} phases since the blinking started, 0 = the first
+ * @returns the RGB565 colour
+ */
+export function clockBlinkColor(phase: number): number {
+    return CLOCK_BLINK_COLORS[phase % 2 === 0 ? 0 : 1];
+}
+
+/**
+ * The colour of the clock: the blinking of a long press has priority, then the blinking the adapter asks for, else
+ * the colour of `color~` (HMI 6.2.0: `vaLPOn` before `vaBlink`, both keep the normal colour in `vaLPCol`)
+ *
+ * @param normal RGB565 colour of `color~` (or the text colour of `dimmode`)
+ * @param longPressPhase phase of the long press blinking, undefined: not armed
+ * @param alertPhase phase of the blinking the adapter asks for, undefined: off
+ * @returns the RGB565 colour
+ */
+export function clockColor(normal: number, longPressPhase: number | undefined, alertPhase: number | undefined): number {
+    if (longPressPhase !== undefined) {
+        return longPressBlinkColor(longPressPhase);
+    }
+    if (alertPhase !== undefined) {
+        return clockBlinkColor(alertPhase);
+    }
+    return normal;
+}
+
+/** id of a tap on the info icon next to the clock (`tTimeAdd` of HMI 6.2.0): `buttonPress2,bInfo,button,<taps>` */
+export const INFO_ICON_ID = 'bInfo';
+
+/**
+ * The release of a touch that started on the info icon next to the clock: like an indicator without long press it
+ * counts with the taps of the background and sends `bInfo,button,<taps>`, a swipe from the icon is a swipe. A touch
+ * of a dark display sends the tap as well - the adapter drops it (`Screensaver.onIndicatorWakeTap`).
+ *
+ * @param prev the tap state before the touch
+ * @param dx horizontal movement in px since the touch started
+ * @param dy vertical movement in px
+ * @returns the new tap state and what to send with `press`
+ */
+export function infoIconRelease(prev: TapState, dx: number, dy: number): { tap: TapState; press: IndicatorPress } {
+    const tap = nextTap(prev);
+    const swipe = swipeAction(dx, dy);
+    if (swipe) {
+        return { tap, press: ['screensaver', swipe] };
+    }
+    return { tap, press: [INFO_ICON_ID, 'button', tap.tapCount] };
 }

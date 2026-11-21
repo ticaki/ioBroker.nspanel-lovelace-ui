@@ -22,6 +22,11 @@ function setup(
     const screenSaver: any = {
         screensaverSwipe: true,
         isIndicatorEvent: (event: Types.IncomingEvent): boolean => event.id === '12',
+        // the real one: opt 1 on a dark display - here the display is dark when the test decides 'wake'
+        onIndicatorWakeTap: (opt: string): boolean => {
+            calls.push(`indicatorWake:${opt}`);
+            return exitTap === 'wake' && Number(opt) <= 1;
+        },
         onIndicatorTap: async (event: Types.IncomingEvent): Promise<boolean> => {
             calls.push(`tap:${event.id}:${event.opt}`);
             return Promise.resolve(false);
@@ -122,8 +127,8 @@ describe('lib/controller/panel - screensaver notification at standby brightness 
         expect(calls).to.deep.equal(['timer:swipeUp:', 'notify']);
     });
 
-    it('a tile that is no key follows the same rule with its taps', async () => {
-        const { panel, calls } = setup('wake');
+    it('a tile on the dark display: the first press only wakes, no tile tap and no background tap', async () => {
+        const { panel, calls, writes } = setup('wake');
         await panel.HandleIncomingMessage({
             type: 'event',
             method: 'buttonPress2',
@@ -132,6 +137,21 @@ describe('lib/controller/panel - screensaver notification at standby brightness 
             action: 'button',
             opt: '1',
         });
-        expect(calls).to.deep.equal(['tap:12:1', 'exit:1']);
+        expect(calls).to.deep.equal(['indicatorWake:1']);
+        expect(writes).to.deep.equal([]);
+    });
+
+    it('a tile that is no key: the second press follows the rule of the background with its taps', async () => {
+        const { panel, calls } = setup('dismiss');
+        await panel.HandleIncomingMessage({
+            type: 'event',
+            method: 'buttonPress2',
+            page: 0,
+            id: '12',
+            action: 'button',
+            opt: '2',
+        });
+        expect(calls.slice(0, 3)).to.deep.equal(['indicatorWake:2', 'tap:12:2', 'exit:2']);
+        expect(calls).to.include('notify');
     });
 });

@@ -1005,6 +1005,7 @@ const screensaverStateKeys = [
   "ScreensaverEntityLongPressButton",
   "ScreensaverEntityLongPressSwitch",
   "ScreensaverEntityLongPressPopup",
+  "ScreensaverEntityLongPressTrigger",
   "ScreensaverEntityIconSelect",
   "ScreensaverEntityEnabled",
   "ScreensaverEntityVisibleCondition",
@@ -1026,7 +1027,8 @@ const screensaverTemplateKeys = [
   "ScreensaverEntityLongPressNaviToPage",
   "ScreensaverEntityLongPressButton",
   "ScreensaverEntityLongPressSwitch",
-  "ScreensaverEntityLongPressPopup"
+  "ScreensaverEntityLongPressPopup",
+  "ScreensaverEntityLongPressTrigger"
 ];
 const nativeTemplateKeys = ["template", "dpInit", "modeScr", "readOptions"];
 function convertReadOptions(value, reason, where) {
@@ -1089,7 +1091,10 @@ function convertIndicatorLongPress(element, reason, where) {
   if (navi) {
     return { kind: "navigate", page: navi };
   }
-  return element.ScreensaverEntityLongPressPopup === true ? { kind: "popup" } : void 0;
+  if (element.ScreensaverEntityLongPressPopup === true) {
+    return { kind: "popup" };
+  }
+  return element.ScreensaverEntityLongPressTrigger === true ? { kind: "trigger" } : void 0;
 }
 function convertScreensaverItem(element, area, where, defaults) {
   var _a, _b, _c, _d;
@@ -1408,10 +1413,11 @@ const notifyKeys = [
   "isDismissiblePerEvent",
   "dismissibleIDGlobal",
   "buzzer",
+  "BackgroundBlink",
   "Enabled",
   "VisibleCondition"
 ];
-function convertNotify(element, where) {
+function convertNotify(element, where, dropped) {
   const reason = "screensaverItemNotSupported";
   if (!isDict(element)) {
     throw new ConvertError(reason, `${where}: expected an object`);
@@ -1472,6 +1478,15 @@ function convertNotify(element, where) {
     cfg.buzzer = buzzer;
   } else if (buzzer !== void 0 && buzzer !== null && buzzer !== false && buzzer !== "") {
     throw new ConvertError(reason, `${where}.buzzer: expected true or a tone sequence`);
+  }
+  const blink = element.BackgroundBlink;
+  if ((0, import_adminShareConfig.isHexColor)(blink)) {
+    cfg.backgroundBlink = blink;
+  } else if (blink !== void 0 && blink !== null && blink !== "") {
+    const shown = typeof blink === "string" ? blink : JSON.stringify(blink);
+    dropped.push(
+      `${where}.BackgroundBlink: ${shown} is no color #rrggbb - dropped, the notification does not blink`
+    );
   }
   return cfg;
 }
@@ -1556,6 +1571,7 @@ function convertScreensaver(input) {
     const mrIcon2 = convertMrIcon(raw.mrIcon2ScreensaverEntity, "mrIcon2ScreensaverEntity");
     const notifyList = raw.notifyScreensaverEntity;
     const notify = [];
+    const dropped = [];
     if (notifyList !== void 0 && notifyList !== null) {
       if (!Array.isArray(notifyList)) {
         throw new ConvertError("screensaverItemNotSupported", "notifyScreensaverEntity: expected a list");
@@ -1563,7 +1579,7 @@ function convertScreensaver(input) {
       const existing = [...input.screensaverNotify];
       notifyList.forEach((element, index) => {
         var _a2;
-        const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`);
+        const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`, dropped);
         const id = ((_a2 = input.notifyIdFactory) != null ? _a2 : import_adminShareConfig.newScreensaverNotifyId)(existing);
         const full = { id, name: `${panel.name} ${index + 1}`, ...cfg };
         existing.push(full);
@@ -1618,7 +1634,7 @@ function convertScreensaver(input) {
     if (weatherItems) {
       entry.weatherAddDefaultItems = weatherItems;
     }
-    return { entry, notify, rawItems };
+    return { entry, notify, rawItems, dropped };
   } catch (error) {
     if (error instanceof ConvertError) {
       return { skipped: { reason: error.reason, detail: error.detail } };
@@ -1642,6 +1658,7 @@ function emptyMrIcon() {
 }
 const buttonModes = [
   "page",
+  "navigation",
   "switch",
   "button",
   "buttonOnDelayOff",
@@ -1654,7 +1671,7 @@ function isEmptyButton(value) {
   if (typeof mode !== "string" || !buttonModes.some((m) => m === mode)) {
     return false;
   }
-  const target = value[mode === "page" ? "page" : "state"];
+  const target = value[mode === "page" ? "page" : mode === "navigation" ? "target" : "state"];
   return target === void 0 || target === null || target === "";
 }
 function convertButton(value) {
@@ -1669,6 +1686,10 @@ function convertButton(value) {
   if (mode === "page") {
     rejectUnknownKeys(value, ["mode", "page"], [], reason, "button");
     return { mode, page: String(value.page) };
+  }
+  if (mode === "navigation") {
+    rejectUnknownKeys(value, ["mode", "target"], [], reason, "button");
+    return { mode, target: value.target };
   }
   if (typeof value.state !== "string") {
     throw new ConvertError(reason, "state: expected a state id");
@@ -2131,6 +2152,9 @@ function planScriptToAdmin(input) {
     };
     if (screensaver.rawItems.length) {
       plan.screensaver.rawItems = screensaver.rawItems;
+    }
+    if (screensaver.dropped.length) {
+      plan.screensaver.dropped = screensaver.dropped;
     }
   }
   const buttons = {};

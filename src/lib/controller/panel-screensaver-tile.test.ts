@@ -14,6 +14,7 @@ function setup(
     key: boolean,
     doubleClick = true,
     longPress = false,
+    wake = false,
 ): { panel: Panel; calls: Calls; writes: { id: string; val: unknown }[] } {
     const calls: Calls = [];
     const writes: { id: string; val: unknown }[] = [];
@@ -21,6 +22,7 @@ function setup(
     const screenSaver: any = {
         screensaverSwipe: false,
         isIndicatorEvent: (event: Types.IncomingEvent): boolean => event.id === '12',
+        onIndicatorWakeTap: (opt: string): boolean => wake && Number(opt) <= 1,
         onIndicatorLongPress: async (event: Types.IncomingEvent): Promise<boolean> => {
             calls.push(`long:${event.id}:${event.opt}`);
             return Promise.resolve(longPress);
@@ -98,6 +100,22 @@ const tile = (opt: string, method: 'buttonPress2' | 'buttonPress3' = 'buttonPres
 });
 
 describe('lib/controller/panel - screensaver tile with tap counter (TFT 6.0.8+)', () => {
+    it('standby brightness 0: the first press (tap or long press) only wakes the display', async () => {
+        for (const method of ['buttonPress2', 'buttonPress3'] as const) {
+            const { panel, calls, writes } = setup(true, true, true, true);
+            await panel.HandleIncomingMessage(tile('1', method));
+            expect(calls, method).to.deep.equal([]);
+            expect(writes, method).to.deep.equal([]);
+        }
+    });
+
+    it('standby brightness 0: the second press is a normal tap or long press', async () => {
+        const { panel, calls } = setup(true, true, true, true);
+        await panel.HandleIncomingMessage(tile('2'));
+        await panel.HandleIncomingMessage(tile('2', 'buttonPress3'));
+        expect(calls).to.deep.equal(['tap:12:2', 'long:12:2']);
+    });
+
     it('a key runs its command and nothing of the background', async () => {
         const { panel, calls } = setup(true);
         await panel.HandleIncomingMessage(tile('1'));

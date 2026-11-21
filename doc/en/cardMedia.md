@@ -220,7 +220,7 @@ The bar has **five** places. If not everything fits in, it is paged; how, is set
 
 | Choice | Effect |
 |---|---|
-| **Classic** | *„More items than places: the double arrows of the panel page through them."* |
+| **Classic** | *„More items than places: the arrows of the panel page through them."* |
 | **Arrow** | *„More items than places: the last place shows an arrow that pages on."* – four places are left for items. |
 | **Automatic** | *„Like classic, the page also advances by itself after the set time."* – plus **Seconds until the next page** (empty = 15). |
 

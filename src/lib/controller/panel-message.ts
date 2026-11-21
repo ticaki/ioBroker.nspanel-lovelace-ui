@@ -291,7 +291,9 @@ export class PanelSend extends BaseClass {
         force?: boolean,
         opt?: IClientPublishOptions,
     ): void => {
-        this.warnIfTooLong(payload);
+        if (this.isTooLong(payload)) {
+            return;
+        }
         // a pageType clears the page on the panel - only messages queued after the last pageType are real
         // duplicates, otherwise a resent pageType~X would be left without its content (black page)
         const lastPageType = this.messageDb.findLastIndex(a => a.payload.startsWith('pageType~'));
@@ -452,21 +454,26 @@ export class PanelSend extends BaseClass {
     }
 
     /**
-     * Logs a warning when the payload does not fit into the receive buffer of the display.
-     * Only a warning - the message is sent anyway.
+     * Checks whether the payload fits into the receive buffer of the display. A longer message hangs the display,
+     * so it is never queued - it is dropped with an error log. Measured is the UTF-8 payload without the crc
+     * prefix `^XXXX^`: the Berry driver strips that prefix, the display receives only the payload.
+     * A web panel has no such buffer and is never limited.
      *
-     * @param payload the message for the panel
+     * @param payload the message for the panel (without crc prefix)
+     * @returns true if the message must be dropped
      */
-    private warnIfTooLong(payload: string): void {
+    private isTooLong(payload: string): boolean {
         if (this.panel?.isVirtual) {
-            return;
+            return false;
         }
         const bytes = Buffer.byteLength(payload, 'utf8');
-        if (bytes > MAX_PANEL_PAYLOAD_BYTES) {
-            this.log.warn(
-                `Message to the panel has ${bytes} bytes, the display can receive only ${MAX_PANEL_PAYLOAD_BYTES} bytes: ${payload.slice(0, 60)}...`,
-            );
+        if (bytes <= MAX_PANEL_PAYLOAD_BYTES) {
+            return false;
         }
+        this.log.error(
+            `Message to the panel has ${bytes} bytes, the display can receive only ${MAX_PANEL_PAYLOAD_BYTES} bytes - message dropped: ${payload.slice(0, 60)}...`,
+        );
+        return true;
     }
 
     readonly addMessageTasmota = (topic: string, payload: string, opt?: IClientPublishOptions): void => {

@@ -32,6 +32,7 @@ __export(config_manager_const_exports, {
 });
 module.exports = __toCommonJS(config_manager_const_exports);
 var import_function_and_const = require("../types/function-and-const");
+var import_adminShareConfig = require("../types/adminShareConfig");
 const CustomTemplates = [
   {
     device: "shutter",
@@ -60,6 +61,8 @@ function isButton(F) {
   switch (mode) {
     case "page":
       return !!F.page;
+    case "navigation":
+      return (0, import_adminShareConfig.isButtonNavigationTarget)(F.target);
     case "switch":
     case "button":
     case "buttonOnDelayOff":

@@ -148,7 +148,7 @@ export class PopupSlider extends React.Component<CardProps<PopupSliderModel>> {
                         color: theme.foreground,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        textOverflow: 'clip',
                     }}
                 >
                     {row.label}

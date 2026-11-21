@@ -36,6 +36,7 @@ __export(adminShareConfig_exports, {
   ADMIN_BUTTON_MODES: () => ADMIN_BUTTON_MODES,
   ADMIN_BUTTON_STATE_MODES: () => ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID: () => ALL_PANELS_SPECIAL_ID,
+  BUTTON_NAVIGATION_TARGETS: () => BUTTON_NAVIGATION_TARGETS,
   CHANNEL_ROLES_LIST: () => CHANNEL_ROLES_LIST,
   CONVERT_GLOBAL_DECISIONS: () => CONVERT_GLOBAL_DECISIONS,
   CONVERT_GLOBAL_DEFAULT_DECISION: () => CONVERT_GLOBAL_DEFAULT_DECISION,
@@ -79,9 +80,11 @@ __export(adminShareConfig_exports, {
   formatEntryNumber: () => formatEntryNumber,
   hardwarePanelModels: () => hardwarePanelModels,
   isAsciiOnlyTextSize: () => isAsciiOnlyTextSize,
+  isButtonNavigationTarget: () => isButtonNavigationTarget,
   isClockTimerComplete: () => isClockTimerComplete,
   isClockTimerSourceItem: () => isClockTimerSourceItem,
   isCountdownChannel: () => isCountdownChannel,
+  isHexColor: () => isHexColor,
   isHmiTextSize: () => isHmiTextSize,
   isIconColorScaleElement: () => isIconColorScaleElement,
   isIconTextSize: () => isIconTextSize,
@@ -464,6 +467,9 @@ function screensaverItemFields(area) {
   };
 }
 const screensaverNotifyDefaultBuzzer = "1,2,3,0xF54";
+function isHexColor(value) {
+  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
+}
 function formatEntryNumber(value, locale = "de-DE", decimals = null) {
   if (decimals !== null) {
     return value.toLocaleString(locale, {
@@ -2172,8 +2178,13 @@ function isIconColorScaleElement(x) {
   }
   return true;
 }
+const BUTTON_NAVIGATION_TARGETS = ["next", "prev", "home", "parent"];
+function isButtonNavigationTarget(value) {
+  return typeof value === "string" && BUTTON_NAVIGATION_TARGETS.some((t) => t === value);
+}
 const ADMIN_BUTTON_MODES = [
   "page",
+  "navigation",
   "switch",
   "button",
   "buttonOnDelayOff",
@@ -2211,6 +2222,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   ADMIN_BUTTON_MODES,
   ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID,
+  BUTTON_NAVIGATION_TARGETS,
   CHANNEL_ROLES_LIST,
   CONVERT_GLOBAL_DECISIONS,
   CONVERT_GLOBAL_DEFAULT_DECISION,
@@ -2254,9 +2266,11 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   formatEntryNumber,
   hardwarePanelModels,
   isAsciiOnlyTextSize,
+  isButtonNavigationTarget,
   isClockTimerComplete,
   isClockTimerSourceItem,
   isCountdownChannel,
+  isHexColor,
   isHmiTextSize,
   isIconColorScaleElement,
   isIconTextSize,

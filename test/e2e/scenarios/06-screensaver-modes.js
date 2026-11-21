@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { buttonPress, isMenuUpdate, weatherLayout, parsePageType } = require('../lib/protocol');
+const { buttonPress, isMenuUpdate, weatherLayout, parsePageType, parseWeatherUpdate } = require('../lib/protocol');
 const { press, toMainPage, expectScreensaver, protocolCheck } = require('../lib/steps');
 const { step } = require('../lib/snapshot');
 
@@ -77,6 +77,10 @@ module.exports = ctx => {
                         expect(panel.currentCard).to.equal(card);
                         // every area at its place: standard and alternate share the page and differ in the slots
                         expectScreensaver(upd, card, mode, /^21[,.]5\s?°C$/);
+                        if (label === 'Web panel' && (card === 'screensaver2' || card === 'screensaver5')) {
+                            // the long press mask behind the last slot: no indicator has a long press action
+                            expect(parseWeatherUpdate(upd, card).longPressMask).to.equal(0);
+                        }
                     });
                 }
 

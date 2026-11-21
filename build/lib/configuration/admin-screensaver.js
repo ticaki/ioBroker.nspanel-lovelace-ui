@@ -127,6 +127,9 @@ function screensaverNotifyToScript(cfg) {
   if (cfg.buzzer === true || typeof cfg.buzzer === "string" && cfg.buzzer.trim()) {
     element.buzzer = cfg.buzzer === true ? true : String(cfg.buzzer).trim();
   }
+  if ((0, import_adminShareConfig.isHexColor)(cfg.backgroundBlink)) {
+    element.BackgroundBlink = cfg.backgroundBlink;
+  }
   return element;
 }
 function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList = []) {

@@ -16,6 +16,7 @@ import { isButton } from '../const/config-manager-const';
 import { mainPageName } from '../const/default-pages';
 import { normalizeCycleValues } from '../const/screensaver-cycle';
 import {
+    isHexColor,
     ALL_PANELS_SPECIAL_ID,
     dropScriptNavigation,
     emptyChannelValueConfig,
@@ -1481,6 +1482,7 @@ const screensaverStateKeys = [
     'ScreensaverEntityLongPressButton',
     'ScreensaverEntityLongPressSwitch',
     'ScreensaverEntityLongPressPopup',
+    'ScreensaverEntityLongPressTrigger',
     'ScreensaverEntityIconSelect',
     'ScreensaverEntityEnabled',
     'ScreensaverEntityVisibleCondition',
@@ -1503,6 +1505,7 @@ const screensaverTemplateKeys = [
     'ScreensaverEntityLongPressButton',
     'ScreensaverEntityLongPressSwitch',
     'ScreensaverEntityLongPressPopup',
+    'ScreensaverEntityLongPressTrigger',
 ] as const;
 /** keys of a native screensaver element that make it the same as a template element (see convertScreensaverItem) */
 const nativeTemplateKeys: readonly string[] = ['template', 'dpInit', 'modeScr', 'readOptions'];
@@ -1582,8 +1585,8 @@ function convertIndicatorAction(
 }
 
 /**
- * The long press of an indicator as the admin stores it. The config manager takes the first of button, switch, page
- * and popup - the others have no effect.
+ * The long press of an indicator as the admin stores it. The config manager takes the first of button, switch, page,
+ * popup and trigger - the others have no effect.
  *
  * @param element Element of the script (script or template).
  * @param reason Reason to report when a field is no text.
@@ -1615,7 +1618,10 @@ function convertIndicatorLongPress(
     if (navi) {
         return { kind: 'navigate', page: navi };
     }
-    return element.ScreensaverEntityLongPressPopup === true ? { kind: 'popup' } : undefined;
+    if (element.ScreensaverEntityLongPressPopup === true) {
+        return { kind: 'popup' };
+    }
+    return element.ScreensaverEntityLongPressTrigger === true ? { kind: 'trigger' } : undefined;
 }
 
 /**
@@ -2012,6 +2018,7 @@ const notifyKeys = [
     'isDismissiblePerEvent',
     'dismissibleIDGlobal',
     'buzzer',
+    'BackgroundBlink',
     'Enabled',
     'VisibleCondition',
 ] as const;
@@ -2022,8 +2029,9 @@ const notifyKeys = [
  *
  * @param element Element of the script.
  * @param where Prefix for the detail.
+ * @param dropped Collects the fields that were dropped instead of converted (logged by the caller).
  */
-function convertNotify(element: unknown, where: string): Omit<ScreensaverNotifyConfig, 'id'> {
+function convertNotify(element: unknown, where: string, dropped: string[]): Omit<ScreensaverNotifyConfig, 'id'> {
     const reason: ConvertSkipReason = 'screensaverItemNotSupported';
     if (!isDict(element)) {
         throw new ConvertError(reason, `${where}: expected an object`);
@@ -2090,6 +2098,16 @@ function convertNotify(element: unknown, where: string): Omit<ScreensaverNotifyC
     } else if (buzzer !== undefined && buzzer !== null && buzzer !== false && buzzer !== '') {
         throw new ConvertError(reason, `${where}.buzzer: expected true or a tone sequence`);
     }
+    const blink = element.BackgroundBlink;
+    if (isHexColor(blink)) {
+        cfg.backgroundBlink = blink;
+    } else if (blink !== undefined && blink !== null && blink !== '') {
+        // the config manager ignores an invalid color (no blinking) - only the color is dropped
+        const shown = typeof blink === 'string' ? blink : JSON.stringify(blink);
+        dropped.push(
+            `${where}.BackgroundBlink: ${shown} is no color #rrggbb - dropped, the notification does not blink`,
+        );
+    }
     return cfg;
 }
 
@@ -2116,7 +2134,7 @@ function weatherItemsOf(value: unknown): ScreensaverWeatherItems | undefined {
 }
 
 type ScreensaverResult =
-    | { entry: ScreensaverEntry; notify: ScreensaverNotifyConfig[]; rawItems: ConvertRawItem[] }
+    | { entry: ScreensaverEntry; notify: ScreensaverNotifyConfig[]; rawItems: ConvertRawItem[]; dropped: string[] }
     | { skipped: { reason: ConvertSkipReason; detail?: string } };
 
 /**
@@ -2196,13 +2214,14 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         const mrIcon2 = convertMrIcon(raw.mrIcon2ScreensaverEntity, 'mrIcon2ScreensaverEntity');
         const notifyList = raw.notifyScreensaverEntity;
         const notify: ScreensaverNotifyConfig[] = [];
+        const dropped: string[] = [];
         if (notifyList !== undefined && notifyList !== null) {
             if (!Array.isArray(notifyList)) {
                 throw new ConvertError('screensaverItemNotSupported', 'notifyScreensaverEntity: expected a list');
             }
             const existing = [...input.screensaverNotify];
             notifyList.forEach((element: unknown, index) => {
-                const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`);
+                const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`, dropped);
                 const id = (input.notifyIdFactory ?? newScreensaverNotifyId)(existing);
                 const full: ScreensaverNotifyConfig = { id, name: `${panel.name} ${index + 1}`, ...cfg };
                 existing.push(full);
@@ -2272,7 +2291,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         if (weatherItems) {
             entry.weatherAddDefaultItems = weatherItems;
         }
-        return { entry, notify, rawItems };
+        return { entry, notify, rawItems, dropped };
     } catch (error) {
         if (error instanceof ConvertError) {
             return { skipped: { reason: error.reason, detail: error.detail } };
@@ -2307,6 +2326,7 @@ function emptyMrIcon(): ScriptConfig.ScreenSaverMRElement {
 /** the modes of a hardware button the config manager knows (`isButton`) */
 const buttonModes: readonly NonNullable<AdminButtonFunction>['mode'][] = [
     'page',
+    'navigation',
     'switch',
     'button',
     'buttonOnDelayOff',
@@ -2317,7 +2337,7 @@ const buttonModes: readonly NonNullable<AdminButtonFunction>['mode'][] = [
 
 /**
  * Whether a script button is the empty form of the template (`{ mode: 'switch', state: '' }`): a known
- * mode whose target (`state`, for `page` the `page`) is empty, null or missing. The config manager
+ * mode whose target (`state`, for `page` the `page`, for `navigation` the `target`) is empty, null or missing. The config manager
  * rejects it in `isButton`, logs "Button ... wrong configured!" and sets no action - on the panel it is
  * the same as no button at all.
  *
@@ -2328,7 +2348,7 @@ function isEmptyButton(value: Dict): boolean {
     if (typeof mode !== 'string' || !buttonModes.some(m => m === mode)) {
         return false;
     }
-    const target = value[mode === 'page' ? 'page' : 'state'];
+    const target = value[mode === 'page' ? 'page' : mode === 'navigation' ? 'target' : 'state'];
     return target === undefined || target === null || target === '';
 }
 
@@ -2353,6 +2373,10 @@ function convertButton(value: unknown): AdminButtonFunction | undefined {
     if (mode === 'page') {
         rejectUnknownKeys(value, ['mode', 'page'], [], reason, 'button');
         return { mode, page: String(value.page) };
+    }
+    if (mode === 'navigation') {
+        rejectUnknownKeys(value, ['mode', 'target'], [], reason, 'button');
+        return { mode, target: value.target };
     }
     if (typeof value.state !== 'string') {
         throw new ConvertError(reason, 'state: expected a state id');
@@ -2956,6 +2980,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
         };
         if (screensaver.rawItems.length) {
             plan.screensaver.rawItems = screensaver.rawItems;
+        }
+        if (screensaver.dropped.length) {
+            plan.screensaver.dropped = screensaver.dropped;
         }
     }
 

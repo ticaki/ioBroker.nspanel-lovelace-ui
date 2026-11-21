@@ -6,7 +6,9 @@ import type {
     PageMenuConfigInfo,
     PanelListEntry,
 } from '../types/adminShareConfig';
+import { SCREENSAVER_INFO_FONT_DEFAULT } from '../const/screensaver-info-font';
 import { PanelSend } from './panel-message';
+import { LatestValueQueue } from '../tools/latest-value-queue';
 
 import { Screensaver, type ScreensaverExitTap } from '../pages/screensaver';
 import type * as Types from '../types/types';
@@ -52,6 +54,9 @@ import { isNoScriptPanel } from '../configuration/no-script';
 import type { PanelPageDumpRuntime } from '../configuration/page-dump';
 import type { PageDumpKind } from '../types/pageDump';
 import { isEmulatorDriverVersion, parseDriverVersion } from '../const/berry-driver';
+import { POPUP_NOTIFY3 } from '../pages/popupNotify3';
+import { SCREENSAVER_INFO_ICON_ID } from '../pages/screensaver-info-icon';
+import { parseScreensaverNotifyDetails } from '../pages/screensaver-notify-queue';
 import type { NSPanel } from '../types/NSPanel';
 import {
     buildDisplayDiagnosisMessage,
@@ -174,6 +179,16 @@ export class Panel extends BaseClass {
     /** Origin per page id, collected in preInit and reported to the admin navigation view */
     private readonly pageOrigins = new PageOriginTracker();
     private _activePage: Page | undefined = undefined;
+    /**
+     * `cmd.goToNavigationPoint`: one navigation at a time, values written meanwhile only keep the newest one -
+     * otherwise parallel page changes leave several pages visible.
+     */
+    private readonly goToNavigationPointQueue = new LatestValueQueue<string>(
+        async (name: string): Promise<void> => this.navigation.setTargetPageByName(name),
+        (name: string, e: unknown): void => {
+            this.log.error(`goToNavigationPoint ${name} failed: ${e instanceof Error ? e.message : String(e)}`);
+        },
+    );
     private data: Record<string, any> = {};
     /** hardware panel: drops repeated startup events, see handleStartup */
     private blockStartup: ioBroker.Timeout | undefined = null;
@@ -416,6 +431,14 @@ export class Panel extends BaseClass {
     /** A web panel: shown in a browser, no Tasmota behind it */
     get isVirtual(): boolean {
         return this.options.kind === 'web';
+    }
+
+    /**
+     * A web panel that may use extensions over the hardware panel (instance option webAllowExtensions), e.g.
+     * every MDI icon in popupNotify3. false for a hardware panel and when the option is off.
+     */
+    get webExtensionsAllowed(): boolean {
+        return this.isVirtual && this.adapter.config.webAllowExtensions === true;
     }
 
     /**
@@ -1034,6 +1057,34 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon,
         );
 
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoText`);
+        if (state && typeof state.val === 'string' && this.screenSaver) {
+            this.screenSaver.infoText = state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.infoText`,
+            this.screenSaver?.infoText ?? '',
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.infoText,
+        );
+
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoTextFont`);
+        const infoTextFont = this.screenSaver?.setInfoTextFont(state?.val);
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.infoTextFont`,
+            infoTextFont ?? SCREENSAVER_INFO_FONT_DEFAULT,
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.infoTextFont,
+        );
+
+        state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.clockBlink`);
+        if (state && state.val != null && this.screenSaver) {
+            this.screenSaver.clockBlink = !!state.val;
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.clockBlink`,
+            this.screenSaver?.clockBlink ?? false,
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink,
+        );
+
         if (this.buttons && this.screenSaver) {
             const entries = Object.entries(this.buttons) as [
                 keyof typeof this.buttons,
@@ -1647,7 +1698,7 @@ export class Panel extends BaseClass {
                 }
                 case 'goToNavigationPoint': {
                     if (typeof state.val === 'string') {
-                        await this.navigation.setTargetPageByName(state.val ? String(state.val) : mainPageName);
+                        await this.goToNavigationPointQueue.push(state.val ? String(state.val) : mainPageName);
                     }
                     break;
                 }
@@ -1771,10 +1822,34 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
-                case 'screenSaver.activate': {
-                    if (state.val) {
-                        await this.activateScreensaver();
+                case 'screenSaver.infoText': {
+                    if (state && state.val != null && typeof state.val === 'string' && this.screenSaver) {
+                        this.screenSaver.infoText = state.val;
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoText`, state.val);
                     }
+                    break;
+                }
+                case 'screenSaver.infoTextFont': {
+                    // empty or invalid: the default font, acknowledged with the font used
+                    if (state && this.screenSaver) {
+                        const font = this.screenSaver.setInfoTextFont(state.val);
+                        await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoTextFont`, font);
+                    }
+                    break;
+                }
+                case 'screenSaver.clockBlink': {
+                    if (state && state.val != null) {
+                        await this.statesControler.setInternalState(
+                            `${this.name}/cmd/screensaverClockBlink`,
+                            !!state.val,
+                            false,
+                        );
+                    }
+                    break;
+                }
+                case 'screenSaver.activate': {
+                    // a button: every write without ack fires, the value does not matter
+                    await this.activateScreensaver();
                     await this.library.writedp(
                         `panels.${this.name}.cmd.screenSaver.activate`,
                         false,
@@ -1816,11 +1891,21 @@ export class Panel extends BaseClass {
                 }
 
                 case 'buttons.left': {
-                    await this.onDetachButtonEvent('left');
+                    await this.onDetachButtonEvent('left', true);
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.buttons.left`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.buttons.left,
+                    );
                     break;
                 }
                 case 'buttons.right': {
-                    await this.onDetachButtonEvent('right');
+                    await this.onDetachButtonEvent('right', true);
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.buttons.right`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.buttons.right,
+                    );
                     break;
                 }
                 case 'screenSaver.layout': {
@@ -1934,6 +2019,13 @@ export class Panel extends BaseClass {
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)?.val as AllIcons) ||
                             undefined,
                         textSize: String(this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)?.val ?? 3),
+                        largeIcon: this.library.readdb(`panels.${this.name}.cmd.pagePopup.largeIcon`)?.val === true,
+                        buttonLeftIcon:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeftIcon`)?.val as string) ||
+                            undefined,
+                        buttonRightIcon:
+                            (this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRightIcon`)?.val as string) ||
+                            undefined,
                         iconColor: getRGBFromValue(
                             this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)?.val || '#FFFFFF',
                         ),
@@ -1951,6 +2043,11 @@ export class Panel extends BaseClass {
                             false,
                         );
                     }
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.pagePopup.activate`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.pagePopup.activate,
+                    );
                     break;
                 }
                 case 'isBuzzerAllowed': {
@@ -2618,7 +2715,7 @@ export class Panel extends BaseClass {
                 if (event.id == 'screensaver') {
                     await this.onScreensaverTouch(event);
                 } else if (event.action === 'bExit') {
-                    if (event.id !== 'popupNotify') {
+                    if (event.id !== 'popupNotify' && event.id !== POPUP_NOTIFY3) {
                         await this.setActivePage(true);
                     } else {
                         const currentPage = this.getActivePage();
@@ -2648,6 +2745,15 @@ export class Panel extends BaseClass {
                         }
                         break;
                     }
+                    // the info icon next to the clock, TFT 6.2.0+ and web panels (`bInfo,button,<taps>`)
+                    if (
+                        this._activePage === this.screenSaver &&
+                        event.id === SCREENSAVER_INFO_ICON_ID &&
+                        event.action === 'button'
+                    ) {
+                        await this.screenSaver.onInfoIconTap(event);
+                        break;
+                    }
                     // a tile of the screensaver, TFT 6.0.8+ (`<id>,button,<taps>`); an older TFT sends no taps
                     if (
                         this._activePage === this.screenSaver &&
@@ -2655,6 +2761,10 @@ export class Panel extends BaseClass {
                         event.opt !== '' &&
                         this.screenSaver.isIndicatorEvent(event)
                     ) {
+                        // standby brightness 0: the first touch only wakes the display, also for a long press
+                        if (this.screenSaver.onIndicatorWakeTap(event.opt)) {
+                            break;
+                        }
                         // a long press (TFT 6.0.9+) without one of its own acts like a tap
                         if (event.method === 'buttonPress3' && (await this.screenSaver.onIndicatorLongPress(event))) {
                             break;
@@ -2722,14 +2832,31 @@ export class Panel extends BaseClass {
         }
     }
 
-    onDetachButtonEvent = async (button: 'left' | 'right'): Promise<void> => {
+    /**
+     * A hardware button was pressed: on the display, in the browser or through the state `cmd.buttons.<side>`.
+     *
+     * The state `cmd.buttons.<side>` reaches the hardware panel and its web clone alike (both share the states tree
+     * `panels.<name>`). For such a shared press the clone only follows with the modes that act on its own display
+     * (`page`, `navigation`) - the modes writing a foreign state and the state `buttons.<side>` are left to the
+     * hardware panel, else the action would run twice. A press in the browser reaches only the clone and runs in full.
+     *
+     * @param button which button
+     * @param shared the press comes from the state `cmd.buttons.<side>` that every panel of this name gets
+     */
+    async onDetachButtonEvent(button: 'left' | 'right', shared: boolean = false): Promise<void> {
         const action: Types.ConfigButtonFunction = this.buttons
             ? button === 'left'
                 ? this.buttons.left
                 : this.buttons.right
             : null;
-        await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
+        const ownDisplayOnly = shared && this.isClone;
+        if (!ownDisplayOnly) {
+            await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
+        }
         if (action) {
+            if (ownDisplayOnly && action.mode !== 'page' && action.mode !== 'navigation') {
+                return;
+            }
             switch (action.mode) {
                 case 'button': {
                     if (typeof action.state === 'string') {
@@ -2743,6 +2870,10 @@ export class Panel extends BaseClass {
                     if (typeof action.page === 'string') {
                         await this.navigation.setTargetPageByName(action.page);
                     }
+                    break;
+                }
+                case 'navigation': {
+                    await this.navigateByButton(action.target);
                     break;
                 }
                 case 'switch': {
@@ -2785,7 +2916,68 @@ export class Panel extends BaseClass {
                 }
             }
         }
-    };
+    }
+
+    /**
+     * Hardware button in mode 'navigation': one press acts like the matching navigation arrow of the page shown -
+     * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long. The arrow
+     * keeps its rules (`Navigation.go`): with only one of its two targets set the short press leads there as well,
+     * with none nothing happens; a menu page with more entries than it shows turns its pages first.
+     *
+     * An open popup is closed first and the navigation starts from the page below it, all in one press: the detail
+     * popup of a card page (the page sleeps below it), a notification (`popupNotify`/`popupNotify3`, like its exit
+     * button: reminder started, back to the page it came from) and a child page (back to its parent page).
+     * The screensaver is never left: a popup on top of it (the popup of an indicator, a notification) is closed like
+     * with its exit button and the screensaver is shown again - no navigation. Without a popup nothing happens.
+     *
+     * @param target which arrow the button presses
+     */
+    async navigateByButton(target: adminShareConfig.ButtonNavigationTarget): Promise<void> {
+        let page = this._activePage;
+        if (!page) {
+            return;
+        }
+        if (page === this.screenSaver) {
+            if (page.sleep) {
+                // the popup of an indicator - the screensaver sleeps below it, like `bExit` of the popup
+                await this.setActivePage(true);
+            }
+            return;
+        }
+        if (page.sleep) {
+            // the detail popup of a card page - the page sleeps below it
+            await this.setActivePage(true);
+            page = this._activePage;
+        }
+        if (page instanceof PagePopup) {
+            const last = page.getLastPage();
+            if (!last) {
+                this.log.debug(`Hardware button navigation: popup ${page.name} has no page to go back to`);
+                return;
+            }
+            page.startReminder();
+            page.removeLastPage(last);
+            await this.setActivePage(last);
+            page = this._activePage;
+            if (page === this.screenSaver) {
+                // a notification on top of the screensaver: closed, the screensaver stays
+                return;
+            }
+        }
+        if (page && page.directParentPage) {
+            await this.setActivePage(page.directParentPage, false);
+            page = this._activePage;
+        }
+        if (!page || page === this.screenSaver) {
+            return;
+        }
+        const short = target === 'next' || target === 'prev';
+        if (target === 'next' || target === 'home') {
+            page.goRight(short);
+        } else {
+            page.goLeft(short);
+        }
+    }
 
     _sendtempOffsetToPanel(value: number): void {
         if (this.unload || this.adapter.unload || !this.isOnline || this.isVirtual) {
@@ -2802,6 +2994,20 @@ export class Panel extends BaseClass {
         void this.library.writedp(`panels.${this.name}.cmd.tempOffset`, value, def);
     }
     sendtempOffsetToPanel(_value: number): void {}
+
+    /**
+     * `cmd/bigIconLeft`/`Right`: switches the big status icon and redraws the screensaver icons. A web
+     * clone gets the command as well (see onInternalCommand) - its own display follows, but info.* belongs
+     * to the hardware panel, writeInfo skips the clone.
+     *
+     * @param side the icon
+     * @param val shown big or not
+     */
+    async setBigIcon(side: 'Left' | 'Right', val: boolean): Promise<void> {
+        this.info.nspanel[`bigIcon${side}`] = val;
+        this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
+        await this.writeInfo();
+    }
 
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (!id.startsWith(this.name)) {
@@ -2841,25 +3047,11 @@ export class Panel extends BaseClass {
                 }
 
                 case 'cmd/bigIconLeft': {
-                    this.info.nspanel.bigIconLeft = !!state.val;
-                    this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
-                    await this.library.writeFromJson(
-                        `panels.${this.name}.info`,
-                        'panel.panels.info',
-                        definition.genericStateObjects,
-                        this.info,
-                    );
+                    await this.setBigIcon('Left', !!state.val);
                     break;
                 }
                 case 'cmd/bigIconRight': {
-                    this.info.nspanel.bigIconRight = !!state.val;
-                    this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
-                    await this.library.writeFromJson(
-                        `panels.${this.name}.info`,
-                        'panel.panels.info',
-                        definition.genericStateObjects,
-                        this.info,
-                    );
+                    await this.setBigIcon('Right', !!state.val);
                     break;
                 }
                 case 'cmd/screenSaverTimeout': {
@@ -3084,6 +3276,32 @@ export class Panel extends BaseClass {
                     }
                     break;
                 }
+                case 'cmd/screensaverNotificationCustom': {
+                    if (this.screenSaver && typeof state.val === 'string') {
+                        let message: unknown = undefined;
+                        try {
+                            message = JSON.parse(state.val);
+                        } catch {
+                            this.log.warn(`Invalid screensaver notification: ${state.val}`);
+                        }
+                        const details = parseScreensaverNotifyDetails(message);
+                        if (details) {
+                            await this.screenSaver.setQueuedNotify(details);
+                        }
+                    }
+                    break;
+                }
+                case 'cmd/screensaverClockBlink': {
+                    if (this.screenSaver) {
+                        this.screenSaver.clockBlink = !!state.val;
+                        await this.library.writedp(
+                            `panels.${this.name}.cmd.screenSaver.clockBlink`,
+                            !!state.val,
+                            definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink,
+                        );
+                    }
+                    break;
+                }
                 case 'cmd/screensaverTextNotification': {
                     if (this.screenSaver && typeof state.val === 'string') {
                         this.screenSaver.textNotification = state.val;
@@ -3222,6 +3440,9 @@ export class Panel extends BaseClass {
             }
             case 'cmd/screenSaverInfoIcon': {
                 return this.screenSaver?.infoIcon ?? '';
+            }
+            case 'cmd/screensaverClockBlink': {
+                return this.screenSaver?.clockBlink ?? false;
             }
             case 'cmd/screenSaverLayout': {
                 if (this.screenSaver) {
@@ -3584,6 +3805,9 @@ export class Panel extends BaseClass {
             // its origin - the admin shows it read-only
             if (this.options.generatedPageIds?.includes(nav.page.name)) {
                 navMap.generated = true;
+            }
+            if (nav.page.hidden) {
+                navMap.hidden = true;
             }
             // Script pages carry what the script says and what the admin changed on top of it
             if (origin === 'script' || origin === 'global') {

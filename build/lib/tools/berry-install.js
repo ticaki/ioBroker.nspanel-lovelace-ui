@@ -20,6 +20,7 @@ var berry_install_exports = {};
 __export(berry_install_exports, {
   BERRY_BACKUP_FILE: () => BERRY_BACKUP_FILE,
   BERRY_DRIVER_FILE: () => BERRY_DRIVER_FILE,
+  BERRY_FLASH_MODE_COMMAND: () => BERRY_FLASH_MODE_COMMAND,
   BERRY_OLD_FILE: () => BERRY_OLD_FILE,
   findBerryInstallTopic: () => findBerryInstallTopic,
   getBerryCommitCommand: () => getBerryCommitCommand,
@@ -27,6 +28,7 @@ __export(berry_install_exports, {
   getBerryLegacyInstallCommand: () => getBerryLegacyInstallCommand,
   getBerryRestoreCommand: () => getBerryRestoreCommand,
   getTasmotaCommandUrl: () => getTasmotaCommandUrl,
+  isBerryFlashing: () => isBerryFlashing,
   parseUrlFetchResult: () => parseUrlFetchResult
 });
 module.exports = __toCommonJS(berry_install_exports);
@@ -46,6 +48,13 @@ function getBerryRestoreCommand() {
 function getTasmotaCommandUrl(tasmotaIP, command, login) {
   const auth = login.useAdmin ? `user=admin&password=${encodeURIComponent(login.password)}` : "";
   return `http://${tasmotaIP}/cm?${auth}&cmnd=${encodeURIComponent(command)}`;
+}
+const BERRY_FLASH_MODE_COMMAND = "Br nextion.flash_mode";
+function isBerryFlashing(result) {
+  if (typeof result !== "object" || result === null || !("Br" in result)) {
+    return false;
+  }
+  return result.Br === "1";
 }
 function parseUrlFetchResult(message) {
   let payload;
@@ -73,6 +82,7 @@ function findBerryInstallTopic(requestTopic, tasmotaIP, panels) {
 0 && (module.exports = {
   BERRY_BACKUP_FILE,
   BERRY_DRIVER_FILE,
+  BERRY_FLASH_MODE_COMMAND,
   BERRY_OLD_FILE,
   findBerryInstallTopic,
   getBerryCommitCommand,
@@ -80,6 +90,7 @@ function findBerryInstallTopic(requestTopic, tasmotaIP, panels) {
   getBerryLegacyInstallCommand,
   getBerryRestoreCommand,
   getTasmotaCommandUrl,
+  isBerryFlashing,
   parseUrlFetchResult
 });
 //# sourceMappingURL=berry-install.js.map

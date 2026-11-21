@@ -280,6 +280,7 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    send={this.props.send}
                     model={global.model}
                 />
                 {this.renderText(model.curTempLabel, layout.texts[0], 'label1')}

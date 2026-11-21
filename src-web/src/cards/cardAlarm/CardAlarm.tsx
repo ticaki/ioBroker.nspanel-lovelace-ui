@@ -166,6 +166,7 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                     title={layout.titleInBar ? model.title : ''}
                     navigation={model.navigation}
                     press={press}
+                    send={this.props.send}
                     model={global.model}
                 />
                 <div

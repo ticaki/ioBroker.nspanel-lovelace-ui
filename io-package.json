@@ -209,6 +209,7 @@
     "webCertPrivate": "defaultPrivate",
     "webCertChained": "",
     "webFido": false,
+    "webAllowExtensions": false,
     "panels": [],
     "pageQRpwd1": "",
     "pageQRpwd2": "",
@@ -303,7 +304,10 @@
         "colFgMainAlt": "#ffcc00",
         "colFgTimeAdd": "#00c8ff",
         "colFgForecast": "#c0c0c0",
-        "colFgBar": "#c0c0c0"
+        "colFgBar": "#c0c0c0",
+        "colFgNotifyHead": "#ffffff",
+        "colFgNotifyText": "#ffffff",
+        "colBgNotify": "#383838"
       }
     ],
     "colorCardMedia": [

@@ -229,7 +229,7 @@ Mehr als neun Flächen verteilt der Adapter auf mehrere Seiten. **Wie** geblätt
 
 | Auswahl | Wirkung |
 |---|---|
-| **Klassisch** | *„Mehr Elemente als Plätze: Die Doppelpfeile des Panels blättern weiter."* – Vorgabe. Die Navigationspfeile oben am Panel werden zu Blätterpfeilen, solange es eine weitere Seite gibt. |
+| **Klassisch** | *„Mehr Elemente als Plätze: Die Pfeile des Panels blättern weiter."* – Vorgabe. Die Navigationspfeile oben am Panel werden zu Blätterpfeilen, solange es eine weitere Seite gibt. |
 | **Pfeil** | *„Mehr Elemente als Plätze: Der letzte Platz zeigt einen Pfeil, der weiterblättert."* – Das ist hier die **neunte** Fläche zwischen − und +; es bleiben acht Plätze für Flächen. Der Pfeil erscheint erst, wenn mehr als neun Flächen zusammenkommen, und blättert auf der letzten Seite zurück zur ersten. |
 | **Automatisch** | *„Wie klassisch, zusätzlich blättert die Seite nach der eingestellten Zeit von selbst weiter."* – dazu das Feld **Sekunden bis zur nächsten Seite** (leer = 15). |
 

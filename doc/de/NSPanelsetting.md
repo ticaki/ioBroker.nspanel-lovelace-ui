@@ -89,6 +89,10 @@ Die beiden Tasten unter dem Display sind seit 2.0.0 im Admin einstellbar. **HW-B
 
 ![Der Dialog Hardware-Button links mit entkoppeltem Relais und gewählter Aktion](../Pictures/nspanelSetting/hw-button-dialog-entkoppelt.png)
 
+Mit der Aktion **Navigation (wie ein Pfeil der Seite)** kommt darunter das Feld **Pfeil** dazu: *Weiter (next)*, *Zurück (prev)*, *Startseite (home)* oder *Übergeordnet (parent)*. Die Taste wirkt dann wie der Navigationspfeil der gerade angezeigten Seite — *next* wie ein kurzer Druck auf den rechten Pfeil, *home* wie ein langer. Ein offenes Popup wird vorher geschlossen; auf dem Bildschirmschoner passiert nichts.
+
+![Derselbe Dialog mit der Aktion „Navigation (wie ein Pfeil der Seite)“ und dem zusätzlichen Feld Pfeil, hier auf „Weiter (next)“](../Pictures/nspanelSetting/hw-button-dialog-pfeil.png)
+
 **Der Admin überschreibt das Skript.** Beim Aufbau der Panel-Konfiguration legt der Adapter die Aktionen des Admins über die des Konfigurationsskripts, und zwar getrennt für jede Seite:
 
 - Eine im Admin eingestellte Seite **gewinnt** gegen das Skript.
@@ -117,12 +121,13 @@ Die Entkopplung bleibt über Adapterneustarts erhalten (der Adapter liest den Da
 
 ## 8. Die Funktionsarten
 
-Das Feld **Aktion** hat neben *hier nicht konfiguriert* sieben Einträge:
+Das Feld **Aktion** hat neben *hier nicht konfiguriert* acht Einträge:
 
 | Aktion | Was der Taster tut |
 |---|---|
 | **hier nicht konfiguriert** | Der Admin stellt nichts ein; es gilt, was das Konfigurationsskript über diesen Taster sagt. Beim Speichern wird das Feld aus der Konfiguration entfernt. Bei *Panel benutzt kein Skript* bedeutet das: keine Funktion. |
 | **Zu einem Navigationspunkt wechseln** | Das Panel springt auf die gewählte Seite. |
+| **Navigation (wie ein Pfeil der Seite)** | Der Taster wirkt wie ein Navigationspfeil der gerade angezeigten Seite, siehe unten. |
 | **Datenpunkt umschalten** | Kippt einen booleschen Datenpunkt. |
 | **Datenpunkt auf true setzen** | Setzt den Datenpunkt auf `true` (Taster-Verhalten). |
 | **Auf true setzen, nach der Verzögerung zurück auf false** | Setzt sofort `true`, nach der Verzögerung `false`. |
@@ -133,6 +138,9 @@ Das Feld **Aktion** hat neben *hier nicht konfiguriert* sieben Einträge:
 Je nach Auswahl erscheinen die passenden Felder:
 
 - **Navigationspunkt** — eine Auswahlliste mit den Navigationspunkten dieses Panels; es sind genau die Werte, die der Datenpunkt `cmd.goToNavigationPoint` kennt, inklusive der Systemseiten (Namen mit `///`). Ist die Liste leer, bietet der Dialog ein Textfeld mit dem Hinweis, den Namen so einzutragen, wie er in `cmd.goToNavigationPoint` steht. Ein gespeicherter Name, den das Panel nicht (mehr) meldet, bleibt in der Liste sichtbar und geht nicht verloren.
+- **Pfeil** — nur bei *Navigation*: welcher Pfeil der angezeigten Seite gedrückt wird; Vorgabe *Weiter (next)*. *Weiter (next)* = rechter Pfeil kurz, *Zurück (prev)* = linker Pfeil kurz, *Startseite (home)* = rechter Pfeil lang, *Übergeordnet (parent)* = linker Pfeil lang. Die Ziele sind die [Navigationsziele](PageConfig#navigationsziele) der jeweiligen Seite, und es gelten dieselben Regeln wie beim Pfeil: Ist für den Pfeil nur eines der beiden Ziele belegt, führt der Taster dorthin, egal ob *next* oder *home* (bzw. *prev* oder *parent*) gewählt ist; ist keins belegt, passiert nichts. Auf einer Menü-Seite mit mehr Einträgen, als sie zeigt, blättern *next* und *prev* wie der kurze Pfeildruck erst innerhalb der Seite – aber nur bei *Blättern der Seitenelemente* = *Klassisch*; bei *Pfeil* und *Automatisch* verlässt der Taster die Seite sofort.
+  - **Ein Popup ist offen** (Detail-Popup eines Eintrags, Benachrichtigung, Unterseite wie die Lautsprecherliste): Der Druck schließt es und navigiert danach von der Seite darunter — beides mit einem Druck. Eine Benachrichtigung wird dabei wie mit ihrem Schließen-Knopf weggelegt.
+  - **Der Bildschirmschoner ist aktiv:** Er wird nie verlassen, es wird nicht navigiert. Liegt ein Popup über ihm (das Popup eines Indikators nach langem Druck, eine Benachrichtigung), schließt der Druck es wie dessen Schließen-Knopf, und der Bildschirmschoner ist wieder zu sehen. Ohne Popup passiert nichts. Der Datenpunkt `buttons.left` bzw. `buttons.right` wird wie bei jeder Aktion trotzdem gesetzt.
 - **Datenpunkt** — Auswahl über den Objektbaum; angeboten werden nur **beschreibbare** Datenpunkte.
 - **Verzögerung (s)** — nur bei den vier Verzögerungsarten. Leer bedeutet **0,25 s**; erlaubt sind 0,001 bis 2 147 483 Sekunden. Ein Wert außerhalb dieser Grenzen sperrt *Speichern*; käme am Panel trotzdem ein unbrauchbarer Wert an, rechnet es mit 250 ms. Ein erneuter Tastendruck während der Verzögerung setzt die laufende Zeit neu.
 

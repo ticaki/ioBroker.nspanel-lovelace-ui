@@ -28,7 +28,7 @@ Diese Schalter erzeugen viel Text im Protokoll. Für die Fehlersuche einschalten
 |---|---|
 | **Fix zerbrochene gemeinsame Typen reparieren** | Einmalige Reparatur: Beim nächsten Start korrigiert der Adapter Alias-Objekte, deren Typ fälschlich `state` statt `mixed` ist (ein bekannter Fehler aus dem Geräte-Adapter). Danach setzt er den Haken selbst wieder zurück. |
 | **Pinned TFT firmware version** | Erzwingt eine bestimmte TFT-Version statt der online ermittelten. **Nur zum Testen**, ohne Unterstützung — der Adapter warnt beim Start, solange hier etwas steht. |
-| **hideDeveloperSymbols** | Blendet das Zahnrad aus, das der Bildschirmschoner anzeigt, wenn eine Entwicklerversion der Display-Firmware läuft. |
+| **hideDeveloperSymbols** | Blendet das Zahnrad aus, das der Bildschirmschoner anzeigt, wenn eine Entwicklerversion der Display-Firmware läuft. Ein eigenes Infoicon hat ohnehin Vorrang vor dem Zahnrad. |
 | **Testdatenpunkte anlegen** | Legt die Datenpunkte der Testumgebung an — alle Kanalrollen auf einmal, ohne eigene Objekte. Vorhandenes bleibt unverändert. Siehe [Testumgebung](Testumgebung). |
 
 ## Eigene TFT einspielen

@@ -47,6 +47,7 @@ __export(definition_exports, {
 module.exports = __toCommonJS(definition_exports);
 var globals = __toESM(require("../types/function-and-const"));
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_screensaver_info_font = require("./screensaver-info-font");
 const defaultChannel = {
   _id: "",
   type: "channel",
@@ -240,6 +241,19 @@ const genericStateObjects = {
             name: "StateObjects.buttons.indicatorLong",
             type: "boolean",
             role: "button.long",
+            read: true,
+            write: false,
+            def: true
+          },
+          native: {}
+        },
+        infoIcon: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buttons.infoIcon",
+            type: "boolean",
+            role: "button.press",
             read: true,
             write: false,
             def: true
@@ -466,6 +480,49 @@ const genericStateObjects = {
               read: true,
               write: true,
               def: ""
+            },
+            native: {}
+          },
+          infoText: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.infoText",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
+          infoTextFont: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.infoTextFont",
+              type: "number",
+              role: "level",
+              read: true,
+              write: true,
+              def: import_screensaver_info_font.SCREENSAVER_INFO_FONT_DEFAULT,
+              min: 0,
+              max: 5,
+              step: 1,
+              states: { ...import_screensaver_info_font.SCREENSAVER_INFO_FONT_STATES }
+            },
+            native: {}
+          },
+          clockBlink: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.clockBlink",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true,
+              def: false
             },
             native: {}
           },
@@ -932,9 +989,18 @@ const genericStateObjects = {
               read: true,
               write: true,
               def: 3,
-              min: 1,
-              max: 5,
-              step: 1
+              min: 0,
+              max: 8,
+              step: 1,
+              states: {
+                0: "24px text",
+                1: "32px icons+text",
+                2: "32px text",
+                3: "48px icons+text",
+                4: "80px bold icons+text",
+                5: "128px bold ASCII",
+                8: "96px bold ASCII (clock)"
+              }
             },
             native: {}
           },
@@ -961,6 +1027,45 @@ const genericStateObjects = {
               read: true,
               write: true,
               def: JSON.stringify({ r: 255, g: 255, b: 255 })
+            },
+            native: {}
+          },
+          largeIcon: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "largeIcon",
+              type: "boolean",
+              role: "switch",
+              read: true,
+              write: true,
+              def: false
+            },
+            native: {}
+          },
+          buttonLeftIcon: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "buttonLeftIcon",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
+            },
+            native: {}
+          },
+          buttonRightIcon: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "buttonRightIcon",
+              type: "string",
+              role: "text",
+              read: true,
+              write: true,
+              def: ""
             },
             native: {}
           },
@@ -2355,6 +2460,28 @@ const InternalStates = {
       }
     },
     "cmd/screensaverActivateNotification": {
+      val: false,
+      ack: true,
+      common: {
+        name: "",
+        type: "boolean",
+        role: "switch",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/screensaverNotificationCustom": {
+      val: JSON.stringify({}),
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "json",
+        read: true,
+        write: true
+      }
+    },
+    "cmd/screensaverClockBlink": {
       val: false,
       ack: true,
       common: {

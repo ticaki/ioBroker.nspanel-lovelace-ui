@@ -81,6 +81,22 @@ export function getTasmotaCommandUrl(tasmotaIP: string, command: string, login: 
     return `http://${tasmotaIP}/cm?${auth}&cmnd=${encodeURIComponent(command)}`;
 }
 
+/** Tasmota command that asks the berry driver whether it is flashing a TFT right now. */
+export const BERRY_FLASH_MODE_COMMAND = 'Br nextion.flash_mode';
+
+/**
+ * Evaluates the http answer of {@link BERRY_FLASH_MODE_COMMAND}.
+ *
+ * @param result parsed json answer of `/cm`
+ * @returns true only for `{"Br":"1"}` - the driver is flashing a TFT
+ */
+export function isBerryFlashing(result: unknown): boolean {
+    if (typeof result !== 'object' || result === null || !('Br' in result)) {
+        return false;
+    }
+    return result.Br === '1';
+}
+
 /** Result of a `UrlFetch` answer on `stat/RESULT`. */
 export type UrlFetchResult = 'done' | 'failed' | 'none';
 

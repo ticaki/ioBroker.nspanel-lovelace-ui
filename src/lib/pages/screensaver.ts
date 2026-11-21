@@ -16,6 +16,15 @@ import { Color, type RGB } from '../const/Color';
 import type { NSPanel } from '../types/NSPanel';
 import type { IClientPublishOptions } from 'mqtt';
 import {
+    SCREENSAVER_CLOCK_BLINK_MIN_VERSION,
+    SCREENSAVER_INFO_ICON_TEXTS,
+    screensaverInfoFont,
+    screensaverInfoNotification,
+    SCREENSAVER_INFO_FONT_DEFAULT,
+    type ScreensaverInfoFont,
+    type ScreensaverInfoIcon,
+} from './screensaver-info-icon';
+import {
     checkClockTimerPatterns,
     clockTimerUsesPageItem,
     clockTimerUsesSlots,
@@ -23,6 +32,16 @@ import {
     screensaverNotifyLines,
     type ScreensaverClockTimer,
 } from '../types/adminShareConfig';
+import {
+    applyScreensaverNotify,
+    mergeScreensaverNotify,
+    screensaverNotifyQueueCandidate,
+    screensaverNotifyQueueId,
+    type ScreensaverNotifyCandidate,
+    type ScreensaverNotifyCustomColors,
+    type ScreensaverNotifyDetails,
+    type ScreensaverNotifyQueueEntry,
+} from './screensaver-notify-queue';
 import {
     isCountdownCommon,
     isTimerOn,
@@ -83,6 +102,78 @@ export function resolveScreensaverOptions(options: pages.PageBase): {
     };
 }
 
+/**
+ * TFT version from which on screensaver2/screensaver5 read the long press mask at the end of `weatherUpdate`
+ * (`HMI/tools/indicator_long_press_mask.py`): only the marked indicators start the long press and let the clock blink.
+ */
+export const INDICATOR_LONG_PRESS_MASK_MIN_VERSION = '6.2.0';
+
+/**
+ * TFT version from which on the screensavers read field 5 of `notify~`, the background of the notification
+ * (`HMI/tools/notify_background.py`). Fields 3/4 (headline/text color) are read by every TFT the adapter supports.
+ */
+export const NOTIFY_BACKGROUND_MIN_VERSION = '6.2.0';
+
+/** The colors of the notification on the screensaver as the color theme holds them (a missing key is a string). */
+export interface ScreensaverNotifyColors {
+    /** headline (`tNotifyHead.pco`), field 3 */
+    head: unknown;
+    /** text (`tNotifyText.pco`), field 4 */
+    text: unknown;
+    /** background of both (`bco`), field 5 */
+    background: unknown;
+    /**
+     * second background as RGB565, field 6: with field 5 the HMI alternates both every second (TFT 6.2.0+, web panel);
+     * undefined = no blinking. Only sent together with the background.
+     */
+    blink?: number;
+}
+
+/**
+ * `notify~<headline>~<text>~<headline color>~<text color>~<background>~<second background>` - the colors as RGB565. A
+ * color that is no RGB stays empty (the HMI keeps its color, the background then is the one of the screensaver); empty
+ * fields at the end are left out. The second background (blinking) only goes with a background.
+ *
+ * @param heading headline
+ * @param text text
+ * @param colors colors of the theme
+ * @param withBackground true when the panel reads field 5 ({@link NOTIFY_BACKGROUND_MIN_VERSION}, web panel)
+ * @returns the message
+ */
+export function screensaverNotifyPayload(
+    heading: string,
+    text: string,
+    colors: ScreensaverNotifyColors,
+    withBackground: boolean,
+): string {
+    const fields = [colors.head, colors.text, ...(withBackground ? [colors.background] : [])].map(c =>
+        Color.isRGB(c) ? String(Color.rgb_dec565(c)) : '',
+    );
+    if (withBackground && fields[2] !== '' && colors.blink !== undefined) {
+        fields.push(String(colors.blink));
+    }
+    while (fields.length > 0 && fields[fields.length - 1] === '') {
+        fields.pop();
+    }
+    return tools.getPayload(tools.getPayloadRemoveTilde('notify', heading, text), ...fields);
+}
+
+/**
+ * The long press mask of the indicator slots as the HMI reads it: bit (N-1) for indicator N (1 -> 1, 3 -> 4, 7 -> 64).
+ *
+ * @param supported per indicator slot as sent: true when its indicator has a long press
+ * @returns the mask as a decimal number
+ */
+export function indicatorLongPressMask(supported: readonly boolean[]): number {
+    let mask = 0;
+    for (let i = 0; i < supported.length; i++) {
+        if (supported[i]) {
+            mask += 2 ** i;
+        }
+    }
+    return mask;
+}
+
 /** Messages of the screensaver that are only sent when their content changed */
 type FilteredMessage = 'weatherUpdate' | 'color' | 'statusUpdate' | 'notify';
 
@@ -136,8 +227,34 @@ export class Screensaver extends Page {
     public headingNotification: string = '';
     public textNotification: string = '';
     public customNotification: boolean = false;
+    /** notifications of the sendTo `screensaverNotify` with an id, see screensaver-notify-queue */
+    private notifyQueue: ScreensaverNotifyQueueEntry[] = [];
+    private notifyQueueSeq: number = 0;
+    /** text of the popup a tap on the icon of the user opens (`cmd.screenSaver.infoText`), empty: no popup */
+    public infoText: string = '';
+    /** font of {@link infoText} in the popup (`cmd.screenSaver.infoTextFont`), see {@link screensaverInfoFont} */
+    private _infoTextFont: ScreensaverInfoFont = SCREENSAVER_INFO_FONT_DEFAULT;
+    /** the clock blinks red/white (`cmd.screenSaver.clockBlink`), see {@link sendsClockBlink} */
+    private _clockBlink: boolean = false;
+    /** the info icon of the last `time~`, undefined: none */
+    private shownInfoIcon: ScreensaverInfoIcon | undefined = undefined;
     private activeNotification: boolean = false;
     private activeNotifyId: string = '';
+    /**
+     * id of the configured notification whose content is on the HMI, '' when none is (nothing shown, a custom one or
+     * a reload with `pageType~`). Only a new content of this notification is throttled, see {@link notifyContentInterval}.
+     */
+    private shownNotifyId: string = '';
+    /**
+     * A configured notification sends a new content of the notification that is shown at most this often: a value
+     * that changes every second must not flood the panel. Showing, hiding and a change to another notification
+     * (enabled, priority) are not throttled, nor the custom notification of sendTo/cmd.
+     */
+    private static readonly notifyContentInterval = 30_000;
+    /** time of the last send of a configured notification, the start of the throttle window */
+    private notifyContentTs: number = 0;
+    /** sends the content that waited for the end of the throttle window */
+    private notifyContentTimer: ioBroker.Timeout | undefined = undefined;
     /**
      * The page item whose popup a long press of an indicator opened ({@link openIndicatorPopup}), until the screensaver
      * is shown again ({@link onVisibilityChange}).
@@ -752,14 +869,27 @@ export class Screensaver extends Page {
         const model = 'model' in config ? config.model : 'eu';
         const layout = this.mode;
 
-        type AppendResult = { kind: 'append'; place: NSPanel.ScreenSaverPlaces; idx: number; payload: string };
+        type AppendResult = {
+            kind: 'append';
+            place: NSPanel.ScreenSaverPlaces;
+            idx: number;
+            payload: string;
+            item: PageItem;
+        };
         type OverwriteResult = {
             kind: 'overwrite';
             place: NSPanel.ScreenSaverPlaces;
             enabledIndex: number;
             payload: string;
+            item: PageItem;
         };
-        type FillerResult = { kind: 'filler'; place: NSPanel.ScreenSaverPlaces; idx: number; payload: string };
+        type FillerResult = {
+            kind: 'filler';
+            place: NSPanel.ScreenSaverPlaces;
+            idx: number;
+            payload: string;
+            item: PageItem;
+        };
         type Result = AppendResult | OverwriteResult | FillerResult | null;
 
         // Collect results in parallel, but tagged with original index
@@ -789,7 +919,7 @@ export class Screensaver extends Page {
                         if (enabledNum >= 0) {
                             const payload = await pageItem.getPageItemPayload();
                             if (payload !== '') {
-                                return { kind: 'overwrite', place, enabledIndex: enabledNum, payload };
+                                return { kind: 'overwrite', place, enabledIndex: enabledNum, payload, item: pageItem };
                             }
                         }
                         return null;
@@ -801,21 +931,21 @@ export class Screensaver extends Page {
                 if (enabledBool === false) {
                     if (pageItem.config?.fillIfBelowMin) {
                         const payload = await pageItem.getPageItemPayload(true);
-                        return { kind: 'filler', place, idx, payload };
+                        return { kind: 'filler', place, idx, payload, item: pageItem };
                     }
                     return null;
                 }
 
                 // Default: append with original index
                 const payload = await pageItem.getPageItemPayload();
-                return { kind: 'append', place, idx, payload };
+                return { kind: 'append', place, idx, payload, item: pageItem };
             }),
         );
 
         // Apply overwrites and collect appends/fillers grouped by place
         const combinedByPlace: Record<
             NSPanel.ScreenSaverPlaces,
-            Array<{ idx: number; payload: string; isFiller: boolean }>
+            Array<{ idx: number; payload: string; isFiller: boolean; item: PageItem }>
         > = {
             indicator: [],
             left: [],
@@ -828,16 +958,27 @@ export class Screensaver extends Page {
             notify: [],
         };
 
+        // the page item of every indicator slot, parallel to message.options.indicator (long press mask)
+        const indicatorOverwrite: PageItem[] = [];
         for (const r of results) {
             if (!r) {
                 continue;
             }
             if (r.kind === 'overwrite') {
                 overwrite[r.place][r.enabledIndex] = r.payload;
+                if (r.place === 'indicator') {
+                    indicatorOverwrite[r.enabledIndex] = r.item;
+                }
             } else {
-                combinedByPlace[r.place].push({ idx: r.idx, payload: r.payload, isFiller: r.kind === 'filler' });
+                combinedByPlace[r.place].push({
+                    idx: r.idx,
+                    payload: r.payload,
+                    isFiller: r.kind === 'filler',
+                    item: r.item,
+                });
             }
         }
+        let indicatorItems: (PageItem | undefined)[] = [];
 
         // Build message.options per place in original order, then apply overwrites
         for (const key in message.options) {
@@ -857,19 +998,25 @@ export class Screensaver extends Page {
             let fillersLeft = Math.max(0, maxForFill - regularCount);
 
             // Insert items in original order; fillers only where there is still a slot needed
+            const slotItems: (PageItem | undefined)[] = [];
             for (const entry of combined) {
                 if (entry.isFiller) {
                     if (fillersLeft > 0) {
                         message.options[place].push(entry.payload);
+                        slotItems.push(entry.item);
                         fillersLeft--;
                     }
                 } else {
                     message.options[place].push(entry.payload);
+                    slotItems.push(entry.item);
                 }
             }
 
             // Apply overwrites (sparse assignment is fine)
             Object.assign(message.options[place], overwrite[place]);
+            if (place === 'indicator') {
+                Object.assign(slotItems, indicatorOverwrite);
+            }
 
             // Windowing/paging
             let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
@@ -886,6 +1033,11 @@ export class Screensaver extends Page {
                 const windowIdx = this.step % windows;
                 items = items.slice(max * windowIdx, max * (windowIdx + 1));
                 message.options[place] = items;
+                if (place === 'indicator') {
+                    indicatorItems = slotItems.slice(max * windowIdx, max * (windowIdx + 1));
+                }
+            } else if (place === 'indicator') {
+                indicatorItems = slotItems;
             }
 
             // Normalize payload fields per slot
@@ -912,6 +1064,12 @@ export class Screensaver extends Page {
                     message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
                 }
             }
+            if (place === 'indicator') {
+                const sent = message.options.indicator;
+                message.indicatorLongPress = sent.map(
+                    (payload, i) => !!payload.replace(/~/g, '') && this.supportsIndicatorLongPress(indicatorItems[i]),
+                );
+            }
         }
 
         return message;
@@ -931,27 +1089,145 @@ export class Screensaver extends Page {
         void this.HandleNotification();
     }
 
-    #sendNotify(enabled: boolean, heading: string = '', text: string = ''): void {
+    /**
+     * @param enabled When true, send heading + text; otherwise clear the notify.
+     * @param heading heading of the notification
+     * @param text text of the notification
+     * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+     * @param colors headline/text colors instead of the ones of the theme (queue of the sendTo)
+     * @returns true when a message went out
+     */
+    #sendNotify(
+        enabled: boolean,
+        heading: string = '',
+        text: string = '',
+        blink?: number,
+        colors?: ScreensaverNotifyCustomColors,
+    ): boolean {
         if (!this.basePanel.isOnline) {
-            return;
+            return false;
         }
         const wasActive = this.activeNotification;
         this.activeNotification = enabled && (heading !== '' || text !== '');
+        if (!this.activeNotification) {
+            this.shownNotifyId = '';
+        }
         // no notification is what the HMI starts with: an empty message only clears one that was shown
         if (!this.activeNotification && !wasActive) {
-            return;
+            return false;
         }
 
-        if (this.sendIfChanged('notify', this.notifyPayload(this.activeNotification, heading, text))) {
+        const sent = this.sendIfChanged(
+            'notify',
+            this.notifyPayload(this.activeNotification, heading, text, blink, colors),
+        );
+        if (sent) {
             this.notifyHidden = false;
         }
         if (!this.activeNotification) {
             this.resendDropped();
         }
+        return sent;
     }
 
-    private notifyPayload(enabled: boolean, heading: string, text: string): string {
-        return enabled ? tools.getPayloadRemoveTilde('notify', heading, text) : tools.getPayload('notify', '', '');
+    /**
+     * Sends a configured notification. A new content of the notification that is already shown goes out at most every
+     * {@link Screensaver.notifyContentInterval} ms: at once when the last send is longer ago, otherwise once at the end
+     * of the window with the values of then (HandleNotification reads them again). Nothing goes out for it while a
+     * touch has cleared it on the HMI ({@link notifyHidden}) - it comes back with the next `pageType~`. Another
+     * notification (enabled, priority) and one after a reload are sent at once.
+     *
+     * @param id id of the page item of the notification
+     * @param heading heading of the notification
+     * @param text text of the notification
+     * @param blink second background (RGB565) of the notification, undefined = no blinking. Like the colors of the
+     * theme it is part of the payload: a new color of the shown notification counts as a new content.
+     * @param colors headline/text colors instead of the ones of the theme (queue of the sendTo)
+     */
+    private sendConfiguredNotify(
+        id: string,
+        heading: string,
+        text: string,
+        blink?: number,
+        colors?: ScreensaverNotifyCustomColors,
+    ): void {
+        if (this.shownNotifyId === id && this.activeNotification) {
+            if (
+                this.notifyHidden ||
+                this.lastSent.get('notify') === this.notifyPayload(true, heading, text, blink, colors)
+            ) {
+                return;
+            }
+            const wait = this.notifyContentTs + Screensaver.notifyContentInterval - Date.now();
+            if (wait > 0) {
+                this.scheduleNotifyContent(wait);
+                return;
+            }
+        }
+        this.clearNotifyContentTimer();
+        if (this.#sendNotify(true, heading, text, blink, colors)) {
+            this.notifyContentTs = Date.now();
+        }
+        this.shownNotifyId = this.activeNotification ? id : '';
+    }
+
+    /**
+     * Starts the timer for the end of the throttle window of the notification content, unless it runs already.
+     *
+     * @param wait ms up to the end of the window
+     */
+    private scheduleNotifyContent(wait: number): void {
+        if (this.notifyContentTimer || this.unload || this.adapter.unload) {
+            return;
+        }
+        this.notifyContentTimer = this.adapter.setTimeout(() => {
+            this.notifyContentTimer = undefined;
+            if (this.unload || this.adapter.unload || !this.visibility) {
+                // a screensaver shown again sends everything with its pageType
+                return;
+            }
+            void this.HandleNotification();
+        }, wait);
+    }
+
+    private clearNotifyContentTimer(): void {
+        if (this.notifyContentTimer) {
+            this.adapter.clearTimeout(this.notifyContentTimer);
+            this.notifyContentTimer = undefined;
+        }
+    }
+
+    /**
+     * @param enabled false: the message that clears the notification
+     * @param heading headline
+     * @param text text
+     * @param blink second background (RGB565) of a notification of the admin list, undefined = no blinking
+     * @param custom headline/text colors instead of the ones of the theme (queue of the sendTo)
+     */
+    private notifyPayload(
+        enabled: boolean,
+        heading: string,
+        text: string,
+        blink?: number,
+        custom?: ScreensaverNotifyCustomColors,
+    ): string {
+        if (!enabled) {
+            return tools.getPayload('notify', '', '');
+        }
+        const colors = {
+            head: custom?.head ?? Color.fgNotifyHead,
+            text: custom?.text ?? Color.fgNotifyText,
+            background: Color.bgNotify,
+            blink,
+        };
+        return screensaverNotifyPayload(heading, text, colors, this.sendsNotifyBackground());
+    }
+
+    /**
+     * true when `notify~` carries the background (field 5): a web panel or a TFT {@link NOTIFY_BACKGROUND_MIN_VERSION}+
+     */
+    private sendsNotifyBackground(): boolean {
+        return this.basePanel.isVirtual || this.basePanel.meetsVersion(NOTIFY_BACKGROUND_MIN_VERSION);
     }
 
     /**
@@ -997,8 +1273,9 @@ export class Screensaver extends Page {
 
     /**
      * Any touch makes the HMI clear a notification by itself (`tc0` press, unless the display is off) - and the adapter
-     * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again: it comes
-     * back with the next `pageType~` or a new content. What the HMI dropped behind it can go out now. With a standby
+     * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again, also not
+     * with a new content of the same notification: it comes back with the next `pageType~` (or another notification
+     * takes its place). What the HMI dropped behind it can go out now. With a standby
      * brightness of 0 the touch may have hit a dark display and cleared nothing: then what follows still counts as
      * dropped and is repeated with the next touch or the end of the notification. A tap with a counter above 1 always
      * hit an awake display (the first tap of the run woke it), so the HMI cleared the notification then.
@@ -1066,6 +1343,27 @@ export class Screensaver extends Page {
         }
         this.onTouch(taps);
         return taps === 2 ? 'dismiss' : 'leave';
+    }
+
+    /**
+     * A press of an indicator tile (TFT 6.0.8+, `<page>?<n>,button,<taps>`, tap or long press) on a dark display
+     * (standby brightness 0): the first touch of a run of the tap counter (opt 1) only wakes the display - no
+     * `buttons.indicator(Long)-N`, no command, no popup, no long press. Independent of a notification; `dismiss` and
+     * `leave` of {@link onExitTap} do not apply to indicators. Like a `bExit` with opt 1 the touch decides
+     * {@link wakeTapRun}: a notification that stood on the dark display is shown now and the next background tap
+     * (opt 2) takes it away. A press without a tap count (TFT before 6.0.8) is never a wake tap.
+     *
+     * @param opt opt of the event, the taps counted by the HMI
+     * @returns true when the press only woke the display and is done
+     */
+    onIndicatorWakeTap(opt: string): boolean {
+        const taps = Screensaver.tapCount(opt);
+        if (taps === undefined || taps > 1) {
+            return false;
+        }
+        // the start of a run of the counter, the same decision as a background tap with opt 1
+        this.onExitTap(opt);
+        return this.standbyDark();
     }
 
     /**
@@ -1152,6 +1450,7 @@ export class Screensaver extends Page {
             this.weatherDropped = false;
             this.lastTimerPayload = '';
             this.notifyHidden = false;
+            this.shownNotifyId = '';
             this.wakeTapRun = false;
             this.lastUpdateTs = 0;
             this.timeAfterRender = true;
@@ -1207,19 +1506,7 @@ export class Screensaver extends Page {
             return;
         }
 
-        if (message.options.alternate.length > 0) {
-            message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
-        }
-
-        const arr: string[] = [
-            ...(message.options.favorit || []),
-            ...(message.options.left || []),
-            ...(message.options.bottom || []),
-            ...(message.options.alternate || []),
-            ...(message.options.indicator || []),
-        ];
-
-        const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
+        const msg = this.weatherPayload(message);
         if (this.lastSent.get('weatherUpdate') !== msg || this.lastSent.get('color') !== this.colorPayload()) {
             const now = Date.now();
             const wait = this.lastUpdateTs + Screensaver.minUpdateInterval - now;
@@ -1489,26 +1776,29 @@ export class Screensaver extends Page {
             }
             text = message.options.time[0].split('~')[5];
         }
-        let icon = `${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`;
+        // order: timer, the icon of the user, the system icons (development firmware before firmware update)
+        let infoIcon: ScreensaverInfoIcon | undefined = this.infoIcon ? { name: this.infoIcon, user: true } : undefined;
         if (timerActive) {
             // stays while the timer is active, also after a tap to the clock - before everything else
             const iconName =
                 timer.status === 'expired' ? 'timer-alert' : timer.status === 'paused' ? 'timer-pause' : 'timer-sand';
-            icon = `~${Icons.GetIcon(iconName)}`;
-        } else if (this.basePanel.isVirtual) {
-            // a web panel has no TFT firmware - no development and no update symbol
+            infoIcon = { name: iconName, user: false };
+        } else if (infoIcon || this.basePanel.isVirtual) {
+            // the icon of the user stays; a web panel has no TFT firmware - no development and no update symbol
         } else if (this.basePanel.info.nspanel.displayVersion === '0.0.0') {
-            // only for development firmware
+            // only for development firmware - never the update symbol, also not with hideDeveloperSymbols
             if (!this.adapter.config.hideDeveloperSymbols) {
-                icon = `~${Icons.GetIcon('cog-refresh-outline')}`;
+                infoIcon = { name: 'cog-refresh-outline', user: false };
             }
         } else if (
-            !icon &&
             tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)
         ) {
             // only if a newer firmware is available - not for a newer TFT on the display or an unknown version
-            icon = `~${Icons.GetIcon('wrench-clock')}`;
+            infoIcon = { name: 'wrench-clock', user: false };
         }
+        const icon = infoIcon ? `~${Icons.GetIcon(infoIcon.name)}` : '';
+        // what a tap on the icon explains, see onInfoIconTap
+        this.shownInfoIcon = icon ? infoIcon : undefined;
 
         // time and icon get their color from color~, only sent when it changes: with the same background the HMI just
         // sets the font colors of its elements, the page is not drawn again
@@ -1580,8 +1870,111 @@ export class Screensaver extends Page {
             this.basePanel.info.nspanel.bigIconLeft ? '1' : '',
             this.basePanel.info.nspanel.bigIconRight ? '1' : '',
         ];
+        if (this._clockBlink && this.sendsClockBlink()) {
+            // field 7: the clock blinks red/white, see SCREENSAVER_CLOCK_BLINK_MIN_VERSION
+            msgArray.push('1');
+        }
         const msg = tools.getPayloadArrayRemoveTilde(msgArray);
         this.sendIfChanged('statusUpdate', msg);
+    }
+
+    /**
+     * true when the panel reads the blink flag of the clock (field 7 of `statusUpdate`): a web panel or a TFT
+     * {@link SCREENSAVER_CLOCK_BLINK_MIN_VERSION}+ - older TFTs get the message as before.
+     */
+    private sendsClockBlink(): boolean {
+        return this.basePanel.isVirtual || this.basePanel.meetsVersion(SCREENSAVER_CLOCK_BLINK_MIN_VERSION);
+    }
+
+    /** the clock blinks red/white until it is set to false (`cmd.screenSaver.clockBlink`) */
+    get clockBlink(): boolean {
+        return this._clockBlink;
+    }
+
+    /**
+     * Starts or ends the blinking of the clock: the next `statusUpdate~` carries the flag, also after every
+     * `pageType~` of the screensaver (it clears the memory of the sent messages).
+     */
+    set clockBlink(blink: boolean) {
+        if (this._clockBlink === blink) {
+            return;
+        }
+        this._clockBlink = blink;
+        void this.sendStatusIcons();
+    }
+
+    /** font of the text of the user icon in the popup of the info icon */
+    get infoTextFont(): ScreensaverInfoFont {
+        return this._infoTextFont;
+    }
+
+    /**
+     * Sets the font of the text of the user icon from `cmd.screenSaver.infoTextFont`.
+     *
+     * @param value value of the state: 0..5, anything else gives {@link SCREENSAVER_INFO_FONT_DEFAULT}
+     * @returns the font used
+     */
+    setInfoTextFont(value: unknown): ScreensaverInfoFont {
+        this._infoTextFont = screensaverInfoFont(value);
+        return this._infoTextFont;
+    }
+
+    /**
+     * A tap on the info icon next to the clock (TFT 6.2.0+ and web panels, `buttonPress2,bInfo,button,<taps>`):
+     * - standby brightness 0: the first touch only wakes the display ({@link onIndicatorWakeTap}), nothing else.
+     * - an icon of the adapter (timer, development firmware, firmware update): a popup with the small icon and a
+     *   translated explanation.
+     * - the icon of the user (`cmd.screenSaver.infoIcon`): `buttons.infoIcon` is always written, the popup with the
+     *   icon and {@link infoText} opens only when the text is not empty.
+     * The popup closes like any notification (cross or timeout) and brings the screensaver back.
+     *
+     * @param event the event of the panel
+     */
+    async onInfoIconTap(event: Types.IncomingEvent): Promise<void> {
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        if (this.onIndicatorWakeTap(event.opt)) {
+            return;
+        }
+        // the HMI clears a shown notification with every touch, as with a key of an indicator
+        this.onTouch(Screensaver.tapCount(event.opt));
+        const icon = this.shownInfoIcon;
+        if (!icon) {
+            this.log.debug('Tap on the info icon of the screensaver, but no icon is shown');
+            return;
+        }
+        let text = '';
+        let font = SCREENSAVER_INFO_FONT_DEFAULT;
+        if (icon.user) {
+            await this.library.writedp(
+                `panels.${this.basePanel.name}.buttons.infoIcon`,
+                true,
+                Definition.genericStateObjects.panel.panels.buttons.infoIcon,
+            );
+            text = this.infoText;
+            font = this._infoTextFont;
+        } else {
+            const key = SCREENSAVER_INFO_ICON_TEXTS[icon.name];
+            text = key ? this.library.getTranslation(key) : '';
+        }
+        if (!text) {
+            return;
+        }
+        await this.basePanel.statesControler.setInternalState(
+            `${this.basePanel.name}/cmd/popupNotificationCustom`,
+            JSON.stringify(
+                screensaverInfoNotification({
+                    icon: icon.name,
+                    // the color the icon has on the screensaver (color~ field tTimeAdd)
+                    iconColor: this.timeAddColor(),
+                    text,
+                    font,
+                    model: this.basePanel.info.nspanel.model,
+                }),
+            ),
+            false,
+        );
     }
 
     async HandleNotification(): Promise<void> {
@@ -1593,9 +1986,9 @@ export class Screensaver extends Page {
             return;
         }
         // only use valid notify entries
-        // format: type~int~icon~color~heading<sp!it>prio~text
+        // format: type~int~icon~color~heading<sp!it>prio<sp!it>buzzer<sp!it>blink~text
         // lower prio = higher priority
-        const notifyList = message.options.notify
+        const adminList: ScreensaverNotifyCandidate[] = message.options.notify
             .map(n => n.split('~'))
             .filter(n => n[4] !== '' || n[5] !== '')
             .map(n => {
@@ -1603,12 +1996,22 @@ export class Screensaver extends Page {
                 const { heading, text } = screensaverNotifyLines({ icon: n[2], headline: s[0], text: n[4] });
                 const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
                 const buzzer = s[2];
+                const blinkValue = parseInt(s[3] ?? '', 10);
+                const blink = Number.isInteger(blinkValue) && blinkValue >= 0 ? blinkValue : undefined;
                 const id = n[1];
-                return { heading, text, prio, id, buzzer };
+                return { heading, text, prio, id, buzzer, blink };
             })
             .sort((a, b) => (a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1));
+        // the queue of the sendTo with an id: wins a tie against the admin list
+        const notifyList = mergeScreensaverNotify(
+            this.notifyQueue.map(screensaverNotifyQueueCandidate).filter(n => n.heading !== '' || n.text !== ''),
+            adminList,
+        );
 
         if (this.customNotification === true) {
+            // set by sendTo/cmd, not configured: not throttled
+            this.clearNotifyContentTimer();
+            this.shownNotifyId = '';
             this.#sendNotify(this.customNotification, this.headingNotification, this.textNotification);
         } else if (notifyList.length > 0) {
             const heading = notifyList[0].heading;
@@ -1617,7 +2020,8 @@ export class Screensaver extends Page {
                 // the same text after a touch is no news
                 if (
                     this.activeNotifyId != notifyList[0].id &&
-                    this.lastSent.get('notify') !== this.notifyPayload(true, heading, text) &&
+                    this.lastSent.get('notify') !==
+                        this.notifyPayload(true, heading, text, notifyList[0].blink, notifyList[0].colors) &&
                     notifyList[0].buzzer &&
                     this.basePanel.dim.dayMode &&
                     this.basePanel.isBuzzerAllowed
@@ -1625,11 +2029,48 @@ export class Screensaver extends Page {
                     this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
                 }
                 this.activeNotifyId = notifyList[0].id;
-                this.#sendNotify(true, heading, text);
+                this.sendConfiguredNotify(notifyList[0].id, heading, text, notifyList[0].blink, notifyList[0].colors);
             }
         } else {
             this.activeNotifyId = '';
+            this.clearNotifyContentTimer();
             this.#sendNotify(false);
+        }
+    }
+
+    /**
+     * A notification of the sendTo `screensaverNotify` with an id: into the queue (or out of it), then the
+     * notification to show is chosen again.
+     *
+     * @param details the details of the sendTo
+     */
+    async setQueuedNotify(details: ScreensaverNotifyDetails): Promise<void> {
+        this.notifyQueue = applyScreensaverNotify(this.notifyQueue, details, ++this.notifyQueueSeq);
+        await this.HandleNotification();
+    }
+
+    /**
+     * A tap acknowledged an entry of the queue: it leaves the queue of this panel and of a web clone with the same
+     * name, with `global` of all panels.
+     *
+     * @param entry the acknowledged entry
+     */
+    private async removeQueuedNotify(entry: ScreensaverNotifyQueueEntry): Promise<void> {
+        this.notifyQueue = this.notifyQueue.filter(e => e.id !== entry.id);
+        const names = new Set<string>([this.basePanel.name]);
+        if (entry.global) {
+            for (const panel of this.basePanel.controller.panels) {
+                if (!panel.unload) {
+                    names.add(panel.name);
+                }
+            }
+        }
+        for (const name of names) {
+            await this.basePanel.statesControler.setInternalState(
+                `${name}/cmd/screensaverNotificationCustom`,
+                JSON.stringify({ id: entry.id, priority: -1 }),
+                false,
+            );
         }
     }
 
@@ -1669,8 +2110,16 @@ export class Screensaver extends Page {
     async deactivateNotify(): Promise<boolean> {
         if (this.activeNotifyId) {
             let dismissed = false;
-            const id = this.activeNotifyId.split('?')[1];
-            if (id && !isNaN(parseInt(id, 10))) {
+            const queueId = screensaverNotifyQueueId(this.activeNotifyId);
+            const id = queueId === undefined ? this.activeNotifyId.split('?')[1] : undefined;
+            if (queueId !== undefined) {
+                // an entry of the sendTo: only `acknowledge` leaves with the tap, `information` stays like before
+                const entry = this.notifyQueue.find(e => e.id === queueId);
+                if (entry?.acknowledge) {
+                    dismissed = true;
+                    await this.removeQueuedNotify(entry);
+                }
+            } else if (id && !isNaN(parseInt(id, 10))) {
                 const item = this.pageItems?.[parseInt(id, 10)];
                 if (item && item.config?.role === 'isDismissiblePerEvent') {
                     item.setDismissiblePerEvent();
@@ -1710,8 +2159,9 @@ export class Screensaver extends Page {
             this.timerTappedAway = true;
             this.lastTimerTap = now;
             await this.HandleTime();
-            // the HMI clears a notification by itself with every touch - it was not dismissed
+            // the HMI clears a notification by itself with every touch - it was not dismissed: shown again at once
             this.lastSent.delete('notify');
+            this.shownNotifyId = '';
             await this.HandleNotification();
             return true;
         }
@@ -1956,8 +2406,60 @@ export class Screensaver extends Page {
     }
 
     /**
-     * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`, sent while the finger is
-     * still down): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
+     * The `weatherUpdate` of a message of {@link getData}: favorit, left, bottom, alternate (behind an empty slot) and
+     * indicator slots, then the long press mask when the panel reads it ({@link sendsLongPressMask}).
+     *
+     * @param message the places favorit, left, bottom, alternate and indicator; alternate gets its empty slot here
+     * @returns the message
+     */
+    weatherPayload(message: pages.screensaverMessage): string {
+        if (message.options.alternate.length > 0) {
+            message.options.alternate.unshift(tools.getPayload('', '', '', '', '', ''));
+        }
+
+        const arr: string[] = [
+            ...(message.options.favorit || []),
+            ...(message.options.left || []),
+            ...(message.options.bottom || []),
+            ...(message.options.alternate || []),
+            ...(message.options.indicator || []),
+        ];
+
+        const msg = tools.getPayload('weatherUpdate', tools.getPayloadArray(arr));
+        if (!this.sendsLongPressMask()) {
+            return msg;
+        }
+        // one more field behind the last indicator slot, see INDICATOR_LONG_PRESS_MASK_MIN_VERSION
+        return tools.getPayload(msg, String(indicatorLongPressMask(message.indicatorLongPress ?? [])));
+    }
+
+    /**
+     * true when a long press of the indicator does something: a long press of its own, a popup
+     * ({@link hasIndicatorLongPress}) or only `buttons.indicatorLong-N` (`longPressTrigger`). From TFT 6.2.0 on only
+     * these indicators start the long press on the panel (long press mask of `weatherUpdate`).
+     *
+     * @param item the indicator item
+     */
+    supportsIndicatorLongPress(item: PageItem | undefined): boolean {
+        return this.hasIndicatorLongPress(item) || item?.config?.longPressTrigger === true;
+    }
+
+    /**
+     * true when `weatherUpdate` carries the long press mask: screensaver2 / screensaver5 on a web panel or a TFT
+     * {@link INDICATOR_LONG_PRESS_MASK_MIN_VERSION}+ (older TFTs and the other screensavers do not read it)
+     */
+    private sendsLongPressMask(): boolean {
+        const card = this.config?.card;
+        if (card !== 'screensaver2' && card !== 'screensaver5') {
+            return false;
+        }
+        return this.basePanel.isVirtual || this.basePanel.meetsVersion(INDICATOR_LONG_PRESS_MASK_MIN_VERSION);
+    }
+
+    /**
+     * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`; TFT 6.0.9 to 6.1.x send it
+     * while the finger is still down, the TFT 6.2.0 and the web panel when it is lifted): `buttons.indicatorLong-N` is
+     * always written; with `longPressTrigger` that is all; an indicator with a long press of its own runs it
      * ({@link PageItem.onCommandLongPress}) or opens its popup ({@link openIndicatorPopup}) - the short press is not
      * run then.
      *
@@ -1971,6 +2473,10 @@ export class Screensaver extends Page {
             return false;
         }
         await this.writeIndicatorButton(item, 'indicatorLong');
+        if (item.config?.longPressTrigger === true) {
+            // "only trigger the state": nothing else, also no tap
+            return true;
+        }
         const popupItem = this.longPressPopupItem(item);
         if (popupItem) {
             return this.openIndicatorPopup(popupItem);
@@ -1994,6 +2500,7 @@ export class Screensaver extends Page {
         if (this.updateThrottle) {
             this.adapter.clearTimeout(this.updateThrottle);
         }
+        this.clearNotifyContentTimer();
         if (this.blockButtons) {
             this.adapter.clearTimeout(this.blockButtons);
         }

@@ -52,6 +52,8 @@ const panelSettingStates = [
   { id: "screenSaver.rotationTime", type: "number" },
   { id: "screenSaver.doubleClick", type: "boolean" },
   { id: "screenSaver.infoIcon", type: "string" },
+  { id: "screenSaver.infoText", type: "string" },
+  { id: "screenSaver.infoTextFont", type: "number" },
   { id: "dim.standby", type: "number" },
   { id: "dim.active", type: "number" },
   { id: "dim.dayMode", type: "boolean" },

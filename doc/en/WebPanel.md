@@ -36,6 +36,7 @@ which the panels can be reached.
 | **Bind address** | Network interface the server listens on. `0.0.0.0` (default) = all. |
 | **Host name for the links** | Only used for the links in the admin, the address preview and the log message. Empty = the adapter detects it. With HTTPS enter the name from the certificate. |
 | **PIN**, **HTTPS**, **FIDO2** | see [section 6](#6-protecting-access-pin-https-security-key) |
+| **Web panel: allow extensions over the hardware panel** | **Off by default:** a web panel shows only what the hardware panel can — e.g. the large notification (popupNotify3) shows only its own icons there too, any other icon becomes `information-outline`. On: the web panel uses additional possibilities, currently every MDI icon in the large notification. |
 
 Every panel has its own address, built from its **topic**:
 
@@ -169,7 +170,9 @@ items per page. The editor shows the largest number; on panels with fewer places
 following pages."
 
 The **headline** of a page differs in width as well: it is shortened to 28 characters in landscape, 13 on
-US portrait, 16 on *Smartphone portrait* and 45 on *Smartphone landscape*; longer text ends with "…".
+US portrait, 16 on *Smartphone portrait* and 45 on *Smartphone landscape*; longer text ends with "…". Any other
+text that does not fit its field ends at the field border like on the panel – even in the middle of a letter; the
+web panel adds no "…" of its own.
 
 ### Places of the screensaver
 
@@ -205,9 +208,11 @@ The browser wraps the text itself; there is no fixed number of characters per li
 
 - **Tapping or clicking** acts like a press on the display — mouse and touch alike.
 - **Holding** (from about 0.6 seconds) is the long press: on a tile of a menu page a short press switches,
-  holding opens the detail popup — like on the real panel. On an **indicator of the screensaver** holding
-  fires the [action on long press](screensaver#action-on-long-press) after 0.5 seconds, [Open popup](screensaver#open-popup) included; unlike on the real
-  panel a movement of more than about 20 pixels cancels the long press.
+  holding opens the detail popup — like on the real panel. On an **indicator of the screensaver** with an action on long press the time
+  blinks yellow and green after 0.5 seconds of holding, and the release fires the
+  [action on long press](screensaver#action-on-long-press), [Open popup](screensaver#open-popup) included – like on the panel with the TFT 6.2.0; unlike on the real
+  panel a movement of more than about 20 pixels cancels the long press during the first 0.5 seconds. An indicator without such an action knows no
+  long press, letting go is a tap.
 - **The two hardware buttons** are bars below the display. They trigger the action configured for the
   buttons and set `panels.<panel>.buttons.left`/`right`. **They do not switch relays.** In the browser view
   of a real panel the bars are always there; on a standalone web panel the checkbox **Show hardware

@@ -35,6 +35,7 @@ describe('registry', () => {
             'popupTimer',
             'popupNotify',
             'popupNotify2',
+            'popupNotify3',
         ];
         for (const pageType of expected) {
             expect(registry[pageType], pageType).toBeDefined();

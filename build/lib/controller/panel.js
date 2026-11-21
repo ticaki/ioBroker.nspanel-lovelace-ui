@@ -32,7 +32,9 @@ __export(panel_exports, {
   readTempOffset: () => readTempOffset
 });
 module.exports = __toCommonJS(panel_exports);
+var import_screensaver_info_font = require("../const/screensaver-info-font");
 var import_panel_message = require("./panel-message");
+var import_latest_value_queue = require("../tools/latest-value-queue");
 var import_screensaver = require("../pages/screensaver");
 var globals = __toESM(require("../types/function-and-const"));
 var import_library = require("./library");
@@ -65,6 +67,9 @@ var import_page_states = require("../configuration/page-states");
 var import_default_pages = require("../const/default-pages");
 var import_no_script = require("../configuration/no-script");
 var import_berry_driver = require("../const/berry-driver");
+var import_popupNotify3 = require("../pages/popupNotify3");
+var import_screensaver_info_icon = require("../pages/screensaver-info-icon");
+var import_screensaver_notify_queue = require("../pages/screensaver-notify-queue");
 var import_display_diagnosis = require("./display-diagnosis");
 const DefaultOptions = {
   format: {
@@ -98,6 +103,16 @@ class Panel extends import_library.BaseClass {
   /** Origin per page id, collected in preInit and reported to the admin navigation view */
   pageOrigins = new import_page_origin.PageOriginTracker();
   _activePage = void 0;
+  /**
+   * `cmd.goToNavigationPoint`: one navigation at a time, values written meanwhile only keep the newest one -
+   * otherwise parallel page changes leave several pages visible.
+   */
+  goToNavigationPointQueue = new import_latest_value_queue.LatestValueQueue(
+    async (name) => this.navigation.setTargetPageByName(name),
+    (name, e) => {
+      this.log.error(`goToNavigationPoint ${name} failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  );
   data = {};
   /** hardware panel: drops repeated startup events, see handleStartup */
   blockStartup = null;
@@ -325,6 +340,13 @@ class Panel extends import_library.BaseClass {
     return this.options.kind === "web";
   }
   /**
+   * A web panel that may use extensions over the hardware panel (instance option webAllowExtensions), e.g.
+   * every MDI icon in popupNotify3. false for a hardware panel and when the option is off.
+   */
+  get webExtensionsAllowed() {
+    return this.isVirtual && this.adapter.config.webAllowExtensions === true;
+  }
+  /**
    * A web clone of a hardware panel: shares the states tree `panels.<name>` with it, so it
    * writes no `info.*`/`status` states and deletes nothing of the tree.
    */
@@ -546,7 +568,7 @@ class Panel extends import_library.BaseClass {
     }
   }
   init = async () => {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     if (this.unload || this.adapter.unload) {
       return;
     }
@@ -860,6 +882,31 @@ class Panel extends import_library.BaseClass {
       `panels.${this.name}.cmd.screenSaver.infoIcon`,
       (_e = (_d = this.screenSaver) == null ? void 0 : _d.infoIcon) != null ? _e : "",
       definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoText`);
+    if (state && typeof state.val === "string" && this.screenSaver) {
+      this.screenSaver.infoText = state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.infoText`,
+      (_g = (_f = this.screenSaver) == null ? void 0 : _f.infoText) != null ? _g : "",
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.infoText
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.infoTextFont`);
+    const infoTextFont = (_h = this.screenSaver) == null ? void 0 : _h.setInfoTextFont(state == null ? void 0 : state.val);
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.infoTextFont`,
+      infoTextFont != null ? infoTextFont : import_screensaver_info_font.SCREENSAVER_INFO_FONT_DEFAULT,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.infoTextFont
+    );
+    state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.clockBlink`);
+    if (state && state.val != null && this.screenSaver) {
+      this.screenSaver.clockBlink = !!state.val;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.clockBlink`,
+      (_j = (_i = this.screenSaver) == null ? void 0 : _i.clockBlink) != null ? _j : false,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink
     );
     if (this.buttons && this.screenSaver) {
       const entries = Object.entries(this.buttons);
@@ -1357,7 +1404,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
     if (state.ack) {
       return;
     }
@@ -1382,7 +1429,7 @@ class Panel extends import_library.BaseClass {
         }
         case "goToNavigationPoint": {
           if (typeof state.val === "string") {
-            await this.navigation.setTargetPageByName(state.val ? String(state.val) : import_default_pages.mainPageName);
+            await this.goToNavigationPointQueue.push(state.val ? String(state.val) : import_default_pages.mainPageName);
           }
           break;
         }
@@ -1496,10 +1543,32 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
-        case "screenSaver.activate": {
-          if (state.val) {
-            await this.activateScreensaver();
+        case "screenSaver.infoText": {
+          if (state && state.val != null && typeof state.val === "string" && this.screenSaver) {
+            this.screenSaver.infoText = state.val;
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoText`, state.val);
           }
+          break;
+        }
+        case "screenSaver.infoTextFont": {
+          if (state && this.screenSaver) {
+            const font = this.screenSaver.setInfoTextFont(state.val);
+            await this.library.writedp(`panels.${this.name}.cmd.screenSaver.infoTextFont`, font);
+          }
+          break;
+        }
+        case "screenSaver.clockBlink": {
+          if (state && state.val != null) {
+            await this.statesControler.setInternalState(
+              `${this.name}/cmd/screensaverClockBlink`,
+              !!state.val,
+              false
+            );
+          }
+          break;
+        }
+        case "screenSaver.activate": {
+          await this.activateScreensaver();
           await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver.activate`,
             false,
@@ -1528,11 +1597,21 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "buttons.left": {
-          await this.onDetachButtonEvent("left");
+          await this.onDetachButtonEvent("left", true);
+          await this.library.writedp(
+            `panels.${this.name}.cmd.buttons.left`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.buttons.left
+          );
           break;
         }
         case "buttons.right": {
-          await this.onDetachButtonEvent("right");
+          await this.onDetachButtonEvent("right", true);
+          await this.library.writedp(
+            `panels.${this.name}.cmd.buttons.right`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.buttons.right
+          );
           break;
         }
         case "screenSaver.layout": {
@@ -1638,11 +1717,14 @@ class Panel extends import_library.BaseClass {
             ),
             icon: ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)) == null ? void 0 : _o.val) || void 0,
             textSize: String((_q = (_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _p.val) != null ? _q : 3),
+            largeIcon: ((_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.largeIcon`)) == null ? void 0 : _r.val) === true,
+            buttonLeftIcon: ((_s = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonLeftIcon`)) == null ? void 0 : _s.val) || void 0,
+            buttonRightIcon: ((_t = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buttonRightIcon`)) == null ? void 0 : _t.val) || void 0,
             iconColor: (0, import_tools.getRGBFromValue)(
-              ((_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _r.val) || "#FFFFFF"
+              ((_u = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _u.val) || "#FFFFFF"
             ),
-            alwaysOn: !!((_t = (_s = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _s.val) != null ? _t : true),
-            buzzer: !!((_v = (_u = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _u.val) != null ? _v : false)
+            alwaysOn: !!((_w = (_v = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _v.val) != null ? _w : true),
+            buzzer: !!((_y = (_x = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _x.val) != null ? _y : false)
           };
           let panels = [this];
           if (global) {
@@ -1655,6 +1737,11 @@ class Panel extends import_library.BaseClass {
               false
             );
           }
+          await this.library.writedp(
+            `panels.${this.name}.cmd.pagePopup.activate`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.pagePopup.activate
+          );
           break;
         }
         case "isBuzzerAllowed": {
@@ -2260,7 +2347,7 @@ class Panel extends import_library.BaseClass {
         if (event.id == "screensaver") {
           await this.onScreensaverTouch(event);
         } else if (event.action === "bExit") {
-          if (event.id !== "popupNotify") {
+          if (event.id !== "popupNotify" && event.id !== import_popupNotify3.POPUP_NOTIFY3) {
             await this.setActivePage(true);
           } else {
             const currentPage = this.getActivePage();
@@ -2286,7 +2373,14 @@ class Panel extends import_library.BaseClass {
             }
             break;
           }
+          if (this._activePage === this.screenSaver && event.id === import_screensaver_info_icon.SCREENSAVER_INFO_ICON_ID && event.action === "button") {
+            await this.screenSaver.onInfoIconTap(event);
+            break;
+          }
           if (this._activePage === this.screenSaver && event.action === "button" && event.opt !== "" && this.screenSaver.isIndicatorEvent(event)) {
+            if (this.screenSaver.onIndicatorWakeTap(event.opt)) {
+              break;
+            }
             if (event.method === "buttonPress3" && await this.screenSaver.onIndicatorLongPress(event)) {
               break;
             }
@@ -2346,10 +2440,27 @@ class Panel extends import_library.BaseClass {
       }
     }
   }
-  onDetachButtonEvent = async (button) => {
+  /**
+   * A hardware button was pressed: on the display, in the browser or through the state `cmd.buttons.<side>`.
+   *
+   * The state `cmd.buttons.<side>` reaches the hardware panel and its web clone alike (both share the states tree
+   * `panels.<name>`). For such a shared press the clone only follows with the modes that act on its own display
+   * (`page`, `navigation`) - the modes writing a foreign state and the state `buttons.<side>` are left to the
+   * hardware panel, else the action would run twice. A press in the browser reaches only the clone and runs in full.
+   *
+   * @param button which button
+   * @param shared the press comes from the state `cmd.buttons.<side>` that every panel of this name gets
+   */
+  async onDetachButtonEvent(button, shared = false) {
     const action = this.buttons ? button === "left" ? this.buttons.left : this.buttons.right : null;
-    await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
+    const ownDisplayOnly = shared && this.isClone;
+    if (!ownDisplayOnly) {
+      await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
+    }
     if (action) {
+      if (ownDisplayOnly && action.mode !== "page" && action.mode !== "navigation") {
+        return;
+      }
       switch (action.mode) {
         case "button": {
           if (typeof action.state === "string") {
@@ -2363,6 +2474,10 @@ class Panel extends import_library.BaseClass {
           if (typeof action.page === "string") {
             await this.navigation.setTargetPageByName(action.page);
           }
+          break;
+        }
+        case "navigation": {
+          await this.navigateByButton(action.target);
           break;
         }
         case "switch": {
@@ -2404,7 +2519,64 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
-  };
+  }
+  /**
+   * Hardware button in mode 'navigation': one press acts like the matching navigation arrow of the page shown -
+   * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long. The arrow
+   * keeps its rules (`Navigation.go`): with only one of its two targets set the short press leads there as well,
+   * with none nothing happens; a menu page with more entries than it shows turns its pages first.
+   *
+   * An open popup is closed first and the navigation starts from the page below it, all in one press: the detail
+   * popup of a card page (the page sleeps below it), a notification (`popupNotify`/`popupNotify3`, like its exit
+   * button: reminder started, back to the page it came from) and a child page (back to its parent page).
+   * The screensaver is never left: a popup on top of it (the popup of an indicator, a notification) is closed like
+   * with its exit button and the screensaver is shown again - no navigation. Without a popup nothing happens.
+   *
+   * @param target which arrow the button presses
+   */
+  async navigateByButton(target) {
+    let page = this._activePage;
+    if (!page) {
+      return;
+    }
+    if (page === this.screenSaver) {
+      if (page.sleep) {
+        await this.setActivePage(true);
+      }
+      return;
+    }
+    if (page.sleep) {
+      await this.setActivePage(true);
+      page = this._activePage;
+    }
+    if (page instanceof import_pagePopup.PagePopup) {
+      const last = page.getLastPage();
+      if (!last) {
+        this.log.debug(`Hardware button navigation: popup ${page.name} has no page to go back to`);
+        return;
+      }
+      page.startReminder();
+      page.removeLastPage(last);
+      await this.setActivePage(last);
+      page = this._activePage;
+      if (page === this.screenSaver) {
+        return;
+      }
+    }
+    if (page && page.directParentPage) {
+      await this.setActivePage(page.directParentPage, false);
+      page = this._activePage;
+    }
+    if (!page || page === this.screenSaver) {
+      return;
+    }
+    const short = target === "next" || target === "prev";
+    if (target === "next" || target === "home") {
+      page.goRight(short);
+    } else {
+      page.goLeft(short);
+    }
+  }
   _sendtempOffsetToPanel(value) {
     var _a;
     if (this.unload || this.adapter.unload || !this.isOnline || this.isVirtual) {
@@ -2422,8 +2594,21 @@ class Panel extends import_library.BaseClass {
   }
   sendtempOffsetToPanel(_value) {
   }
+  /**
+   * `cmd/bigIconLeft`/`Right`: switches the big status icon and redraws the screensaver icons. A web
+   * clone gets the command as well (see onInternalCommand) - its own display follows, but info.* belongs
+   * to the hardware panel, writeInfo skips the clone.
+   *
+   * @param side the icon
+   * @param val shown big or not
+   */
+  async setBigIcon(side, val) {
+    this.info.nspanel[`bigIcon${side}`] = val;
+    this.screenSaver && await this.screenSaver.HandleScreensaverStatusIcons();
+    await this.writeInfo();
+  }
   onInternalCommand = async (id, state) => {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     if (!id.startsWith(this.name)) {
       return null;
     }
@@ -2458,25 +2643,11 @@ class Panel extends import_library.BaseClass {
           break;
         }
         case "cmd/bigIconLeft": {
-          this.info.nspanel.bigIconLeft = !!state.val;
-          this.screenSaver && await this.screenSaver.HandleScreensaverStatusIcons();
-          await this.library.writeFromJson(
-            `panels.${this.name}.info`,
-            "panel.panels.info",
-            definition.genericStateObjects,
-            this.info
-          );
+          await this.setBigIcon("Left", !!state.val);
           break;
         }
         case "cmd/bigIconRight": {
-          this.info.nspanel.bigIconRight = !!state.val;
-          this.screenSaver && await this.screenSaver.HandleScreensaverStatusIcons();
-          await this.library.writeFromJson(
-            `panels.${this.name}.info`,
-            "panel.panels.info",
-            definition.genericStateObjects,
-            this.info
-          );
+          await this.setBigIcon("Right", !!state.val);
           break;
         }
         case "cmd/screenSaverTimeout": {
@@ -2700,6 +2871,32 @@ class Panel extends import_library.BaseClass {
           }
           break;
         }
+        case "cmd/screensaverNotificationCustom": {
+          if (this.screenSaver && typeof state.val === "string") {
+            let message = void 0;
+            try {
+              message = JSON.parse(state.val);
+            } catch {
+              this.log.warn(`Invalid screensaver notification: ${state.val}`);
+            }
+            const details = (0, import_screensaver_notify_queue.parseScreensaverNotifyDetails)(message);
+            if (details) {
+              await this.screenSaver.setQueuedNotify(details);
+            }
+          }
+          break;
+        }
+        case "cmd/screensaverClockBlink": {
+          if (this.screenSaver) {
+            this.screenSaver.clockBlink = !!state.val;
+            await this.library.writedp(
+              `panels.${this.name}.cmd.screenSaver.clockBlink`,
+              !!state.val,
+              definition.genericStateObjects.panel.panels.cmd.screenSaver.clockBlink
+            );
+          }
+          break;
+        }
         case "cmd/screensaverTextNotification": {
           if (this.screenSaver && typeof state.val === "string") {
             this.screenSaver.textNotification = state.val;
@@ -2839,6 +3036,9 @@ ${this.info.tasmota.onlineVersion}`;
       case "cmd/screenSaverInfoIcon": {
         return (_b = (_a = this.screenSaver) == null ? void 0 : _a.infoIcon) != null ? _b : "";
       }
+      case "cmd/screensaverClockBlink": {
+        return (_d = (_c = this.screenSaver) == null ? void 0 : _c.clockBlink) != null ? _d : false;
+      }
       case "cmd/screenSaverLayout": {
         if (this.screenSaver) {
           return import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode);
@@ -2846,7 +3046,7 @@ ${this.info.tasmota.onlineVersion}`;
         break;
       }
       case "info/PopupInfo": {
-        return (_c = this.data["info/PopupInfo"]) != null ? _c : null;
+        return (_e = this.data["info/PopupInfo"]) != null ? _e : null;
       }
       case "cmd/hideCards": {
         return this.hideCards;
@@ -3194,6 +3394,9 @@ ${this.info.tasmota.onlineVersion}`;
       };
       if ((_c = this.options.generatedPageIds) == null ? void 0 : _c.includes(nav.page.name)) {
         navMap.generated = true;
+      }
+      if (nav.page.hidden) {
+        navMap.hidden = true;
       }
       if (origin === "script" || origin === "global") {
         const scriptLinks = (_d = this.options.scriptNavigationLinks) == null ? void 0 : _d[nav.page.name];

@@ -4,6 +4,7 @@ import * as globals from '../types/function-and-const';
 import type { PagePopupDataDetails } from '../types/pages';
 import type { RGB } from './Color';
 import { panelStatusStates } from '../types/adminShareConfig';
+import { SCREENSAVER_INFO_FONT_DEFAULT, SCREENSAVER_INFO_FONT_STATES } from './screensaver-info-font';
 
 /*type ChangeTypeToChannelAndState<Obj> = Obj extends object
     ? {
@@ -57,6 +58,9 @@ export const genericStateObjects: {
                 };
                 screenSaver: customChannelType & {
                     infoIcon: ioBroker.StateObject;
+                    infoText: ioBroker.StateObject;
+                    infoTextFont: ioBroker.StateObject;
+                    clockBlink: ioBroker.StateObject;
                     timeout: ioBroker.StateObject;
                     doubleClick: ioBroker.StateObject;
                     layout: Omit<ioBroker.StateObject, 'common'> & {
@@ -90,6 +94,7 @@ export const genericStateObjects: {
                 right: ioBroker.StateObject;
                 indicator: ioBroker.StateObject;
                 indicatorLong: ioBroker.StateObject;
+                infoIcon: ioBroker.StateObject;
                 screensaverGesture: ioBroker.StateObject;
             };
             pagePopup: customChannelType & {
@@ -304,6 +309,19 @@ export const genericStateObjects: {
                         name: 'StateObjects.buttons.indicatorLong',
                         type: 'boolean',
                         role: 'button.long',
+                        read: true,
+                        write: false,
+                        def: true,
+                    },
+                    native: {},
+                },
+                infoIcon: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.buttons.infoIcon',
+                        type: 'boolean',
+                        role: 'button.press',
                         read: true,
                         write: false,
                         def: true,
@@ -531,6 +549,49 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: '',
+                        },
+                        native: {},
+                    },
+                    infoText: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.infoText',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    infoTextFont: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.infoTextFont',
+                            type: 'number',
+                            role: 'level',
+                            read: true,
+                            write: true,
+                            def: SCREENSAVER_INFO_FONT_DEFAULT,
+                            min: 0,
+                            max: 5,
+                            step: 1,
+                            states: { ...SCREENSAVER_INFO_FONT_STATES },
+                        },
+                        native: {},
+                    },
+                    clockBlink: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.clockBlink',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                            def: false,
                         },
                         native: {},
                     },
@@ -998,9 +1059,18 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: 3,
-                            min: 1,
-                            max: 5,
+                            min: 0,
+                            max: 8,
                             step: 1,
+                            states: {
+                                0: '24px text',
+                                1: '32px icons+text',
+                                2: '32px text',
+                                3: '48px icons+text',
+                                4: '80px bold icons+text',
+                                5: '128px bold ASCII',
+                                8: '96px bold ASCII (clock)',
+                            },
                         },
                         native: {},
                     },
@@ -1027,6 +1097,45 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: JSON.stringify({ r: 255, g: 255, b: 255 }),
+                        },
+                        native: {},
+                    },
+                    largeIcon: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'largeIcon',
+                            type: 'boolean',
+                            role: 'switch',
+                            read: true,
+                            write: true,
+                            def: false,
+                        },
+                        native: {},
+                    },
+                    buttonLeftIcon: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'buttonLeftIcon',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
+                        },
+                        native: {},
+                    },
+                    buttonRightIcon: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'buttonRightIcon',
+                            type: 'string',
+                            role: 'text',
+                            read: true,
+                            write: true,
+                            def: '',
                         },
                         native: {},
                     },
@@ -2426,6 +2535,28 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
             },
         },
         'cmd/screensaverActivateNotification': {
+            val: false,
+            ack: true,
+            common: {
+                name: '',
+                type: 'boolean',
+                role: 'switch',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/screensaverNotificationCustom': {
+            val: JSON.stringify({}),
+            ack: true,
+            common: {
+                name: '',
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: true,
+            },
+        },
+        'cmd/screensaverClockBlink': {
             val: false,
             ack: true,
             common: {

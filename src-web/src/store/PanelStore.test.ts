@@ -70,6 +70,12 @@ describe('PanelStore', () => {
         expect(sent).toEqual(['ack']);
     });
 
+    it('does not send renderCurrentPage for popupNotify3', () => {
+        const { store, sent } = makeStore();
+        store.dispatch('pageType~popupNotify3');
+        expect(sent).toEqual(['ack']);
+    });
+
     it('sends the startup event after hello (reset) and again on pageType~pageStartup', () => {
         const { store, sent } = makeStore();
         store.reset('us-p', '1.0.0');
@@ -357,6 +363,15 @@ describe('PanelStore', () => {
         expect(sent).toEqual(['recv:event,buttonPress2,light.x,bExit']);
         expect(store.getSnapshot().page.pageType).toBe('cardGrid');
         store.dispatch('pageType~popupNotify');
+        sent.length = 0;
+        vi.advanceTimersByTime(60_000);
+        expect(sent).toEqual([]);
+    });
+
+    it('leaves the own timeout of popupNotify3 to the page', () => {
+        const { store, sent } = makeStore();
+        store.dispatch('timeout~5');
+        store.dispatch('pageType~popupNotify3');
         sent.length = 0;
         vi.advanceTimersByTime(60_000);
         expect(sent).toEqual([]);

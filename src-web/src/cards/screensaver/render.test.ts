@@ -83,3 +83,28 @@ describe('screensaver tiles with an icon font ¬<n>', () => {
         expect(part(html, 'indicator1')).toContain('top:26px;left:24px');
     });
 });
+
+describe('screensaver info icon next to the clock', () => {
+    /**
+     * markup of the standard screensaver
+     *
+     * @param timeIcon glyph of `time~HH:MM~icon`
+     */
+    function standard(timeIcon: string): string {
+        return renderToStaticMarkup(
+            React.createElement(Screensaver, {
+                model: initial(),
+                ctx: { pageType: 'screensaver', pageArgs: [] },
+                global: { ...initialGlobalState('eu'), time: '12:34', timeIcon },
+                send: () => undefined,
+                press: () => undefined,
+                openPopup: () => undefined,
+            }),
+        );
+    }
+
+    it('is a touch area of its own only while an icon is shown', () => {
+        expect(standard(BULB)).toContain('data-role="infoIcon"');
+        expect(standard('')).not.toContain('data-role="infoIcon"');
+    });
+});

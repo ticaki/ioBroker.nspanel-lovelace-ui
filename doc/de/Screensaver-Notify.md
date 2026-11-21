@@ -9,6 +9,7 @@ Wie der Bildschirmschoner selbst angelegt wird, steht unter [Screensaver im Admi
 Inhalt:
 - [Die Liste](#1-die-liste)
 - [Inhalt: Überschrift und Text](#2-inhalt-überschrift-und-text)
+  - [Wann sich die Meldung am Panel ändert](#wann-sich-die-meldung-am-panel-ändert)
 - [Wann anzeigen: Datenpunkte und Bedingung](#3-wann-anzeigen-datenpunkte-und-bedingung)
 - [Priorität: welche Meldung das Panel zeigt](#4-priorität-welche-meldung-das-panel-zeigt)
 - [Quittieren und Gruppen-ID](#5-quittieren-und-gruppen-id)
@@ -16,6 +17,9 @@ Inhalt:
 - [Vorschau und was der Dialog prüft](#7-vorschau-und-was-der-dialog-prüft)
 - [Speichern – was der Adapter daraus macht](#8-speichern--was-der-adapter-daraus-macht)
 - [Wenn etwas nicht wie erwartet aussieht](#9-wenn-etwas-nicht-wie-erwartet-aussieht)
+- [Farben: Überschrift, Text und Hintergrund](#10-farben-überschrift-text-und-hintergrund)
+  - [Hintergrund blinkt](#hintergrund-blinkt)
+- [Per Skript: sendTo `screensaverNotify`](#11-per-skript-sendto-screensavernotify)
 
 ## 1. Die Liste
 ![Der Screensaver-Editor mit der Knopfleiste unter dem Panelbild](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
@@ -63,8 +67,25 @@ Ganz oben im Dialog steht die **Beschreibung**, darunter die Vorschau, dann der 
 
 > ⚠️ Ob ein Feld als Text oder als Datenpunkt gilt, entscheidet allein, **ob es die ID wirklich gibt**. Ein Tippfehler in der ID landet unbemerkt als Text auf dem Panel; gewarnt wird nicht. Dasselbe gilt für eine ID, die auf einen Punkt endet (`pirate-weather.0.` statt `pirate-weather.0.temperature`) – sie wird nie als Datenpunkt erkannt. Die [Vorschau](#7-vorschau-und-was-der-dialog-prüft) ist die Probe aufs Exempel: Steht dort der Wert, wurde die ID erkannt.
 
+### Wann sich die Meldung am Panel ändert
+
+Ändert sich der Wert eines Datenpunkts in **einem** der Inhaltsfelder – Icon vor der Überschrift, Überschrift-Präfix, Überschrift, Überschrift-Einheit, Text-Präfix, Text oder Text-Suffix –, schickt der Adapter die Meldung mit dem neuen Inhalt ans Panel.
+
+| Was sich ändert | Wann es am Panel ankommt |
+|---|---|
+| **Inhalt** der angezeigten Meldung | **Höchstens alle 30 Sekunden.** Liegt das letzte Senden länger zurück, sofort; sonst einmal am Ende der 30 Sekunden mit den Werten von dann. Zwischenstände entfallen. So überflutet ein Wert, der sich sekündlich ändert (etwa eine Spannung), das Panel nicht. Die 30 Sekunden laufen **je Panel** – zwei Panels mit derselben Meldung bremsen sich nicht gegenseitig. |
+| **An/Aus** über die Datenpunkte und die Bedingung aus [Abschnitt 3](#3-wann-anzeigen-datenpunkte-und-bedingung) | **Sofort:** die Meldung erscheint oder verschwindet, und eine andere Meldung kommt durch ihre [Priorität](#4-priorität-welche-meldung-das-panel-zeigt) sofort an die Reihe. |
+
+> **Weggetippt bleibt weggetippt.** Jede Berührung des Bildschirmschoners blendet die Meldung am Panel aus – das macht das Display selbst. Bleibt der Bildschirmschoner dabei stehen (etwa bei einem Wisch oder einem einzelnen Tipp mit eingeschaltetem Doppelklick), bleibt die Meldung auch bei neuem Inhalt ausgeblendet. Sie kommt zurück, wenn der Bildschirmschoner das nächste Mal erscheint, also nach dem nächsten Abdunkeln. Kommt über ihre Datenpunkte eine andere Meldung an die Reihe, erscheint diese sofort. Steht die Standby-Helligkeit des gerade geltenden Modus (Tag oder Nacht) auf 0, hat der erste Tipp auf das dunkle Display nichts ausgeblendet – dann kommt auch neuer Inhalt weiter an.
+
+Als neuer Inhalt zählt auch eine **neue Farbe**: Wechselt eine angezeigte Meldung ihre Schrift-, Hintergrund- oder Blinkfarbe, wird dieser Wechsel genauso gebremst wie ein neuer Text. Und ist der Bildschirmschoner gerade gar nicht zu sehen, weil das Panel auf einer anderen Seite steht, verfällt ein am Ende der 30 Sekunden fälliger Nachtrag – verloren ist dadurch nichts, denn sobald der Bildschirmschoner wieder erscheint, schickt der Adapter alles neu.
+
+Eine **quittierte** Meldung bleibt ausgeblendet, auch wenn sich ihr Inhalt ändert – sie kommt erst wieder, wenn ihr Datenpunkt aus- und wieder angeht (siehe [Quittieren](#5-quittieren-und-gruppen-id)).
+
+Eine Meldung, die per `sendTo` (`screensaverNotify`) **ohne `id`** oder über `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` gesetzt wird, ist nicht im Admin konfiguriert und wird nicht gebremst. Eine Meldung per `sendTo` **mit `id`** wird gebremst wie eine aus der Liste, siehe [Per Skript](#11-per-skript-sendto-screensavernotify).
+
 ## 3. Wann anzeigen: Datenpunkte und Bedingung
-![Datenpunkte, Bedingung, Priorität, Quittieren und Summer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+![Der untere Teil des Dialogs: Datenpunkte, Bedingung, Priorität, Quittieren, Gruppen-ID, Summer und der Abschnitt Blinken mit dem Haken „Hintergrund blinkt“](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
 
 | Feld | Wirkung |
@@ -102,7 +123,7 @@ Das Panel zeigt **immer nur eine** Benachrichtigung. Sind mehrere gleichzeitig a
 
 Drei Möglichkeiten: **Aus**, **Standard** (`1,2,3,0xF54`) oder **Eigene Tonfolge**. Bei „Eigene“ ist das Feld **Tonfolge** Pflicht; es nimmt die Argumente des Tasmota-Befehls `Buzzer` in der Form *Anzahl,an,aus,Melodie*. Leerzeichen am Rand schneidet der Admin beim Übernehmen weg.
 
-Der Summer ertönt nur, **wenn die angezeigte Benachrichtigung wechselt** – nicht wiederholt, solange dieselbe Meldung steht. Außerdem schweigt er im **Nachtmodus** (`panels.<Panel>.cmd.dim.dayMode` aus) und wenn `panels.<Panel>.cmd.isBuzzerAllowed` aus ist; dieser State ist beschreibbar und steht von Haus aus auf `true`.
+Der Summer ertönt nur, **wenn die angezeigte Benachrichtigung wechselt** – nicht wiederholt, solange dieselbe Meldung steht, auch nicht, wenn sich ihr Inhalt ändert. Außerdem schweigt er im **Nachtmodus** (`panels.<Panel>.cmd.dim.dayMode` aus) und wenn `panels.<Panel>.cmd.isBuzzerAllowed` aus ist; dieser State ist beschreibbar und steht von Haus aus auf `true`.
 
 > Auf einem [Web-Panel](WebPanel) erscheint dieselbe Meldung. Der Summer ist der einzige Tasmota-Befehl, den der Adapter an den Browser durchreicht – dort spielt ihn der Browser ab, allerdings erst, nachdem im Browser einmal getippt wurde.
 
@@ -149,6 +170,80 @@ Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Te
 - **Ein Tipp auf den Bildschirmschoner tut nichts:** Es lag eine quittierbare Benachrichtigung darüber – der erste Tipp hat sie quittiert, der nächste führt weiter. Bleibt das Panel auch bei einer **nicht** quittierbaren Meldung im Bildschirmschoner, läuft noch 2.2.0 oder älter; siehe [Quittieren](#5-quittieren-und-gruppen-id).
 - **Eine gelöschte Benachrichtigung taucht wieder auf:** Nicht gelöscht, nur nicht mehr angehakt. Ein gelöschter Bildschirmschoner nimmt seine Benachrichtigungen nicht mit – sie stehen weiter in der gemeinsamen Liste.
 - **Quittieren wirkt auf mehr als gedacht:** Benachrichtigungen mit derselben **Gruppen-ID** werden gemeinsam ausgeblendet, auch auf anderen Panels.
+- **Ein Wert auf dem Panel hinkt hinterher:** Neuer Inhalt derselben Meldung kommt höchstens alle 30 Sekunden ans Panel, siehe [Wann sich die Meldung am Panel ändert](#wann-sich-die-meldung-am-panel-ändert). Wurde die Meldung weggetippt, erscheint sie erst nach dem nächsten Abdunkeln wieder.
 - **Der Summer bleibt still:** Nachtmodus, `cmd.isBuzzerAllowed` aus – oder die angezeigte Meldung hat gar nicht gewechselt.
 - **Die Überschrift wird falsch umbrochen:** Die Zeichenfolge `<sp!it>` darf im Text nicht vorkommen, der Adapter trennt daran intern die Zeilen. Ein `~` im Text wird durch `-` ersetzt.
 - **Eine Änderung taucht auf einem anderen Bildschirmschoner auf:** Die Liste ist gemeinsam – siehe „Auch verwendet von“ in der Zeile. Vor einer abweichenden Fassung erst **Duplizieren**.
+- **Der Hintergrund blinkt nicht:** Das kann erst TFT 6.2.0 (und das Web-Panel), und nur bei einer Benachrichtigung mit Haken **Hintergrund blinkt** – siehe [Hintergrund blinkt](#hintergrund-blinkt).
+
+## 10. Farben: Überschrift, Text und Hintergrund
+
+Die Farben der Schlagzeile stellt nicht der Dialog ein, sondern das [Farbthema](colorTheme#farben-der-schlagzeile) der Instanz. Sie gelten für alle Benachrichtigungen und auch für eine Schlagzeile, die ein Skript per `sendTo` oder über `cmd` setzt – nur eine Meldung per `sendTo` mit `id` kann mit `colorHeadline`/`colorText` eigene Schriftfarben mitbringen.
+
+| Farbe | Bedeutung |
+|---|---|
+| **Überschrift** | Schriftfarbe der oberen Zeile. Im Admin: **Schlagzeile Überschrift**. |
+| **Text** | Schriftfarbe der Zeile darunter. Im Admin: **Schlagzeile Text**. |
+| **Hintergrund** | Fläche hinter beiden Zeilen, damit sich die Schlagzeile vom Bildschirmschoner abhebt. Sie reicht über die volle Breite von der Überschrift bis zum unteren Rand des Displays, soweit darunter nichts sichtbar bleibt. Bleibt dort etwas stehen – die Leiste mit den Symbolen beim erweiterten Screensaver, die Farbbalken bei EasyView und den Kacheln, beim US-Hochformat die untere Zeile des Standard-Bildschirmschoners –, endet sie davor; das hängt am Modell. Im Admin: **Schlagzeile Hintergrund**. |
+
+Mit den fertigen Themen sind Überschrift und Text weiß wie bisher; der Hintergrund ist der Hintergrund des Bildschirmschoners, leicht aufgehellt – beim Standardthema Grau (RGB 56/56/56). Eigene Werte gibt es mit dem Farbthema **Benutzer Farben** im Bereich **Screensaver**.
+
+> **Den Hintergrund zeigt erst TFT 6.2.0.** Ältere TFTs zeigen die Schlagzeile weiter auf dem Hintergrund des Bildschirmschoners, Überschrift- und Textfarbe übernehmen sie. Das [Web-Panel](WebPanel) zeichnet die Fläche wie die TFT.
+
+### Hintergrund blinkt
+
+Eine einzelne Benachrichtigung kann zusätzlich auf sich aufmerksam machen: Ihr Hintergrund wechselt dann jede Sekunde zwischen dem Hintergrund aus dem Farbthema und einer zweiten Farbe. Eingestellt wird das im Dialog der Benachrichtigung, im Abschnitt **Blinken** unter dem Summer:
+
+| Feld | Bedeutung |
+|---|---|
+| **Hintergrund blinkt** | Schaltet das Blinken für diese Benachrichtigung ein. Ohne Haken blinkt nichts. |
+| **Zweite Farbe** | Erscheint mit dem Haken, vorbelegt mit Dunkelrot (`#9c201a`). Die erste Farbe ist immer der Hintergrund aus dem Farbthema. |
+
+![Die Schlagzeile am Panel: Ihr Hintergrund wechselt zwischen dem Grau des Farbthemas und der zweiten Farbe (animiert)](../Pictures/screensaverAdmin/notify-04-blinken.gif)
+
+Das Panel blinkt selbst – der Adapter schickt die Meldung nur einmal. Das Blinken endet, sobald die Benachrichtigung verschwindet (Datenpunkt aus, weggetippt) oder eine andere ohne Blinken an ihre Stelle tritt.
+
+> **Nur ab TFT 6.2.0 und auf dem Web-Panel.** Ältere TFTs zeigen gar keinen Hintergrund und damit auch kein Blinken. Eine Schlagzeile, die ein Skript per `sendTo` ohne `id` oder über `cmd` setzt, blinkt nie; per `sendTo` mit `id` blinkt sie mit `backgroundBlink`.
+
+## 11. Per Skript: sendTo `screensaverNotify`
+
+Ein Skript oder ein anderer Adapter kann eine Schlagzeile auch per `sendTo` setzen. Die Nachricht versteht weitgehend dieselben Felder wie das Popup (`setPopupNotification`, siehe [Popup](pagePopup)), dieselbe JSON kann also an beide gehen. Antwort: `{ result: 'ok' }` oder `{ error: 'sendToAnyError' }` (kein Panel gefunden).
+
+```js
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', {
+    id: 'waschmaschine',
+    priority: 40,
+    headline: 'Waschmaschine',
+    text: 'fertig',
+    icon: 'washing-machine',
+    type: 'acknowledge',
+    buzzer: true,
+});
+// entfernen
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { id: 'waschmaschine', priority: 0 });
+```
+
+| Feld | Bedeutung |
+|---|---|
+| `panel` | Ziel: Name, Anzeigename oder MQTT-Topic des Panels, ein String oder ein Array. **Fehlt es, gilt die Meldung für alle Panels.** |
+| `id` | Kennung der Meldung. **Mit `id`** kommt die Meldung in eine Warteschlange des Panels (siehe unten), **ohne `id`** gilt der alte Weg. |
+| `priority` | Nur mit `id`. Kleiner = wichtiger, Standard **50**. `<= 0` entfernt die Meldung mit dieser `id`, `<= -100` alle Meldungen, deren `id` damit beginnt. |
+| `headline` | Überschrift; `heading` wird ebenso angenommen (`heading` hat beim alten Weg Vorrang, `headline` beim neuen). |
+| `text` | Zweite Zeile. |
+| `enabled` | Alter Weg: `true` zeigt die Meldung, fehlt oder `false` schaltet sie aus. Mit `id`: `false` entfernt die Meldung. |
+| `icon` | Nur mit `id`. MDI-Name, steht wie das Symbol der Liste vor der Überschrift. |
+| `colorHeadline`, `colorText` | Nur mit `id`. Schriftfarbe als `{r,g,b}` oder `"#rrggbb"` statt der Farbe aus dem Farbthema. |
+| `backgroundBlink` | Nur mit `id`. `"#rrggbb"`: zweite Hintergrundfarbe, siehe [Hintergrund blinkt](#hintergrund-blinkt). |
+| `buzzer` | Nur mit `id`. `true` = Standardton, ein String = eigene Tonfolge – wie beim [Summer](#6-summer) der Liste (nicht nachts, nur mit `cmd.isBuzzerAllowed`). |
+| `type` | Nur mit `id`. `acknowledge`: Antippen entfernt die Meldung aus der Warteschlange und nimmt den Tipp wie eine quittierbare Meldung der Liste. `information` (Standard): Antippen wirkt wie bei einer Meldung ohne Quittieren. |
+| `global` | Nur mit `id` und `acknowledge`: Quittieren auf einem Panel entfernt die Meldung auf allen Panels. Standard: ja, wenn die Meldung an mehrere Panels ging. |
+
+Felder nur für das Popup (Tasten, `largeIcon`, `iconColor`, `textSize`, `alwaysOn`) werden ohne Fehler übergangen.
+
+**Mit `id` – die Warteschlange:**
+
+- Je Panel höchstens 10 Meldungen; dieselbe `id` ersetzt die vorige. Nach einem Neustart des Adapters ist sie leer.
+- Sie wird mit den aktiven Meldungen der Liste gemischt: Es gewinnt die kleinste Priorität. **Bei Gleichstand gewinnt die Meldung per `sendTo`**; unter `sendTo`-Meldungen gleicher Priorität die ältere.
+- Neuer Inhalt einer angezeigten Meldung wird gebremst wie bei der Liste (höchstens alle 30 Sekunden), siehe [Wann sich die Meldung am Panel ändert](#wann-sich-die-meldung-am-panel-ändert).
+
+**Ohne `id` – der alte Weg:** `{ panel, heading, text, enabled }` belegt einen einzelnen Platz – derselbe wie `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification`. Solange er aktiv ist, überdeckt er alle anderen Meldungen.

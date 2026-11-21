@@ -105,6 +105,7 @@ describe('cardStage', () => {
             'popupTimer',
             'popupNotify',
             'popupNotify2',
+            'popupNotify3',
         ];
         for (const pageType of pageTypes) {
             expect(CENTERED_ON_WEB.has(pageType), pageType).toBe(false);

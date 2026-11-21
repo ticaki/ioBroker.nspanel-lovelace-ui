@@ -1607,24 +1607,58 @@ export function menuMaxItems(card: MenuCard, model: NSPanel.NSpanelModel): numbe
     return MENU_MAX_ITEMS[card][model];
 }
 
-/** popupNotify: visible lines per textSize 0…5 and model. */
+/**
+ * popupNotify: visible lines per textSize 0…8 and model. 6/7 (mono/corner fonts, not offered) count like the
+ * default 3, 8 (96 px clock font) shows one line like 5.
+ */
 const NOTIFY_LINES: Record<NSPanel.NSpanelModel, readonly number[]> = {
-    eu: [7, 5, 5, 4, 2, 1],
-    'us-l': [7, 5, 5, 4, 2, 1],
-    'us-p': [7, 5, 5, 4, 2, 1],
-    'web-l': [7, 5, 5, 4, 2, 1],
-    'web-p': [20, 15, 15, 10, 6, 3],
+    eu: [7, 5, 5, 4, 2, 1, 4, 4, 1],
+    'us-l': [7, 5, 5, 4, 2, 1, 4, 4, 1],
+    'us-p': [7, 5, 5, 4, 2, 1, 4, 4, 1],
+    'web-l': [7, 5, 5, 4, 2, 1, 4, 4, 1],
+    'web-p': [20, 15, 15, 10, 6, 3, 10, 10, 3],
 };
 
 /**
  * Lines popupNotify shows for a text size on a model.
  *
- * @param textSize text size 0…5 (other values fall back to 0)
+ * @param textSize text size 0…8 (other values fall back to 0)
  * @param model panel model
  */
 export function notifyLines(textSize: number, model: NSPanel.NSpanelModel): number {
     const lines = NOTIFY_LINES[model];
     return lines[textSize] ?? lines[0];
+}
+
+/** Font ids popupNotify offers for its text (cmd.pagePopup.textSize): 6 (mono) and 7 (corners) are internal. */
+export type PopupTextSize = 0 | 1 | 2 | 3 | 4 | 5 | 8;
+
+/** default font of popupNotify (48 px) */
+export const POPUP_TEXT_SIZE_DEFAULT: PopupTextSize = 3;
+
+function isPopupTextSize(n: number): n is PopupTextSize {
+    return n === 0 || n === 1 || n === 2 || n === 3 || n === 4 || n === 5 || n === 8;
+}
+
+/**
+ * Font id of the popupNotify text from `textSize`: 0…5 and 8 as given; any other value (6, 7, out of range,
+ * not a number) gives the default 3. Missing or empty gives undefined (the HMI keeps its default).
+ *
+ * @param textSize textSize of the entry (string from state/sendTo or number)
+ */
+export function popupTextSize(textSize: unknown): PopupTextSize | undefined {
+    let n = Number.NaN;
+    if (typeof textSize === 'number') {
+        n = textSize;
+    } else if (typeof textSize === 'string') {
+        if (textSize.trim() === '') {
+            return undefined;
+        }
+        n = Number(textSize);
+    } else if (textSize == null) {
+        return undefined;
+    }
+    return isPopupTextSize(n) ? n : POPUP_TEXT_SIZE_DEFAULT;
 }
 
 /**

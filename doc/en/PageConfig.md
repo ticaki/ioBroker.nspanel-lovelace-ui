@@ -14,6 +14,7 @@ Contents:
 - [Creating and deleting pages](#creating-and-deleting-pages)
 - [Panel assignment and navigation](#panel-assignment-and-navigation)
 - [Page details](#page-details)
+  - [Hide pages](#hide-pages)
 - [The *Documentation* button](#the-documentation-button)
 - [Saving](#saving)
 - [Sub-pages per card type](#sub-pages-per-card-type)
@@ -130,14 +131,20 @@ Choose a panel in the select field and add it with **+**. There is also the entr
 
 ### Navigation targets
 
-There are four fields for the panel **clicked** in the list. They match the swipe gestures on the panel:
+There are four fields for the panel **clicked** in the list. They belong to the two navigation arrows at the top of the panel:
 
-| Field | Gesture on the panel |
+| Field | Operation on the panel |
 |---|---|
-| **next** | swipe right once |
-| **prev** | swipe left once |
-| **home** | swipe right twice |
-| **parent** | swipe left twice |
+| **next** | short press on the right arrow or swipe right |
+| **prev** | short press on the left arrow or swipe left |
+| **home** | long press on the right arrow (at least 0.5 s) |
+| **parent** | long press on the left arrow (at least 0.5 s) |
+
+If only one of the two targets of an arrow is set on a page (e.g. only *home*), the short press or the swipe leads there as well.
+
+**Which icon an arrow carries is decided by its long-press target.** If only *prev* or *next* is set, the panel shows the plain arrow to the left or right. As soon as *parent* is set the left button carries an **up arrow**, and as soon as *home* is set the right one carries a **house** — even when *prev* or *next* is set as well. The short press still leads to *prev*/*next*, the icon just does not show it. Both targets on one arrow only come about through the admin; a script configuration always yields just one of the two.
+
+As soon as the long press is reached, the heading and the arrows blink yellow/green: letting go now leads to *home* or *parent* (TFT 6.2.0 and newer and in the web panel).
 
 The choices are the pages this panel knows about and the admin pages assigned to it — the page itself is excluded. The **Show system pages** checkbox adds the internal pages (`///…`) to the list; the unlock page `///unlock` is never hidden. A target already entered always stays visible, even when it is a system page.
 
@@ -169,8 +176,8 @@ The second tab of the right-hand column. It applies to every page type; the thre
 | Setting | Meaning |
 |---|---|
 | **Start page (main)** | The page is published on the assigned panels under the ID `main` and replaces the start page from the script or the one the adapter generates. Assign first, then flag: without a panel assignment the checkbox stays disabled (*"Assign a panel first"*), likewise with the instance stopped and when another page is already the start page for one of the panels concerned — the note names it. While the marker is set, the panel assignment and the four navigation targets are locked (the name is fixed anyway): the start page has **no navigation of its own** — its neighbours follow from the other pages whose *prev* or *next* points at it, and the fields show what the adapter resolved from that. Targets stored earlier are kept but ignored while the marker is set, and apply again as soon as it is removed. A page that is simply **named** `main` is treated the same way by the adapter — even without the marker, then with a warning in the log. |
-| **Hidden** | The page is built but does not appear when swiping through normally. It stays reachable through a dedicated navigation target. |
-| **Paging of the page items** | *Classic* (the double arrows of the panel page), *Arrow* (the last slot of the page becomes the paging arrow) or *Automatic* (like classic, and pages on by itself as well). Default: classic. |
+| **Hidden** | The page is **locked** while *Hide pages* (`hideCards`) is on for the panel: swiping skips it, and a targeted navigation (e.g. a navigation item on a grid page) does not open it but shows the message *"Page locked"* (from TFT 6.2.0 with a large prohibition icon, on older TFTs as a classic popup). The arrows then go on from the page shown. Without *Hide pages*, *Hidden* has no effect. In the admin such pages carry a closed eye — in the page list and in the navigation flow. Where *Hide pages* is switched: [Hide pages](#hide-pages). |
+| **Paging of the page items** | *Classic* (the arrows of the panel page), *Arrow* (the last slot of the page becomes the paging arrow) or *Automatic* (like classic, and pages on by itself as well). Default: classic. |
 | **Scroll by** | *Full page* or *Half page*. Only appears with *Classic* and *Automatic*. |
 | **Seconds until the next page** | Only with *Automatic*; empty = 15 seconds. |
 | **Screensaver behavior** | *Default timeout* (the time of the panel applies), *Never activate* (the screensaver does not start while this page is on screen — an alarm page, for instance) or *Inherit from previous page* (the page sends the panel no new time, the one of the previously shown page keeps applying). |
@@ -178,6 +185,33 @@ The second tab of the right-hand column. It applies to every page type; the thre
 The three paging rows appear on **menu pages** (Grid, Grid2, Grid3, Entities, Schedule), on the **thermostat page (Thermo2)** and on the **media player**. *Half page* only exists on the three grid variants and on Thermo2 — and on Thermo2 the choice is reset to *Full page* by the adapter. What the three modes mean on the respective card is described under [Menu page](pageMenu#7-paging-of-the-page-items), [Thermostat](cardThermo2) and [Media player](cardMedia#9-paging-of-the-option-bar).
 
 > The two tabs are labelled *Navigation* and *Page details* (on a narrow screen *Nav* and *Details*).
+
+### Hide pages
+
+*Hide pages* is the switch without which *Hidden* has no effect. It applies **per panel** to all of its hidden pages — admin pages as well as script pages (`hidden: true`). There is no field for it in the admin; it is switched in two places:
+
+| Where | How |
+|---|---|
+| **Datapoint** | `nspanel-lovelace-ui.0.panels.<id>.cmd.hideCards` (`true`/`false`, default `false`) — e.g. in the *Objects* tab, by script or Blockly, written without acknowledgement (`ack: false`). The change takes effect at once, without a restart, and is kept over restarts. |
+| **On the panel** | On the service pages (protected by the *Service PIN* from the [global settings](globelSettings)): *Overview* → *System* → switch *Hide Cards*. **The icon** on the left turns green once it is on and red once it is off — the switch itself stays blue. |
+
+![The service page System on the panel: the entry Hide Cards with a green icon and the switch turned on](../Pictures/pageConfig/pageconfig-08-hide-cards-panel.png)
+
+**The page `///unlock` leads to the service pages.** It is not a code to type in but a navigation target: enter `///unlock` on a page as *next*, *prev*, *home* or *parent* — it is always in the list, even without *Show system pages*. On the panel it asks for the *Service PIN* on a number pad and, after the right entry, leads once to *Overview*. There is no unlock for a period of time: every new visit asks for the PIN again. After a wrong entry the number pad is blocked for a short while, and twice as long with every further failed attempt. If no *Service PIN* is set, access is open — the adapter then warns in the log at startup.
+
+While *Hide pages* is on, every page with the *Hidden* box ticked behaves like this:
+
+- **Swiping and the arrows** skip it – the long press as well; paging goes on from the skipped page in the same direction, without a lock message.
+- **A targeted navigation** — a navigation item, `cmd.goToNavigationPoint`, a hardware button with *Go to a navigation point* — does not open it. The panel stays on the page shown and reports *"Page locked"*: from TFT 6.2.0 with a large prohibition icon, on older TFTs as a classic popup.
+- **The lock message goes away with the cross or by itself**, not through a tap on the icon or the text — it has no buttons. By itself it disappears after the screensaver timeout of the panel (default 15 seconds, `panels.<panel>.cmd.screenSaver.timeout`); the page shown before is then back. This applies to both presentations alike.
+- **After ten skipped pages it stops.** If a chain of locked pages runs in a circle, the adapter gives up after ten jumps, writes an error to the log (*Infinite loop detected in navigation*) and sends the panel to the start page.
+![The page list in the admin: the page thermoTest carries a crossed-out eye behind its name because it is hidden](../Pictures/pageConfig/pageconfig-09-versteckt-liste.png)
+
+- **In the admin** a closed eye marks such pages, in the page list and in the [navigation flow](naviFlow); the tooltip reads *Locked (hidden): only reachable on the panel while “Hide pages” is off*. The eye is shown regardless of whether *Hide pages* is currently on.
+
+While *Hide pages* is off, hidden pages behave like all others. Typical use: maintenance or expert pages that should only be reachable at times — the datapoint can, for example, be tied to presence or the time of day by a script.
+
+The setting travels with [export and import](panelConfigTransfer) (part *Other*).
 
 ## The *Documentation* button
 

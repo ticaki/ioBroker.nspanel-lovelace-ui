@@ -157,8 +157,46 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+- (ticaki) screensaver: sendTo `screensaverNotify` without `id` switches the notification off before taking a new heading/text, so the new content no longer flashes up
+- (ticaki) notification popup: `global` is only set when the notification went to more than one panel - acknowledging a popup sent to a single panel no longer removes the same id on the other panels; `panel` also accepts the MQTT topic
+- (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) line chart: points are thinned out when the message would exceed the display limit (e.g. 24 h with 289 points) - the chart was black on the panel; first, last, minimum and maximum stay #925
+- (ticaki) web panel: bar chart follows the HMI axis logic (since TFT 6.0.3) - the y-axis is computed from the values (zero line, negative bars downwards, ticks with one decimal), bars of large values such as temperatures were flat on the base line #925
+- (ticaki) web panel clone: switching the big icons (`cmd.bigIconLeft/Right`) no longer overwrites the info states of the hardware panel with the values of the web panel
+- (ticaki) web panel clone: the hardware buttons written via `cmd.buttons.left/right` switch the target state only once (the clone no longer executes the action a second time, it only follows page and navigation)
+- (ticaki) states `cmd.pagePopup.activate`, `cmd.buttons.left`/`right` and `cmd.screenSaver.activate`: every write without ack triggers them, whatever the value, and the adapter sets them back to `false` afterwards - `cmd.screenSaver.activate` no longer ignores `false`
+- (ticaki) adapter start no longer restarts a Tasmota that is flashing a TFT
+- (ticaki) cmd.goToNavigationPoint: values written while a page change is running are queued - only the newest one is executed afterwards, several pages no longer become visible at the same time
+- (ticaki) admin: the frame of the color theme select in the global settings no longer has an empty gap
+- (ticaki) hardware buttons: new mode "navigation" with target next/prev/home/parent - a press acts like the matching navigation arrow of the page shown (next/prev short, home/parent long press); an open popup is closed first; the screensaver is never left - a popup on top of it is only closed (admin, script and script-to-admin)
+- (ticaki) navigation: a locked (hidden) page shows a popup "page locked" instead of silently doing nothing, the arrows go on from the page shown; admin marks hidden pages with a closed eye
+- (ticaki) notification popup: new option `largeIcon` - shows the message with a big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`) on panels with TFT 6.2.0+ and on web panels; older TFTs show it the classic way, without `largeIcon` nothing changes
+- (ticaki) admin: icon tab can filter the icons of the large notification (popupNotify3)
+- (ticaki) web panel: shows only what the panel can by default, new option to allow web panel extensions (e.g. all icons in the large notification)
+- (ticaki) notification popup: state `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font); unknown values fall back to 3 - see the new section "Fonts" in the popup documentation
+- (ticaki) screensaver: TFT 6.2.0 and web panel send the long press of an indicator only when the finger is lifted - after 500 ms the time blinks yellow/green as a sign to let go; letting go earlier is a short tap, a swipe drops both
+- (ticaki) screensaver: long press and clock blinking only for indicators with a long press action (TFT 6.2.0 and web panel), new long press option "only trigger the state" - **note:** whoever used `buttons.indicatorLong-N` without a long press action must choose this option with TFT 6.2.0
+- (ticaki) screensaver: with standby brightness 0 the first press on an indicator only wakes the display (no action, no popup, no state, no long press)
+- (ticaki) screensaver: new state `cmd.screenSaver.clockBlink` and sendTo `screensaverClockBlink` let the clock blink red/white until switched off (TFT 6.2.0 and web panel; a long press keeps priority)
+- (ticaki) screensaver: the info icon next to the clock can be tapped (TFT 6.2.0 and web panel) - timer and firmware icons explain themselves in a popup, the own info icon writes `buttons.infoIcon` and shows the new text `cmd.screenSaver.infoText` when it is set; the popup shows the icon in its screensaver color, a larger font (font 2, 32 px; for the own text selectable with the new state `cmd.screenSaver.infoTextFont`) and wraps the text at word borders
+- (ticaki) screensaver: the own info icon now takes precedence over the development firmware icon - order: timer, own icon, system icons
+- (ticaki) screensaver: TFT 6.2.0 - the info icon on the standard/alternate and easyview screensaver of us-l was not visible, only the icon itself reacts to a tap (no longer the whole strip between clock and date)
+- (ticaki) screensaver: the notification gets a background area that sets it off from the screensaver (TFT 6.2.0 and web panel, full width down to the lower edge or the bar below it); three new colors in the color theme: notification headline, text and background (white, white and the screensaver background of the theme lightened slightly, default theme gray 56/56/56)
+- (ticaki) screensaver notifications: new option "background blinks" with a second color - the background of the notification alternates every second (TFT 6.2.0 and web panel)
+- (ticaki) Screensaver notification: a change of prefix, unit, suffix or icon states updates it too; a new content is sent at most every 30 s (on/off at once), a notification tapped away stays hidden until the screensaver shows again
+- (ticaki) Web panel: long texts are cut at the field border like on the panel, no own "…" any more
+- (ticaki) navigation: when the long press of a navigation arrow is reached (0.5 s), the heading and the arrows blink yellow/green until the finger is lifted - letting go then leads to home/parent (TFT 6.2.0 and web panel; the web panel now knows the long press of the arrows too)
+- (ticaki) TFT 6.2.0: shorter id buffers of the navigation, cardMedia and the detail popups free page RAM (cardMedia 540 bytes, other cards 120, popups 60) for further features; buffers that can receive long values from the script (cardEntities/Grid/Schedule/Thermo/Thermo2/Alarm/QR items, popupThermo, popupNotify) keep their size
+- (ticaki) TFT 6.2.0: cardThermo2 - holding a navigation arrow no longer repeats it like the temperature buttons, so the long press (home/parent) and its blinking work there too; cardEntities and cardThermo2 (EU) no longer send an empty button press of an arrow when the page loads
+- (ticaki) navigation: swiping over a locked (hidden) page always goes on over its simple target (next/prev), no longer over home/parent when the skipped page has both
+- (ticaki) web panel: a touch of the screensaver clears the notification like the panel does (the first touch of a dark display only wakes it), it no longer stays with frozen content and keeps blinking
+- (ticaki) script conversion: an invalid blink color of a notification only drops the color (with a warning), the screensaver is converted anyway
+- (ticaki) admin: the long press hint of screensaver items explains TFT 6.2.0 (without an action the panel detects no long press), the navigation flow legend shows the closed eye of hidden pages
+- (ticaki) TFT 6.2.0: faster acknowledgement of large messages and no serial buffer overflow on fast message sequences - every page deletes the whole received message (CRC included) and a message with a wrong CRC at once; a full serial buffer without a usable message is emptied, the display no longer hangs with 0x24
+- (ticaki) a message bigger than the display can receive (1017 bytes) is no longer sent to the panel but dropped with an error log - it made the display hang until Tasmota was restarted
+- (tt-tom17) Admin translations: the nine translated languages were missing the same 36 keys and showed the raw key names instead - the whole cardPower editor, the labels of the navigation tabs, the Tasmota tools panel with its help link and the state hints of the channel dialog are translated now
 - (tt-tom17) Revision of the language files
 
 ### 2.4.1 (2026-11-18)

@@ -3,8 +3,9 @@
  * the same pointer pressed that element first.
  *
  * Without it an element that reacts on `pointerup` alone is operated by a release whose press
- * happened somewhere else - e.g. the long press of a screensaver indicator: the adapter opens
- * the popup while the finger is still down, and lifting the finger hit the freshly drawn popup.
+ * happened somewhere else - e.g. a popup that the adapter opens while the finger is still down (so
+ * did the long press of a screensaver indicator before it was sent on release), and lifting the
+ * finger hit the freshly drawn popup.
  */
 export class PressTracker {
     private pointerId: number | undefined;

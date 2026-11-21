@@ -2944,6 +2944,30 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(ok.cleanedRaw.notifyScreensaverEntity).to.equal(undefined);
     });
 
+    it('drops an invalid blink color of a notification and keeps the screensaver', () => {
+        const element = {
+            type: 'script' as const,
+            Enabled: '0_userdata.0.alarm',
+            Priority: 1,
+            Headline: 'h',
+            Text: 't',
+            BackgroundBlink: 'red',
+        };
+        const result = plan(baseConfig({ notifyScreensaverEntity: [element] }));
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.screensaverEntry).to.not.equal(undefined);
+        expect(result.newNotify).to.have.length(1);
+        expect(result.newNotify[0]).to.not.have.property('backgroundBlink');
+        expect(result.newNotify[0]).to.deep.include({ enabled: ['0_userdata.0.alarm'], headline: 'h', text: 't' });
+        expect(result.plan.screensaver!.dropped).to.deep.equal([
+            'notifyScreensaverEntity[0].BackgroundBlink: red is no color #rrggbb - dropped, the notification does not blink',
+        ]);
+
+        const valid = plan(baseConfig({ notifyScreensaverEntity: [{ ...element, BackgroundBlink: '#ff0000' }] }));
+        expect(valid.newNotify[0]).to.deep.include({ backgroundBlink: '#ff0000' });
+        expect(valid.plan.screensaver!.dropped).to.equal(undefined);
+    });
+
     it('skips the screensaver when the panel already has one, when it is empty or when an element cannot be placed', () => {
         const exists = plan(templateConfig(), {
             screensaverConfig: [{ name: 'x', mode: 'standard', panels: [topic], left: [], bottom: [], indicator: [] }],
@@ -3104,6 +3128,34 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(screensaverItemToScript(entry.left[0]!, 'left')).to.deep.equal(element('left'));
         expect(screensaverItemToScript(entry.indicator[0]!, 'indicator')).to.deep.equal(
             element('indicator', { ScreensaverEntityNaviToPage: 'main' }),
+        );
+    });
+
+    it('takes the long press "only trigger the state" over (ScreensaverEntityLongPressTrigger)', () => {
+        const element = (more: Record<string, unknown>): any => ({
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'indicator',
+            ...more,
+        });
+        const result = plan(
+            baseConfig({
+                indicatorScreensaverEntity: [
+                    element({ ScreensaverEntityLongPressTrigger: true }),
+                    element({ ScreensaverEntityLongPressNaviToPage: 'main', ScreensaverEntityLongPressTrigger: true }),
+                ],
+            }),
+        );
+        const entry = result.screensaverEntry!;
+        const base = { state: 'bydhvs.0', template: 'text.battery.bydhvs' };
+        expect(entry.indicator.slice(0, 2)).to.deep.equal([
+            { ...base, longPress: { kind: 'trigger' } },
+            // the config manager takes the page first
+            { ...base, longPress: { kind: 'navigate', page: 'main' } },
+        ]);
+        expect(screensaverItemToScript(entry.indicator[0]!, 'indicator')).to.deep.equal(
+            element({ ScreensaverEntityLongPressTrigger: true }),
         );
     });
 
@@ -3351,6 +3403,31 @@ describe('lib/configuration - planScriptToAdmin: buttons', () => {
         expect(result.cleanedRaw.buttonLeft).to.equal(null);
         expect(result.cleanedRaw.buttonRight).to.equal(null);
         expect(result.plan.nothingToDo).to.equal(false);
+    });
+
+    it('converts the mode navigation and rejects an unknown target or extra fields', () => {
+        const result = plan(
+            baseConfig({
+                buttonLeft: { mode: 'navigation', target: 'parent' },
+                buttonRight: { mode: 'navigation', target: 'home' },
+            }),
+        );
+        expect(result.buttons).to.deep.equal({
+            left: { mode: 'navigation', target: 'parent' },
+            right: { mode: 'navigation', target: 'home' },
+        });
+        expect(result.plan.buttonsSkipped).to.deep.equal([]);
+        for (const button of [
+            { mode: 'navigation', target: 'up' },
+            { mode: 'navigation', target: 'next', page: 'main' },
+        ]) {
+            const invalid = plan(baseConfig({ buttonLeft: button }));
+            expect(invalid.plan.buttonsSkipped[0]?.reason, JSON.stringify(button)).to.equal('buttonNotSupported');
+            expect(invalid.buttons, JSON.stringify(button)).to.deep.equal({});
+        }
+        // the empty form counts as no button
+        const empty = plan(baseConfig({ buttonLeft: { mode: 'navigation', target: '' } }));
+        expect(empty.plan.buttonsSkipped).to.deep.equal([]);
     });
 
     it('leaves a button alone that the admin has configured (also as "no action") or that is not valid', () => {

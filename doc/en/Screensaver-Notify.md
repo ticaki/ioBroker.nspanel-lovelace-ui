@@ -9,6 +9,7 @@ How the screensaver itself is created is described under [Screensaver in the adm
 Contents:
 - [The list](#1-the-list)
 - [Content: headline and text](#2-content-headline-and-text)
+  - [When the message changes on the panel](#when-the-message-changes-on-the-panel)
 - [When to show: states and condition](#3-when-to-show-states-and-condition)
 - [Priority: which message the panel shows](#4-priority-which-message-the-panel-shows)
 - [Dismissing and the group ID](#5-dismissing-and-the-group-id)
@@ -16,6 +17,9 @@ Contents:
 - [Preview and what the dialog checks](#7-preview-and-what-the-dialog-checks)
 - [Saving – what the adapter does with it](#8-saving--what-the-adapter-does-with-it)
 - [If something does not look as expected](#9-if-something-does-not-look-as-expected)
+- [Colours: headline, text and background](#10-colours-headline-text-and-background)
+  - [Background blinks](#background-blinks)
+- [From a script: sendTo `screensaverNotify`](#11-from-a-script-sendto-screensavernotify)
 
 ## 1. The list
 ![The screensaver editor with the button bar below the panel picture](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
@@ -63,8 +67,25 @@ At the very top of the dialog stands the **Description**, below it the preview, 
 
 > ⚠️ Whether a field counts as a text or as a state depends solely on **whether the id actually exists**. A typo in an id silently ends up as text on the panel; there is no warning. The same holds for an id that ends on a dot (`pirate-weather.0.` instead of `pirate-weather.0.temperature`) – it is never recognised as a state. The [preview](#7-preview-and-what-the-dialog-checks) is the proof: if the value appears there, the id was recognised.
 
+### When the message changes on the panel
+
+When the value of a state in **any** of the content fields changes – icon in front of the headline, headline prefix, headline, headline unit, text prefix, text or text suffix – the adapter sends the message with the new content to the panel.
+
+| What changes | When it reaches the panel |
+|---|---|
+| **Content** of the displayed message | **At most every 30 seconds.** If the last send is longer ago, at once; otherwise once at the end of the 30 seconds with the values of then. Intermediate values are dropped. So a value that changes every second (a voltage, say) does not flood the panel. The 30 seconds run **per panel** – two panels with the same message do not slow each other down. |
+| **On/off** through the states and the condition of [section 3](#3-when-to-show-states-and-condition) | **At once:** the message appears or disappears, and another message takes its turn by its [priority](#4-priority-which-message-the-panel-shows) at once. |
+
+> **Tapped away stays away.** Every touch of the screensaver hides the message on the panel – the display does that by itself. If the screensaver stays (a swipe, say, or a single tap with double click switched on), the message stays hidden, also with a new content. It comes back the next time the screensaver appears, that is after the next dimming. If its states bring another message up, that one appears at once. With a standby brightness of 0 in the current mode (day or night) the first tap on the dark display hid nothing – then new content still arrives.
+
+A **new colour** counts as new content as well: if a displayed message changes its font, background or blink colour, that change is throttled just like a new text. And if the screensaver is not visible at all because the panel sits on another page, a follow-up due at the end of the 30 seconds falls away – nothing is lost by that, because as soon as the screensaver appears again the adapter sends everything anew.
+
+A **dismissed** message stays hidden, also when its content changes – it only comes back when its state goes off and on again (see [Dismissing](#5-dismissing-and-the-group-id)).
+
+A message set by `sendTo` (`screensaverNotify`) **without `id`** or through `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification` is not configured in the admin and is not throttled. A message by `sendTo` **with `id`** is throttled like one of the list, see [From a script](#11-from-a-script-sendto-screensavernotify).
+
 ## 3. When to show: states and condition
-![States, condition, priority, dismissing and buzzer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+![The lower part of the dialog: states, condition, priority, dismissing, group id, buzzer and the section Blinking with the tick “Background blinks”](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
 
 
 | Field | Effect |
@@ -102,7 +123,7 @@ The panel shows **one** notification at a time. If several are active at once, t
 
 Three choices: **Off**, **Default** (`1,2,3,0xF54`) or **Own tone sequence**. With "own" the field **Tone sequence** is mandatory; it takes the arguments of the Tasmota command `Buzzer` in the form *count,on,off,tune*. Spaces at the edges are cut off by the admin when applying.
 
-The buzzer only sounds **when the displayed notification changes** – not repeatedly while the same message stands. It also stays silent in **night mode** (`panels.<panel>.cmd.dim.dayMode` off) and when `panels.<panel>.cmd.isBuzzerAllowed` is off; this state is writable and stands on `true` by default.
+The buzzer only sounds **when the displayed notification changes** – not repeatedly while the same message stands, not even when its content changes. It also stays silent in **night mode** (`panels.<panel>.cmd.dim.dayMode` off) and when `panels.<panel>.cmd.isBuzzerAllowed` is off; this state is writable and stands on `true` by default.
 
 > On a [web panel](WebPanel) the same message appears. The buzzer is the only Tasmota command the adapter passes on to the browser – there the browser plays it, but only after the browser has been tapped once.
 
@@ -149,6 +170,80 @@ On the panel this becomes a headline line (icon + prefix + value/text + unit) an
 - **A tap on the screensaver does nothing:** A dismissible notification lay over it – the first tap dismissed it, the next one leads on. If the panel stays in the screensaver with a message that **cannot** be dismissed as well, it is still running 2.2.0 or older; see [Dismissing](#5-dismissing-and-the-group-id).
 - **A deleted notification turns up again:** Not deleted, only no longer ticked. A deleted screensaver does not take its notifications with it – they stay in the common list.
 - **Dismissing affects more than expected:** Notifications with the same **Group ID** are hidden together, on other panels as well.
+- **A value on the panel lags behind:** New content of the same message reaches the panel at most every 30 seconds, see [When the message changes on the panel](#when-the-message-changes-on-the-panel). A message that was tapped away only appears again after the next dimming.
 - **The buzzer stays silent:** Night mode, `cmd.isBuzzerAllowed` off – or the displayed message did not change at all.
 - **The headline breaks in the wrong place:** The sequence `<sp!it>` must not appear in the text, the adapter splits the lines at it internally. A `~` in the text is replaced by `-`.
 - **A change shows up on another screensaver:** The list is shared – see "Also used by" in the row. **Duplicate** first if a different version is needed.
+- **The background does not blink:** Only TFT 6.2.0 (and the web panel) can do that, and only for a notification with the tick **Background blinks** – see [Background blinks](#background-blinks).
+
+## 10. Colours: headline, text and background
+
+The colours of the notification are not set in the dialog but by the [colour theme](colorTheme#colours-of-the-notification) of the instance. They apply to all notifications and also to a notification a script sets via `sendTo` or through `cmd` – only a message by `sendTo` with `id` can bring font colours of its own with `colorHeadline`/`colorText`.
+
+| Colour | Meaning |
+|---|---|
+| **Headline** | Font colour of the upper line. In the admin: **Notification headline**. |
+| **Text** | Font colour of the line below. In the admin: **Notification text**. |
+| **Background** | Area behind both lines, so that the notification stands out from the screensaver. It spans the full width from the headline down to the lower edge of the display, as far as nothing below stays visible. If something stays there – the bar with the icons of the advanced screensaver, the colour bars of EasyView and the tiles, on US portrait the bottom row of the standard screensaver –, it ends above it; that depends on the model. In the admin: **Notification background**. |
+
+With the ready-made themes headline and text are white as before; the background is the background of the screensaver, slightly lightened – grey (RGB 56/56/56) with the default theme. Own values come with the colour theme **User colors** in the section **Screensaver**.
+
+> **Only TFT 6.2.0 shows the background.** Older TFTs keep showing the notification on the background of the screensaver; they do take over the headline and text colour. The [web panel](WebPanel) draws the area like the TFT.
+
+### Background blinks
+
+A single notification can draw attention to itself on top: its background then alternates every second between the background of the colour theme and a second colour. This is set in the dialog of the notification, in the section **Blinking** below the buzzer:
+
+| Field | Meaning |
+|---|---|
+| **Background blinks** | Switches the blinking on for this notification. Without the tick nothing blinks. |
+| **Second colour** | Appears with the tick, preset to dark red (`#9c201a`). The first colour is always the background of the colour theme. |
+
+![The headline on the panel: its background alternates between the grey of the colour theme and the second colour (animated)](../Pictures/screensaverAdmin/notify-04-blinken.gif)
+
+The panel blinks by itself – the adapter sends the message only once. The blinking ends as soon as the notification disappears (state off, tapped away) or another one without blinking takes its place.
+
+> **Only from TFT 6.2.0 on and on the web panel.** Older TFTs show no background at all and therefore no blinking either. A notification that a script sets via `sendTo` without `id` or through `cmd` never blinks; via `sendTo` with `id` it blinks with `backgroundBlink`.
+
+## 11. From a script: sendTo `screensaverNotify`
+
+A script or another adapter can also set a notification via `sendTo`. The message understands largely the same fields as the popup (`setPopupNotification`, see [popup](pagePopup)), so the same JSON can go to both. Answer: `{ result: 'ok' }` or `{ error: 'sendToAnyError' }` (no panel found).
+
+```js
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', {
+    id: 'washer',
+    priority: 40,
+    headline: 'Washing machine',
+    text: 'done',
+    icon: 'washing-machine',
+    type: 'acknowledge',
+    buzzer: true,
+});
+// remove
+sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { id: 'washer', priority: 0 });
+```
+
+| Field | Meaning |
+|---|---|
+| `panel` | Target: name, friendly name or MQTT topic of the panel, a string or an array. **Without it the message goes to all panels.** |
+| `id` | Id of the message. **With `id`** the message goes into a queue of the panel (see below), **without `id`** the old way applies. |
+| `priority` | Only with `id`. Lower = more important, default **50**. `<= 0` removes the message with this `id`, `<= -100` all messages whose `id` starts with it. |
+| `headline` | Headline; `heading` is accepted as well (`heading` wins on the old way, `headline` on the new one). |
+| `text` | Second line. |
+| `enabled` | Old way: `true` shows the message, missing or `false` switches it off. With `id`: `false` removes the message. |
+| `icon` | Only with `id`. MDI name, in front of the headline like the icon of the list. |
+| `colorHeadline`, `colorText` | Only with `id`. Font colour as `{r,g,b}` or `"#rrggbb"` instead of the colour of the colour theme. |
+| `backgroundBlink` | Only with `id`. `"#rrggbb"`: second background colour, see [Background blinks](#background-blinks). |
+| `buzzer` | Only with `id`. `true` = default tone, a string = own tone sequence – like the [buzzer](#6-buzzer) of the list (not at night, only with `cmd.isBuzzerAllowed`). |
+| `type` | Only with `id`. `acknowledge`: a tap removes the message from the queue and takes the tap like a dismissible message of the list. `information` (default): a tap acts as with a message that cannot be dismissed. |
+| `global` | Only with `id` and `acknowledge`: dismissing on one panel removes the message on all panels. Default: yes when the message went to several panels. |
+
+Fields of the popup only (buttons, `largeIcon`, `iconColor`, `textSize`, `alwaysOn`) are skipped without an error.
+
+**With `id` – the queue:**
+
+- At most 10 messages per panel; the same `id` replaces the previous one. After a restart of the adapter it is empty.
+- It is mixed with the active notifications of the list: the lowest priority wins. **On a tie the message by `sendTo` wins**; among `sendTo` messages of the same priority the older one.
+- A new content of a shown message is throttled like with the list (at most every 30 seconds), see [When the message changes on the panel](#when-the-message-changes-on-the-panel).
+
+**Without `id` – the old way:** `{ panel, heading, text, enabled }` takes a single slot – the same as `cmd.screenSaver.headingNotification`/`textNotification`/`activateNotification`. While it is active it covers all other notifications.

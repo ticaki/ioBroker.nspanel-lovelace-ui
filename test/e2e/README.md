@@ -94,6 +94,8 @@ Nicht pauschal länger warten (`settle(3000)`): das macht den Test langsamer und
 
 2. In `index.js` in die Liste `scenarios` eintragen.
 3. Neue States/Seiten in `fixtures/config.js` ergänzen (`OBJECTS`, `STATES`, `PAGE_CONFIG`, `SCREENSAVER_CONFIG`).
+   States, die nicht in jedem Snapshot stehen sollen (ein neuer Eintrag in `STATES` ändert alle Snapshots), kommen in
+   `EXTRA_STATES` – sie werden wie `STATES` vor dem Start gesetzt, das Szenario setzt sie selbst zurück.
 
 Regeln: Assertions **positionsgenau** auf einzelne Felder (`lib/protocol.js`: `parseMenuUpdate`,
 `parseWeatherUpdate`, `parseLightDetail`, `parseShutterDetail`; `lib/steps.js`: `menuItemAt`, `expectScreensaver`) oder
@@ -112,7 +114,7 @@ Item-Typen der letzten `entityUpd`. Geprüft werden Feldanzahl und typisierte Fe
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `pageType~`                                                          | bekannte Seite; Screensaver `pageType~<seite>~~<4 Farben mit ?>`, sonst genau 1 Feld                                                                                                                                                                   |
 | `entityUpd~`                                                         | Feldzahl 2 + 12 + 6 × Items der Seite (eu: cardGrid 6, cardEntities 4, …); Navigation `button`/`bXxx`/Glyph/Farbe; Items: bekannter Typ, ID, Icon = ein Glyph, Farbe 0–65535, Wert je Typ (0/1, `icon\|icon\|icon\|enable…`)                           |
-| `entityUpdateDetail~`                                                | nach Typ des Items: popupLight 11 Felder, popupShutter2 22 Felder, jeweils Glyph/Farbe/enable-disable/Zahl an ihrer Stelle; unbekannte ID = Fehler                                                                                                     |
+| `entityUpdateDetail~`                                                | auf `popupNotify` 15 und `popupNotify3` 11 Felder (Glyph, Farben, Font 0/2/3, Text ≤ 199 Byte mit CR LF); sonst nach Typ des Items: popupLight 11 Felder, popupShutter2 22 Felder, jeweils Glyph/Farbe/enable-disable/Zahl an ihrer Stelle; unbekannte ID = Fehler                                                                                                     |
 | `weatherUpdate~`                                                     | nur auf Screensaver-Seiten; 6 Felder je Slot, Slotzahl je Seite/Modus (standard 5, alternate 6 mit leerem 5. Slot, advanced 15, easyview 4, tiles 12); Typ immer leer, ID nur bei Indikatoren, Icon = Glyph (tiles-Indikator mit `¬n`), Farbe zum Icon |
 | `color~`                                                             | 16 Farben                                                                                                                                                                                                                                              |
 | `dimmode~`, `timeout~`, `statusUpdate~`, `time~`, `date~`, `notify~` | Feldzahl und Zahlen-/Farbfelder                                                                                                                                                                                                                        |

@@ -4506,6 +4506,9 @@ export class ConfigManager extends BaseClass {
                         if (popup) {
                             indicatorPopups.set(result, popup);
                         }
+                        if (mode === 'indicator' && !popup && ConfigManager.isScreensaverLongPressTrigger(item)) {
+                            result.longPressTrigger = true;
+                        }
                         return result;
                     })
                     .catch(err => {
@@ -5283,30 +5286,36 @@ export class ConfigManager extends BaseClass {
         if (!result.data.entity1) {
             throw new Error('Invalid data');
         }
+        // every field of the content triggers: the screensaver throttles a new content, see Screensaver.notifyContentInterval
         result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.Headline || ' ', true);
         if (entity.HeadlinePrefix) {
-            result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix);
+            result.data.entity1.prefix = await this.getFieldAsDataItemConfig(entity.HeadlinePrefix, true);
         }
         if (entity.HeadlineUnit) {
-            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit);
+            result.data.entity1.unit = await this.getFieldAsDataItemConfig(entity.HeadlineUnit, true);
         }
         result.data.entity1.suffix = {
             type: 'const',
-            constVal: `<sp!it>${typeof entity.Priority === 'number' ? entity.Priority : 99}<sp!it>${entity.buzzer ? (entity.buzzer === true ? '1,2,3,0xF54' : entity.buzzer) : ''}`,
+            // <sp!it>priority<sp!it>buzzer<sp!it>second background (RGB565, empty = no blinking)
+            constVal: `<sp!it>${typeof entity.Priority === 'number' ? entity.Priority : 99}<sp!it>${entity.buzzer ? (entity.buzzer === true ? '1,2,3,0xF54' : entity.buzzer) : ''}<sp!it>${Color.isHex(entity.BackgroundBlink) ? Color.rgb_dec565(Color.ConvertHexToRgb(entity.BackgroundBlink)) : ''}`,
         };
         result.data.entity2 = structuredClone(result.data.entity1);
         if (entity.Text) {
             result.data.text = {
                 true: {
                     value: await this.getFieldAsDataItemConfig(entity.Text, true),
-                    prefix: entity.TextPrefix ? await this.getFieldAsDataItemConfig(entity.TextPrefix) : undefined,
-                    suffix: entity.TextSuffix ? await this.getFieldAsDataItemConfig(entity.TextSuffix) : undefined,
+                    prefix: entity.TextPrefix
+                        ? await this.getFieldAsDataItemConfig(entity.TextPrefix, true)
+                        : undefined,
+                    suffix: entity.TextSuffix
+                        ? await this.getFieldAsDataItemConfig(entity.TextSuffix, true)
+                        : undefined,
                 },
             };
         }
         if (entity.HeadlineIcon) {
             result.data.icon = {
-                true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon) },
+                true: { value: await this.getFieldAsDataItemConfig(entity.HeadlineIcon, true) },
             };
         }
 
@@ -5443,6 +5452,24 @@ export class ConfigManager extends BaseClass {
             return { setNaviLongPress: { type: 'const', constVal: entity.ScreensaverEntityLongPressNaviToPage } };
         }
         return null;
+    }
+
+    /**
+     * true when a long press of the indicator only writes `buttons.indicatorLong-N` (ScreensaverEntityLongPressTrigger):
+     * button, switch, page and popup of a long press come first.
+     *
+     * @param entity element of the script (script or template)
+     * @returns true for the long press "only trigger the state"
+     */
+    static isScreensaverLongPressTrigger(entity: ScriptConfig.ScreenSaverElement): boolean {
+        return (
+            entity.type !== 'native' &&
+            entity.ScreensaverEntityLongPressTrigger === true &&
+            !entity.ScreensaverEntityLongPressButton &&
+            !entity.ScreensaverEntityLongPressSwitch &&
+            !entity.ScreensaverEntityLongPressNaviToPage &&
+            entity.ScreensaverEntityLongPressPopup !== true
+        );
     }
 
     /** types of a page item with a popup of the HMI that a long press of an indicator can open */
@@ -5618,6 +5645,7 @@ export class ConfigManager extends BaseClass {
                 'ScreensaverEntityLongPressButton',
                 'ScreensaverEntityLongPressSwitch',
                 'ScreensaverEntityLongPressPopup',
+                'ScreensaverEntityLongPressTrigger',
             ]) {
                 delete (temp as Record<string, unknown>)[key];
             }

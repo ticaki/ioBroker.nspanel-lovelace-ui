@@ -220,7 +220,7 @@ Die Leiste hat **fünf** Plätze. Passt nicht alles hinein, wird geblättert; wi
 
 | Auswahl | Wirkung |
 |---|---|
-| **Klassisch** | *„Mehr Elemente als Plätze: Die Doppelpfeile des Panels blättern weiter."* |
+| **Klassisch** | *„Mehr Elemente als Plätze: Die Pfeile des Panels blättern weiter."* |
 | **Pfeil** | *„Mehr Elemente als Plätze: Der letzte Platz zeigt einen Pfeil, der weiterblättert."* – es bleiben vier Plätze für Elemente. |
 | **Automatisch** | *„Wie klassisch, zusätzlich blättert die Seite nach der eingestellten Zeit von selbst weiter."* – dazu **Sekunden bis zur nächsten Seite** (leer = 15). |
 

@@ -208,8 +208,11 @@ export interface TilesGeometry {
     date: { capTop: number; left: number; width: number };
     /** the two status bars */
     bars: [Box, Box];
-    /** cap tops of heading and text of a notification and the number of text lines */
-    notify: { headingTop: number; textTop: number; lines: number };
+    /**
+     * cap tops of heading and text of a notification, the number of text lines and the area of its background
+     * (`tNotifyHead` + `tNotifyText` of the HMI)
+     */
+    notify: { headingTop: number; textTop: number; lines: number; area: { top: number; bottom: number } };
 }
 
 /** eu: 5 columns of 90 x 107 from x 16 (the HMI draws on 450 of the 480 px) */
@@ -247,7 +250,8 @@ function landscapeTiles(left: number, columns: number, side: number): TilesGeome
             { left: left + 1, top: 315, width: barWidth, height: 5 },
             { left: left + 1 + barWidth + 80, top: 315, width: barWidth, height: 5 },
         ],
-        notify: { headingTop: 216, textTop: 270, lines: 2 },
+        // tNotifyHead y 214, tNotifyText down to the status bars (y 315), they stay visible
+        notify: { headingTop: 216, textTop: 270, lines: 2, area: { top: 214, bottom: 315 } },
     };
 }
 
@@ -282,7 +286,13 @@ function portraitTiles(web: boolean): TilesGeometry {
             { left: 1, top: barsTop, width: 130, height: 5 },
             { left: 189, top: barsTop, width: 130, height: 5 },
         ],
-        notify: { headingTop: bottomTop + 2, textTop: bottomTop + 56, lines: web ? 6 : 2 },
+        // us-p: tNotifyHead y 366, tNotifyText down to the status bars (y 475)
+        notify: {
+            headingTop: bottomTop + 2,
+            textTop: bottomTop + 56,
+            lines: web ? 6 : 2,
+            area: { top: bottomTop - 2, bottom: barsTop },
+        },
     };
 }
 

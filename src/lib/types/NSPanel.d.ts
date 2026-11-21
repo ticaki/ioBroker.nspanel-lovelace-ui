@@ -127,6 +127,8 @@ export namespace NSPanel {
         | 'cmd/screensaverHeadingNotification'
         | 'cmd/screensaverTextNotification'
         | 'cmd/screensaverActivateNotification'
+        | 'cmd/screensaverNotificationCustom'
+        | 'cmd/screensaverClockBlink'
         | 'cmd/screenSaverInfoIcon'
         | 'info/PopupInfo'
         | 'cmd/power2'
@@ -500,6 +502,18 @@ export namespace NSPanel {
                *
                */
               state: string | dataItem.Dataitem;
+          }
+        | {
+              /**
+               * Mode for acting like a navigation arrow of the page shown.
+               *
+               */
+              mode: 'navigation';
+              /**
+               * next = right arrow short, prev = left arrow short, home = right arrow long, parent = left arrow long.
+               *
+               */
+              target: 'next' | 'prev' | 'home' | 'parent';
           }
         | null;
 
@@ -1513,6 +1527,11 @@ export namespace NSPanel {
          * press opens - an item without modeScr that is never drawn (config-manager getScreensaverConfig)
          */
         longPressPopup?: number;
+        /**
+         * screensaver indicator: a long press only writes `buttons.indicatorLong-N` (ScreensaverEntityLongPressTrigger,
+         * config-manager getScreensaverConfig)
+         */
+        longPressTrigger?: boolean;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

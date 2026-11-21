@@ -1,11 +1,13 @@
 import { expect } from 'chai';
 import {
+    BERRY_FLASH_MODE_COMMAND,
     findBerryInstallTopic,
     getBerryCommitCommand,
     getBerryDownloadCommand,
     getBerryLegacyInstallCommand,
     getBerryRestoreCommand,
     getTasmotaCommandUrl,
+    isBerryFlashing,
     parseUrlFetchResult,
 } from './berry-install';
 
@@ -60,6 +62,26 @@ describe('lib/tools/berry-install', () => {
             const cmd = getBerryDownloadCommand(berryUrl, '11');
             const url = getTasmotaCommandUrl('10.0.0.1', cmd, { useAdmin: false, password: '' });
             expect(new URL(url).searchParams.get('cmnd')).to.equal(cmd);
+        });
+    });
+
+    describe('isBerryFlashing', () => {
+        it('detects a running flash', () => {
+            expect(isBerryFlashing({ Br: '1' })).to.equal(true);
+        });
+        it('is false for every other answer', () => {
+            expect(isBerryFlashing({ Br: '0' })).to.equal(false);
+            expect(isBerryFlashing({ Br: 1 })).to.equal(false);
+            expect(isBerryFlashing({ Br: 'nil' })).to.equal(false);
+            expect(isBerryFlashing({ Command: 'Unknown' })).to.equal(false);
+            expect(isBerryFlashing(undefined)).to.equal(false);
+            expect(isBerryFlashing(null)).to.equal(false);
+            expect(isBerryFlashing('1')).to.equal(false);
+        });
+        it('the command is url encoded in the url', () => {
+            expect(
+                getTasmotaCommandUrl('1.2.3.4', BERRY_FLASH_MODE_COMMAND, { useAdmin: false, password: '' }),
+            ).to.equal('http://1.2.3.4/cm?&cmnd=Br%20nextion.flash_mode');
         });
     });
 

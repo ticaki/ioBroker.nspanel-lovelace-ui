@@ -10,6 +10,17 @@ Eine Nachschlagehilfe: Hier stehen alle Symbole, die der Adapter mitbringt, mit 
 - **Name kopieren:** Ein Klick auf ein Symbol legt **den Namen** in die Zwischenablage (nicht das Bild). Der Tooltip am Symbol lautet `Zum Kopieren klicken: <Name>`, nach dem Klick bestätigt kurz die Meldung `<Name> kopiert`. Von dort lässt sich der Name in jedes Symbolfeld einfügen.
 - Die Übersicht ist reine Anzeige — ein Klick verändert nichts an der Konfiguration.
 
+## Große Benachrichtigung (popupNotify3)
+
+Über der Liste stehen zwei Knöpfe:
+
+| Knopf | Bedeutung |
+|---|---|
+| **Alle Icons** | Die ganze Sammlung (Vorgabe). |
+| **Große Benachrichtigung (popupNotify3)** | Nur die Symbole, die das Panel in der [Benachrichtigung mit großem Symbol](pagePopup#6-großes-symbol-ab-tft-620) zeigen kann. Der Tooltip am Knopf sagt es so: *Nur diese Icons können in der Benachrichtigung groß dargestellt werden, jedes andere Icon fällt auf information-outline zurück*. |
+
+Der Filter **Symbole filtern** wirkt in beiden Ansichten. Rechts neben den Knöpfen steht, wie viele Symbole gerade zu sehen sind (*„… Icons“*).
+
 ## Hinweise
 
 - Die Sammlung ist groß (mehrere tausend Symbole); der Filter ist der schnellste Weg. Tippt man etwa `thermometer`, bleiben die Varianten für Temperatur übrig.

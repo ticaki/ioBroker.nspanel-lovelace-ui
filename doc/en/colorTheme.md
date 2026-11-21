@@ -75,11 +75,36 @@ Legend:
 | fgTimeAdd | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:367 |
 | fgForecast | 1 | 1 | 1 | 1 | 1 | 8+ | pages/screensaver.ts:347 |
 | fgBar | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:363 |
+| fgNotifyHead | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1177 |
+| fgNotifyText | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1177 |
+| bgNotify | 1 | 1 | 1 | 1 | 1 | 1 | pages/screensaver.ts:1177 |
 | mediaArtistOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:556 |
 | mediaArtistOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:557 |
 | mediaTitleOn | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:545 |
 | mediaTitleOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:546 |
 | mediaOnOffColor | 1 | 1 | 1 | 1 | 1 | 1 | pages/pageMedia.ts:564 |
+
+## Colours of the notification
+
+These three colours belong to the [notification on the screensaver](Screensaver-Notify). They are found in the tab **Color theme**, which the admin only shows with the colour theme **User colors**, section **Screensaver**:
+
+| Field | Key | Meaning |
+|---|---|---|
+| **Notification headline** | `fgNotifyHead` | Font colour of the headline (upper line). |
+| **Notification text** | `fgNotifyText` | Font colour of the text below it. |
+| **Notification background** | `bgNotify` | Area behind headline and text: full width, from the headline down to the lower edge of the display or to whatever stays visible below it (depending on the model and the screensaver version). Only from TFT 6.2.0 on and on the web panel – older TFTs keep showing the notification on the background of the screensaver. |
+
+Defaults of the themes: headline and text are white in all themes, as before. The background is the background of the screensaver in the respective theme, lightened by 27 per colour channel – the same distance as with the default theme, the hue stays:
+
+| Theme | Background of the screensaver | Background of the notification |
+|---|---|---|
+| Default | RGB 29/29/29 | RGB 56/56/56 (`#383838`) |
+| Tropical | RGB 0/60/120 | RGB 27/87/147 |
+| Technical | RGB 10/13/30 | RGB 37/40/57 |
+| Sunset | RGB 48/27/63 | RGB 75/54/90 |
+| Vulcano | RGB 180/22/0 | RGB 207/49/27 |
+
+With **User colors** the colour of the field **Notification background** applies. It comes preset with `#383838`, the value of the default theme; cleared, the default theme applies again.
 
 ## Observations
 - Weather colors are currently not directly targeted in the TS code – likely reserved for panel rendering or future logic.

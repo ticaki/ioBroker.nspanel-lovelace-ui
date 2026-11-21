@@ -42,6 +42,8 @@ var import_pageTrash = require("../pages/tools/pageTrash");
 var definition = __toESM(require("../const/definition"));
 var adminShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_panel_setup = require("../tools/panel-setup");
+var import_panel_target = require("./panel-target");
+var import_screensaver_notify_queue = require("../pages/screensaver-notify-queue");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -737,6 +739,9 @@ class Controller extends Library.BaseClass {
       buttonRight: typeof temp.buttonRight === "string" ? temp.buttonRight : "",
       icon: typeof temp.icon === "string" ? temp.icon : void 0,
       iconColor: temp.iconColor != null ? (0, import_tools.getRGBFromValue)(temp.iconColor) : void 0,
+      largeIcon: temp.largeIcon === true,
+      buttonLeftIcon: typeof temp.buttonLeftIcon === "string" ? temp.buttonLeftIcon : void 0,
+      buttonRightIcon: typeof temp.buttonRightIcon === "string" ? temp.buttonRightIcon : void 0,
       textSize: typeof temp.textSize === "string" ? temp.textSize : typeof temp.textSize === "number" ? String(temp.textSize) : void 0,
       colorHeadline: temp.colorHeadline != null ? (0, import_tools.getRGBFromValue)(temp.colorHeadline) : void 0,
       colorText: temp.colorText != null ? (0, import_tools.getRGBFromValue)(temp.colorText) : void 0,
@@ -745,24 +750,12 @@ class Controller extends Library.BaseClass {
       colorButtonRight: temp.colorButtonRight != null ? (0, import_tools.getRGBFromValue)(temp.colorButtonRight) : void 0,
       buzzer: !temp.buzzer || !(temp.buzzer === true || typeof temp.buzzer === "string") ? false : temp.buzzer
     };
-    let panels = [];
-    if (!temp.panel) {
-      panels = this.panels;
-    } else {
-      if (!Array.isArray(temp.panel)) {
-        temp.panel = [temp.panel];
-      }
-      for (const pName of temp.panel) {
-        const panel = this.panels.find((p) => p.name === pName || p.friendlyName === pName);
-        if (!panel) {
-          this.log.error(`setPopupMessage: Panel ${pName} not found`);
-          continue;
-        }
-        panels.push(panel);
-      }
+    const { panels, missing } = (0, import_panel_target.resolvePanelTargets)(this.panels, temp.panel);
+    for (const pName of missing) {
+      this.log.error(`setPopupMessage: Panel ${pName} not found`);
     }
-    const names = [...new Set(panels.map((p) => p.name))];
-    temp.global = details.global && names.length > 1;
+    const names = (0, import_panel_target.uniquePanelNames)(panels);
+    details.global = details.global && names.length > 1;
     for (const name of names) {
       await this.statesControler.setInternalState(
         `${name}/cmd/popupNotificationCustom`,
@@ -770,6 +763,70 @@ class Controller extends Library.BaseClass {
         false
       );
     }
+  }
+  /**
+   * sendTo `screensaverNotify`: without `id` the single notification of the screensaver (heading/headline, text,
+   * enabled - as the `cmd.screenSaver.*Notification` states), with `id` an entry of the queue of the screensaver
+   * (fields of `setPopupNotification`). `panel`: name, friendlyName or topic, string or array, missing = all panels.
+   *
+   * @param data the message of the sendTo
+   * @returns true when at least one panel got the message
+   */
+  async screensaverNotify(data) {
+    if (typeof data !== "object" || data === null || Array.isArray(data)) {
+      this.log.warn(`Invalid message in screensaverNotify: ${JSON.stringify(data)}`);
+      return false;
+    }
+    const message = { ...data };
+    const { panels, missing } = (0, import_panel_target.resolvePanelTargets)(this.panels, message.panel);
+    for (const pName of missing) {
+      this.log.warn(`Panel ${pName} not exists!`);
+    }
+    const names = (0, import_panel_target.uniquePanelNames)(panels.filter((p) => p.screenSaver));
+    if (names.length === 0) {
+      return false;
+    }
+    const details = (0, import_screensaver_notify_queue.parseScreensaverNotifyDetails)(message);
+    if (details) {
+      details.global = details.global && names.length > 1;
+      for (const name of names) {
+        await this.statesControler.setInternalState(
+          `${name}/cmd/screensaverNotificationCustom`,
+          JSON.stringify(details),
+          false
+        );
+      }
+      return true;
+    }
+    const heading = typeof message.heading === "string" ? message.heading : typeof message.headline === "string" ? message.headline : void 0;
+    const enabled = !!message.enabled;
+    for (const name of names) {
+      if (!enabled) {
+        await this.statesControler.setInternalState(
+          `${name}/cmd/screensaverActivateNotification`,
+          false,
+          false
+        );
+      }
+      if (heading !== void 0) {
+        await this.statesControler.setInternalState(
+          `${name}/cmd/screensaverHeadingNotification`,
+          heading,
+          false
+        );
+      }
+      if (typeof message.text === "string") {
+        await this.statesControler.setInternalState(
+          `${name}/cmd/screensaverTextNotification`,
+          message.text,
+          false
+        );
+      }
+      if (enabled) {
+        await this.statesControler.setInternalState(`${name}/cmd/screensaverActivateNotification`, true, false);
+      }
+    }
+    return true;
   }
   async notificationToPanel() {
     if (!this.panels) {

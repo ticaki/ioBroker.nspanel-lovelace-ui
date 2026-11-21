@@ -197,6 +197,13 @@
 .node-box .node-marker-override {
   left: -8px;
 }
+/* geschlossenes Auge (versteckte = gesperrte Seite) unten links, gespiegelt zum Einklapp-Knopf
+   rechts unten - nicht auf der Ecke, dort sitzt der parent-Handle */
+.node-box .node-marker-hidden {
+  top: auto;
+  bottom: -9px;
+  left: 10px;
+}
 .node-marker-icon {
   font-size: 11px !important;
   color: var(--node-text, inherit);

@@ -1194,7 +1194,7 @@
       "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
       "timeout": "timeout~15",
-      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~0"
     },
     "states": {
       "0_userdata.0.e2e.blind.ACTUAL": 50,
@@ -1263,7 +1263,7 @@
       "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
       "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
-      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~0"
     },
     "states": {
       "0_userdata.0.e2e.blind.ACTUAL": 50,
@@ -1311,7 +1311,943 @@
       "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
       "pageType": "pageType~screensaver5~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
-      "weatherUpdate": "weatherUpdate~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+      "weatherUpdate": "weatherUpdate~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~0"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "07 popupNotify3 › NSPanel, TFT 6.0.5 › icon without largeIcon: classic popupNotify with the small icon": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "entityUpdateDetail": "entityUpdateDetail~5~Classic~65504~~~~~~~Text~65535~0~~{U+E739}~65535",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "07 popupNotify3 › NSPanel, TFT 6.0.5 › largeIcon on TFT 6.0.5: classic popupNotify": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "entityUpdateDetail": "entityUpdateDetail~5~Old TFT~65504~~~~~~~Text~65535~0~~{U+E739}~65535",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "07 popupNotify3 › NSPanel, TFT 6.2.0 › font 0: two lines with CR LF, no buttons; the X (bExit popupNotify3) closes": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "entityUpdateDetail": "entityUpdateDetail~5~{U+E739}~65535~The toilet is occupied right now, please wait a\r\nmoment until it is free again~65535~0~~~~~0",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "07 popupNotify3 › NSPanel, TFT 6.2.0 › icon the panel does not have: popupNotify3 with information-outline": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "entityUpdateDetail": "entityUpdateDetail~5~{U+E2FC}~65535~Light on~65535~3~~~~~0",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "07 popupNotify3 › NSPanel, TFT 6.2.0 › largeIcon: popupNotify3 with icon, colors, font and button icons": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~5~{U+E67D}~64512~Severe weather warning~65535~3~{U+E68D}~12874~{U+EE1D}~9220~0",
+      "pageType": "pageType~popupNotify3"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "07 popupNotify3 › NSPanel, TFT 6.2.0 › right button (button3): buttonRight state, the popup goes back to the start page": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "07 popupNotify3 › web panel › largeIcon: popupNotify3, same icons as the panel by default": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "entityUpdateDetail": "entityUpdateDetail~5~{U+E2FC}~65504~Light on~65535~3~~~{U+EE1D}~2016~0",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › buzzer (NSPanel) › buzzer as string → own tone sequence": {
+    "nspanel": {
+      "notify": "notify~Buzz~y~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Buzz~y~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › buzzer (NSPanel) › buzzer: true → default tone when the notification is shown": {
+    "nspanel": {
+      "notify": "notify~Buzz~x~65535~65535"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › buzzer (NSPanel) › no tone for a notification that is not shown, nor for new content of the shown one": {
+    "nspanel": {
+      "notify": "notify~Shown~v2~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Shown~v2~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › buzzer (NSPanel) › no tone with cmd.isBuzzerAllowed false": {
+    "nspanel": {
+      "notify": "notify~Mute~x~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Mute~x~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › compatibility › recipe for old and new versions: heading + headline + enabled: true + topic": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › old way without id › covers a queued notification, after switching off the queue shows again": {
+    "nspanel": {
+      "notify": "notify~Queue~prio 1~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Queue~prio 1~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › old way without id › enabled missing = off": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {
+      "notify": "notify~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › old way without id › heading/text/enabled: true without panel → all panels, answer ok": {
+    "nspanel": {
+      "notify": "notify~Old~old way~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Old~old way~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › old way without id › headline instead of heading, panel as MQTT topic → only this panel": {
+    "nspanel": {
+      "notify": "notify~Old2~headline~65535~65535"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › old way without id › priority, icon and colors have no effect on the old place": {
+    "nspanel": {
+      "notify": "notify~Old5~plain~65535~65535"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › panel › array of friendlyName and topic → both panels": {
+    "nspanel": {
+      "notify": "notify~Array~x~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Array~x~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › panel › by MQTT topic → only this panel": {
+    "nspanel": {
+      "notify": "notify~Target~MQTT topic~65535~65535"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › panel › by friendlyName → only this panel": {
+    "nspanel": {
+      "notify": "notify~Target~friendlyName~65535~65535"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › panel › by name (id of the panel table) → only this panel": {
+    "nspanel": {
+      "notify": "notify~Target~name (id of the panel table)~65535~65535"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › panel › unknown name in an array → ok, the known panel shows it": {
+    "nspanel": {},
+    "web": {
+      "notify": "notify~Partly~x~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › panel › unknown panel → sendToAnyError, nothing shown": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › setPopupNotification answers › success → []": {
+    "nspanel": {},
+    "web": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "entityUpdateDetail": "entityUpdateDetail~5~Popup~65504~~~~~~~x~65535~0~~~",
+      "pageType": "pageType~screensaver~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "timeout": "timeout~15",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › tap on the screensaver › acknowledge to several panels: global by default, a tap removes it on all": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "notify": "notify~~",
+      "pageType": "pageType~screensaver~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "timeout": "timeout~15",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "web": {
+      "notify": "notify~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › tap on the screensaver › acknowledge with global: false: a tap removes it only on this panel": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {
+      "notify": "notify~AckLocal~x~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › tap on the screensaver › acknowledge: a tap removes it, the panel stays on the screensaver": {
+    "nspanel": {
+      "notify": "notify~Under~x~65535~65535"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › tap on the screensaver › information: a tap passes to the page, the notification comes back with the screensaver": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "notify": "notify~Info~stays~65535~65535",
+      "pageType": "pageType~screensaver~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "timeout": "timeout~15",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: fields › backgroundBlink: second background on the web panel": {
+    "nspanel": {
+      "notify": "notify~Blink~x~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Blink~x~65535~65535~14791~39171"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: fields › colorHeadline / colorText as {r,g,b} and #rrggbb": {
+    "nspanel": {
+      "notify": "notify~Color2~x~31~65504"
+    },
+    "web": {
+      "notify": "notify~Color2~x~31~65504~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: fields › fields of the popup are ignored without error": {
+    "nspanel": {
+      "notify": "notify~PopupFields~x~65535~65535"
+    },
+    "web": {
+      "notify": "notify~PopupFields~x~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: fields › icon stands in front of the headline": {
+    "nspanel": {
+      "notify": "notify~{U+E729} Wash~done~65535~65535"
+    },
+    "web": {
+      "notify": "notify~{U+E729} Wash~done~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › default priority is 50, the smallest priority is shown, FIFO at the same priority": {
+    "nspanel": {
+      "notify": "notify~P51~x~65535~65535"
+    },
+    "web": {
+      "notify": "notify~P51~x~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › enabled: true is ignored with id: the message goes to the queue, not to the old place": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {
+      "notify": "notify~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › priority <= -100 removes all ids with this prefix, others stay": {
+    "nspanel": {
+      "notify": "notify~Keep~other prefix~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Keep~other prefix~65535~65535~14791"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › queue of 10: an 11th less important one is dropped itself": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {
+      "notify": "notify~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › queue of 10: an 11th more important one pushes out the least important": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {
+      "notify": "notify~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › remove with priority 0 and with enabled: false": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {
+      "notify": "notify~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › same id replaces the content and keeps its place among the same priority": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › same priority as a notification of the admin list: sendTo wins": {
+    "nspanel": {
+      "notify": "notify~~"
+    },
+    "web": {
+      "notify": "notify~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "08 Screensaver notify (sendTo) › with id: queue › show on all panels, answer ok": {
+    "nspanel": {
+      "notify": "notify~Show~queue~65535~65535"
+    },
+    "web": {
+      "notify": "notify~Show~queue~65535~65535~14791"
     },
     "states": {
       "0_userdata.0.e2e.blind.ACTUAL": 50,

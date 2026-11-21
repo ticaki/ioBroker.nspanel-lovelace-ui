@@ -42,10 +42,10 @@ export interface StoreOptions {
 }
 
 /** Page types the display does not answer with `event,renderCurrentPage` */
-const NO_RENDER_ACK = new Set(['pageStartup', 'popupNotify', 'popupNotify2']);
+const NO_RENDER_ACK = new Set(['pageStartup', 'popupNotify', 'popupNotify2', 'popupNotify3']);
 
 /** Popups that run their own timeout (the `timeout` field of the payload, 0 = stays open) */
-const OWN_TIMEOUT = new Set(['popupNotify', 'popupNotify2']);
+const OWN_TIMEOUT = new Set(['popupNotify', 'popupNotify2', 'popupNotify3']);
 
 const POPUP_EVENT_PREFIX = 'event,pageOpenDetail,';
 

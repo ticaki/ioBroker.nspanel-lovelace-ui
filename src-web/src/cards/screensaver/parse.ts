@@ -1,5 +1,5 @@
 import type { ParseContext } from '../CardContract';
-import { field, parseEntityList, toNumber } from '../../protocol/split';
+import { ENTITY_FIELDS, field, parseEntityList, toNumber } from '../../protocol/split';
 import type { Entity6, PanelModel } from '../../protocol/types';
 import { nextionFont, splitFontSuffix } from '../../protocol/fonts';
 
@@ -41,13 +41,28 @@ export interface StatusIcon {
 export interface ScreensaverNotify {
     heading: string;
     text: string;
+    /** field 3, RGB565 colour of the heading, `undefined` = not sent (the colour of the main text is used) */
+    headColor?: number;
+    /** field 4, RGB565 colour of the text, `undefined` = not sent (the colour of the main text is used) */
+    textColor?: number;
+    /** field 5, RGB565 background of the notification area, `undefined` = not sent (the page shows through) */
+    background?: number;
+    /** field 6, RGB565 second background: with field 5 both alternate every second, `undefined` = no blinking */
+    blink?: number;
 }
 
 export interface ScreensaverModel {
     /** entities of the last `weatherUpdate`, in the order the adapter sends them */
     entities: Entity6[];
+    /**
+     * long press mask of the last `weatherUpdate` (screensaver2/screensaver5): bit (N-1) set = indicator N has a long
+     * press, only these start it ({@link parseLongPressMask})
+     */
+    longPressMask: number;
     colors: ScreensaverColors | undefined;
     status: [StatusIcon, StatusIcon];
+    /** field 7 of `statusUpdate` is `1`: the clock blinks red/white until the field is gone ({@link parseClockBlink}) */
+    clockBlink: boolean;
     /** `undefined` = no notification shown */
     notify: ScreensaverNotify | undefined;
 }
@@ -132,7 +147,14 @@ export function emptyStatusIcon(): StatusIcon {
 }
 
 export function initial(): ScreensaverModel {
-    return { entities: [], colors: undefined, status: [emptyStatusIcon(), emptyStatusIcon()], notify: undefined };
+    return {
+        entities: [],
+        longPressMask: 0,
+        colors: undefined,
+        status: [emptyStatusIcon(), emptyStatusIcon()],
+        clockBlink: false,
+        notify: undefined,
+    };
 }
 
 /** The real display ignores `entityUpd` on the screensaver, so does this module */
@@ -140,9 +162,23 @@ export function parseEntityUpd(_args: string[], prev: ScreensaverModel, _ctx: Pa
     return prev;
 }
 
-/** `weatherUpdate~[entity]~[entity]~…` */
+/** `weatherUpdate~[entity]~[entity]~…[~mask]` - the entities, without the long press mask behind them */
 export function parseWeatherUpdate(args: string[]): Entity6[] {
-    return parseEntityList(args, 0);
+    return parseEntityList(args.slice(0, args.length - (args.length % ENTITY_FIELDS)), 0);
+}
+
+/**
+ * The long press mask behind the last entity of `weatherUpdate` (screensaver2/screensaver5, like the TFT 6.2.0):
+ * decimal, bit (N-1) for indicator N. Missing or empty: 0 - no indicator starts a long press.
+ *
+ * @param args the fields after `weatherUpdate`
+ */
+export function parseLongPressMask(args: string[]): number {
+    if (args.length % ENTITY_FIELDS !== 1) {
+        return 0;
+    }
+    const mask = toNumber(args[args.length - 1], 0);
+    return Number.isInteger(mask) && mask > 0 ? mask : 0;
 }
 
 /**
@@ -176,7 +212,7 @@ export function parseColor(args: string[]): ScreensaverColors {
     };
 }
 
-/** `statusUpdate~icon1~icon1Color~icon2~icon2Color~icon1Font~icon2Font` (font `1` = big icon) */
+/** `statusUpdate~icon1~icon1Color~icon2~icon2Color~icon1Font~icon2Font[~clockBlink]` (font `1` = big icon) */
 export function parseStatusUpdate(args: string[]): [StatusIcon, StatusIcon] {
     return [
         { icon: field(args, 0), color: toNumber(args[1], 65535), big: field(args, 4) === '1' },
@@ -184,11 +220,45 @@ export function parseStatusUpdate(args: string[]): [StatusIcon, StatusIcon] {
     ];
 }
 
-/** `notify~heading~text`; both empty = clear the notification. Line breaks of the text (`\r\n`) are kept. */
+/**
+ * Field 7 of `statusUpdate` (behind the font fields, TFT 6.2.0 and web panels): `1` lets the clock blink red/white,
+ * anything else (empty, `0`, missing) ends it.
+ *
+ * @param args the fields after `statusUpdate`
+ */
+export function parseClockBlink(args: string[]): boolean {
+    return field(args, 6) === '1';
+}
+
+/**
+ * `notify~heading~text~headColor~textColor~background` (colours RGB565, an empty or missing field is not set); heading
+ * and text empty = clear the notification. Line breaks of the text (`\r\n`) are kept.
+ */
 export function parseNotify(args: string[]): ScreensaverNotify | undefined {
     const heading = field(args, 0);
     const text = field(args, 1).replace(/\r\n?/g, '\n');
-    return heading === '' && text === '' ? undefined : { heading, text };
+    if (heading === '' && text === '') {
+        return undefined;
+    }
+    const result: ScreensaverNotify = { heading, text };
+    const headColor = colorField(args, 2);
+    const textColor = colorField(args, 3);
+    const background = colorField(args, 4);
+    const blink = colorField(args, 5);
+    if (headColor !== undefined) {
+        result.headColor = headColor;
+    }
+    if (textColor !== undefined) {
+        result.textColor = textColor;
+    }
+    if (background !== undefined) {
+        result.background = background;
+        // the HMI reads field 6 only with field 5
+        if (blink !== undefined) {
+            result.blink = blink;
+        }
+    }
+    return result;
 }
 
 export function handleCommand(
@@ -199,11 +269,11 @@ export function handleCommand(
 ): ScreensaverModel | undefined {
     switch (cmd) {
         case 'weatherUpdate':
-            return { ...prev, entities: parseWeatherUpdate(args) };
+            return { ...prev, entities: parseWeatherUpdate(args), longPressMask: parseLongPressMask(args) };
         case 'color':
             return { ...prev, colors: parseColor(args) };
         case 'statusUpdate':
-            return { ...prev, status: parseStatusUpdate(args) };
+            return { ...prev, status: parseStatusUpdate(args), clockBlink: parseClockBlink(args) };
         case 'notify':
             return { ...prev, notify: parseNotify(args) };
         default:

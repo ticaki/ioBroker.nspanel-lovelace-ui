@@ -16,6 +16,7 @@ on:
             - 'script/build-icon-page.ts'
             - 'script/icons.json'
             - 'script/custom-icons.json'
+            - 'templates/popup-notify3-icons.json'
             - '.github/workflows/pages.yml'
     workflow_dispatch:
 

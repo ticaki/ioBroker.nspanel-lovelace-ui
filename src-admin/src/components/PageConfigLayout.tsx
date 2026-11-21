@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ConfirmDialog from './ConfirmDialog';
 import { CardTypeIcon } from './CardTypeBadge';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
@@ -50,6 +51,16 @@ import {
  */
 export function getDisplayName(entry: PageConfigEntry): string {
     return isMainPageEntry(entry) ? `${entry.uniqueName} (${mainPageName})` : entry.uniqueName;
+}
+
+/**
+ * Whether a page is hidden - locked on the panel while it hides pages (hideCards).
+ *
+ * @param entry Admin page configuration entry.
+ * @returns True if the entry has `hidden: true`.
+ */
+export function isHiddenEntry(entry: PageConfigEntry): boolean {
+    return 'hidden' in entry && entry.hidden === true;
 }
 
 export type PageCardType =
@@ -516,6 +527,14 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                 >
                     {entry ? getDisplayName(entry) : name}
                 </Box>
+                {entry && isHiddenEntry(entry) ? (
+                    <Tooltip title={this.props.getText('page_hidden_locked')}>
+                        <VisibilityOffIcon
+                            aria-label={this.props.getText('page_hidden_locked')}
+                            sx={{ fontSize: LIST_TYPE_ICON_SIZE, flexShrink: 0, color: 'text.secondary' }}
+                        />
+                    </Tooltip>
+                ) : null}
             </Typography>
         );
     }
