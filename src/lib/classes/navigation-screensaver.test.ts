@@ -184,14 +184,14 @@ describe('lib/controller/panel - screensaver at once', () => {
         expect(on.calls[0]).to.equal('show');
     });
 
-    it('the state: true shows it and is confirmed, false only confirms', async () => {
+    it('the state: every write without ack shows it and is confirmed, whatever the value', async () => {
         const id = 'panels.p.cmd.screenSaver.activate';
         const p = panelWith();
         await p.onStateChange(id, { val: true, ack: false });
         expect(p.calls).to.deep.equal(['show', 'resetPosition', 'reset', `write ${id} false`]);
         const q = panelWith();
         await q.onStateChange(id, { val: false, ack: false });
-        expect(q.calls).to.deep.equal([`write ${id} false`]);
+        expect(q.calls).to.deep.equal(['show', 'resetPosition', 'reset', `write ${id} false`]);
         const r = panelWith();
         await r.onStateChange(id, { val: true, ack: true });
         expect(r.calls).to.deep.equal([]);

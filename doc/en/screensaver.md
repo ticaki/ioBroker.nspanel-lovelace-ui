@@ -554,7 +554,7 @@ The screensaver can also be called up without waiting for the timeout of the pan
 |---|---|
 | **Slot of a page** | In the [Pageitem Configuration](PageConfig-Dialoge#1-pageitem-configuration) the choice of the **Target page** – also for the long press – holds the entry **Screensaver**. |
 | **Navigation of a page** | The four fields *prev*, *next*, *home* and *parent* under [panel assignment and navigation](PageConfig#panel-assignment-and-navigation) offer **Screensaver** as well. The arrow on the panel shows the icon `power-sleep` for it. |
-| **State** | Set `panels.<panel>.cmd.screenSaver.activate` (role `button`) to `true`; the adapter resets it to `false` afterwards. |
+| **State** | Set `panels.<panel>.cmd.screenSaver.activate` (role `button`) — every write triggers it, the value does not matter; the adapter resets it to `false` afterwards. |
 | **Navigation flow** | In the [navigation flow](naviFlow) a node **Screensaver** of its own appears as soon as something leads there – a target only, not editable. |
 
 Limits: there is no such target for the start page, and for the action of an indicator on the screensaver itself it is not offered. If the panel is offline or shows the screensaver already, nothing happens.

@@ -1848,9 +1848,8 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'screenSaver.activate': {
-                    if (state.val) {
-                        await this.activateScreensaver();
-                    }
+                    // a button: every write without ack fires, the value does not matter
+                    await this.activateScreensaver();
                     await this.library.writedp(
                         `panels.${this.name}.cmd.screenSaver.activate`,
                         false,
@@ -1893,10 +1892,20 @@ export class Panel extends BaseClass {
 
                 case 'buttons.left': {
                     await this.onDetachButtonEvent('left');
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.buttons.left`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.buttons.left,
+                    );
                     break;
                 }
                 case 'buttons.right': {
                     await this.onDetachButtonEvent('right');
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.buttons.right`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.buttons.right,
+                    );
                     break;
                 }
                 case 'screenSaver.layout': {
@@ -2034,6 +2043,11 @@ export class Panel extends BaseClass {
                             false,
                         );
                     }
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.pagePopup.activate`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.pagePopup.activate,
+                    );
                     break;
                 }
                 case 'isBuzzerAllowed': {

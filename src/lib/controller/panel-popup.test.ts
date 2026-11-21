@@ -13,12 +13,20 @@ import type * as Types from '../types/types';
 function withDb(db: Record<string, { val: unknown } | undefined>): {
     panel: Panel;
     details: Record<string, unknown>[];
+    writes: string[];
 } {
     const details: Record<string, unknown>[] = [];
+    const writes: string[] = [];
     const panel = Object.create(Panel.prototype) as Panel;
     Object.assign(panel, {
         name: 'NSPanel1',
-        library: { readdb: (id: string): { val: unknown } | undefined => db[id] },
+        library: {
+            readdb: (id: string): { val: unknown } | undefined => db[id],
+            writedp: async (id: string, val: unknown, _obj: unknown, ack = true): Promise<void> => {
+                writes.push(`${id} ${String(val)} ${String(ack)}`);
+                return Promise.resolve();
+            },
+        },
         statesControler: {
             setInternalState: async (_id: string, val: string): Promise<void> => {
                 details.push(JSON.parse(val));
@@ -27,12 +35,12 @@ function withDb(db: Record<string, { val: unknown } | undefined>): {
         },
         controller: { panels: [] },
     });
-    return { panel, details };
+    return { panel, details, writes };
 }
 
 describe('Panel.onStateChange - cmd.pagePopup.activate', () => {
-    const activate = (panel: Panel): Promise<void> => {
-        const state: Types.nsPanelState = { val: true, ack: false, ts: 0, lc: 0, from: '', q: 0 };
+    const activate = (panel: Panel, val: boolean = true): Promise<void> => {
+        const state: Types.nsPanelState = { val, ack: false, ts: 0, lc: 0, from: '', q: 0 };
         return panel.onStateChange('panels.NSPanel1.cmd.pagePopup.activate', state);
     };
 
@@ -48,4 +56,29 @@ describe('Panel.onStateChange - cmd.pagePopup.activate', () => {
         await activate(panel);
         expect(details[0].textSize).to.equal('5');
     });
+
+    it('fires on every write without ack and resets the button to false with ack', async () => {
+        for (const val of [true, false]) {
+            const { panel, details, writes } = withDb({});
+            await activate(panel, val);
+            expect(details).to.have.length(1);
+            expect(writes).to.deep.equal(['panels.NSPanel1.cmd.pagePopup.activate false true']);
+        }
+    });
+});
+
+describe('Panel.onStateChange - cmd.buttons.left/right', () => {
+    for (const side of ['left', 'right'] as const) {
+        it(`${side}: fires on every write without ack and resets the button to false with ack`, async () => {
+            for (const val of [true, false]) {
+                const { panel, writes } = withDb({});
+                const state: Types.nsPanelState = { val, ack: false, ts: 0, lc: 0, from: '', q: 0 };
+                await panel.onStateChange(`panels.NSPanel1.cmd.buttons.${side}`, state);
+                expect(writes).to.deep.equal([
+                    `panels.NSPanel1.buttons.${side} true true`,
+                    `panels.NSPanel1.cmd.buttons.${side} false true`,
+                ]);
+            }
+        });
+    }
 });
