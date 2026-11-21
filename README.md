@@ -159,7 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (tt-tom17) Admin translations: the nine translated languages were missing the same 36 keys and showed the raw key names instead - the whole cardPower editor, the labels of the navigation tabs, the Tasmota tools panel with its help link and the state hints of the channel dialog are translated now
+- (tt-tom17) Revision of the language files
 
 ### 2.4.1 (2026-11-18)
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
