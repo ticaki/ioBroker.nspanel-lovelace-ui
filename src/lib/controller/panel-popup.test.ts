@@ -187,3 +187,53 @@ describe('Panel.onDetachButtonEvent - web clone of a hardware panel', () => {
         }
     });
 });
+
+describe('Panel.setBigIcon - cmd/bigIconLeft/Right in a web clone', () => {
+    /**
+     * @param clone a web clone (kind web with sourceTopic) or the hardware panel
+     * @returns the panel and what it did, in order
+     */
+    function bigIcon(clone: boolean): { panel: Panel; calls: string[] } {
+        const calls: string[] = [];
+        const panel = Object.create(Panel.prototype) as Panel;
+        Object.assign(panel, {
+            name: 'NSPanel1',
+            options: clone ? { kind: 'web', sourceTopic: 'nspanel1' } : { kind: 'tasmota' },
+            info: {
+                nspanel: { bigIconLeft: false, bigIconRight: false, model: 'eu', displayVersion: '6.2.0' },
+                tasmota: {},
+                internal: {},
+            },
+            adapter: { config: { useBetaTFT: false } },
+            controller: {
+                panels: [],
+                globalPanelInfo: { availableTasmotaFirmwareVersion: '', availableTftFirmwareVersion: {} },
+            },
+            screenSaver: {
+                HandleScreensaverStatusIcons: async (): Promise<void> => void calls.push('statusIcons'),
+            },
+            library: {
+                writeFromJson: async (id: string): Promise<void> => void calls.push(`writeFromJson:${id}`),
+            },
+        });
+        return { panel, calls };
+    }
+    // onInternalCommand is an instance field (set in the constructor) - its case calls setBigIcon
+    const command = (panel: Panel, side: 'Left' | 'Right'): Promise<void> => panel.setBigIcon(side, true);
+
+    for (const side of ['Left', 'Right'] as const) {
+        it(`bigIcon${side}: the clone sets it and redraws but does not write info.*`, async () => {
+            const web = bigIcon(true);
+            await command(web.panel, side);
+            expect(web.panel.info.nspanel[`bigIcon${side}`]).to.equal(true);
+            expect(web.calls).to.deep.equal(['statusIcons']);
+        });
+
+        it(`bigIcon${side}: the hardware panel writes info.*`, async () => {
+            const hw = bigIcon(false);
+            await command(hw.panel, side);
+            expect(hw.panel.info.nspanel[`bigIcon${side}`]).to.equal(true);
+            expect(hw.calls).to.deep.equal(['statusIcons', 'writeFromJson:panels.NSPanel1.info']);
+        });
+    }
+});

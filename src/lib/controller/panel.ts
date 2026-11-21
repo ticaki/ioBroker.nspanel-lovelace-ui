@@ -2995,6 +2995,20 @@ export class Panel extends BaseClass {
     }
     sendtempOffsetToPanel(_value: number): void {}
 
+    /**
+     * `cmd/bigIconLeft`/`Right`: switches the big status icon and redraws the screensaver icons. A web
+     * clone gets the command as well (see onInternalCommand) - its own display follows, but info.* belongs
+     * to the hardware panel, writeInfo skips the clone.
+     *
+     * @param side the icon
+     * @param val shown big or not
+     */
+    async setBigIcon(side: 'Left' | 'Right', val: boolean): Promise<void> {
+        this.info.nspanel[`bigIcon${side}`] = val;
+        this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
+        await this.writeInfo();
+    }
+
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (!id.startsWith(this.name)) {
             return null;
@@ -3033,25 +3047,11 @@ export class Panel extends BaseClass {
                 }
 
                 case 'cmd/bigIconLeft': {
-                    this.info.nspanel.bigIconLeft = !!state.val;
-                    this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
-                    await this.library.writeFromJson(
-                        `panels.${this.name}.info`,
-                        'panel.panels.info',
-                        definition.genericStateObjects,
-                        this.info,
-                    );
+                    await this.setBigIcon('Left', !!state.val);
                     break;
                 }
                 case 'cmd/bigIconRight': {
-                    this.info.nspanel.bigIconRight = !!state.val;
-                    this.screenSaver && (await this.screenSaver.HandleScreensaverStatusIcons());
-                    await this.library.writeFromJson(
-                        `panels.${this.name}.info`,
-                        'panel.panels.info',
-                        definition.genericStateObjects,
-                        this.info,
-                    );
+                    await this.setBigIcon('Right', !!state.val);
                     break;
                 }
                 case 'cmd/screenSaverTimeout': {
