@@ -139,7 +139,8 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
             return null;
         }
         const plot = plotFor(model.kind, this.props.global.model);
-        const value = (Math.abs(bar.value) / 10).toFixed(1);
+        // `x0` is a float field with one decimal, the value keeps its sign
+        const value = (bar.value / 10).toFixed(1);
         return (
             <text
                 data-chart-value=""

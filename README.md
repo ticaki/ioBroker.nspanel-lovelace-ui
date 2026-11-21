@@ -163,6 +163,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) line chart: points are thinned out when the message would exceed the display limit (e.g. 24 h with 289 points) - the chart was black on the panel; first, last, minimum and maximum stay #925
+- (ticaki) web panel: bar chart follows the HMI axis logic (since TFT 6.0.3) - the y-axis is computed from the values (zero line, negative bars downwards, ticks with one decimal), bars of large values such as temperatures were flat on the base line #925
 - (ticaki) adapter start no longer restarts a Tasmota that is flashing a TFT
 - (ticaki) cmd.goToNavigationPoint: values written while a page change is running are queued - only the newest one is executed afterwards, several pages no longer become visible at the same time
 - (ticaki) admin: the frame of the color theme select in the global settings no longer has an empty gap
