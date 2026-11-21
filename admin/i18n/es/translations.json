@@ -117,7 +117,7 @@
     "StateObjects.panel": "Paneles",
     "StateObjects.power1": "Relé 1",
     "StateObjects.power2": "Relé 2",
-    "StateObjects.safeboot": "Bota segura",
+    "StateObjects.safeboot": "Arranque seguro",
     "StateObjects.screenSaver.clockBlink": "El reloj parpadea",
     "StateObjects.screenSaver.doubleClick": "Hacer doble clic",
     "StateObjects.screenSaver.infoIcon": "Icono de información",

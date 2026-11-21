@@ -163,6 +163,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) the panel's own states `cmd.power1`, `cmd.power2` and the new button `cmd.TasmotaRestart` can be selected as data points (e.g. screensaver indicator) - they show and switch the relays / restart Tasmota
+- (ticaki) fixed the wrong translations of the state name `safeboot` (fr, es, pt, ru, uk)
 
 ### 2.5.0 (2026-11-21)
 - (ticaki) beta TFT 6.2.0, notification popup: new option `largeIcon` - big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`); older TFTs show the classic popup, without `largeIcon` nothing changes; the admin icon tab can filter these icons; `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font)

@@ -117,7 +117,7 @@
     "StateObjects.panel": "Панели",
     "StateObjects.power1": "Реле 1",
     "StateObjects.power2": "Реле 2",
-    "StateObjects.safeboot": "Безопасный ботинок",
+    "StateObjects.safeboot": "Безопасная загрузка",
     "StateObjects.screenSaver.clockBlink": "Часы мигают",
     "StateObjects.screenSaver.doubleClick": "Двойной щелчок",
     "StateObjects.screenSaver.infoIcon": "Информация значок",

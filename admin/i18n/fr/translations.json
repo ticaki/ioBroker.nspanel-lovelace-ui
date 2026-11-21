@@ -117,7 +117,7 @@
     "StateObjects.panel": "Panneaux",
     "StateObjects.power1": "Relais 1",
     "StateObjects.power2": "Relais 2",
-    "StateObjects.safeboot": "Coffre-fort",
+    "StateObjects.safeboot": "Démarrage sécurisé",
     "StateObjects.screenSaver.clockBlink": "L'horloge clignote",
     "StateObjects.screenSaver.doubleClick": "Double cliquer",
     "StateObjects.screenSaver.infoIcon": "Icône d'informations",
