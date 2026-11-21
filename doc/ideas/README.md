@@ -11,4 +11,5 @@ Wird eine Idee umgesetzt, wandert der Ordner nach `doc/archiv/` oder wird gelös
 
 | Idee | Stand |
 |---|---|
+| [Gerät mit Details](device-details/README.md) | Konzept entschieden (2026-11-21), Umsetzung in `feat/device-details` |
 | [Benachrichtigungsseite mit großem Icon](notify-page/README.md) | Testseite `popupNotify3` in HMI 6.2.0 im Emulator geprüft (2026-11-18), Adapter-Anbindung offen |
