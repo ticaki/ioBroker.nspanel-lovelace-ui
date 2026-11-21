@@ -1,4 +1,17 @@
 # Older changes
+## 2.2.0 (2026-11-12)
+- (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
+- (ticaki) admin: export and import the configuration of one panel (merge or overwrite completely, conflict review, secrets only on request)
+- (ticaki) screensaver: long press action and own icon font for indicators (TFT 6.0.9), new indicator action "values to cycle through", trash date templates `text.trash.next` / `text.trash.afterNext`
+- (ticaki) screensaver: an indicator only acts when an action is configured, the option "indicators act as buttons" is removed - **check your indicators**
+- (ticaki) screensaver: only changed values are sent, a press shows its result at once; fixes for TFT 6.0.8/6.1.0 indicators, Bright Sky sunrise, battery icons and the color scale in the admin
+- (ticaki) admin: colors follow the color theme of the instance, developer tab with "Create test states"
+- (ticaki) navigation: a missing target opens the system page "Nav error"; the service page no longer mixes up the navigation of several panels
+- (ticaki) panel: Tasmota safeboot is detected, messages longer than 1017 bytes are reported, long headlines are shortened with …
+- (ticaki) fixes: status datapoint of new alarm/unlock pages, emulator detection, less info logging at startup
+- (tt-tom17) admin: QR, chart, trash and menu page editors reworked (clearer labels, menu preview like the panel, trash "Apply selection" fills the page completely), remaining fixed texts translated
+- (tt-tom17) pageQR: WPA2 is the default wifi encryption
+
 ## 2.1.0 (2026-11-05)
 - (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel
 - (ticaki) popupTimer repaired: an internal timer shows its time in the list, stays at 00:00 with Finish until confirmed and can be controlled through SET and STATUS; external timers count in seconds (ms with unit ms), the alarm clock uses local time and On/Off; a `level.timer` item can use the timer of the screensaver of its panel
