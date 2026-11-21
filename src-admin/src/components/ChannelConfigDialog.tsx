@@ -18,6 +18,9 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    FormLabel,
+    Radio,
+    RadioGroup,
 } from '@mui/material';
 import { Color, type ColorThemenInterface, type RGB } from '../../../src/lib/const/Color';
 import { loadAdapterColorTheme, resolveThemeColor } from '../adapterColorTheme';
@@ -37,6 +40,15 @@ import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
+import DeviceDetailsSection, { isBlockingDeviceError } from './DeviceDetailsSection';
+import {
+    isDeviceDetailsConfig,
+    updatedDeviceDetailsLearned,
+    type DeviceDetailsConfig,
+    type DeviceDetailsLearned,
+    type DeviceSelectionError,
+    type DeviceShortPress,
+} from '../../../src/lib/types/deviceDetails';
 import type {
     IconScaleElement,
     AdminPageItemConfig,
@@ -152,6 +164,10 @@ type ChannelConfigDialogProps = {
     initialChannelId?: string;
     /** Trigger-Button ausblenden; Dialog wird per openWith()-Methode geöffnet */
     hideTriggerButton?: boolean;
+    /** device with details: the learned ticks per adapter (native `deviceDetailsLearned`) */
+    deviceDetailsLearned?: DeviceDetailsLearned;
+    /** device with details: the learned ticks changed with a saved item */
+    onDeviceDetailsLearnedChange?: (learned: DeviceDetailsLearned) => void;
 };
 
 interface ChannelConfigDialogState {
@@ -243,6 +259,10 @@ interface ChannelConfigDialogState {
     maxValueColorTemp: number | undefined;
     /** Light roles: color mode switched on */
     colormode: boolean;
+    /** device with details (doc/ideas/device-details): null = the item is no device item */
+    device: DeviceDetailsConfig | null;
+    /** the reason of the adapter why the device cannot be used, undefined = ok or no answer (adapter offline) */
+    deviceError: DeviceSelectionError | undefined;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -263,6 +283,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private colorDialogRef = React.createRef<ChannelColorDialog>();
     private modeListDialogRef = React.createRef<ChannelModeListDialog>();
     private rawDialogRef = React.createRef<RawItemConfigDialog>();
+    /** the device configuration of the item when the dialog was opened - the learned ticks change only with its ticks */
+    private deviceBefore: DeviceDetailsConfig | undefined = undefined;
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -332,6 +354,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             minValueColorTemp: undefined,
             maxValueColorTemp: undefined,
             colormode: false,
+            device: null,
+            deviceError: undefined,
         };
     }
 
@@ -441,7 +465,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             minValueColorTemp: typeof data?.minValueColorTemp === 'number' ? data.minValueColorTemp : undefined,
             maxValueColorTemp: typeof data?.maxValueColorTemp === 'number' ? data.maxValueColorTemp : undefined,
             colormode: data?.colormode === true,
+            device: isDeviceDetailsConfig(data?.device) ? { ...data.device, entries: [...data.device.entries] } : null,
+            deviceError: undefined,
         });
+        this.deviceBefore = isDeviceDetailsConfig(data?.device) ? structuredClone(data.device) : undefined;
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
         } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
@@ -598,10 +625,25 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         return !this.state.raw && this.isLongPressAllowed();
     }
 
-    /** the item takes a long press (page type and kind of item) - independent of the raw mode */
+    /**
+     * the item takes a long press (page type and kind of item) - independent of the raw mode; the long press of a
+     * device item opens its detail page
+     */
     private isLongPressAllowed(): boolean {
-        const { channelRole, isCustom, isNavigation } = this.state;
-        return isLongPressCard(this.props.currentPageCard) && (channelRole === 'button' || isCustom || isNavigation);
+        const { channelRole, isCustom, isNavigation, device } = this.state;
+        return (
+            device === null &&
+            isLongPressCard(this.props.currentPageCard) &&
+            (channelRole === 'button' || isCustom || isNavigation)
+        );
+    }
+
+    /**
+     * The kind "device with details" is offered where a long press (grid pages) or a tap on the left part of an item
+     * (cardEntities) reaches the item ({@link isLongPressCard}) - a stored device item keeps it everywhere.
+     */
+    private isDeviceAllowed(): boolean {
+        return this.state.device !== null || isLongPressCard(this.props.currentPageCard);
     }
 
     /**
@@ -748,11 +790,20 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             maxValueColorTemp: lightRange(this.state.maxValueColorTemp),
             colormode: colormode ? true : undefined,
         };
+        const { device } = this.state;
         return {
             channelId: channelId,
             role: channelRole ?? undefined,
             name,
             isNavigation,
+            device:
+                device !== null && !isNavigation
+                    ? {
+                          deviceId: device.deviceId.trim(),
+                          shortPress: device.shortPress ?? 'state',
+                          entries: device.entries,
+                      }
+                    : undefined,
             type: isCustom ? 'custom' : undefined,
             targetPage: targetPageOut,
             targetPageLongPress: targetPageLongPressOut,
@@ -783,6 +834,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private commitSave(config: AdminPageItemConfig): void {
         if (this.props.onSave) {
             this.props.onSave(config);
+        }
+        if (config.device && !config.useNative && this.props.onDeviceDetailsLearnedChange) {
+            const learned = updatedDeviceDetailsLearned(
+                this.props.deviceDetailsLearned ?? {},
+                this.deviceBefore,
+                config.device,
+            );
+            if (learned) {
+                this.props.onDeviceDetailsLearnedChange(learned);
+            }
         }
         this.handleClose();
     }
@@ -1264,6 +1325,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             isNavigation: checked,
             targetPage: checked ? this.state.targetPage : '',
             isCustom: dropCustom ? false : this.state.isCustom,
+            device: checked ? null : this.state.device,
         });
         if (dropCustom) {
             void this.checkChannelExists(this.state.channelId.valueStateId, false);
@@ -1271,7 +1333,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private handleCustomChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const checked = event.target.checked;
+        this.setCustom(event.target.checked);
+    };
+
+    /**
+     * Custom item (a state switched on/off) or alias channel.
+     *
+     * @param checked true = custom item
+     */
+    private setCustom(checked: boolean): void {
+        if (checked === this.state.isCustom) {
+            return;
+        }
         const dropNavigation = checked && this.state.isNavigation;
         this.setState({
             isCustom: checked,
@@ -1280,7 +1353,169 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             targetPage: dropNavigation ? '' : this.state.targetPage,
         });
         void this.checkChannelExists(this.state.channelId.valueStateId, checked);
+    }
+
+    /**
+     * The kind of the item: standard (channel, custom button, navigation) or device with details. A new device item
+     * switches a state of the device on a short tap; the channel / state of the standard item does not belong to it.
+     *
+     * @param kind the kind
+     */
+    private handleKindChange = (kind: string): void => {
+        const toDevice = kind === 'device';
+        if (toDevice === (this.state.device !== null)) {
+            return;
+        }
+        this.setState({
+            device: toDevice ? { deviceId: '', shortPress: 'state', entries: [] } : null,
+            deviceError: undefined,
+            isNavigation: false,
+            targetPage: '',
+            isCustom: toDevice,
+            channelId: emptyChannelValueConfig(''),
+            channelExists: null,
+            channelRole: null,
+            stateIsWriteable: null,
+            roleIsValid: null,
+            datapointErrors: [],
+            datapointDuplicates: [],
+            checkingChannel: false,
+        });
     };
+
+    private handleDeviceDetailsChange = (
+        device: DeviceDetailsConfig,
+        error: DeviceSelectionError | undefined,
+    ): void => {
+        this.setState({ device, deviceError: error });
+    };
+
+    /**
+     * Short tap of a device item: a state of the device (custom item) or the popup of an alias channel; the chosen
+     * state / channel belongs to the old way and is dropped.
+     *
+     * @param shortPress the new short tap
+     */
+    private handleDeviceShortPressChange = (shortPress: DeviceShortPress): void => {
+        const { device } = this.state;
+        if (!device || (device.shortPress ?? 'state') === shortPress) {
+            return;
+        }
+        this.setState({
+            device: { ...device, shortPress },
+            isCustom: shortPress === 'state',
+            channelId: emptyChannelValueConfig(''),
+            channelExists: null,
+            channelRole: null,
+            roleIsValid: null,
+            datapointErrors: [],
+            datapointDuplicates: [],
+        });
+    };
+
+    /**
+     * Short tap `state`: the chosen state of the device is the id of the custom item.
+     *
+     * @param id the state, '' = none
+     */
+    private handleDeviceStateChange = (id: string): void => {
+        if (id === this.state.channelId.valueStateId) {
+            return;
+        }
+        this.setState({ channelId: { ...this.state.channelId, valueStateId: id }, channelExists: null });
+        if (id) {
+            void this.checkChannelExists(id, true);
+        }
+    };
+
+    /** the kind of the item at the top of the dialog: standard or device with details */
+    private renderKindSwitch(): React.JSX.Element | null {
+        if (!this.isDeviceAllowed()) {
+            return null;
+        }
+        return (
+            <FormControl>
+                <FormLabel sx={{ fontSize: 12 }}>{I18n.t('channelConfigDialog_kind')}</FormLabel>
+                <RadioGroup
+                    row
+                    value={this.state.device !== null ? 'device' : 'standard'}
+                    onChange={e => this.handleKindChange(e.target.value)}
+                >
+                    <FormControlLabel
+                        value="standard"
+                        control={<Radio size="small" />}
+                        label={I18n.t('channelConfigDialog_kindStandard')}
+                    />
+                    <FormControlLabel
+                        value="device"
+                        control={<Radio size="small" />}
+                        label={I18n.t('channelConfigDialog_isDevice')}
+                    />
+                </RadioGroup>
+            </FormControl>
+        );
+    }
+
+    /**
+     * The page item of kind "device with details": device, short tap, filter list and the name.
+     *
+     * @param device the device configuration
+     * @param panelBoxStyle style of the box
+     */
+    private renderDeviceItem(device: DeviceDetailsConfig, panelBoxStyle: object): React.JSX.Element {
+        const { socket, theme, themeType } = this.props;
+        const { channelId, name, checkingChannel, channelExists } = this.state;
+        const popupSelector = (
+            <Box>
+                <EntitySelector
+                    label={I18n.t('channelConfigDialog_channelId')}
+                    value={channelId.valueStateId}
+                    onChange={this.handleChannelIdChange}
+                    onCommit={this.handleChannelIdCommit}
+                    onTransformSelectedId={this.transformChannelId}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType ?? 'light'}
+                    dialogName="channelConfigDialog"
+                    filterFunc={this.buildChannelFilterFunc()}
+                />
+                {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
+                    <Typography
+                        variant="caption"
+                        color="error"
+                    >
+                        {I18n.t('channelConfigDialog_channelNotFound')}
+                    </Typography>
+                )}
+            </Box>
+        );
+        return (
+            <Box sx={panelBoxStyle}>
+                {this.renderKindSwitch()}
+                <DeviceDetailsSection
+                    socket={this.props.oContext?.socket ?? socket}
+                    theme={theme}
+                    themeType={themeType ?? 'light'}
+                    instance={this.props.oContext?.instance ?? this.props.instance ?? 0}
+                    value={device}
+                    learned={this.props.deviceDetailsLearned ?? {}}
+                    stateId={(device.shortPress ?? 'state') === 'state' ? channelId.valueStateId : ''}
+                    onStateChange={this.handleDeviceStateChange}
+                    onShortPressChange={this.handleDeviceShortPressChange}
+                    popupChannelSelector={popupSelector}
+                    onChange={this.handleDeviceDetailsChange}
+                />
+                <TextField
+                    label={I18n.t('channelConfigDialog_name')}
+                    value={name}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ name: e.target.value })}
+                    variant="standard"
+                    helperText={name === '' ? I18n.t('deviceDetailsDialog_nameHint') : undefined}
+                    slotProps={{ formHelperText: { sx: { color: 'text.disabled' } } }}
+                />
+            </Box>
+        );
+    }
 
     /**
      * Number of a range field; empty or not a number = not set.
@@ -1744,9 +1979,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 this.state.hasProblems);
 
         const channelIdValid = channelId.valueStateId !== '';
+        const { device, deviceError } = this.state;
+        // a device item: device and state / channel chosen, the adapter did not refuse the device - no answer
+        // (adapter offline) or a device that is gone keeps a stored item savable
+        const deviceCanSave =
+            device !== null && device.deviceId.trim() !== '' && channelIdValid && !isBlockingDeviceError(deviceError);
         const standardCanSave =
-            (isNavigation && targetPage !== '') ||
-            (!isNavigation && channelIdValid && channelExists === true && !checkingChannel);
+            device !== null
+                ? deviceCanSave
+                : (isNavigation && targetPage !== '') ||
+                  (!isNavigation && channelIdValid && channelExists === true && !checkingChannel);
         // raw mode: the item needs no channel, the raw data are complete in themselves
         const canSave = rawMode || standardCanSave;
 
@@ -1756,7 +1998,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
-        const internColorFieldsDisabled = !channelIdValid || isCustom || rawMode || colorFieldDisabled;
+        const internColorFieldsDisabled =
+            !channelIdValid || isCustom || rawMode || colorFieldDisabled || device !== null;
         /**
          * Modusliste nur für die Licht-Rollen, die der Adapter dafür auswertet. Bewusst OHNE `colorFieldDisabled`:
          * diese Rollen haben `type: 'boolean'` in den Page-Item-Defaults, der Farb-Button ist für sie gesperrt.
@@ -1896,8 +2139,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 value={raw}
                                 onEdit={this.handleRawOpen}
                             />
+                        ) : device !== null ? (
+                            this.renderDeviceItem(device, panelBoxStyle)
                         ) : (
                             <Box sx={panelBoxStyle}>
+                                {this.renderKindSwitch()}
                                 <Box
                                     sx={{
                                         display: 'flex',

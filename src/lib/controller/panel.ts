@@ -2787,6 +2787,12 @@ export class Panel extends BaseClass {
                         ) {
                             break;
                         }
+                        // cardEntities: the left part of an item (icon / name) is tapped on purpose - without a long
+                        // press of its own nothing happens there; on the grid pages it may just have been a long
+                        // touch and acts like the short press
+                        if (!Panel.longPressFallsBackToShortPress(this.getActivePage().card)) {
+                            break;
+                        }
                     }
                     await this.getActivePage().onPopupRequest(
                         event.id,
@@ -3462,6 +3468,18 @@ export class Panel extends BaseClass {
         }
         return null;
     };
+
+    /**
+     * Whether a `buttonPress3` of an item that has no long press of its own acts like the short press. On the grid
+     * pages a long press may just be a finger that lay too long; on cardEntities the left part of an item is tapped on
+     * purpose (doc/ideas/device-details/README.md) - there nothing happens.
+     *
+     * @param card page type of the active page
+     * @returns false for cardEntities, true otherwise
+     */
+    static longPressFallsBackToShortPress(card: string): boolean {
+        return card !== 'cardEntities';
+    }
 
     /**
      * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.

@@ -189,6 +189,8 @@ export type DeviceRole =
     | 'textNotIcon'
     /** text item whose value is a name (e.g. a page name): shown as it is, not looked up in the translations */
     | 'textRawValue'
+    /** a generated row of the detail page of a device (deviceDetails.ts): a tap switches, presses or opens popupSlider */
+    | 'deviceDetail'
     | 'timer'
     | 'window'
     | 'info'

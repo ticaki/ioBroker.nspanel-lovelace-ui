@@ -24,6 +24,7 @@ import * as ShareConfig from '../types/adminShareConfig';
 import type { PageBase } from '../types/pages';
 import { AdminConfiguration } from './admin';
 import { adminPageItemToScriptItem } from './admin-page-item';
+import { deviceDetailsRuntimeOf } from '../types/deviceDetails';
 import { screensaverItemToScript } from './admin-screensaver-item';
 import { ensureMainPage } from './main-page';
 import { isScreensaverPage } from './admin-screensaver';
@@ -258,12 +259,19 @@ function loadConvertAdminPageItem(): ConvertAdminItem {
     }).outputText;
     const mod: { exports?: { prototype: { convertAdminPageItemToPageItemConfig: ConvertAdminItem } } } = {};
 
-    const factory = new Function('module', 'ConfigManager', 'adminPageItemToScriptItem', js) as (
+    const factory = new Function(
+        'module',
+        'ConfigManager',
+        'adminPageItemToScriptItem',
+        'deviceDetailsRuntimeOf',
+        js,
+    ) as (
         module: typeof mod,
         configManager: typeof ConfigManager,
         toScriptItem: typeof adminPageItemToScriptItem,
+        runtimeOf: typeof deviceDetailsRuntimeOf,
     ) => void;
-    factory(mod, ConfigManager, adminPageItemToScriptItem);
+    factory(mod, ConfigManager, adminPageItemToScriptItem, deviceDetailsRuntimeOf);
     return mod.exports!.prototype.convertAdminPageItemToPageItemConfig;
 }
 
@@ -2002,10 +2010,10 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
         });
     });
 
-    describe('long press only on grid pages', () => {
+    describe('long press only on grid pages and cardEntities', () => {
         const item = { id: 'alias.0.Tests.button', navigate: true, targetPage: 'main', targetPageLongPress: 'lp' };
 
-        for (const type of ['cardEntities', 'cardSchedule']) {
+        for (const type of ['cardSchedule']) {
             it(`${type}: drops longPress / targetPageLongPress, the item is converted, the preview lists it`, () => {
                 const result = plan(
                     baseConfig({
@@ -2034,12 +2042,12 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             });
         }
 
-        it('cardEntities: a raw item loses its long press as well (script and native format)', () => {
+        it('cardSchedule: a raw item loses its long press as well (script and native format)', () => {
             const result = plan(
                 baseConfig({
                     subPages: [
                         page({
-                            type: 'cardEntities',
+                            type: 'cardSchedule',
                             uniqueName: 'p',
                             heading: 'P',
                             items: [
@@ -2069,7 +2077,7 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             expect(converted!.targetPageLongPress).to.equal('lp');
         });
 
-        for (const type of ['cardGrid2', 'cardGrid3']) {
+        for (const type of ['cardGrid2', 'cardGrid3', 'cardEntities']) {
             it(`${type}: long press stays, nothing is listed`, () => {
                 const result = plan(
                     baseConfig({

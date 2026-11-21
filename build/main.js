@@ -51,6 +51,8 @@ var import_page_dump = require("./lib/configuration/page-dump");
 var import_pageDump = require("./lib/types/pageDump");
 var import_script_to_admin_runner = require("./lib/configuration/script-to-admin-runner");
 var import_admin_page_item = require("./lib/configuration/admin-page-item");
+var import_admin_device_details = require("./lib/configuration/admin-device-details");
+var import_deviceDetails = require("./lib/types/deviceDetails");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
@@ -1314,6 +1316,15 @@ class NspanelLovelaceUi extends utils.Adapter {
           const message = obj.message;
           const id = message && typeof message === "object" && "id" in message ? message.id : void 0;
           const result = await (0, import_admin_media.mediaPlayerInfo)(this, id);
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, result, obj.callback);
+          }
+          break;
+        }
+        case import_deviceDetails.SENDTO_GET_DEVICE_DETAILS_COMMAND: {
+          const message = obj.message;
+          const id = message && typeof message === "object" && "id" in message ? message.id : void 0;
+          const result = await (0, import_admin_device_details.deviceDetailsInfo)(this, id);
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, result, obj.callback);
           }
@@ -3265,6 +3276,10 @@ class NspanelLovelaceUi extends utils.Adapter {
         messages = result.messages;
         pageItem = result.itemConfig;
         pageConfig = result.pageConfig;
+        const deviceDetails = preItem.useNative ? void 0 : (0, import_deviceDetails.deviceDetailsRuntimeOf)(preItem.device);
+        if (pageItem && deviceDetails) {
+          pageItem.deviceDetails = deviceDetails;
+        }
       } catch (e) {
         error = `Error in configuration: ${e.message}`;
       }

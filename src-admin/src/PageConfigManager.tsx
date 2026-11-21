@@ -9,6 +9,7 @@ import type {
     PowerEntry,
 } from '../../src/lib/types/adminShareConfig';
 import { closeNavigationChain } from '../../src/lib/types/navigationEdit';
+import { deviceDetailsLearnedOf, type DeviceDetailsLearned } from '../../src/lib/types/deviceDetails';
 import {
     ADAPTER_NAME,
     assignMissingItemIds,
@@ -478,6 +479,17 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
     }
 
+    /**
+     * Device with details: a saved item changed the learned ticks of its adapter - an own attribute of the native
+     * configuration, it stays when items are deleted. Written a moment after the page item (json-config writes one
+     * attribute per change, like its own dependent changes).
+     *
+     * @param learned the learned ticks per adapter
+     */
+    private handleDeviceDetailsLearnedChange = (learned: DeviceDetailsLearned): void => {
+        setTimeout(() => void this.onChange('deviceDetailsLearned', learned), 50);
+    };
+
     private handleEntryChange = (updatedEntry: PageConfigEntry): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === updatedEntry.uniqueName ? updatedEntry : it));
         this.commitEntries(updated);
@@ -594,6 +606,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     expertMode={this.props.expertMode ?? false}
                     pagesList={pagesList}
                     panelPagesMap={this.state.panelPagesMap}
+                    deviceDetailsLearned={deviceDetailsLearnedOf(this.props.data?.deviceDetailsLearned)}
+                    onDeviceDetailsLearnedChange={this.handleDeviceDetailsLearnedChange}
                 />
             );
         }

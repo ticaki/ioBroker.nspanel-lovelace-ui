@@ -40,6 +40,8 @@ var import_screensaver_cycle = require("../const/screensaver-cycle");
 var import_data_item = require("../controller/data-item");
 var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
+var import_deviceDetails = require("../types/deviceDetails");
+var import_device_details = require("./device-details");
 var import_screensaver_timer = require("./screensaver-timer");
 const panelsWarnedAboutClockTimer = /* @__PURE__ */ new WeakSet();
 class PageItem extends import_baseClassPage.BaseTriggeredPage {
@@ -239,7 +241,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
   }
   async getPageItemPayload(skipEnabledCheck = false) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -403,10 +405,22 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             );
             message.icon = entry.role === "textNotIcon" ? (_x = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _x : "" : (_y = await tools.getIconEntryValue(item.icon, value !== true, "")) != null ? _y : "";
             message.iconColor = (_z = await tools.getIconEntryColor(item.icon, value !== true, import_Color.Color.HMIOn)) != null ? _z : "";
+            if (entry.role === import_deviceDetails.DEVICE_DETAIL_ROW_ROLE) {
+              const raw = (_B = ((_A = item.entity1) == null ? void 0 : _A.value) && await item.entity1.value.getNumber()) != null ? _B : null;
+              const valueText = raw === null ? "" : (_C = await tools.getValueEntryString(item.entity1, raw)) != null ? _C : "";
+              return tools.getPayloadRemoveTilde(
+                message.type,
+                message.intNameEntity,
+                message.icon,
+                message.iconColor,
+                message.displayName,
+                valueText
+              );
+            }
             let min = item.entity1 && item.entity1.value && item.entity1.value.common.min;
             let max = item.entity1 && item.entity1.value && item.entity1.value.common.max;
-            min = (_B = (_A = item.minValue1 && await item.minValue1.getNumber()) != null ? _A : min) != null ? _B : 0;
-            max = (_D = (_C = item.maxValue1 && await item.maxValue1.getNumber()) != null ? _C : max) != null ? _D : 100;
+            min = (_E = (_D = item.minValue1 && await item.minValue1.getNumber()) != null ? _D : min) != null ? _E : 0;
+            max = (_G = (_F = item.maxValue1 && await item.maxValue1.getNumber()) != null ? _F : max) != null ? _G : 100;
             return tools.getPayloadRemoveTilde(
               message.type,
               message.intNameEntity,
@@ -437,17 +451,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             const showIcon = entry.role === "2values" ? true : value;
             if (entry.role === "text.states") {
               const key = value ? "true" : "false";
-              const dataitem = ((_E = item.text) == null ? void 0 : _E[key]) ? (0, import_data_item.isDataItem)(item.text[key]) ? item.text[key] : item.text[key].value : null;
+              const dataitem = ((_H = item.text) == null ? void 0 : _H[key]) ? (0, import_data_item.isDataItem)(item.text[key]) ? item.text[key] : item.text[key].value : null;
               const states = dataitem ? await dataitem.getCommonStates() : null;
               if (states && dataitem) {
                 const v = await dataitem.getString();
                 if (v != null && states[v]) {
-                  message.displayName = (_F = this.library.getTranslation(states[v])) != null ? _F : "";
+                  message.displayName = (_I = this.library.getTranslation(states[v])) != null ? _I : "";
                 }
               }
             } else {
               message.displayName = this.library.getTranslation(
-                (_G = await tools.getEntryTextOnOff(item.text, !!showIcon)) != null ? _G : ""
+                (_J = await tools.getEntryTextOnOff(item.text, !!showIcon)) != null ? _J : ""
               );
             }
             if (entry.type === "switch") {
@@ -455,7 +469,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             } else if (entry.type === "button") {
               message.optionalValue = (value != null ? value : true) ? "1" : "0";
               if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
-                message.optionalValue = (_H = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _H : message.optionalValue;
+                message.optionalValue = (_K = this.library.getTranslation(await tools.getEntryTextOnOff(item.text1, !!value))) != null ? _K : message.optionalValue;
               }
             } else {
               switch (entry.role) {
@@ -496,7 +510,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   break;
                 }
                 default: {
-                  const optionalValue = (_J = (_I = await tools.getValueEntryString(item.entity2)) != null ? _I : await tools.getEntryTextOnOff(item.text1, value)) != null ? _J : "";
+                  const optionalValue = (_M = (_L = await tools.getValueEntryString(item.entity2)) != null ? _L : await tools.getEntryTextOnOff(item.text1, value)) != null ? _M : "";
                   message.optionalValue = entry.role === "textRawValue" ? optionalValue : this.library.getTranslation(optionalValue);
                 }
               }
@@ -504,39 +518,39 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             message.icon = await tools.getIconEntryValue(item.icon, showIcon, "home");
             switch (entry.role) {
               case "textNotIcon": {
-                message.icon = (_K = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _K : "";
+                message.icon = (_N = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _N : "";
                 break;
               }
               case "iconNotText": {
-                message.icon = (_L = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _L : "";
+                message.icon = (_O = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _O : "";
                 break;
               }
               case "battery": {
-                const val = (_M = await tools.getValueEntryBoolean(item.entity3)) != null ? _M : false;
-                message.icon = (_N = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _N : "";
+                const val = (_P = await tools.getValueEntryBoolean(item.entity3)) != null ? _P : false;
+                message.icon = (_Q = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _Q : "";
                 break;
               }
               case "combined": {
-                message.icon = (_O = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _O : "";
-                message.icon += (_P = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _P : "";
+                message.icon = (_R = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _R : "";
+                message.icon += (_S = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _S : "";
                 break;
               }
               default: {
-                const positionIcon = typeof showIcon === "number" && await ((_S = (_R = (_Q = item.icon) == null ? void 0 : _Q.true) == null ? void 0 : _R.value) == null ? void 0 : _S.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
-                message.icon = (_U = await tools.getIconEntryValue(
+                const positionIcon = typeof showIcon === "number" && await ((_V = (_U = (_T = item.icon) == null ? void 0 : _T.true) == null ? void 0 : _U.value) == null ? void 0 : _V.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
+                message.icon = (_X = await tools.getIconEntryValue(
                   item.icon,
                   positionIcon ? showIcon : !!showIcon,
                   "",
                   null,
-                  (_T = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _T : false
-                )) != null ? _U : "";
+                  (_W = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _W : false
+                )) != null ? _X : "";
               }
             }
             const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
             message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                const newValue = (_V = await entry.data.confirm.getObject()) != null ? _V : await entry.data.confirm.getString();
+                const newValue = (_Y = await entry.data.confirm.getObject()) != null ? _Y : await entry.data.confirm.getString();
                 if (newValue) {
                   const text = typeof newValue === "object" ? newValue.text : newValue;
                   if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
@@ -574,7 +588,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.intNameEntity + additionalId,
               message.icon,
               message.iconColor,
-              (_W = message.displayName) != null ? _W : "",
+              (_Z = message.displayName) != null ? _Z : "",
               message.optionalValue
             );
           }
@@ -583,17 +597,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          let value = (_X = await tools.getValueEntryNumber(item.entityInSel)) != null ? _X : await tools.getValueEntryBoolean(item.entityInSel);
+          let value = (__ = await tools.getValueEntryNumber(item.entityInSel)) != null ? __ : await tools.getValueEntryBoolean(item.entityInSel);
           if (entry.role === "alexa-speaker") {
             value = this.parent.currentItem === this.parent.items[0];
           }
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_Y = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _Y : import_Color.Color.HMIOn;
+          message.iconColor = (_$ = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _$ : import_Color.Color.HMIOn;
           message.displayName = this.library.getTranslation(
-            (__ = (_Z = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? _Z : message.displayName) != null ? __ : ""
+            (_ba = (_aa = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? _aa : message.displayName) != null ? _ba : ""
           );
           message.optionalValue = this.library.getTranslation(
-            (_$ = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _$ : "PRESS"
+            (_ca = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _ca : "PRESS"
           );
           return tools.getItemMesssage(message);
           break;
@@ -603,12 +617,12 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (entry.type === "fan") {
               const item = entry.data;
               message.type = "fan";
-              const value = (_aa = await tools.getValueEntryBoolean(item.entity1)) != null ? _aa : null;
+              const value = (_da = await tools.getValueEntryBoolean(item.entity1)) != null ? _da : null;
               message.displayName = this.library.getTranslation(
-                (_ca = (_ba = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ba : message.displayName) != null ? _ca : ""
+                (_fa = (_ea = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ea : message.displayName) != null ? _fa : ""
               );
-              message.icon = (_da = await tools.getIconEntryValue(item.icon, value, "")) != null ? _da : "";
-              message.iconColor = (_ea = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ea : "";
+              message.icon = (_ga = await tools.getIconEntryValue(item.icon, value, "")) != null ? _ga : "";
+              message.iconColor = (_ha = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ha : "";
               return tools.getPayloadRemoveTilde(
                 message.type,
                 message.intNameEntity,
@@ -631,16 +645,16 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             const item = entry.data;
             message.type = "timer";
             const { opt, on } = await this.getTimerListValue(item);
-            const s = ((_fa = this.tempData) == null ? void 0 : _fa.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
+            const s = ((_ia = this.tempData) == null ? void 0 : _ia.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
             const v = typeof s === "number" ? s > 1 : on;
             {
               message.iconColor = await tools.getIconEntryColor(item.icon, v, import_Color.Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, v, "gesture-tap-button");
               message.optionalValue = this.library.getTranslation(
-                (_ga = await tools.getEntryTextOnOff(item.text, on)) != null ? _ga : opt
+                (_ja = await tools.getEntryTextOnOff(item.text, on)) != null ? _ja : opt
               );
               message.displayName = this.library.getTranslation(
-                (_ia = (_ha = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ha : message.displayName) != null ? _ia : ""
+                (_la = (_ka = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ka : message.displayName) != null ? _la : ""
               );
               return tools.getPayloadRemoveTilde(
                 message.type,
@@ -2062,9 +2076,13 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     await super.delete();
   }
   async onCommandLongPress(action, value) {
-    var _a;
+    var _a, _b;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
+    }
+    if (action === "button" && ((_a = this.config) == null ? void 0 : _a.deviceDetails)) {
+      await this.openDeviceDetails(this.config.deviceDetails);
+      return true;
     }
     const entry = this.dataItems;
     if (action.startsWith("mode-")) {
@@ -2076,7 +2094,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         if (entry.type === "button" || entry.type === "switch") {
           this.log.debug(`Button ${this.id} was long pressed!`);
           const item = entry.data;
-          const value2 = (_a = item.setNaviLongPress && await item.setNaviLongPress.getString()) != null ? _a : null;
+          const value2 = (_b = item.setNaviLongPress && await item.setNaviLongPress.getString()) != null ? _b : null;
           if (value2 !== null) {
             await this.parent.basePanel.navigation.setTargetPageByName(value2);
             done = true;
@@ -2095,6 +2113,90 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       }
     }
     return done;
+  }
+  /**
+   * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardSchedule page
+   * generated from the ticked states, below the page of the item (`directChildPage`, back leads here again). A
+   * detail page opened before by an item of the page is replaced - after the new one is shown, never while it is
+   * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
+   *
+   * @param details the device part of the item
+   */
+  async openDeviceDetails(details) {
+    const parent = this.parent;
+    const panel = parent.basePanel;
+    const run = (0, import_device_details.beginDeviceDetailsRun)(panel);
+    const { headline, rows } = await (0, import_device_details.deviceDetailRows)(
+      details,
+      (id2) => panel.statesControler.getObjectAsync(id2),
+      (key) => this.library.getTranslation(key),
+      this.library.getLocalLanguage()
+    );
+    if (!(0, import_device_details.isLatestDeviceDetailsRun)(panel, run) || panel.getActivePage() !== parent) {
+      return;
+    }
+    if (rows.length === 0) {
+      this.log.warn(`Device details of ${details.deviceId}: none of the chosen states exists (any more)!`);
+    }
+    const id = `${import_device_details.DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
+    const page = panel.newPage(
+      { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: "cardSchedule" },
+      (0, import_device_details.deviceDetailPageConfig)(id, headline, parent.alwaysOn, rows)
+    );
+    if (!page) {
+      return;
+    }
+    await page.init();
+    if (!(0, import_device_details.isLatestDeviceDetailsRun)(panel, run) || panel.getActivePage() !== parent || this.adapter.unload) {
+      await page.delete();
+      return;
+    }
+    const old = parent.directChildPage;
+    parent.directChildPage = page;
+    page.directParentPage = parent;
+    await panel.setActivePage(page);
+    if (old && old !== page && old !== panel.getActivePage()) {
+      old.directParentPage = void 0;
+      await old.delete();
+    }
+  }
+  /**
+   * A tap on a row of the detail page of a device: a writable boolean switches, a button (`read: false`) is written
+   * with true, a writable number opens popupSlider; anything else does nothing.
+   */
+  async onDeviceDetailTap() {
+    var _a, _b;
+    const entry = this.dataItems;
+    if (!entry) {
+      return;
+    }
+    if (entry.type === "number") {
+      await this.openDeviceDetailSlider();
+    } else if (entry.type === "button") {
+      const set = (_a = entry.data.entity1) == null ? void 0 : _a.set;
+      if (set == null ? void 0 : set.writeable) {
+        await set.setStateTrue();
+      }
+    } else if (entry.type === "text") {
+      const value = (_b = entry.data.entity1) == null ? void 0 : _b.value;
+      if ((value == null ? void 0 : value.writeable) && value.trueType() === "boolean") {
+        await value.setStateFlip();
+      }
+    }
+  }
+  /**
+   * Opens popupSlider for a writable number of the detail page from the adapter, like a long press of a screensaver
+   * indicator opens a popup: `pageType~popupSlider~<name>~<id>~<icon>`, the HMI asks for the content with
+   * `pageOpenDetail` (answered by Page.onPopupRequest -> GeneratePopup). A HMI that opens the popup on a tap itself
+   * never sends this tap.
+   */
+  async openDeviceDetailSlider() {
+    var _a, _b;
+    const fields = (await this.getPageItemPayload(true)).split("~");
+    this.parent.sleep = true;
+    this.parent.basePanel.lastCard = "";
+    this.resetLastMessage();
+    this.sendToPanel(tools.getPayload("pageType", "popupSlider", (_a = fields[4]) != null ? _a : "", this.id, (_b = fields[2]) != null ? _b : ""), false);
   }
   /**
    * A button with a value list (screensaver indicator): writes the next value of the list to the state, also when
@@ -2146,6 +2248,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
         break;
       case "button": {
+        if (entry.role === import_deviceDetails.DEVICE_DETAIL_ROW_ROLE) {
+          await this.onDeviceDetailTap();
+          break;
+        }
         if (this.parent.isScreensaver && !this.parent.isIndicatorKey(this)) {
           if (eventValue === "") {
             this.parent.basePanel.navigation.resetPosition();

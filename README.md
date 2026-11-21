@@ -161,6 +161,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) notification popup: `global` is only set when the notification went to more than one panel - acknowledging a popup sent to a single panel no longer removes the same id on the other panels; `panel` also accepts the MQTT topic
 - (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
+### **WORK IN PROGRESS**
+- (ticaki) admin: new page item kind "device with details" - a short tap switches a state of the device or opens the popup of an alias channel, a long press (grid pages) or a tap on icon/name (cardEntities, needs a new TFT) opens a generated detail page with the ticked states of the device (filter list with masks for shelly, sonoff, zigbee2mqtt, hm-rpc, ticks learned per adapter; new theme colors for energy, connection and info)
+- (ticaki) cardEntities: an unhandled long press no longer falls back to the short press
+
 ### 2.5.0 (2026-11-21)
 - (ticaki) beta TFT 6.2.0, notification popup: new option `largeIcon` - big icon, one text line and up to two icon buttons (`buttonLeftIcon`/`buttonRightIcon`); older TFTs show the classic popup, without `largeIcon` nothing changes; the admin icon tab can filter these icons; `cmd.pagePopup.textSize` lists the available fonts and also accepts 0 and 8 (96 px clock font)
 - (ticaki) screensaver: the long press of an indicator is sent when the finger is lifted (TFT 6.2.0 and web panel), after 500 ms the clock blinks yellow/green as a sign to let go; only indicators with a long press action detect it, new long press option "only trigger the state" - **note:** whoever used `buttons.indicatorLong-N` without a long press action must choose this option with TFT 6.2.0

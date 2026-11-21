@@ -2,6 +2,7 @@ import type * as dataItem from '../controller/data-item';
 import type * as typePageItem from './type-pageItem';
 import type * as pages from './pages';
 import type { PageItemTemplateOption, ScreensaverArea } from './adminShareConfig';
+import type { DeviceDetailsRuntime } from './deviceDetails';
 
 export namespace NSPanel {
     type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
@@ -1532,6 +1533,11 @@ export namespace NSPanel {
          * config-manager getScreensaverConfig)
          */
         longPressTrigger?: boolean;
+        /**
+         * device with details (admin item with `device`): a long press opens a generated detail page (cardSchedule)
+         * with these states of the device - it comes before every other long press of the item
+         */
+        deviceDetails?: DeviceDetailsRuntime;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

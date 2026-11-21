@@ -2399,6 +2399,9 @@ class Panel extends import_library.BaseClass {
             )) {
               break;
             }
+            if (!Panel.longPressFallsBackToShortPress(this.getActivePage().card)) {
+              break;
+            }
           }
           await this.getActivePage().onPopupRequest(
             event.id,
@@ -3057,6 +3060,17 @@ ${this.info.tasmota.onlineVersion}`;
     }
     return null;
   };
+  /**
+   * Whether a `buttonPress3` of an item that has no long press of its own acts like the short press. On the grid
+   * pages a long press may just be a finger that lay too long; on cardEntities the left part of an item is tapped on
+   * purpose (doc/ideas/device-details/README.md) - there nothing happens.
+   *
+   * @param card page type of the active page
+   * @returns false for cardEntities, true otherwise
+   */
+  static longPressFallsBackToShortPress(card) {
+    return card !== "cardEntities";
+  }
   /**
    * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.
    *

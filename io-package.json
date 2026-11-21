@@ -246,7 +246,10 @@
         "colSuccess": "#00ff00",
         "colNeutral": "#808080",
         "colHighlight": "#00c8ff",
-        "colDisabled": "#404040"
+        "colDisabled": "#404040",
+        "colDeviceEnergy": "#ffeb9c",
+        "colDeviceConnection": "#00ffff",
+        "colDeviceInfo": "#ffffff"
       }
     ],
     "colorNavigation": [
@@ -322,7 +325,8 @@
     "adminOverridesScriptPages": false,
     "navigationOverrides": [],
     "screensaverConfig": [],
-    "screensaverNotify": []
+    "screensaverNotify": [],
+    "deviceDetailsLearned": {}
   },
   "objects": [],
   "instanceObjects": [

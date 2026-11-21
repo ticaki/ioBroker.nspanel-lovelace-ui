@@ -80,6 +80,8 @@ import {
     ScriptToAdminRunner,
 } from './lib/configuration/script-to-admin-runner';
 import { adminPageItemToScriptItem } from './lib/configuration/admin-page-item';
+import { deviceDetailsInfo } from './lib/configuration/admin-device-details';
+import { deviceDetailsRuntimeOf, SENDTO_GET_DEVICE_DETAILS_COMMAND } from './lib/types/deviceDetails';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
 import type {
@@ -1579,6 +1581,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const message: unknown = obj.message;
                     const id = message && typeof message === 'object' && 'id' in message ? message.id : undefined;
                     const result = await mediaPlayerInfo(this, id);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, result, obj.callback);
+                    }
+                    break;
+                }
+                case SENDTO_GET_DEVICE_DETAILS_COMMAND: {
+                    const message: unknown = obj.message;
+                    const id = message && typeof message === 'object' && 'id' in message ? message.id : undefined;
+                    const result = await deviceDetailsInfo(this, id);
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
@@ -3786,6 +3797,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                 messages = result.messages;
                 pageItem = result.itemConfig;
                 pageConfig = result.pageConfig;
+                // device with details: a raw item brings all of its fields itself
+                const deviceDetails = preItem.useNative ? undefined : deviceDetailsRuntimeOf(preItem.device);
+                if (pageItem && deviceDetails) {
+                    pageItem.deviceDetails = deviceDetails;
+                }
             } catch (e: any) {
                 error = `Error in configuration: ${e.message}`;
             }

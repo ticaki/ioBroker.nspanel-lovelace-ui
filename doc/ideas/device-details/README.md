@@ -1,6 +1,7 @@
 # Gerät mit Details
 
-Stand: 2026-11-21 – Konzept entschieden, Umsetzung im Branch `feat/device-details`.
+Stand: 2026-11-21 – Konzept entschieden, Adapter und Admin im Branch `feat/device-details` umgesetzt (nicht am Panel
+getestet), die zwei HMI-Änderungen stehen aus.
 
 ## Ausgangslage
 
@@ -114,7 +115,37 @@ Der Adapter wird so gebaut, als wären beide schon drin. Getestet wird zunächst
 2. **cardSchedule**, Typ `number`: Wert anzeigen (heute nur bei `text`), Tipp öffnet `popupSlider` (heute
    `buttonPress2,<entn>,button`). Bis dahin kann der Adapter das Popup per `pageType~popupSlider~…` selbst öffnen.
 
+## Umsetzung (feat/device-details)
+
+- **Item-Typ:** eigener Typ „Gerät mit Details“ im Page-Item-Dialog (Auswahl „Art des Items“ oben: Standard / Gerät mit
+  Details), nur auf cardGrid/cardGrid2/cardGrid3 und cardEntities. Kurz-Tipp:
+  - „State des Geräts an/aus“: Auswahl aus den schreibbaren boolean-States des Geräts (vorbelegt mit dem State des
+    Masken-Eintrags `switch`); gespeichert als benutzerdefinierter Knopf (`type: 'custom'`, `channelId` = State).
+  - „Popup eines Alias-Kanals“: das Popup braucht die Rollen eines Alias-Kanals, der Kanal wird nur in diesem Fall gewählt;
+    gespeichert als Standard-Item (`channelId` = Kanal).
+  - Gespeichert in `AdminPageItemConfig.device` (`deviceId`, `shortPress`, `entries` = angehakte Zeilen in Reihenfolge).
+- **Gerät:** nur `device`/`channel`, nie Instanz, Adapter-Wurzel oder Info-Kanal (`<adapter>.<n>.info`); bekannte
+  Adapter legen die Ebene fest (3). sendTo `getDeviceDetails` liefert die States (Gerät + höchstens ein Unterordner).
+  Ohne Antwort (Adapter aus) oder bei gelöschtem Gerät bleibt ein Item speicherbar.
+- **Masken:** `src/lib/types/deviceDetails.ts` – shelly (Gen1 und Gen2), sonoff, zigbee2mqtt, hm-rpc, dazu die
+  allgemeine Maske nur nach Rolle. Zeilennamen: Übersetzungsschlüssel `deviceDetail_<key>`.
+- **Gelernte Vorbelegung:** eigenes natives Attribut `deviceDetailsLearned` (Adapter → Einträge in Reihenfolge). Es
+  ändert sich nur, wenn sich beim Speichern eines Items Häkchen oder Reihenfolge ändern, und bleibt beim Löschen von
+  Items erhalten. „Nichts angehakt“ ist eine gültige Vorbelegung.
+- **Theme-Keys:** `deviceEnergy`, `deviceConnection`, `deviceInfo` (neu, Farbgruppe „Zustände“), Klima nutzt
+  `temperature`; An/Aus `activated`/`deactivated`.
+- **Detailseite:** Seiten-ID `dd_<Seite>`, Zeilen mit Rolle `deviceDetail`. Zwei sich überschneidende Long-Presses
+  öffnen nur die letzte Seite; die alte Seite wird erst nach dem Wechsel gelöscht.
+- **Feldformat für HMI-Änderung 2:** schreibbare Zahl als `number~<id>~<Icon>~<Farbe>~<Name>~<Wert mit Einheit>`
+  (statt `wert|min|max` wie auf cardEntities); min/max/step kommen mit `popupSlider`.
+- cardEntities: ein unbehandelter `buttonPress3` fällt nicht mehr auf den Kurz-Druck zurück.
+
 ## Offen
 
-- Name des neuen Item-Typs im Admin.
-- Konkreter Satz Masken für die erste Version (Vorschlag: shelly, sonoff, zigbee2mqtt, hm-rpc).
+- HMI-Änderung 1 (cardEntities `m0`–`m3` → `buttonPress3`) und 2 (cardSchedule `number`).
+- `popupSlider` per `pageType~popupSlider~<Name>~<id>~<Icon>` vom Adapter geöffnet: ungetestet. Öffnet die HMI das
+  Popup nicht, bleibt die Detailseite schlafend, bis man wegnavigiert.
+- Darstellung der Zeilentypen `button` („drücken“) und `text` mit an/aus auf cardSchedule nicht am Panel geprüft.
+- Geräte ohne schreibbaren boolean-State (reine Sensoren) haben im Typ „Gerät mit Details“ nur den Weg über ein Popup –
+  ein Kurz-Tipp ohne Aktion ist nicht vorgesehen.
+- Länge der übersetzten Zeilennamen auf dem Panel prüfen (z. B. fr, pl, ru).

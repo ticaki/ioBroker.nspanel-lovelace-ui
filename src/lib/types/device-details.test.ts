@@ -1,0 +1,356 @@
+import { expect } from 'chai';
+import objects from '../../../test/fixtures/device-details/objects.json';
+import { Icons } from '../const/icon_mapping';
+import {
+    buildDeviceDetailRows,
+    deviceDetailEntriesOfRows,
+    deviceDetailEntryOfRow,
+    deviceDetailIdentifier,
+    deviceDetailMaskOf,
+    deviceDetailMasks,
+    deviceDetailRowKind,
+    deviceDetailRuleMatches,
+    deviceDetailsRuntimeOf,
+    deviceSelectionError,
+    generalDeviceDetailMask,
+    isDeviceDetailState,
+    deviceDetailsLearnedOf,
+    exchangeDeviceDetailRowState,
+    updatedDeviceDetailsLearned,
+    type DeviceStateInfo,
+} from './deviceDetails';
+
+/** anonymized excerpt of a productive ioBroker (allObjects.json, 2026-11-21) */
+const fixture: Record<string, { type: string; states: DeviceStateInfo[] }> = objects;
+
+const SHELLY = 'shelly.0.shellyplus1pm#000000000001#1';
+const SHELLY2 = 'shelly.0.shellyplus2pm#000000000002#1';
+const SONOFF = 'sonoff.0.Plug_01';
+const ZIGBEE = 'zigbee2mqtt.0.0x0000000000000001';
+const HM = 'hm-rpc.1.000000000000A1';
+
+/**
+ * @param deviceId device of the fixture
+ * @returns the ticked rows of a new item without learned ticks: key -> id below the device
+ */
+function defaultRows(deviceId: string): Record<string, string[]> {
+    const out: Record<string, string[]> = {};
+    for (const row of buildDeviceDetailRows(deviceId, fixture[deviceId].states, undefined, undefined)) {
+        if (row.enabled) {
+            (out[row.key] ??= []).push(row.id.slice(deviceId.length + 1));
+        }
+    }
+    return out;
+}
+
+describe('lib/types/deviceDetails', () => {
+    describe('masks of the known adapters (real objects)', () => {
+        it('shelly: rules by role and end of the id, temperature as °C state', () => {
+            expect(defaultRows(SHELLY)).to.deep.equal({
+                switch: ['Relay0.Switch'],
+                power: ['Relay0.Power'],
+                voltage: ['Relay0.Voltage'],
+                current: ['Relay0.Current'],
+                energy: ['Relay0.Energy'],
+                temperature: ['Relay0.temperatureC'],
+                humidity: ['Ext.humidity100'],
+                rssi: ['rssi'],
+                reachable: ['online'],
+                ip: ['hostname'],
+                firmware: ['version'],
+                update: ['firmware'],
+                uptime: ['uptime'],
+            });
+        });
+        it('shelly: the °F twin and the voltmeter of the add-on are no entries of the mask', () => {
+            const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, undefined, undefined);
+            const plain = rows.filter(r => r.key === '').map(r => r.id.slice(SHELLY.length + 1));
+            expect(plain).to.include('Relay0.temperatureF');
+            expect(plain).to.include('Ext.temperature100C');
+            expect(rows.filter(r => r.key === '').every(r => !r.enabled)).to.equal(true);
+        });
+        it('shelly Gen1 PM: energy with role value.power.consumption', () => {
+            const id = 'shelly.0.SHSW-PM#000001#1';
+            const states: DeviceStateInfo[] = [
+                {
+                    id: `${id}.Relay0.Energy`,
+                    name: 'Energy',
+                    role: 'value.power.consumption',
+                    type: 'number',
+                    read: true,
+                    write: false,
+                    unit: 'Wh',
+                },
+                {
+                    id: `${id}.Relay0.Power`,
+                    name: 'Power',
+                    role: 'value.power',
+                    type: 'number',
+                    read: true,
+                    write: false,
+                    unit: 'W',
+                },
+            ];
+            const rows = buildDeviceDetailRows(id, states, undefined, undefined);
+            expect(deviceDetailEntriesOfRows(rows)).to.deep.equal([
+                { key: 'power', id: `${id}.Relay0.Power` },
+                { key: 'energy', id: `${id}.Relay0.Energy` },
+            ]);
+        });
+        it('sonoff: Tasmota energy and the INFO folder', () => {
+            expect(defaultRows(SONOFF)).to.deep.equal({
+                switch: ['POWER'],
+                power: ['ENERGY_Power'],
+                voltage: ['ENERGY_Voltage'],
+                current: ['ENERGY_Current'],
+                energyToday: ['ENERGY_Today'],
+                energy: ['ENERGY_Total'],
+                rssi: ['Wifi_Signal'],
+                reachable: ['alive'],
+                ip: ['INFO.IPAddress'],
+                firmware: ['INFO.Version'],
+                uptime: ['UptimeSec'],
+            });
+        });
+        it('zigbee2mqtt: contact sensor', () => {
+            expect(defaultRows(ZIGBEE)).to.deep.equal({
+                battery: ['battery'],
+                batteryVoltage: ['voltage'],
+                deviceTemperature: ['device_temperature'],
+                linkQuality: ['link_quality'],
+                reachable: ['available'],
+                lastSeen: ['last_seen'],
+            });
+        });
+        it('hm-rpc: the states lie in the channels :0 and :1', () => {
+            expect(defaultRows(HM)).to.deep.equal({
+                voltage: ['0.OPERATING_VOLTAGE'],
+                lowBattery: ['0.LOW_BAT'],
+                temperature: ['1.ACTUAL_TEMPERATURE'],
+                setpoint: ['1.SET_POINT_TEMPERATURE'],
+                humidity: ['1.HUMIDITY'],
+                rssi: ['0.RSSI_DEVICE'],
+                unreachable: ['0.UNREACH'],
+                update: ['0.UPDATE_PENDING'],
+            });
+        });
+        it('an entry of an own mask without state is listed empty and not ticked', () => {
+            const rows = buildDeviceDetailRows(SHELLY2, fixture[SHELLY2].states, undefined, undefined);
+            expect(rows.find(r => r.key === 'switch')).to.deep.equal({ key: 'switch', id: '', enabled: false });
+            expect(deviceDetailEntriesOfRows(rows).some(e => e.id === '')).to.equal(false);
+        });
+        it('an unknown adapter uses the general mask: by role only, no empty rows', () => {
+            const states: DeviceStateInfo[] = fixture[SHELLY].states.map(s => ({
+                ...s,
+                id: s.id.replace(SHELLY, 'foo.0.dev'),
+            }));
+            const rows = buildDeviceDetailRows('foo.0.dev', states, undefined, undefined);
+            expect(deviceDetailMaskOf('foo.0.dev')).to.equal(generalDeviceDetailMask);
+            expect(rows.every(r => r.id !== '')).to.equal(true);
+            const ticked = rows.filter(r => r.enabled);
+            expect(ticked.map(r => r.key)).to.include.members(['switch', 'power', 'voltage', 'temperature']);
+            // role value of the Shelly rssi carries nothing without the mask of the adapter
+            expect(rows.find(r => r.id === 'foo.0.dev.rssi')?.key).to.equal('');
+        });
+        it('every icon of the masks exists in the icon font', () => {
+            for (const mask of [generalDeviceDetailMask, ...deviceDetailMasks]) {
+                for (const entry of mask.entries) {
+                    // an unknown name comes back unchanged
+                    expect(Icons.GetIcon(entry.icon), `${mask.adapter}:${entry.key}`).to.not.equal(entry.icon);
+                }
+            }
+        });
+        it('a rule without condition matches nothing, a unit must match exactly', () => {
+            const state = { id: 'a.0.b.c', role: 'value.power.consumption', unit: 'kWh' };
+            expect(deviceDetailRuleMatches({}, state)).to.equal(false);
+            expect(deviceDetailRuleMatches({ role: 'value.power.consumption', unit: 'W' }, state)).to.equal(false);
+            expect(deviceDetailRuleMatches({ role: 'value.power.consumption', unit: 'kWh' }, state)).to.equal(true);
+        });
+        it('a row without entry takes icon and group from the role (general mask)', () => {
+            expect(
+                deviceDetailEntryOfRow(SHELLY, '', { id: `${SHELLY}.Ext.voltmeter100`, role: 'value.voltage' }),
+            ).to.have.property('key', 'voltage');
+            expect(deviceDetailEntryOfRow(SHELLY, 'rssi', undefined)).to.have.property('group', 'connection');
+            expect(deviceDetailEntryOfRow(SHELLY, '', { id: 'x', role: 'text' })).to.equal(undefined);
+        });
+    });
+
+    describe('choice of the device: device or channel only, at most one sub folder', () => {
+        it('only objects of type device or channel', () => {
+            expect(deviceSelectionError(SHELLY, 'device')).to.equal(undefined);
+            expect(deviceSelectionError(SONOFF, 'channel')).to.equal(undefined);
+            expect(deviceSelectionError(`${SHELLY}.Relay0.Power`, 'state')).to.equal('type');
+            expect(deviceSelectionError('shelly.0.info', 'folder')).to.equal('type');
+            expect(deviceSelectionError(SHELLY, undefined)).to.equal('notFound');
+        });
+        it('never an instance or the root of an adapter', () => {
+            expect(deviceSelectionError('shelly.0', 'device')).to.equal('root');
+            expect(deviceSelectionError('shelly', 'channel')).to.equal('root');
+        });
+        it('never the info channel of an instance', () => {
+            expect(deviceSelectionError('shelly.0.info', 'channel')).to.equal('info');
+            expect(deviceSelectionError('zigbee2mqtt.0.info', 'channel')).to.equal('info');
+            expect(deviceSelectionError('foo.1.info', 'device')).to.equal('info');
+            // a folder below a device called info is something else
+            expect(deviceSelectionError('alias.0.Rooms.info', 'channel')).to.equal(undefined);
+        });
+        it('a known adapter fixes the level of its devices, an unknown one does not', () => {
+            expect(deviceSelectionError(`${SHELLY}.Relay0`, 'channel')).to.equal('level');
+            expect(deviceSelectionError(`${HM}.1`, 'channel')).to.equal('level');
+            expect(deviceSelectionError('alias.0.Rooms.Kitchen.Light', 'channel')).to.equal(undefined);
+        });
+        it('states directly below the device or in one sub folder', () => {
+            expect(isDeviceDetailState(SHELLY, `${SHELLY}.rssi`)).to.equal(true);
+            expect(isDeviceDetailState(SHELLY, `${SHELLY}.Relay0.Power`)).to.equal(true);
+            expect(isDeviceDetailState(SHELLY, `${SHELLY}.Relay0.Deep.Power`)).to.equal(false);
+            expect(isDeviceDetailState(SHELLY, `${SHELLY}x.rssi`)).to.equal(false);
+            expect(isDeviceDetailState('', 'a.b')).to.equal(false);
+        });
+        it('the deeper state of the fixture never becomes a row', () => {
+            const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, undefined, undefined);
+            expect(rows.some(r => r.id.endsWith('Relay0.Deep.Power'))).to.equal(false);
+            expect(rows.filter(r => r.id === `${SHELLY}.Relay0.Power`)).to.have.length(1);
+        });
+    });
+
+    describe('row kinds of the detail page', () => {
+        it('decides by type, read and write', () => {
+            expect(deviceDetailRowKind({ type: 'boolean', read: false, write: true })).to.equal('button');
+            expect(deviceDetailRowKind({ type: 'boolean', read: true, write: true })).to.equal('switch');
+            expect(deviceDetailRowKind({ type: 'boolean', read: true, write: false })).to.equal('boolean');
+            expect(deviceDetailRowKind({ type: 'number', write: true })).to.equal('numberSet');
+            expect(deviceDetailRowKind({ type: 'number', write: false })).to.equal('number');
+            expect(deviceDetailRowKind({ type: 'string', write: true })).to.equal('text');
+            expect(deviceDetailRowKind({ type: 'mixed', write: false })).to.equal('text');
+        });
+    });
+
+    describe('ticks: saved per item, learned per adapter', () => {
+        it('saved rows come first in their order, the rest unticked', () => {
+            const saved = [
+                { key: 'rssi', id: `${SHELLY}.rssi` },
+                { key: '', id: `${SHELLY}.Relay0.Frequency` },
+            ];
+            const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, saved, ['power']);
+            expect(rows.slice(0, 2)).to.deep.equal([
+                { key: 'rssi', id: `${SHELLY}.rssi`, enabled: true },
+                { key: '', id: `${SHELLY}.Relay0.Frequency`, enabled: true },
+            ]);
+            expect(rows.slice(2).every(r => !r.enabled)).to.equal(true);
+            expect(rows.filter(r => r.id === `${SHELLY}.rssi`)).to.have.length(1);
+            expect(deviceDetailEntriesOfRows(rows)).to.deep.equal(saved);
+        });
+        it('a new item gets the learned ticks of its adapter in their order', () => {
+            const learned = ['firmware', '~Relay0.Frequency', 'power', 'unknownKey'];
+            const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, undefined, learned);
+            expect(deviceDetailEntriesOfRows(rows)).to.deep.equal([
+                { key: 'firmware', id: `${SHELLY}.version` },
+                { key: '', id: `${SHELLY}.Relay0.Frequency` },
+                { key: 'power', id: `${SHELLY}.Relay0.Power` },
+            ]);
+        });
+        it('identifiers: the key of the entry, a plain state by its id below the device', () => {
+            expect(deviceDetailIdentifier(SHELLY, { key: 'power', id: `${SHELLY}.Relay0.Power` })).to.equal('power');
+            expect(deviceDetailIdentifier(SHELLY, { key: '', id: `${SHELLY}.Relay0.Frequency` })).to.equal(
+                '~Relay0.Frequency',
+            );
+        });
+        it('learned: saved per adapter, changed only by the ticks or their order', () => {
+            const before = { deviceId: SHELLY, entries: [{ key: 'power', id: `${SHELLY}.Relay0.Power` }] };
+            const learned = { zigbee2mqtt: ['battery'] };
+            // a new item teaches its adapter
+            expect(updatedDeviceDetailsLearned(learned, undefined, before)).to.deep.equal({
+                zigbee2mqtt: ['battery'],
+                shelly: ['power'],
+            });
+            // the same ticks (only the name changed) teach nothing
+            expect(updatedDeviceDetailsLearned({ shelly: ['x'] }, before, { ...before })).to.equal(undefined);
+            // other order
+            const after = {
+                deviceId: SHELLY,
+                entries: [
+                    { key: '', id: `${SHELLY}.Relay0.Frequency` },
+                    { key: 'power', id: `${SHELLY}.Relay0.Power` },
+                ],
+            };
+            expect(updatedDeviceDetailsLearned({}, before, after)).to.deep.equal({
+                shelly: ['~Relay0.Frequency', 'power'],
+            });
+            // nothing ticked is a valid learned choice
+            expect(updatedDeviceDetailsLearned({}, before, { deviceId: SHELLY, entries: [] })).to.deep.equal({
+                shelly: [],
+            });
+        });
+        it('learned: an empty list ticks nothing (no fall back to the mask)', () => {
+            const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, undefined, []);
+            expect(rows.some(r => r.enabled)).to.equal(false);
+            expect(rows.some(r => r.key === 'power')).to.equal(true);
+        });
+        it('learned: read from the native configuration, invalid entries left out', () => {
+            expect(deviceDetailsLearnedOf({ shelly: ['power'], bad: [1], other: 'x', empty: [] })).to.deep.equal({
+                shelly: ['power'],
+                empty: [],
+            });
+            expect(deviceDetailsLearnedOf(undefined)).to.deep.equal({});
+            expect(deviceDetailsLearnedOf([])).to.deep.equal({});
+        });
+        it('a state is shown in one row only: saved rows and exchanged states', () => {
+            // the user gave the entry rssi the state of power: power stays as empty row, the state appears once
+            const saved = [
+                { key: 'rssi', id: `${SHELLY}.Relay0.Power` },
+                { key: 'firmware', id: `${SHELLY}.Relay0.Power` },
+            ];
+            const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, saved, undefined);
+            expect(rows.filter(r => r.id === `${SHELLY}.Relay0.Power`)).to.have.length(1);
+            expect(rows.find(r => r.key === 'power')).to.deep.equal({ key: 'power', id: '', enabled: false });
+            expect(
+                deviceDetailEntriesOfRows([...rows, { key: '', id: `${SHELLY}.Relay0.Power`, enabled: true }]),
+            ).to.have.length(1);
+        });
+        it('exchanging the state of a row swaps it with the row that had it', () => {
+            const rows = [
+                { key: 'power', id: 'a', enabled: true },
+                { key: 'voltage', id: 'b', enabled: false },
+                { key: '', id: 'c', enabled: false },
+                { key: 'switch', id: '', enabled: false },
+            ];
+            expect(exchangeDeviceDetailRowState(rows, 0, 'b')).to.deep.equal([
+                { key: 'power', id: 'b', enabled: true },
+                { key: 'voltage', id: 'a', enabled: false },
+                { key: '', id: 'c', enabled: false },
+                { key: 'switch', id: '', enabled: false },
+            ]);
+            // the empty row takes a state: it is ticked, the plain row of that state is dropped
+            expect(exchangeDeviceDetailRowState(rows, 3, 'c')).to.deep.equal([
+                { key: 'power', id: 'a', enabled: true },
+                { key: 'voltage', id: 'b', enabled: false },
+                { key: 'switch', id: 'c', enabled: true },
+            ]);
+            // an entry row that loses its state without getting one back becomes empty
+            expect(exchangeDeviceDetailRowState(rows, 3, 'a')[0]).to.deep.equal({
+                key: 'power',
+                id: '',
+                enabled: false,
+            });
+            expect(exchangeDeviceDetailRowState(rows, 1, '')[1]).to.deep.equal({
+                key: 'voltage',
+                id: '',
+                enabled: false,
+            });
+        });
+        it('runtime part: only rows with a state, an unusable configuration gives none', () => {
+            expect(
+                deviceDetailsRuntimeOf({
+                    deviceId: SHELLY,
+                    entries: [
+                        { key: 'power', id: `${SHELLY}.Relay0.Power` },
+                        { key: 'switch', id: '' },
+                    ],
+                }),
+            ).to.deep.equal({ deviceId: SHELLY, entries: [{ key: 'power', id: `${SHELLY}.Relay0.Power` }] });
+            expect(deviceDetailsRuntimeOf(undefined)).to.equal(undefined);
+            expect(deviceDetailsRuntimeOf({ deviceId: '', entries: [] })).to.equal(undefined);
+            expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: [{ key: 1 }] })).to.equal(undefined);
+        });
+    });
+});
