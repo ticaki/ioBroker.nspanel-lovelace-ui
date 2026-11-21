@@ -7,6 +7,12 @@
  * the vertical distance of the point to the straight line between its two neighbours at its x position.
  * x (minutes) and y (scaled value) have different units, so no Euclidean distance.
  *
+ * The selection has two stages so that local peaks and valleys stay visible as long as possible:
+ * first only points that are no strict local extremum (y above both neighbours or below both neighbours)
+ * are candidates; only when none of those is left, local extrema are removed as well (again the smallest
+ * distance first). After every removal the distance and the extremum state of both new neighbours are
+ * recomputed, so on a plateau like 9,10,10,9 one 10 may fall first and the remaining 10 then counts as a peak.
+ *
  * Never removed: the first and the last point (the panel takes the x range from the points) and the global
  * minimum and maximum of y (the y ticks were computed from all values).
  */
@@ -53,6 +59,17 @@ function verticalDistance(left: LinePoint, p: LinePoint, right: LinePoint): numb
 }
 
 /**
+ * Whether `p` is a strict local extremum: above both neighbours or below both neighbours.
+ *
+ * @param left left neighbour
+ * @param p the point
+ * @param right right neighbour
+ */
+function isLocalExtremum(left: LinePoint, p: LinePoint, right: LinePoint): boolean {
+    return (p.y > left.y && p.y > right.y) || (p.y < left.y && p.y < right.y);
+}
+
+/**
  * Removes points until their bytes (as `~x:y` each) fit the budget. Below the budget the input is returned
  * unchanged (same array). Pure, the input is not modified.
  * If the protected points alone exceed the budget, only they remain.
@@ -81,13 +98,29 @@ export function thinLinePoints(points: LinePoint[], budgetBytes: number): LinePo
     const distances: number[] = result.map((p, i) =>
         fixed[i] ? Infinity : verticalDistance(result[i - 1], p, result[i + 1]),
     );
+    const extrema: boolean[] = result.map((p, i) =>
+        fixed[i] ? false : isLocalExtremum(result[i - 1], p, result[i + 1]),
+    );
 
     while (bytes > budgetBytes) {
+        // stage 1: smallest distance among the points that are no local extremum
+        // stage 2: smallest distance among the local extrema
         let best = -1;
+        let bestExtremum = -1;
         for (let i = 1; i < result.length - 1; i++) {
-            if (distances[i] !== Infinity && (best === -1 || distances[i] < distances[best])) {
-                best = i;
+            if (fixed[i]) {
+                continue;
             }
+            if (!extrema[i]) {
+                if (best === -1 || distances[i] < distances[best]) {
+                    best = i;
+                }
+            } else if (bestExtremum === -1 || distances[i] < distances[bestExtremum]) {
+                bestExtremum = i;
+            }
+        }
+        if (best === -1) {
+            best = bestExtremum;
         }
         if (best === -1) {
             break;
@@ -95,11 +128,13 @@ export function thinLinePoints(points: LinePoint[], budgetBytes: number): LinePo
         bytes -= pointBytes(result[best]);
         result.splice(best, 1);
         distances.splice(best, 1);
+        extrema.splice(best, 1);
         fixed.splice(best, 1);
         // the former neighbours are now at best - 1 and best
         for (const i of [best - 1, best]) {
             if (!fixed[i]) {
                 distances[i] = verticalDistance(result[i - 1], result[i], result[i + 1]);
+                extrema[i] = isLocalExtremum(result[i - 1], result[i], result[i + 1]);
             }
         }
     }

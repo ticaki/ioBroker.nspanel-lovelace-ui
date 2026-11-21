@@ -37,6 +37,9 @@ function verticalDistance(left, p, right) {
   const lineY = dx === 0 ? (left.y + right.y) / 2 : left.y + (right.y - left.y) * (p.x - left.x) / dx;
   return Math.abs(p.y - lineY);
 }
+function isLocalExtremum(left, p, right) {
+  return p.y > left.y && p.y > right.y || p.y < left.y && p.y < right.y;
+}
 function thinLinePoints(points, budgetBytes) {
   let bytes = linePointsBytes(points);
   if (bytes <= budgetBytes || points.length <= 2) {
@@ -58,12 +61,26 @@ function thinLinePoints(points, budgetBytes) {
   const distances = result.map(
     (p, i) => fixed[i] ? Infinity : verticalDistance(result[i - 1], p, result[i + 1])
   );
+  const extrema = result.map(
+    (p, i) => fixed[i] ? false : isLocalExtremum(result[i - 1], p, result[i + 1])
+  );
   while (bytes > budgetBytes) {
     let best = -1;
+    let bestExtremum = -1;
     for (let i = 1; i < result.length - 1; i++) {
-      if (distances[i] !== Infinity && (best === -1 || distances[i] < distances[best])) {
-        best = i;
+      if (fixed[i]) {
+        continue;
       }
+      if (!extrema[i]) {
+        if (best === -1 || distances[i] < distances[best]) {
+          best = i;
+        }
+      } else if (bestExtremum === -1 || distances[i] < distances[bestExtremum]) {
+        bestExtremum = i;
+      }
+    }
+    if (best === -1) {
+      best = bestExtremum;
     }
     if (best === -1) {
       break;
@@ -71,10 +88,12 @@ function thinLinePoints(points, budgetBytes) {
     bytes -= pointBytes(result[best]);
     result.splice(best, 1);
     distances.splice(best, 1);
+    extrema.splice(best, 1);
     fixed.splice(best, 1);
     for (const i of [best - 1, best]) {
       if (!fixed[i]) {
         distances[i] = verticalDistance(result[i - 1], result[i], result[i + 1]);
+        extrema[i] = isLocalExtremum(result[i - 1], result[i], result[i + 1]);
       }
     }
   }

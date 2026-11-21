@@ -46,6 +46,60 @@ describe('lib/pages - chart-thin', () => {
         expect(points).to.deep.equal(copy);
     });
 
+    it('keeps a local peak as long as points that are no local extremum can be removed', () => {
+        const points = toPoints([0, 0, 1, 9, 10, 9, 1, 20, 0]);
+        const steps: number[][] = [];
+        let current = points;
+        for (;;) {
+            const next = thinLinePoints(points, linePointsBytes(current) - 1);
+            if (next.length === current.length) {
+                break;
+            }
+            current = next;
+            steps.push(current.map(p => p.y));
+        }
+        expect(steps).to.deep.equal([
+            [0, 1, 9, 10, 9, 1, 20, 0],
+            [0, 1, 10, 9, 1, 20, 0],
+            [0, 1, 10, 1, 20, 0],
+            // only local extrema left besides the protected points: the 10 and the valley 1
+            [0, 10, 1, 20, 0],
+            [0, 1, 20, 0],
+            [0, 20, 0],
+        ]);
+    });
+
+    it('keeps the peak of 1,9,10,9,1', () => {
+        const points = toPoints([1, 9, 10, 9, 1]);
+        const one = thinLinePoints(points, linePointsBytes(points) - 1);
+        expect(one.map(p => p.y)).to.deep.equal([1, 10, 9, 1]);
+        const two = thinLinePoints(points, linePointsBytes(one) - 1);
+        expect(two.map(p => p.y)).to.deep.equal([1, 10, 1]);
+    });
+
+    it('removes one value of a plateau first, the remaining one is then a peak', () => {
+        const points = toPoints([0, 9, 10, 10, 9, 3, 20, 0]);
+        const one = thinLinePoints(points, linePointsBytes(points) - 1);
+        expect(one.filter(p => p.y === 10)).to.have.length(1);
+        // the remaining 10 is a peak now: the non-extrema 9s fall before it
+        const two = thinLinePoints(points, linePointsBytes(one) - 1);
+        const three = thinLinePoints(points, linePointsBytes(two) - 1);
+        expect(three.map(p => p.y)).to.deep.equal([0, 10, 3, 20, 0]);
+    });
+
+    it('still reaches the budget with noise where every inner point is a local extremum', () => {
+        const ys: number[] = [];
+        for (let i = 0; i < 60; i++) {
+            ys.push(i % 2 === 0 ? 212 : 213);
+        }
+        const points = toPoints(ys);
+        const budget = Math.floor(linePointsBytes(points) / 3);
+        const thinned = thinLinePoints(points, budget);
+        expect(linePointsBytes(thinned)).to.be.at.most(budget);
+        expect(thinned[0]).to.deep.equal(points[0]);
+        expect(thinned[thinned.length - 1]).to.deep.equal(points[59]);
+    });
+
     it('brings the 24 h temperature chart of #925 (289 points, 20.0 … 21.7 °C) to at most 1000 bytes', () => {
         const ys: number[] = [];
         for (let i = 0; i <= 288; i++) {
