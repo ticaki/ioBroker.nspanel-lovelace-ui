@@ -141,7 +141,7 @@
     "StateObjects.screenSaver.layout": "Disposición",
     "StateObjects.screenSaver.rotationTime": "Intervalo de rotación (0 = sin cambio)",
     "StateObjects.screenSaver.screenSaver": "Protector de pantalla",
-    "StateObjects.screenSaver.timeout": "Tiempo de espera del pantalla de pantalla",
+    "StateObjects.screenSaver.timeout": "Tiempo de espera del salvapantallas",
     "StateObjects.screensaverNotify": "Notificación del salvapantallas",
     "StateObjects.screensaverNotify.id": "ID de la notificación del salvapantallas descartada",
     "StateObjects.scriptName": "Nombre del guión",
