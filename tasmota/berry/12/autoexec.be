@@ -757,3 +757,20 @@ tasmota.add_cmd('Nextion', send_cmd)
 tasmota.add_cmd('CustomSend', send_cmd2)
 tasmota.add_cmd('FlashNextion', flash_nextion)
 tasmota.add_cmd('FlashNextionAdv', flash_nextion_adv)
+
+# Optional user script: nlui_custom.be
+# If a file named nlui_custom.be exists in the Tasmota file system, it is loaded last.
+# It survives driver updates because only autoexec.be is replaced.
+# It runs in the same global namespace as the driver: do not redefine driver globals
+# (e.g. nextion, send_cmd, flash_nextion); wrap your own code in a class/function or use a prefix.
+# Errors (syntax or runtime) are logged by Tasmota as "BRY: failed to load ..." / "BRY: failed to run
+# compiled code ..." and do not stop the driver; code after a runtime error in the script is not executed.
+# A blocking script (endless loop, long delays) still stalls startup
+# -> delete the file via the Tasmota file manager (or "UfsDelete nlui_custom.be").
+def load_custom_script()
+    import path
+    if path.exists("nlui_custom.be")
+        load("nlui_custom.be")
+    end
+end
+load_custom_script()
