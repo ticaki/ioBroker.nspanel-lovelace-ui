@@ -2,7 +2,16 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { getPayload, getPayloadArray, getPayloadRemoveTilde, getRegExp, menuMaxItems } from '../const/tools';
+import {
+    getPayload,
+    getPayloadArray,
+    getPayloadRemoveTilde,
+    getRegExp,
+    hmiMenuCard,
+    type HmiCardTarget,
+    type MenuCard,
+    menuMaxItems,
+} from '../const/tools';
 import type * as pages from '../types/pages';
 import * as globals from '../types/function-and-const';
 import type { IncomingEvent, nsPanelState, nsPanelStateVal } from '../types/types';
@@ -39,9 +48,10 @@ export class PageMenu extends Page {
                 case 'cardGrid2':
                 case 'cardGrid3':
                 case 'cardEntities':
+                case 'cardEntities2':
                 case 'cardThermo2':
                 case 'cardMedia':
-                    this.maxItems = menuMaxItems(options.config.card, this.basePanel.info.nspanel.model);
+                    this.maxItems = this.menuMaxItemsOf(options.config.card);
                     break;
                 case 'cardChart':
                 case 'cardLChart':
@@ -62,6 +72,28 @@ export class PageMenu extends Page {
                     break;
             }
         }
+    }
+
+    /**
+     * @returns what decides which HMI page shows the card (hmiMenuCard): web panel, model and TFT version
+     */
+    protected hmiCardTarget(): HmiCardTarget {
+        return {
+            isVirtual: this.basePanel.isVirtual,
+            model: this.basePanel.info.nspanel.model,
+            displayVersion: this.basePanel.info.nspanel.displayVersion,
+        };
+    }
+
+    /**
+     * Items per page of a menu card on this panel: the number of the HMI page that shows it (hmiMenuCard), so
+     * cardEntities2 has 4 rows on a display without the page.
+     *
+     * @param card the configured card
+     * @returns the number of items
+     */
+    protected menuMaxItemsOf(card: MenuCard): number {
+        return menuMaxItems(hmiMenuCard(card, this.hmiCardTarget()), this.basePanel.info.nspanel.model);
     }
 
     public async init(): Promise<void> {
@@ -329,9 +361,11 @@ export class PageMenu extends Page {
                     case 'cardGrid2':
                     case 'cardGrid3':
                     case 'cardEntities':
+                    case 'cardEntities2':
                     case 'cardThermo2':
                     case 'cardMedia':
-                        this.maxItems = menuMaxItems(this.config.card, this.basePanel.info.nspanel.model);
+                        // the TFT version is known by now: cardEntities2 shows 4 rows on a display without the page
+                        this.maxItems = this.menuMaxItemsOf(this.config.card);
                         break;
                     default:
                         this.log.error(`PageMenu: ${card} is not supported in onVisibilityChange!`);

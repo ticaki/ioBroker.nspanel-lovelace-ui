@@ -78,6 +78,7 @@ export type PageCardType =
           | 'cardGrid2'
           | 'cardGrid3'
           | 'cardEntities'
+          | 'cardEntities2'
           | 'cardSchedule'
       >
     | 'all'
@@ -86,7 +87,14 @@ export type PageCardType =
     | typeof pageLinkCard // Verknüpfung auf eine andere Admin-Seite
     | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
 
-const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
+const MENU_CARD_TYPES: ReadonlyArray<string> = [
+    'cardGrid',
+    'cardGrid2',
+    'cardGrid3',
+    'cardEntities',
+    'cardEntities2',
+    'cardSchedule',
+];
 
 /** Entries of the page type select in display order, with the i18n key of their label. */
 const PAGE_TYPE_OPTIONS: ReadonlyArray<{ value: PageCardType; labelKey: string }> = [

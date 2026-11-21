@@ -1,6 +1,6 @@
 /**
  * Device with details (doc/ideas/device-details/README.md): a page item shows any device (an object of type device or
- * channel); a long press opens a generated detail page (cardSchedule) with the chosen states of the device.
+ * channel); a long press opens a generated detail page (cardEntities2) with the chosen states of the device.
  *
  * Pure module, shared by the adapter and the admin - it must not import anything that pulls adapter code into the
  * admin bundle.
@@ -174,13 +174,13 @@ export type DeviceDetailRow = {
 
 /** what the detail page does with a state (doc/ideas/device-details/README.md, section Zeilen) */
 export type DeviceDetailRowKind =
-    /** read: false - shown like a switch, a tap writes true */
+    /** read: false - a button, a tap writes true */
     | 'button'
-    /** boolean, writable - on/off, a tap switches */
+    /** boolean, writable - a switch (OnOff) */
     | 'switch'
     /** boolean, read only - on/off */
     | 'boolean'
-    /** number, writable - value with unit, a tap opens popupSlider */
+    /** number, writable - a slider (value|min|max) */
     | 'numberSet'
     /** number, read only - value with unit */
     | 'number'

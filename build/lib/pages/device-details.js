@@ -111,6 +111,18 @@ function deviceDetailRowItem(deviceId, entry, common, name) {
   const value = { type: "triggered", dp: entry.id };
   switch (kind) {
     case "switch":
+      return {
+        type: "switch",
+        role: import_deviceDetails.DEVICE_DETAIL_ROW_ROLE,
+        data: {
+          icon: {
+            true: { value: icon, color: { type: "const", constVal: import_Color.Color.activated } },
+            false: { value: icon, color: { type: "const", constVal: import_Color.Color.deactivated } }
+          },
+          entity1: { value },
+          text
+        }
+      };
     case "boolean":
       return {
         type: "text",
@@ -147,16 +159,10 @@ function deviceDetailRowItem(deviceId, entry, common, name) {
         role: import_deviceDetails.DEVICE_DETAIL_ROW_ROLE,
         data: {
           icon: { true: { value: icon, color: valueColor }, false: { value: icon, color: valueColor } },
-          // the slider of popupSlider runs from 0 to 100 % of min..max (getScaledNumber / setScaledNumber)
-          entity1: {
-            value,
-            minScale: { type: "const", constVal: min },
-            maxScale: { type: "const", constVal: max }
-          },
+          // the slider of the row works with the raw value: `value|min|max`
+          entity1: { value },
           minValue1: { type: "const", constVal: min },
           maxValue1: { type: "const", constVal: max },
-          steps1: typeof common.step === "number" && common.step > 0 ? { type: "const", constVal: common.step } : void 0,
-          heading1: { type: "const", constVal: name },
           text
         }
       };
@@ -181,7 +187,7 @@ function deviceDetailPageConfig(uniqueID, headline, alwaysOn, rows) {
     dpInit: "",
     pageItems: rows,
     config: {
-      card: "cardSchedule",
+      card: "cardEntities2",
       scrollPresentation: "classic",
       scrollType: "page",
       data: { headline: { type: "const", constVal: headline } }

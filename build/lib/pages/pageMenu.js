@@ -62,9 +62,10 @@ class PageMenu extends import_Page.Page {
         case "cardGrid2":
         case "cardGrid3":
         case "cardEntities":
+        case "cardEntities2":
         case "cardThermo2":
         case "cardMedia":
-          this.maxItems = (0, import_tools.menuMaxItems)(options.config.card, this.basePanel.info.nspanel.model);
+          this.maxItems = this.menuMaxItemsOf(options.config.card);
           break;
         case "cardChart":
         case "cardLChart":
@@ -85,6 +86,26 @@ class PageMenu extends import_Page.Page {
           break;
       }
     }
+  }
+  /**
+   * @returns what decides which HMI page shows the card (hmiMenuCard): web panel, model and TFT version
+   */
+  hmiCardTarget() {
+    return {
+      isVirtual: this.basePanel.isVirtual,
+      model: this.basePanel.info.nspanel.model,
+      displayVersion: this.basePanel.info.nspanel.displayVersion
+    };
+  }
+  /**
+   * Items per page of a menu card on this panel: the number of the HMI page that shows it (hmiMenuCard), so
+   * cardEntities2 has 4 rows on a display without the page.
+   *
+   * @param card the configured card
+   * @returns the number of items
+   */
+  menuMaxItemsOf(card) {
+    return (0, import_tools.menuMaxItems)((0, import_tools.hmiMenuCard)(card, this.hmiCardTarget()), this.basePanel.info.nspanel.model);
   }
   async init() {
     await super.init();
@@ -286,9 +307,10 @@ class PageMenu extends import_Page.Page {
           case "cardGrid2":
           case "cardGrid3":
           case "cardEntities":
+          case "cardEntities2":
           case "cardThermo2":
           case "cardMedia":
-            this.maxItems = (0, import_tools.menuMaxItems)(this.config.card, this.basePanel.info.nspanel.model);
+            this.maxItems = this.menuMaxItemsOf(this.config.card);
             break;
           default:
             this.log.error(`PageMenu: ${card} is not supported in onVisibilityChange!`);

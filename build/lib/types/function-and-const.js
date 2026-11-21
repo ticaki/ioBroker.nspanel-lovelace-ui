@@ -170,7 +170,7 @@ function swapKeyValue(obj) {
   }
   return swapped;
 }
-const CARD_ENTITIES_TYPES = ["cardEntities", "cardSchedule"];
+const CARD_ENTITIES_TYPES = ["cardEntities", "cardEntities2", "cardSchedule"];
 const CARD_GRID_TYPES = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2", "cardMedia"];
 const CARD_MENU_HALF_PAGE_SCROLL_TYPES = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"];
 function isCardEntitiesType(value) {

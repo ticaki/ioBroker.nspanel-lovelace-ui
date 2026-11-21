@@ -335,6 +335,7 @@ export class Page extends BaseClassPage {
                 forceSend = true;
             //@disable-next-line no-fallthrough
             case 'cardEntities':
+            case 'cardEntities2':
             case 'cardGrid':
             case 'cardGrid2':
             case 'cardGrid3':

@@ -504,7 +504,8 @@ class Panel extends import_library.BaseClass {
         pageConfig = Panel.getPage(pageConfig, this);
         return new import_pageChartPie.PageChartPie(pmconfig, pageConfig);
       }
-      case "cardEntities": {
+      case "cardEntities":
+      case "cardEntities2": {
         pageConfig = Panel.getPage(pageConfig, this);
         return new import_pageEntities.PageEntities(pmconfig, pageConfig);
       }
@@ -3106,14 +3107,14 @@ ${this.info.tasmota.onlineVersion}`;
   }
   /**
    * Whether a `buttonPress3` of an item that has no long press of its own acts like the short press. On the grid
-   * pages a long press may just be a finger that lay too long; on cardEntities the left part of an item is tapped on
-   * purpose (doc/ideas/device-details/README.md) - there nothing happens.
+   * pages a long press may just be a finger that lay too long; on cardEntities and cardEntities2 the left part of an
+   * item is tapped on purpose (doc/ideas/device-details/README.md) - there nothing happens.
    *
    * @param card page type of the active page
-   * @returns false for cardEntities, true otherwise
+   * @returns false for cardEntities and cardEntities2, true otherwise
    */
   static longPressFallsBackToShortPress(card) {
-    return card !== "cardEntities";
+    return card !== "cardEntities" && card !== "cardEntities2";
   }
   /**
    * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.

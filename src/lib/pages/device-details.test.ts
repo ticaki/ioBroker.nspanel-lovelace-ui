@@ -24,24 +24,36 @@ function dataOf(item: NSPanel.PageItemDataItemsOptions): Record<string, any> {
 
 describe('lib/pages/device-details', () => {
     describe('rows of the detail page', () => {
-        it('boolean writable: text with on/off in the colors activated/deactivated, the state as entity1', () => {
+        it('boolean writable: a switch (OnOff) in the colors activated/deactivated, the state as entity1', () => {
             const item = deviceDetailRowItem(
                 DEV,
                 { key: 'switch', id: `${DEV}.Relay0.Switch` },
                 { type: 'boolean', read: true, write: true, role: 'switch' },
                 'Switch',
             );
-            expect(item.type).to.equal('text');
+            expect(item.type).to.equal('switch');
             expect(item.role).to.equal(DEVICE_DETAIL_ROW_ROLE);
             const data = dataOf(item);
             expect(data.entity1).to.deep.equal({ value: { type: 'triggered', dp: `${DEV}.Relay0.Switch` } });
+            expect(data.text.true.constVal).to.equal('Switch');
+            expect(data.icon.true.value.constVal).to.equal('toggle-switch');
+            expect(data.icon.true.color.constVal).to.deep.equal(JSON.parse(JSON.stringify(Color.activated)));
+            expect(data.icon.false.color.constVal).to.deep.equal(JSON.parse(JSON.stringify(Color.deactivated)));
+        });
+        it('boolean read only: text with on/off, the state as entity1', () => {
+            const item = deviceDetailRowItem(
+                DEV,
+                { key: '', id: `${DEV}.online` },
+                { type: 'boolean', read: true, write: false, role: 'indicator.reachable' },
+                'Online',
+            );
+            expect(item.type).to.equal('text');
+            const data = dataOf(item);
+            expect(data.entity1).to.deep.equal({ value: { type: 'triggered', dp: `${DEV}.online` } });
             expect(data.text1).to.deep.equal({
                 true: { type: 'const', constVal: 'on' },
                 false: { type: 'const', constVal: 'off' },
             });
-            expect(data.icon.true.value.constVal).to.equal('toggle-switch');
-            expect(data.icon.true.color.constVal).to.deep.equal(JSON.parse(JSON.stringify(Color.activated)));
-            expect(data.icon.false.color.constVal).to.deep.equal(JSON.parse(JSON.stringify(Color.deactivated)));
         });
         it('read: false: a button that is written with true', () => {
             const item = deviceDetailRowItem(
@@ -56,7 +68,7 @@ describe('lib/pages/device-details', () => {
             expect(data.text1.true.constVal).to.equal('press');
             expect(data.icon.true.value.constVal).to.equal('gesture-tap-button');
         });
-        it('number writable: type number, slider range and step from common, heading = name', () => {
+        it('number writable: type number (slider value|min|max), range from common, raw value', () => {
             const item = deviceDetailRowItem(
                 DEV,
                 { key: '', id: `${DEV}.Relay0.AutoTimerOffDelay` },
@@ -65,23 +77,35 @@ describe('lib/pages/device-details', () => {
             );
             expect(item.type).to.equal('number');
             const data = dataOf(item);
+            // not scaled: the slider of cardEntities2 shows and sets the value itself
             expect(data.entity1).to.deep.equal({
                 value: { type: 'triggered', dp: `${DEV}.Relay0.AutoTimerOffDelay` },
-                minScale: { type: 'const', constVal: 1 },
-                maxScale: { type: 'const', constVal: 5000 },
             });
             expect(data.minValue1.constVal).to.equal(1);
             expect(data.maxValue1.constVal).to.equal(5000);
-            expect(data.steps1.constVal).to.equal(5);
-            expect(data.heading1.constVal).to.equal('Delay');
+            expect(data.text.true.constVal).to.equal('Delay');
+            expect(data.heading1).to.equal(undefined);
         });
-        it('number writable without range: 0..100, no step', () => {
+        it('number writable without range: 0..100', () => {
             const data = dataOf(
                 deviceDetailRowItem(DEV, { key: '', id: `${DEV}.x` }, { type: 'number', write: true }, 'X'),
             );
             expect(data.minValue1.constVal).to.equal(0);
             expect(data.maxValue1.constVal).to.equal(100);
-            expect(data.steps1).to.equal(undefined);
+        });
+        it('every kind of state gets the row type of cardEntities2', () => {
+            const kinds: [Parameters<typeof deviceDetailRowItem>[2], string][] = [
+                [{ type: 'boolean', write: true }, 'switch'],
+                [{ type: 'boolean', write: false }, 'text'],
+                [{ type: 'boolean', read: false, write: true }, 'button'],
+                [{ type: 'number', write: true }, 'number'],
+                [{ type: 'number', write: false }, 'text'],
+                [{ type: 'string', write: true }, 'text'],
+                [{ type: 'string', write: false }, 'text'],
+            ];
+            for (const [common, type] of kinds) {
+                expect(deviceDetailRowItem(DEV, { key: '', id: `${DEV}.x` }, common, 'X').type).to.equal(type);
+            }
         });
         it('number / string read only: text with the value (entity2), color of the group', () => {
             const power = deviceDetailRowItem(
@@ -158,10 +182,10 @@ describe('lib/pages/device-details', () => {
     });
 
     describe('detail page', () => {
-        it('cardSchedule, headline = device name, classic paging', () => {
+        it('cardEntities2, headline = device name, classic paging', () => {
             const page = deviceDetailPageConfig('dd_3', 'Kitchen', 'action', []);
             expect(page.config).to.deep.equal({
-                card: 'cardSchedule',
+                card: 'cardEntities2',
                 scrollPresentation: 'classic',
                 scrollType: 'page',
                 data: { headline: { type: 'const', constVal: 'Kitchen' } },

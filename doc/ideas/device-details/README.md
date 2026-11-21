@@ -1,7 +1,7 @@
 # Gerät mit Details
 
-Stand: 2026-11-21 – Konzept entschieden, Adapter und Admin im Branch `feat/device-details` umgesetzt (nicht am Panel
-getestet), die zwei HMI-Änderungen stehen aus.
+Stand: 2026-11-22 – Konzept entschieden, Adapter und Admin im Branch `feat/device-details` umgesetzt; die Detailseite
+ist eine **cardEntities2**-Seite (neue TFT mit 5 Zeilen und Tipp links → `buttonPress3`, am Testpanel geflasht).
 
 ## Ausgangslage
 
@@ -20,18 +20,18 @@ Geräts.
 | Seite | Kurz | Detailseite |
 |---|---|---|
 | cardGrid / cardGrid2 / cardGrid3 | wie bisher (`buttonPress2`) | Long-Press (`buttonPress3`, gibt es schon) |
-| cardEntities | rechte Schaltfläche (Schalter usw.) wie bisher | Tipp links auf Icon/Bezeichnung → `buttonPress3` (HMI-Änderung 1) |
+| cardEntities / cardEntities2 | rechte Schaltfläche (Schalter usw.) wie bisher | Tipp links auf Icon/Bezeichnung → `buttonPress3` (HMI-Änderung 1) |
 
 - Auf den Grid-Seiten fällt ein nicht behandelter Long-Press weiterhin auf den Kurz-Druck zurück. Dort kann ein
   Long-Press auch einfach „der Finger lag zu lange“ sein.
-- Auf cardEntities tippt man die linke Fläche bewusst an. Ohne Long-Press-Behandlung passiert dort **nichts**, kein
-  Rückfall auf den Kurz-Druck.
-- Long-Press wird für cardEntities im Adapter freigegeben (Admin, Skript-Konvertierung). Bis zur neuen HMI kommt dort
-  nur noch nichts an.
+- Auf cardEntities und cardEntities2 tippt man die linke Fläche bewusst an. Ohne Long-Press-Behandlung passiert dort
+  **nichts**, kein Rückfall auf den Kurz-Druck.
+- Long-Press wird für cardEntities im Adapter freigegeben (Admin, Skript-Konvertierung), für cardEntities2 im Admin
+  (die Seite gibt es im Skript nicht). Bis zur neuen HMI kommt auf cardEntities nur nichts an.
 
 ## Die Detailseite
 
-- Seitentyp **cardSchedule**, zur Laufzeit erzeugt (Vorbild: temporäre Seite des Sonos-/Squeezebox-Speakers in
+- Seitentyp **cardEntities2** (5 Zeilen, echte Bedienelemente wie cardEntities), zur Laufzeit erzeugt (Vorbild: temporäre Seite des Sonos-/Squeezebox-Speakers in
   `src/lib/pages/pageItem.ts`). Die Konfiguration der Seite ist nicht editierbar, die Seite selbst kann schalten.
 - Überschrift = Name des Geräts.
 - **Klassisch blätterbar** (`scrollPresentation: 'classic'`, `PageMenu.getOptions`).
@@ -40,14 +40,16 @@ Geräts.
 
 ### Zeilen
 
-| State | Anzeige | Tipp links (`buttonPress2`) |
+| State | Zeilentyp auf cardEntities2 | Bedienung |
 |---|---|---|
-| boolean, `write: true` | An/Aus (übersetzt) | schaltet um |
-| boolean, nur lesbar | An/Aus | nichts |
-| `read: false` (Button) | Name, wie ein Schalter | schreibt `true` |
-| number, `write: true` | Typ `number`, Wert mit Einheit (HMI-Änderung 2) | öffnet `popupSlider` (min/max/step aus `common`) |
-| number, nur lesbar | Wert mit Einheit | nichts |
-| string | Text, nur lesbar | nichts |
+| boolean, `write: true` | `switch` | Schalter rechts (`OnOff`) schaltet |
+| boolean, nur lesbar | `text`, An/Aus (übersetzt) | nichts |
+| `read: false` (Button) | `button` („drücken“) | Knopf rechts (`button`) schreibt `true` |
+| number, `write: true` | `number`, Feld `wert\|min\|max` wie cardEntities (min/max aus `common`, sonst 0/100) | Slider (`number-set`) schreibt den Wert |
+| number, nur lesbar | `text`, Wert mit Einheit | nichts |
+| string | `text`, nur lesbar | nichts |
+
+Ein Tipp links (Icon/Name) sendet auf diesen Zeilen `buttonPress3` und tut nichts.
 
 - Es wird nichts automatisch ausgeblendet. Was erscheint, bestimmt allein die Filterliste.
 - Icon aus der Maske bzw. Rolle (Thermometer, Blitz, WLAN, Batterie …), Name übersetzt über `getTranslation`.
@@ -106,14 +108,26 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
   Nutzer bei diesem Adapter (Shelly, zigbee2mqtt …) zuletzt angehakt hat.
 - Die Objektliste holt der Admin per `sendTo` vom Adapter.
 
-## Vorgemerkte HMI-Änderungen
+## HMI-Änderungen
 
-Der Adapter wird so gebaut, als wären beide schon drin. Getestet wird zunächst mit cardGrid.
+1. **cardEntities** und **cardEntities2**, `m0`–`m3` / `m0`–`m4` (Icon/Bezeichnung): Typen ohne Popup senden
+   `event,buttonPress3,<entn>,button` (vorher nichts, bei `text` `buttonPress2`). Umgesetzt mit
+   `HMI/tools/entities2_five_rows.py`.
+2. Neue Seite **cardEntities2** = cardEntities mit 5 Zeilen (`pageType~cardEntities2`, `entityUpd` mit einer Zeile
+   mehr, Zeile 5 = Felder 38–43). Ersetzt die frühere Idee, cardSchedule für die Detailseite zu ändern (Typ `number`
+   mit Wert, Tipp öffnet `popupSlider`) – das entfällt, **cardSchedule bleibt unverändert**.
 
-1. **cardEntities**, `m0`–`m3` (Icon/Bezeichnung): Typen ohne Popup senden `event,buttonPress3,<entn>,button`.
-   Heute senden sie nichts (bei `text` `buttonPress2`).
-2. **cardSchedule**, Typ `number`: Wert anzeigen (heute nur bei `text`), Tipp öffnet `popupSlider` (heute
-   `buttonPress2,<entn>,button`). Bis dahin kann der Adapter das Popup per `pageType~popupSlider~…` selbst öffnen.
+### TFT-Abhängigkeit von cardEntities2
+
+- Der Adapter kennt die TFT-Version aus `event,startup,<version>,<model>` (`info.nspanel.displayVersion`) und
+  vergleicht sie wie bei den 6.2.0-Funktionen (`Panel.meetsVersion`, `isVersionGreaterOrEqual`).
+- cardEntities2 gilt ab **TFT 6.2.1** (`CARD_ENTITIES2_MIN_VERSION` in `src/lib/const/tools.ts`, „nächste TFT nach
+  6.2.0“) und nur für eu; Web-Panels (web-l, web-p, eu) haben die Seite immer.
+- Ältere TFT, unbekannte Version und us-l/us-p: die Seite wird als **cardEntities** geladen
+  (`pageType~cardEntities`) und hat deren Zeilenzahl (eu/us-l 4, us-p 5). Entscheidung in `hmiMenuCard`, angewandt
+  in `PageEntities.getPageTypePayload` und `PageMenu.maxItems` (neu berechnet beim Sichtbarwerden, dann ist die
+  Version bekannt).
+- Wichtig: Die TFT mit cardEntities2 muss sich mit Version **≥ 6.2.1** melden, sonst zeigt der Adapter cardEntities.
 
 ## Umsetzung (feat/device-details)
 
@@ -139,16 +153,19 @@ Der Adapter wird so gebaut, als wären beide schon drin. Getestet wird zunächst
   Items erhalten. „Nichts angehakt“ ist eine gültige Vorbelegung.
 - **Theme-Keys:** `deviceEnergy`, `deviceConnection`, `deviceInfo` (neu, Farbgruppe „Zustände“), Klima nutzt
   `temperature`; An/Aus `activated`/`deactivated`.
-- **Detailseite:** Seiten-ID `dd_<Seite>`, Zeilen mit Rolle `deviceDetail`. Zwei sich überschneidende Long-Presses
+- **Detailseite:** cardEntities2, Seiten-ID `dd_<Seite>`, Zeilen mit Rolle `deviceDetail`. Zwei sich überschneidende Long-Presses
   öffnen nur die letzte Seite; die alte Seite wird erst nach dem Wechsel gelöscht.
-- **Feldformat für HMI-Änderung 2:** schreibbare Zahl als `number~<id>~<Icon>~<Farbe>~<Name>~<Wert mit Einheit>`
-  (statt `wert|min|max` wie auf cardEntities); min/max/step kommen mit `popupSlider`.
-- cardEntities: ein unbehandelter `buttonPress3` fällt nicht mehr auf den Kurz-Druck zurück.
+- Zeilen: `switch`/`button`/`number`/`text` mit den Feldformaten von cardEntities (kein eigenes Format mehr, kein
+  `popupSlider` vom Adapter).
+- cardEntities und cardEntities2: ein unbehandelter `buttonPress3` fällt nicht auf den Kurz-Druck zurück.
+- **cardEntities2 als Seitenart:** im Admin wählbar (Listenkarten), 5 Einträge pro Seite, klassisch blätterbar,
+  Long-Press und „Gerät mit Details“ erlaubt; nicht im Skript-Weg.
 
 ## Offen
 
-- HMI-Änderung 1 (cardEntities `m0`–`m3` → `buttonPress3`) und 2 (cardSchedule `number`).
-- `popupSlider` per `pageType~popupSlider~<Name>~<id>~<Icon>` vom Adapter geöffnet: ungetestet. Öffnet die HMI das
-  Popup nicht, bleibt die Detailseite schlafend, bis man wegnavigiert.
-- Darstellung der Zeilentypen `button` („drücken“) und `text` mit an/aus auf cardSchedule nicht am Panel geprüft.
+- Detailseite mit echten Geräten am Panel prüfen (Schalter, Knopf, Slider, Textwerte).
+- Der Slider schreibt ganze Zahlen (`number-set` wie auf cardEntities); Nachkommastellen/`step` gehen dabei verloren.
+- Web-Panel: der Tipp links auf Icon/Name sendet dort noch `buttonPress2` (number/button/switch) statt
+  `buttonPress3` wie die neue TFT.
+- us-l/us-p: cardEntities2 (5 Zeilen) fehlt in der HMI.
 - Länge der übersetzten Zeilennamen auf dem Panel prüfen (z. B. fr, pl, ru).

@@ -28,6 +28,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var tools_exports = {};
 __export(tools_exports, {
+  CARD_ENTITIES2_MIN_VERSION: () => CARD_ENTITIES2_MIN_VERSION,
   GetIconColor: () => GetIconColor,
   POPUP_TEXT_SIZE_DEFAULT: () => POPUP_TEXT_SIZE_DEFAULT,
   alignText: () => alignText,
@@ -67,6 +68,7 @@ __export(tools_exports, {
   getValueEntryString: () => getValueEntryString,
   getVersionAsNumber: () => getVersionAsNumber,
   headlineMaxChars: () => headlineMaxChars,
+  hmiMenuCard: () => hmiMenuCard,
   ifValueEntryIs: () => ifValueEntryIs,
   insertLinebreak: () => insertLinebreak,
   isPortraitModel: () => isPortraitModel,
@@ -87,6 +89,7 @@ __export(tools_exports, {
   shortenHeadline: () => shortenHeadline,
   siPrefixes: () => siPrefixes,
   stripIconFontSuffix: () => stripIconFontSuffix,
+  supportsCardEntities2: () => supportsCardEntities2,
   webButtonsVisible: () => webButtonsVisible
 });
 module.exports = __toCommonJS(tools_exports);
@@ -1167,6 +1170,9 @@ function isWebModel(model) {
 }
 const MENU_MAX_ITEMS = {
   cardEntities: { eu: 4, "us-l": 4, "us-p": 5, "web-l": 4, "web-p": 8 },
+  // a hardware panel without the page cardEntities2 (older TFT, us-l / us-p) shows it as cardEntities, see
+  // PageEntities.hmiCard - the adapter then takes the numbers of cardEntities
+  cardEntities2: { eu: 5, "us-l": 4, "us-p": 5, "web-l": 5, "web-p": 8 },
   cardSchedule: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 6, "web-p": 11 },
   cardGrid: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 8, "web-p": 10 },
   cardGrid2: { eu: 8, "us-l": 8, "us-p": 9, "web-l": 10, "web-p": 15 },
@@ -1174,6 +1180,21 @@ const MENU_MAX_ITEMS = {
   cardMedia: { eu: 5, "us-l": 5, "us-p": 5, "web-l": 6, "web-p": 8 },
   cardThermo2: { eu: 9, "us-l": 9, "us-p": 9, "web-l": 9, "web-p": 9 }
 };
+const CARD_ENTITIES2_MIN_VERSION = "6.2.1";
+const CARD_ENTITIES2_MODELS = /* @__PURE__ */ new Set([
+  "eu",
+  "web-l",
+  "web-p"
+]);
+function supportsCardEntities2(target) {
+  if (!CARD_ENTITIES2_MODELS.has(target.model)) {
+    return false;
+  }
+  return target.isVirtual || !!target.displayVersion && isVersionGreaterOrEqual(target.displayVersion, CARD_ENTITIES2_MIN_VERSION);
+}
+function hmiMenuCard(card, target) {
+  return card === "cardEntities2" && !supportsCardEntities2(target) ? "cardEntities" : card;
+}
 function menuMaxItems(card, model) {
   return MENU_MAX_ITEMS[card][model];
 }
@@ -1233,6 +1254,7 @@ function shortenHeadline(text, model) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  CARD_ENTITIES2_MIN_VERSION,
   GetIconColor,
   POPUP_TEXT_SIZE_DEFAULT,
   alignText,
@@ -1271,6 +1293,7 @@ function shortenHeadline(text, model) {
   getValueEntryString,
   getVersionAsNumber,
   headlineMaxChars,
+  hmiMenuCard,
   ifValueEntryIs,
   insertLinebreak,
   isPortraitModel,
@@ -1291,6 +1314,7 @@ function shortenHeadline(text, model) {
   shortenHeadline,
   siPrefixes,
   stripIconFontSuffix,
+  supportsCardEntities2,
   webButtonsVisible
 });
 //# sourceMappingURL=tools.js.map

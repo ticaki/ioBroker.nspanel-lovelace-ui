@@ -1534,7 +1534,7 @@ export namespace NSPanel {
          */
         longPressTrigger?: boolean;
         /**
-         * device with details (admin item with `device`): a long press opens a generated detail page (cardSchedule)
+         * device with details (admin item with `device`): a long press opens a generated detail page (cardEntities2)
          * with these states of the device - it comes before every other long press of the item
          */
         deviceDetails?: DeviceDetailsRuntime;
@@ -1697,6 +1697,7 @@ export namespace NSPanel {
         | 'cardMedia'
         // Entities Cards
         | 'cardEntities'
+        | 'cardEntities2'
         | 'cardSchedule'
         // Standalone Cards
         | 'cardAlarm'

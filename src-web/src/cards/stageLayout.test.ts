@@ -63,7 +63,14 @@ describe('cardStage', () => {
     });
 
     it('gives the menu cards the full web stage and the real model', () => {
-        for (const pageType of ['cardEntities', 'cardSchedule', 'cardGrid', 'cardGrid2', 'cardGrid3']) {
+        for (const pageType of [
+            'cardEntities',
+            'cardEntities2',
+            'cardSchedule',
+            'cardGrid',
+            'cardGrid2',
+            'cardGrid3',
+        ]) {
             expect(CENTERED_ON_WEB.has(pageType), pageType).toBe(false);
             expect(cardStage(pageType, 'web-p')).toEqual({
                 model: 'web-p',

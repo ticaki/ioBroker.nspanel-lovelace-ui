@@ -1,5 +1,5 @@
 /**
- * The detail page of a device (doc/ideas/device-details/README.md): a cardSchedule page that is generated at runtime
+ * The detail page of a device (doc/ideas/device-details/README.md): a cardEntities2 page that is generated at runtime
  * from the ticked states of a device item, opened by a long press of the item (like the temporary speaker page of
  * Sonos / Squeezebox in pageItem.ts). The page is not editable, its rows can switch.
  *
@@ -146,10 +146,11 @@ export function deviceDetailRowNames(
 }
 
 /**
- * The page item of a row of the detail page (doc/ideas/device-details/README.md, section Zeilen):
- * boolean = on/off in the theme colors activated / deactivated, `read: false` = a button, number = value with unit
- * (writable: type number, a tap opens popupSlider with min / max / step of common), everything else a text. Values
- * take the color of the group of their entry.
+ * The page item of a row of the detail page (doc/ideas/device-details/README.md, section Zeilen), with the controls
+ * of cardEntities2: a writable boolean = `switch` (OnOff switches), a readonly boolean = text on/off, both in the theme
+ * colors activated / deactivated; `read: false` = `button` (writes true); a writable number = `number` (slider,
+ * `value|min|max` with min / max of common, default 0 / 100); everything else a text with the formatted value and its
+ * unit. Values take the color of the group of their entry.
  *
  * @param deviceId id of the device
  * @param entry the row
@@ -179,6 +180,18 @@ export function deviceDetailRowItem(
     const value: NSPanel.DataItemsOptions = { type: 'triggered', dp: entry.id };
     switch (kind) {
         case 'switch':
+            return {
+                type: 'switch',
+                role: DEVICE_DETAIL_ROW_ROLE,
+                data: {
+                    icon: {
+                        true: { value: icon, color: { type: 'const', constVal: Color.activated } },
+                        false: { value: icon, color: { type: 'const', constVal: Color.deactivated } },
+                    },
+                    entity1: { value },
+                    text,
+                },
+            };
         case 'boolean':
             return {
                 type: 'text',
@@ -215,19 +228,10 @@ export function deviceDetailRowItem(
                 role: DEVICE_DETAIL_ROW_ROLE,
                 data: {
                     icon: { true: { value: icon, color: valueColor }, false: { value: icon, color: valueColor } },
-                    // the slider of popupSlider runs from 0 to 100 % of min..max (getScaledNumber / setScaledNumber)
-                    entity1: {
-                        value,
-                        minScale: { type: 'const', constVal: min },
-                        maxScale: { type: 'const', constVal: max },
-                    },
+                    // the slider of the row works with the raw value: `value|min|max`
+                    entity1: { value },
                     minValue1: { type: 'const', constVal: min },
                     maxValue1: { type: 'const', constVal: max },
-                    steps1:
-                        typeof common.step === 'number' && common.step > 0
-                            ? { type: 'const', constVal: common.step }
-                            : undefined,
-                    heading1: { type: 'const', constVal: name },
                     text,
                 },
             };
@@ -247,7 +251,8 @@ export function deviceDetailRowItem(
 }
 
 /**
- * The page of the detail page: cardSchedule, headline = name of the device, classic paging, not editable.
+ * The page of the detail page: cardEntities2 (five rows; a display without the page shows cardEntities with four),
+ * headline = name of the device, classic paging, not editable.
  *
  * @param uniqueID id of the page
  * @param headline name of the device
@@ -267,7 +272,7 @@ export function deviceDetailPageConfig(
         dpInit: '',
         pageItems: rows,
         config: {
-            card: 'cardSchedule',
+            card: 'cardEntities2',
             scrollPresentation: 'classic',
             scrollType: 'page',
             data: { headline: { type: 'const', constVal: headline } },

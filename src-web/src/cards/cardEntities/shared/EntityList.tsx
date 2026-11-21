@@ -43,6 +43,7 @@ export interface EntityListLayout {
 const PORTRAIT_ROW_HEIGHT: Readonly<Record<string, Readonly<Partial<Record<PanelModel, number>>>>> = {
     // us-p: rows a little taller than eu (x 1.3); web-p: 8 rows of 71 px from y 72
     cardEntities: { 'us-p': 74, 'web-p': 71 },
+    cardEntities2: { 'us-p': 74, 'web-p': 71 },
     // us-p: 6 rows of 46 px; web-p: 11 rows of 49 px from y 79
     cardSchedule: { 'us-p': 46, 'web-p': 49 },
 };

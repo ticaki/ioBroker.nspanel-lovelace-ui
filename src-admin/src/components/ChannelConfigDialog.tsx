@@ -641,7 +641,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /**
      * The kind "device with details" is offered where a long press (grid pages) or a tap on the left part of an item
-     * (cardEntities) reaches the item ({@link isLongPressCard}) - a stored device item keeps it everywhere.
+     * (cardEntities, cardEntities2) reaches the item ({@link isLongPressCard}) - a stored device item keeps it everywhere.
      */
     private isDeviceAllowed(): boolean {
         return this.state.device !== null || isLongPressCard(this.props.currentPageCard);

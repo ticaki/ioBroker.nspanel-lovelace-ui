@@ -2,7 +2,7 @@ import { isEmptyEntity, parseEntityList, parseEntityUpdHeader } from '../../../p
 import type { Entity6, Navigation, PanelModel } from '../../../protocol/types';
 
 /**
- * Model of the menu cards (cardEntities, cardSchedule, cardGrid, cardGrid2, cardGrid3):
+ * Model of the menu cards (cardEntities, cardEntities2, cardSchedule, cardGrid, cardGrid2, cardGrid3):
  * `entityUpd~title~nav left (6)~nav right (6)~entity (6)…`
  */
 export interface MenuPageModel {
@@ -41,6 +41,8 @@ export function parseMenuEntityUpd(args: readonly string[], max = Infinity): Men
 /** Entity slots per menu card and model, as the adapter sends them (`PageMenu.maxItems`) */
 const MENU_SLOTS: Readonly<Record<string, Readonly<Record<PanelModel, number>>>> = {
     cardEntities: { eu: 4, 'us-l': 4, 'us-p': 5, 'web-l': 4, 'web-p': 8 },
+    // us-l / us-p never get cardEntities2 (the adapter sends cardEntities there)
+    cardEntities2: { eu: 5, 'us-l': 4, 'us-p': 5, 'web-l': 5, 'web-p': 8 },
     cardSchedule: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 6, 'web-p': 11 },
     cardGrid: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 8, 'web-p': 10 },
     cardGrid2: { eu: 8, 'us-l': 8, 'us-p': 9, 'web-l': 10, 'web-p': 15 },

@@ -694,6 +694,7 @@ export class AdminConfiguration extends BaseClass {
                     break;
                 }
                 case 'cardEntities':
+                case 'cardEntities2':
                 case 'cardSchedule': {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';

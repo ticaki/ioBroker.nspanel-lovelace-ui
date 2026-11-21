@@ -1589,6 +1589,9 @@ export type MenuCard = cardEntitiesTypes | cardGridTypes;
 /** Number of items per menu card and model (see doc/web-panel/SMARTPHONE.md). */
 const MENU_MAX_ITEMS: Record<MenuCard, Record<NSPanel.NSpanelModel, number>> = {
     cardEntities: { eu: 4, 'us-l': 4, 'us-p': 5, 'web-l': 4, 'web-p': 8 },
+    // a hardware panel without the page cardEntities2 (older TFT, us-l / us-p) shows it as cardEntities, see
+    // PageEntities.hmiCard - the adapter then takes the numbers of cardEntities
+    cardEntities2: { eu: 5, 'us-l': 4, 'us-p': 5, 'web-l': 5, 'web-p': 8 },
     cardSchedule: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 6, 'web-p': 11 },
     cardGrid: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 8, 'web-p': 10 },
     cardGrid2: { eu: 8, 'us-l': 8, 'us-p': 9, 'web-l': 10, 'web-p': 15 },
@@ -1596,6 +1599,55 @@ const MENU_MAX_ITEMS: Record<MenuCard, Record<NSPanel.NSpanelModel, number>> = {
     cardMedia: { eu: 5, 'us-l': 5, 'us-p': 5, 'web-l': 6, 'web-p': 8 },
     cardThermo2: { eu: 9, 'us-l': 9, 'us-p': 9, 'web-l': 9, 'web-p': 9 },
 };
+
+/**
+ * First TFT version with the page cardEntities2 (cardEntities with five rows): the next TFT after 6.2.0. A panel with
+ * an older TFT shows a cardEntities2 page as cardEntities.
+ */
+export const CARD_ENTITIES2_MIN_VERSION = '6.2.1';
+
+/** models whose HMI has the page cardEntities2 (from {@link CARD_ENTITIES2_MIN_VERSION} on) - us-l / us-p not yet */
+const CARD_ENTITIES2_MODELS: ReadonlySet<NSPanel.NSpanelModel> = new Set<NSPanel.NSpanelModel>([
+    'eu',
+    'web-l',
+    'web-p',
+]);
+
+/** what decides whether a panel has the page cardEntities2 */
+export interface HmiCardTarget {
+    /** a web panel (no TFT of its own) */
+    isVirtual: boolean;
+    model: NSPanel.NSpanelModel;
+    /** TFT version of the display (info.nspanel.displayVersion), '' while unknown */
+    displayVersion: string;
+}
+
+/**
+ * Whether the display has the page cardEntities2: a model with the page ({@link CARD_ENTITIES2_MODELS}) and a web
+ * panel or a TFT {@link CARD_ENTITIES2_MIN_VERSION}+.
+ *
+ * @param target model, web/hardware and TFT version of the panel
+ */
+export function supportsCardEntities2(target: HmiCardTarget): boolean {
+    if (!CARD_ENTITIES2_MODELS.has(target.model)) {
+        return false;
+    }
+    return (
+        target.isVirtual ||
+        (!!target.displayVersion && isVersionGreaterOrEqual(target.displayVersion, CARD_ENTITIES2_MIN_VERSION))
+    );
+}
+
+/**
+ * The page of the HMI that shows a menu card: cardEntities2 falls back to cardEntities on a display without it
+ * ({@link supportsCardEntities2}), every other card is its own page.
+ *
+ * @param card the configured card
+ * @param target model, web/hardware and TFT version of the panel
+ */
+export function hmiMenuCard<T extends MenuCard>(card: T, target: HmiCardTarget): T | 'cardEntities' {
+    return card === 'cardEntities2' && !supportsCardEntities2(target) ? 'cardEntities' : card;
+}
 
 /**
  * Number of items a menu card shows on a model.

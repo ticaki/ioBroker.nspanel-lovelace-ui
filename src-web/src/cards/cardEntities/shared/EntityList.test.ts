@@ -13,6 +13,14 @@ function schedule(model: Parameters<typeof entityListLayout>[1]): ReturnType<typ
 }
 
 describe('entityListLayout', () => {
+    it('cardEntities2: 5 lower rows on eu and web-l, web-p like cardEntities', () => {
+        const e2 = (model: Parameters<typeof entityListLayout>[1]): ReturnType<typeof entityListLayout> =>
+            entityListLayout('cardEntities2', model, ENTITIES_TOP, ENTITIES_ROW_HEIGHT);
+        // HMI: 5 rows on a 48 px grid; here (320 - 72) / 5
+        expect(e2('eu')).toMatchObject({ count: 5, rowHeight: 49, compact: false });
+        expect(e2('web-l')).toMatchObject({ count: 5, rowHeight: 49, compact: false });
+        expect(e2('web-p')).toEqual(entities('web-p'));
+    });
     it('keeps the hardware layouts', () => {
         expect(entities('eu')).toEqual({
             count: 4,

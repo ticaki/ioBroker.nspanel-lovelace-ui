@@ -502,21 +502,6 @@ export class PageItem extends BaseTriggeredPage {
                                 : ((await tools.getIconEntryValue(item.icon, value !== true, '')) ?? '');
                         message.iconColor =
                             (await tools.getIconEntryColor(item.icon, value !== true, Color.HMIOn)) ?? '';
-                        if (entry.role === DEVICE_DETAIL_ROW_ROLE) {
-                            // detail page of a device: the value with its unit (cardSchedule shows it, a tap opens
-                            // popupSlider) - entity1 is scaled for the slider, the shown value is the raw one
-                            const raw = (item.entity1?.value && (await item.entity1.value.getNumber())) ?? null;
-                            const valueText =
-                                raw === null ? '' : ((await tools.getValueEntryString(item.entity1, raw)) ?? '');
-                            return tools.getPayloadRemoveTilde(
-                                message.type,
-                                message.intNameEntity,
-                                message.icon,
-                                message.iconColor,
-                                message.displayName,
-                                valueText,
-                            );
-                        }
                         let min = item.entity1 && item.entity1.value && item.entity1.value.common.min;
                         let max = item.entity1 && item.entity1.value && item.entity1.value.common.max;
                         min = (item.minValue1 && (await item.minValue1.getNumber())) ?? min ?? 0;
@@ -2424,7 +2409,7 @@ export class PageItem extends BaseTriggeredPage {
     }
 
     /**
-     * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardSchedule page
+     * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardEntities2 page
      * generated from the ticked states, below the page of the item (`directChildPage`, back leads here again). A
      * detail page opened before by an item of the page is replaced - after the new one is shown, never while it is
      * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
@@ -2450,7 +2435,7 @@ export class PageItem extends BaseTriggeredPage {
         // short id: the ids of the rows (<page>?<n>) must fit the id buffers of the HMI
         const id = `${DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
         const page = panel.newPage(
-            { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: 'cardSchedule' },
+            { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: 'cardEntities2' },
             deviceDetailPageConfig(id, headline, parent.alwaysOn, rows),
         );
         if (!page) {
@@ -2473,42 +2458,17 @@ export class PageItem extends BaseTriggeredPage {
     }
 
     /**
-     * A tap on a row of the detail page of a device: a writable boolean switches, a button (`read: false`) is written
-     * with true, a writable number opens popupSlider; anything else does nothing.
+     * A tap (`button`) on a row of the detail page of a device: a button (`read: false`) is written with true; anything
+     * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities2.
      */
     private async onDeviceDetailTap(): Promise<void> {
         const entry = this.dataItems;
-        if (!entry) {
-            return;
-        }
-        if (entry.type === 'number') {
-            await this.openDeviceDetailSlider();
-        } else if (entry.type === 'button') {
+        if (entry?.type === 'button') {
             const set = entry.data.entity1?.set;
             if (set?.writeable) {
                 await set.setStateTrue();
             }
-        } else if (entry.type === 'text') {
-            const value = entry.data.entity1?.value;
-            if (value?.writeable && value.trueType() === 'boolean') {
-                await value.setStateFlip();
-            }
         }
-    }
-
-    /**
-     * Opens popupSlider for a writable number of the detail page from the adapter, like a long press of a screensaver
-     * indicator opens a popup: `pageType~popupSlider~<name>~<id>~<icon>`, the HMI asks for the content with
-     * `pageOpenDetail` (answered by Page.onPopupRequest -> GeneratePopup). A HMI that opens the popup on a tap itself
-     * never sends this tap.
-     */
-    private async openDeviceDetailSlider(): Promise<void> {
-        const fields = (await this.getPageItemPayload(true)).split('~');
-        // the page sleeps below the popup, the next pageType must reach the panel
-        this.parent.sleep = true;
-        this.parent.basePanel.lastCard = '';
-        this.resetLastMessage();
-        this.sendToPanel(tools.getPayload('pageType', 'popupSlider', fields[4] ?? '', this.id, fields[2] ?? ''), false);
     }
 
     /**

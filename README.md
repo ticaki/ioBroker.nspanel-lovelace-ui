@@ -164,6 +164,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (ticaki) admin: new page item kind "device with details" - a short tap switches or presses a state of the device, navigates, opens the popup of an alias channel or does nothing, a long press (grid pages) or a tap on icon/name (cardEntities, needs a new TFT) opens a generated detail page with the ticked states of the device (filter list with masks for shelly, sonoff, zigbee2mqtt, hm-rpc, ticks learned per adapter; new theme colors for energy, connection and info)
 - (ticaki) cardEntities: an unhandled long press no longer falls back to the short press
+- (ticaki) new page type cardEntities2: like cardEntities with five rows (admin only, long press and device items allowed); panels without it (TFT up to 6.2.0, us-l/us-p) show it as cardEntities with four rows; the web panel shows five rows (web-p eight)
+- (ticaki) device with details: the detail page is a cardEntities2 page with real controls - switch for a writable boolean, button for `read: false`, slider for a writable number, value with unit for read-only states
 
 ### 2.5.1 (2026-11-21)
 - (ticaki) the panel's own states `cmd.power1`, `cmd.power2` and the new button `cmd.TasmotaRestart` can be selected as data points (e.g. screensaver indicator) - they show and switch the relays / restart Tasmota

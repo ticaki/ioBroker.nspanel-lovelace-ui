@@ -21,6 +21,7 @@ __export(pageEntities_exports, {
   PageEntities: () => PageEntities
 });
 module.exports = __toCommonJS(pageEntities_exports);
+var import_tools = require("../const/tools");
 var import_pageMenu = require("./pageMenu");
 const PageEntitiesMessageDefault = {
   event: "entityUpd",
@@ -28,12 +29,15 @@ const PageEntitiesMessageDefault = {
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
   options: []
 };
+function isEntitiesCard(card) {
+  return card === "cardEntities" || card === "cardEntities2";
+}
 class PageEntities extends import_pageMenu.PageMenu {
   config;
   items;
   constructor(config, options) {
     super(config, options);
-    if (!options.config || options.config.card !== "cardEntities") {
+    if (!options.config || options.config.card !== "cardEntities" && options.config.card !== "cardEntities2") {
       throw new Error("wrong card, should never happen");
     }
     this.iconLeftP = "arrow-up-bold-outline";
@@ -41,7 +45,7 @@ class PageEntities extends import_pageMenu.PageMenu {
     this.iconRightP = "arrow-down-bold-outline";
     this.iconRight = "arrow-down-bold";
     this.config = options.config;
-    if (options.items && options.items.card == "cardEntities") {
+    if (options.items && isEntitiesCard(options.items.card)) {
       this.items = options.items;
     }
     this.minUpdateInterval = 1e3;
@@ -54,12 +58,24 @@ class PageEntities extends import_pageMenu.PageMenu {
       this
     );
     this.items = tempItem;
-    this.items.card = this.card;
+    this.items.card = isEntitiesCard(this.card) ? this.card : "cardEntities";
     await super.init();
+  }
+  /**
+   * The page of the HMI that shows this page: cardEntities2 is shown as cardEntities on a display without the page
+   * (older TFT, us-l / us-p, see hmiMenuCard) - with 4 rows (PageMenu.maxItems).
+   *
+   * @returns cardEntities or cardEntities2
+   */
+  get hmiCard() {
+    return isEntitiesCard(this.card) ? (0, import_tools.hmiMenuCard)(this.card, this.hmiCardTarget()) : "cardEntities";
+  }
+  getPageTypePayload() {
+    return `pageType~${this.hmiCard}`;
   }
   async update() {
     var _a, _b;
-    if (!this.visibility || ((_a = this.items) == null ? void 0 : _a.card) !== "cardEntities") {
+    if (!this.visibility || !isEntitiesCard((_a = this.items) == null ? void 0 : _a.card)) {
       return;
     }
     await super.update();

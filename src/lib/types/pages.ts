@@ -6,7 +6,7 @@ import type { NSPanel } from './NSPanel';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker' | 'SqueezeboxSpeaker';
 
-export type cardEntitiesTypes = Extract<AdminCardTypes, 'cardEntities' | 'cardSchedule'>;
+export type cardEntitiesTypes = Extract<AdminCardTypes, 'cardEntities' | 'cardEntities2' | 'cardSchedule'>;
 export type cardGridTypes = Extract<
     AdminCardTypes,
     'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2' | 'cardMedia'
@@ -189,7 +189,7 @@ export type DeviceRole =
     | 'textNotIcon'
     /** text item whose value is a name (e.g. a page name): shown as it is, not looked up in the translations */
     | 'textRawValue'
-    /** a generated row of the detail page of a device (deviceDetails.ts): a tap switches, presses or opens popupSlider */
+    /** a generated row of the detail page of a device (device-details.ts): a tap on a button row writes true */
     | 'deviceDetail'
     | 'timer'
     | 'window'
@@ -496,13 +496,13 @@ export type cardGridDataItems = {
 };
 
 export type cardEntitiesDataItemOptions = {
-    card: Extract<cardEntitiesTypes, 'cardEntities' | 'cardSchedule'>;
+    card: cardEntitiesTypes;
     cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 
 export type cardEntitiesDataItems = {
-    card: Extract<cardEntitiesTypes, 'cardEntities' | 'cardSchedule'>;
+    card: cardEntitiesTypes;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
 

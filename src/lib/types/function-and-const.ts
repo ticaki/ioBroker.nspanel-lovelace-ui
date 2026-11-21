@@ -124,7 +124,7 @@ function swapKeyValue(obj: Record<string, string>): Record<string, string> {
     return swapped;
 }
 // Optimierte Type Guards mit const assertions
-const CARD_ENTITIES_TYPES = ['cardEntities', 'cardSchedule'] as const;
+const CARD_ENTITIES_TYPES = ['cardEntities', 'cardEntities2', 'cardSchedule'] as const;
 const CARD_GRID_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2', 'cardMedia'] as const;
 const CARD_MENU_HALF_PAGE_SCROLL_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'] as const;
 

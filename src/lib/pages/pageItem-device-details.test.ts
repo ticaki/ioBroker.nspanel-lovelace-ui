@@ -7,6 +7,7 @@ interface Calls {
     sent: string[];
     setTrue: number;
     flip: number;
+    written: unknown[];
 }
 
 /**
@@ -26,16 +27,32 @@ function makeItem(opts: { type: string; role?: string; data?: Record<string, unk
     data: Record<string, unknown>;
 } {
     const noop = (): void => undefined;
-    const calls: Calls = { opened: [], sent: [], setTrue: 0, flip: 0 };
+    const calls: Calls = { opened: [], sent: [], setTrue: 0, flip: 0, written: [] };
     const item = Object.create(PageItem.prototype) as PageItem;
     const data: Record<string, unknown> = opts.data ?? {};
-    const parent: Record<string, any> = { isScreensaver: false, sleep: false, basePanel: { lastCard: 'cardSchedule' } };
+    const parent: Record<string, any> = {
+        isScreensaver: false,
+        sleep: false,
+        card: 'cardEntities2',
+        basePanel: { lastCard: 'cardEntities2' },
+    };
     Object.assign(item, {
         id: 'dd_3?2',
         log: { debug: noop, warn: noop, error: noop, info: noop, silly: noop },
         config: { type: opts.type, deviceDetails: opts.deviceDetails },
         dataItems: { type: opts.type, role: opts.role, data },
         parent,
+        timeouts: {},
+        unload: false,
+        // runs the debounce timer of number-set at once
+        adapter: {
+            unload: false,
+            setTimeout: (cb: (v: unknown) => void, _ms: number, v: unknown): number => {
+                cb(v);
+                return 1;
+            },
+            clearTimeout: noop,
+        },
         openDeviceDetails: async (details: unknown): Promise<void> => {
             calls.opened.push(details);
             return Promise.resolve();
@@ -57,6 +74,7 @@ function dataitem(
     trueType: () => string | undefined;
     setStateTrue: () => Promise<void>;
     setStateFlip: () => Promise<void>;
+    setState: (v: unknown) => Promise<void>;
 } {
     return {
         writeable: opts.writeable,
@@ -67,6 +85,10 @@ function dataitem(
         },
         setStateFlip: async () => {
             calls.flip++;
+            return Promise.resolve();
+        },
+        setState: async (v: unknown) => {
+            calls.written.push(v);
             return Promise.resolve();
         },
     };
@@ -86,13 +108,14 @@ describe('lib/pages/pageItem - device with details', () => {
     });
 
     describe('taps on the rows of the detail page', () => {
-        it('a writable boolean switches', async () => {
-            const { item, calls, data } = makeItem({ type: 'text', role: DEVICE_DETAIL_ROW_ROLE });
+        it('a writable boolean is a switch: OnOff writes the value', async () => {
+            const { item, calls, data } = makeItem({ type: 'switch', role: DEVICE_DETAIL_ROW_ROLE });
             Object.assign(data, {
                 entity1: { value: dataitem(calls, { writeable: true, type: 'boolean' }) },
             });
-            await item.onCommand('button', '');
-            expect(calls.flip).to.equal(1);
+            await item.onCommand('OnOff', '0');
+            await item.onCommand('OnOff', '1');
+            expect(calls.written).to.deep.equal([false, true]);
         });
         it('a read only boolean or a text does nothing', async () => {
             const { item, calls, data } = makeItem({ type: 'text', role: DEVICE_DETAIL_ROW_ROLE });
@@ -112,12 +135,14 @@ describe('lib/pages/pageItem - device with details', () => {
             expect(calls.setTrue).to.equal(1);
             expect(calls.flip).to.equal(0);
         });
-        it('a writable number opens popupSlider from the adapter, the page sleeps below it', async () => {
-            const { item, calls, parent } = makeItem({ type: 'number', role: DEVICE_DETAIL_ROW_ROLE });
+        it('a writable number: the slider (number-set) writes the raw value, a tap opens no popup', async () => {
+            const { item, calls, parent, data } = makeItem({ type: 'number', role: DEVICE_DETAIL_ROW_ROLE });
+            Object.assign(data, { entity1: { value: dataitem(calls, { writeable: true, type: 'number' }) } });
             await item.onCommand('button', '');
-            expect(calls.sent).to.deep.equal(['pageType~popupSlider~Delay~dd_3?2~ICON']);
-            expect(parent.sleep).to.equal(true);
-            expect(parent.basePanel.lastCard).to.equal('');
+            expect(calls.sent).to.deep.equal([]);
+            expect(parent.sleep).to.equal(false);
+            await item.onCommand('number-set', '42');
+            expect(calls.written).to.deep.equal([42]);
         });
     });
 });
@@ -227,7 +252,7 @@ describe('lib/pages/pageItem - openDeviceDetails', () => {
         };
     }
 
-    it('builds the cardSchedule page below the page of the item and shows it', async () => {
+    it('builds the cardEntities2 page below the page of the item and shows it', async () => {
         const f = setup();
         expect(await f.item('0').onCommandLongPress('button', '')).to.equal(true);
         expect(f.created).to.have.length(1);
@@ -238,7 +263,7 @@ describe('lib/pages/pageItem - openDeviceDetails', () => {
         expect(f.parent.directChildPage).to.equal(page);
         expect(page.directParentPage).to.equal(f.parent);
         const config = page.config as { config: { card: string; data: unknown }; pageItems: unknown[] };
-        expect(config.config.card).to.equal('cardSchedule');
+        expect(config.config.card).to.equal('cardEntities2');
         expect(config.config.data).to.deep.equal({ headline: { type: 'const', constVal: 'Lamp' } });
         expect(config.pageItems).to.have.length(1);
     });
