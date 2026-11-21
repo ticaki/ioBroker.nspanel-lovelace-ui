@@ -34,6 +34,7 @@ __export(panel_exports, {
 module.exports = __toCommonJS(panel_exports);
 var import_screensaver_info_font = require("../const/screensaver-info-font");
 var import_panel_message = require("./panel-message");
+var import_latest_value_queue = require("../tools/latest-value-queue");
 var import_screensaver = require("../pages/screensaver");
 var globals = __toESM(require("../types/function-and-const"));
 var import_library = require("./library");
@@ -102,6 +103,16 @@ class Panel extends import_library.BaseClass {
   /** Origin per page id, collected in preInit and reported to the admin navigation view */
   pageOrigins = new import_page_origin.PageOriginTracker();
   _activePage = void 0;
+  /**
+   * `cmd.goToNavigationPoint`: one navigation at a time, values written meanwhile only keep the newest one -
+   * otherwise parallel page changes leave several pages visible.
+   */
+  goToNavigationPointQueue = new import_latest_value_queue.LatestValueQueue(
+    async (name) => this.navigation.setTargetPageByName(name),
+    (name, e) => {
+      this.log.error(`goToNavigationPoint ${name} failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  );
   data = {};
   /** hardware panel: drops repeated startup events, see handleStartup */
   blockStartup = null;
@@ -1418,7 +1429,7 @@ class Panel extends import_library.BaseClass {
         }
         case "goToNavigationPoint": {
           if (typeof state.val === "string") {
-            await this.navigation.setTargetPageByName(state.val ? String(state.val) : import_default_pages.mainPageName);
+            await this.goToNavigationPointQueue.push(state.val ? String(state.val) : import_default_pages.mainPageName);
           }
           break;
         }

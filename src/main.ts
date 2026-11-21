@@ -45,6 +45,8 @@ import {
     getBerryLegacyInstallCommand,
     getBerryRestoreCommand,
     getTasmotaCommandUrl,
+    BERRY_FLASH_MODE_COMMAND,
+    isBerryFlashing,
     type TasmotaLogin,
 } from './lib/tools/berry-install';
 import {
@@ -1075,6 +1077,10 @@ class NspanelLovelaceUi extends utils.Adapter {
             try {
                 const state = this.library.readdb(`panels.${tasmota.id}.info.nspanel.firmwareUpdate`);
                 if (state && typeof state.val === 'number' && state.val >= 100) {
+                    if (await this.isTasmotaFlashing(tasmota.ip)) {
+                        this.log.info(`Panel with ip ${tasmota.ip} is flashing a TFT right now - no restart sent.`);
+                        return;
+                    }
                     this.log.debug(`Force an MQTT reconnect from the Nspanel with the ip ${tasmota.ip} in 10 seconds!`);
                     await this.fetch(
                         `http://${tasmota.ip}/cm?` +
@@ -1103,6 +1109,28 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         await this.setState('info.connection', true, true);
     };
+
+    /**
+     * Asks the berry driver of a Tasmota device whether it is flashing a TFT right now.
+     *
+     * @param tasmotaIP ip of the Tasmota device
+     * @returns true only if the driver answered `{"Br":"1"}` - false for any other answer or error
+     */
+    private async isTasmotaFlashing(tasmotaIP: string): Promise<boolean> {
+        try {
+            const result = await this.fetch(
+                getTasmotaCommandUrl(tasmotaIP, BERRY_FLASH_MODE_COMMAND, this.getTasmotaLogin()),
+                undefined,
+                5000,
+            );
+            return isBerryFlashing(result);
+        } catch (e) {
+            this.log.debug(
+                `Panel with ip ${tasmotaIP}: flash mode query failed: ${e instanceof Error ? e.message : String(e)}`,
+            );
+            return false;
+        }
+    }
 
     async fetch(url: string, init?: RequestInit, timeout = 30_000): Promise<unknown> {
         const controller = new AbortController();

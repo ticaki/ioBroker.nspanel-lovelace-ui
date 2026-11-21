@@ -8,6 +8,7 @@ import type {
 } from '../types/adminShareConfig';
 import { SCREENSAVER_INFO_FONT_DEFAULT } from '../const/screensaver-info-font';
 import { PanelSend } from './panel-message';
+import { LatestValueQueue } from '../tools/latest-value-queue';
 
 import { Screensaver, type ScreensaverExitTap } from '../pages/screensaver';
 import type * as Types from '../types/types';
@@ -178,6 +179,16 @@ export class Panel extends BaseClass {
     /** Origin per page id, collected in preInit and reported to the admin navigation view */
     private readonly pageOrigins = new PageOriginTracker();
     private _activePage: Page | undefined = undefined;
+    /**
+     * `cmd.goToNavigationPoint`: one navigation at a time, values written meanwhile only keep the newest one -
+     * otherwise parallel page changes leave several pages visible.
+     */
+    private readonly goToNavigationPointQueue = new LatestValueQueue<string>(
+        async (name: string): Promise<void> => this.navigation.setTargetPageByName(name),
+        (name: string, e: unknown): void => {
+            this.log.error(`goToNavigationPoint ${name} failed: ${e instanceof Error ? e.message : String(e)}`);
+        },
+    );
     private data: Record<string, any> = {};
     /** hardware panel: drops repeated startup events, see handleStartup */
     private blockStartup: ioBroker.Timeout | undefined = null;
@@ -1687,7 +1698,7 @@ export class Panel extends BaseClass {
                 }
                 case 'goToNavigationPoint': {
                     if (typeof state.val === 'string') {
-                        await this.navigation.setTargetPageByName(state.val ? String(state.val) : mainPageName);
+                        await this.goToNavigationPointQueue.push(state.val ? String(state.val) : mainPageName);
                     }
                     break;
                 }

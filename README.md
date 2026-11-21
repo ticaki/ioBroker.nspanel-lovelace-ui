@@ -162,6 +162,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) adapter start no longer restarts a Tasmota that is flashing a TFT
+- (ticaki) cmd.goToNavigationPoint: values written while a page change is running are queued - only the newest one is executed afterwards, several pages no longer become visible at the same time
 - (ticaki) admin: the frame of the color theme select in the global settings no longer has an empty gap
 - (ticaki) hardware buttons: new mode "navigation" with target next/prev/home/parent - a press acts like the matching navigation arrow of the page shown (next/prev short, home/parent long press); an open popup is closed first; the screensaver is never left - a popup on top of it is only closed (admin, script and script-to-admin)
 - (ticaki) navigation: a locked (hidden) page shows a popup "page locked" instead of silently doing nothing, the arrows go on from the page shown; admin marks hidden pages with a closed eye
@@ -186,6 +188,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) web panel: a touch of the screensaver clears the notification like the panel does (the first touch of a dark display only wakes it), it no longer stays with frozen content and keeps blinking
 - (ticaki) script conversion: an invalid blink color of a notification only drops the color (with a warning), the screensaver is converted anyway
 - (ticaki) admin: the long press hint of screensaver items explains TFT 6.2.0 (without an action the panel detects no long press), the navigation flow legend shows the closed eye of hidden pages
+- (ticaki) TFT 6.2.0: faster acknowledgement of large messages and no serial buffer overflow on fast message sequences - every page deletes the whole received message (CRC included) and a message with a wrong CRC at once; a full serial buffer without a usable message is emptied, the display no longer hangs with 0x24
+- (ticaki) a message bigger than the display can receive (1017 bytes) is no longer sent to the panel but dropped with an error log - it made the display hang until Tasmota was restarted
 
 ### 2.4.1 (2026-11-18)
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
