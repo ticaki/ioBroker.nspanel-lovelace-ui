@@ -1402,12 +1402,12 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (timerActive) {
       const iconName = timer.status === "expired" ? "timer-alert" : timer.status === "paused" ? "timer-pause" : "timer-sand";
       infoIcon = { name: iconName, user: false };
-    } else if (this.basePanel.isVirtual) {
+    } else if (infoIcon || this.basePanel.isVirtual) {
     } else if (this.basePanel.info.nspanel.displayVersion === "0.0.0") {
       if (!this.adapter.config.hideDeveloperSymbols) {
         infoIcon = { name: "cog-refresh-outline", user: false };
       }
-    } else if (!infoIcon && tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)) {
+    } else if (tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)) {
       infoIcon = { name: "wrench-clock", user: false };
     }
     const icon = infoIcon ? `~${import_icon_mapping.Icons.GetIcon(infoIcon.name)}` : "";
