@@ -4,7 +4,7 @@
     "items": {
         "_tabMaintain": {
             "type": "panel",
-            "label": "Maintain",
+            "label": "jc_tab_maintain",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || ((data.mqttServer || !data.mqttCredentialId) && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pageGlobalSettings": {
@@ -21,7 +21,7 @@
         },
         "_pageGlobalSettings": {
             "type": "panel",
-            "label": "Global Settings",
+            "label": "jc_tab_globalSettings",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || ((data.mqttServer || !data.mqttCredentialId) && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pageGlobalSettings": {
@@ -43,7 +43,7 @@
             "items": {
                 "_openLinkWikiColorThemes": {
                     "type": "staticLink",
-                    "text": "openLinkWikiColorThemes",
+                    "text": "jc_color_wikiLink",
                     // documentation in the ioBroker system language: German -> de, everything else -> en
                     "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/${_system.language === 'de' ? 'de' : 'en'}/colorTheme.html",
                     "icon": "info",
@@ -66,13 +66,13 @@
                     "lg": 12,
                     "xl": 12,
                     "type": "accordion",
-                    "label": "States",
+                    "label": "jc_color_states",
                     "noDelete": true,
                     "items": [
                         {
                             "attr": "colGood",
                             "type": "color",
-                            "label": "good",
+                            "label": "jc_color_state_good",
                             "default": "#00ff00",
                             "xs": 12,
                             "sm": 6,
@@ -83,7 +83,7 @@
                         {
                             "attr": "colBad",
                             "type": "color",
-                            "label": "bad",
+                            "label": "jc_color_state_bad",
                             "default": "#ff0000",
                             "xs": 12,
                             "sm": 6,
@@ -94,7 +94,7 @@
                         {
                             "attr": "colTrue",
                             "type": "color",
-                            "label": "true",
+                            "label": "jc_color_state_true",
                             "default": "#00ff00",
                             "xs": 12,
                             "sm": 6,
@@ -105,7 +105,7 @@
                         {
                             "attr": "colFalse",
                             "type": "color",
-                            "label": "false",
+                            "label": "jc_color_state_false",
                             "default": "#ff0000",
                             "xs": 12,
                             "sm": 6,
@@ -116,7 +116,7 @@
                         {
                             "attr": "colActivated",
                             "type": "color",
-                            "label": "activated",
+                            "label": "jc_color_state_activated",
                             "default": "#ffff00",
                             "xs": 12,
                             "sm": 6,
@@ -127,7 +127,7 @@
                         {
                             "attr": "colDeactivated",
                             "type": "color",
-                            "label": "deactivated",
+                            "label": "jc_color_state_deactivated",
                             "default": "#808080",
                             "xs": 12,
                             "sm": 6,
@@ -138,7 +138,7 @@
                         {
                             "attr": "colAttention",
                             "type": "color",
-                            "label": "attention",
+                            "label": "jc_color_state_attention",
                             "default": "#00ffff",
                             "xs": 12,
                             "sm": 6,
@@ -149,7 +149,7 @@
                         {
                             "attr": "colInfo",
                             "type": "color",
-                            "label": "info",
+                            "label": "jc_color_state_info",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -160,7 +160,7 @@
                         {
                             "attr": "colOption1",
                             "type": "color",
-                            "label": "option1",
+                            "label": "jc_color_state_option1",
                             "default": "#ffff00",
                             "xs": 12,
                             "sm": 6,
@@ -171,7 +171,7 @@
                         {
                             "attr": "colOption2",
                             "type": "color",
-                            "label": "option2",
+                            "label": "jc_color_state_option2",
                             "default": "#ffcc00",
                             "xs": 12,
                             "sm": 6,
@@ -182,7 +182,7 @@
                         {
                             "attr": "colOption3",
                             "type": "color",
-                            "label": "option3",
+                            "label": "jc_color_state_option3",
                             "default": "#ff0000",
                             "xs": 12,
                             "sm": 6,
@@ -193,7 +193,7 @@
                         {
                             "attr": "colOption4",
                             "type": "color",
-                            "label": "option4",
+                            "label": "jc_color_state_option4",
                             "default": "#00ff00",
                             "xs": 12,
                             "sm": 6,
@@ -226,7 +226,7 @@
                         {
                             "attr": "colHot",
                             "type": "color",
-                            "label": "hot",
+                            "label": "jc_color_state_hot",
                             "default": "#ff0000",
                             "xs": 12,
                             "sm": 6,
@@ -237,7 +237,7 @@
                         {
                             "attr": "colCold",
                             "type": "color",
-                            "label": "cold",
+                            "label": "jc_color_state_cold",
                             "default": "#0000ff",
                             "xs": 12,
                             "sm": 6,
@@ -270,7 +270,7 @@
                         {
                             "attr": "colLight",
                             "type": "color",
-                            "label": "light",
+                            "label": "jc_color_state_light",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -281,7 +281,7 @@
                         {
                             "attr": "colDark",
                             "type": "color",
-                            "label": "dark",
+                            "label": "jc_color_state_dark",
                             "default": "#808080",
                             "xs": 12,
                             "sm": 6,
@@ -292,7 +292,7 @@
                         {
                             "attr": "colWarning",
                             "type": "color",
-                            "label": "warning",
+                            "label": "jc_color_state_warning",
                             "default": "#ffa500",
                             "xs": 12,
                             "sm": 6,
@@ -303,7 +303,7 @@
                         {
                             "attr": "colSuccess",
                             "type": "color",
-                            "label": "success",
+                            "label": "jc_color_state_success",
                             "default": "#00ff00",
                             "xs": 12,
                             "sm": 6,
@@ -314,7 +314,7 @@
                         {
                             "attr": "colNeutral",
                             "type": "color",
-                            "label": "neutral",
+                            "label": "jc_color_state_neutral",
                             "default": "#808080",
                             "xs": 12,
                             "sm": 6,
@@ -325,7 +325,7 @@
                         {
                             "attr": "colHighlight",
                             "type": "color",
-                            "label": "highlight",
+                            "label": "jc_color_state_highlight",
                             "default": "#00c8ff",
                             "xs": 12,
                             "sm": 6,
@@ -336,7 +336,7 @@
                         {
                             "attr": "colDisabled",
                             "type": "color",
-                            "label": "disabled",
+                            "label": "jc_color_state_disabled",
                             "default": "#404040",
                             "xs": 12,
                             "sm": 6,
@@ -353,13 +353,13 @@
                     "lg": 12,
                     "xl": 12,
                     "type": "accordion",
-                    "label": "Navigation",
+                    "label": "jc_color_navigation",
                     "noDelete": true,
                     "items": [
                         {
                             "attr": "colNavLeft",
                             "type": "color",
-                            "label": "navLeft",
+                            "label": "jc_color_nav_left",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -370,7 +370,7 @@
                         {
                             "attr": "colNavRight",
                             "type": "color",
-                            "label": "navRight",
+                            "label": "jc_color_nav_right",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -381,7 +381,7 @@
                         {
                             "attr": "colNavDownLeft",
                             "type": "color",
-                            "label": "navDownLeft",
+                            "label": "jc_color_nav_downLeft",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -392,7 +392,7 @@
                         {
                             "attr": "colNavDownRight",
                             "type": "color",
-                            "label": "navDownRight",
+                            "label": "jc_color_nav_downRight",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -403,7 +403,7 @@
                         {
                             "attr": "colNavDown",
                             "type": "color",
-                            "label": "navDown",
+                            "label": "jc_color_nav_down",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -414,7 +414,7 @@
                         {
                             "attr": "colNavHome",
                             "type": "color",
-                            "label": "navHome",
+                            "label": "jc_color_nav_home",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -425,7 +425,7 @@
                         {
                             "attr": "colNavParent",
                             "type": "color",
-                            "label": "navParent",
+                            "label": "jc_color_nav_parent",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -442,13 +442,13 @@
                     "lg": 12,
                     "xl": 12,
                     "type": "accordion",
-                    "label": "WeatherIcon",
+                    "label": "jc_color_weatherIcon",
                     "noDelete": true,
                     "items": [
                         {
                             "attr": "colSunny",
                             "type": "color",
-                            "label": "sunny",
+                            "label": "jc_color_weather_sunny",
                             "default": "#ffff00",
                             "xs": 12,
                             "sm": 6,
@@ -459,7 +459,7 @@
                         {
                             "attr": "colPartlyCloudy",
                             "type": "color",
-                            "label": "partlyCloudy",
+                            "label": "jc_color_weather_partlyCloudy",
                             "default": "#999999",
                             "xs": 12,
                             "sm": 6,
@@ -470,7 +470,7 @@
                         {
                             "attr": "colCloudy",
                             "type": "color",
-                            "label": "cloudy",
+                            "label": "jc_color_weather_cloudy",
                             "default": "#555555",
                             "xs": 12,
                             "sm": 6,
@@ -481,7 +481,7 @@
                         {
                             "attr": "colFog",
                             "type": "color",
-                            "label": "fog",
+                            "label": "jc_color_weather_fog",
                             "default": "#aaaaaa",
                             "xs": 12,
                             "sm": 6,
@@ -492,7 +492,7 @@
                         {
                             "attr": "colHail",
                             "type": "color",
-                            "label": "hail",
+                            "label": "jc_color_weather_hail",
                             "default": "#d0d0d0",
                             "xs": 12,
                             "sm": 6,
@@ -503,7 +503,7 @@
                         {
                             "attr": "colLightning",
                             "type": "color",
-                            "label": "lightning",
+                            "label": "jc_color_weather_lightning",
                             "default": "#ffff33",
                             "xs": 12,
                             "sm": 6,
@@ -514,7 +514,7 @@
                         {
                             "attr": "colLightningRainy",
                             "type": "color",
-                            "label": "lightningRainy",
+                            "label": "jc_color_weather_lightningRainy",
                             "default": "#cccc66",
                             "xs": 12,
                             "sm": 6,
@@ -525,7 +525,7 @@
                         {
                             "attr": "colPouring",
                             "type": "color",
-                            "label": "pouring",
+                            "label": "jc_color_weather_pouring",
                             "default": "#3333ff",
                             "xs": 12,
                             "sm": 6,
@@ -536,7 +536,7 @@
                         {
                             "attr": "colRainy",
                             "type": "color",
-                            "label": "rainy",
+                            "label": "jc_color_weather_rainy",
                             "default": "#6666ff",
                             "xs": 12,
                             "sm": 6,
@@ -547,7 +547,7 @@
                         {
                             "attr": "colSnowy",
                             "type": "color",
-                            "label": "snowy",
+                            "label": "jc_color_weather_snowy",
                             "default": "#cccccc",
                             "xs": 12,
                             "sm": 6,
@@ -558,7 +558,7 @@
                         {
                             "attr": "colSnowyHeavy",
                             "type": "color",
-                            "label": "snowyHeavy",
+                            "label": "jc_color_weather_snowyHeavy",
                             "default": "#bbbbbb",
                             "xs": 12,
                             "sm": 6,
@@ -569,7 +569,7 @@
                         {
                             "attr": "colSnowyRainy",
                             "type": "color",
-                            "label": "snowyRainy",
+                            "label": "jc_color_weather_snowyRainy",
                             "default": "#9999ff",
                             "xs": 12,
                             "sm": 6,
@@ -580,7 +580,7 @@
                         {
                             "attr": "colWindy",
                             "type": "color",
-                            "label": "windy",
+                            "label": "jc_color_weather_windy",
                             "default": "#999999",
                             "xs": 12,
                             "sm": 6,
@@ -591,7 +591,7 @@
                         {
                             "attr": "colTornado",
                             "type": "color",
-                            "label": "tornado",
+                            "label": "jc_color_weather_tornado",
                             "default": "#ff3232",
                             "xs": 12,
                             "sm": 6,
@@ -602,7 +602,7 @@
                         {
                             "attr": "colClearNight",
                             "type": "color",
-                            "label": "clearNight",
+                            "label": "jc_color_weather_clearNight",
                             "default": "#666666",
                             "xs": 12,
                             "sm": 6,
@@ -613,7 +613,7 @@
                         {
                             "attr": "colExceptional",
                             "type": "color",
-                            "label": "exceptional",
+                            "label": "jc_color_weather_exceptional",
                             "default": "#ff3232",
                             "xs": 12,
                             "sm": 6,
@@ -636,7 +636,7 @@
                         {
                             "attr": "colForeground",
                             "type": "color",
-                            "label": "foreground",
+                            "label": "jc_color_display_foreground",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -647,7 +647,7 @@
                         {
                             "attr": "colBackground",
                             "type": "color",
-                            "label": "background",
+                            "label": "jc_color_display_background",
                             "default": "#101010",
                             "xs": 12,
                             "sm": 6,
@@ -664,13 +664,13 @@
                     "lg": 12,
                     "xl": 12,
                     "type": "accordion",
-                    "label": "WeatherForecast",
+                    "label": "jc_color_weatherForecast",
                     "noDelete": true,
                     "items": [
                         {
                             "attr": "colSolar",
                             "type": "color",
-                            "label": "solar",
+                            "label": "jc_color_forecast_solar",
                             "default": "#00ff00",
                             "xs": 12,
                             "sm": 6,
@@ -681,7 +681,7 @@
                         {
                             "attr": "colTemperature",
                             "type": "color",
-                            "label": "temperature",
+                            "label": "jc_color_forecast_temperature",
                             "default": "#ff0000",
                             "xs": 12,
                             "sm": 6,
@@ -692,7 +692,7 @@
                         {
                             "attr": "colGust",
                             "type": "color",
-                            "label": "gust",
+                            "label": "jc_color_forecast_gust",
                             "default": "#0000ff",
                             "xs": 12,
                             "sm": 6,
@@ -703,7 +703,7 @@
                         {
                             "attr": "colSunrise",
                             "type": "color",
-                            "label": "sunrise",
+                            "label": "jc_color_forecast_sunrise",
                             "default": "#ffff00",
                             "xs": 12,
                             "sm": 6,
@@ -731,13 +731,13 @@
                     "lg": 12,
                     "xl": 12,
                     "type": "accordion",
-                    "label": "Screensaver",
+                    "label": "jc_color_screensaver",
                     "noDelete": true,
                     "items": [
                         {
                             "attr": "colFgTime",
                             "type": "color",
-                            "label": "fgTime",
+                            "label": "jc_color_ss_time",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -748,7 +748,7 @@
                         {
                             "attr": "colFgTimeAmPm",
                             "type": "color",
-                            "label": "fgTimeAmPm",
+                            "label": "jc_color_ss_timeAmPm",
                             "default": "#ffcc00",
                             "xs": 12,
                             "sm": 6,
@@ -759,7 +759,7 @@
                         {
                             "attr": "colFgDate",
                             "type": "color",
-                            "label": "fgDate",
+                            "label": "jc_color_ss_date",
                             "default": "#c0c0c0",
                             "xs": 12,
                             "sm": 6,
@@ -770,7 +770,7 @@
                         {
                             "attr": "colFgMain",
                             "type": "color",
-                            "label": "fgMain",
+                            "label": "jc_color_ss_main",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -781,7 +781,7 @@
                         {
                             "attr": "colFgMainAlt",
                             "type": "color",
-                            "label": "fgMainAlt",
+                            "label": "jc_color_ss_mainAlt",
                             "default": "#ffcc00",
                             "xs": 12,
                             "sm": 6,
@@ -792,7 +792,7 @@
                         {
                             "attr": "colFgTimeAdd",
                             "type": "color",
-                            "label": "fgTimeAdd",
+                            "label": "jc_color_ss_infoIcon",
                             "default": "#00c8ff",
                             "xs": 12,
                             "sm": 6,
@@ -803,7 +803,7 @@
                         {
                             "attr": "colFgForecast",
                             "type": "color",
-                            "label": "fgForecast",
+                            "label": "jc_color_ss_forecast",
                             "default": "#c0c0c0",
                             "xs": 12,
                             "sm": 6,
@@ -814,7 +814,7 @@
                         {
                             "attr": "colFgBar",
                             "type": "color",
-                            "label": "fgBar",
+                            "label": "jc_color_ss_bar",
                             "default": "#c0c0c0",
                             "xs": 12,
                             "sm": 6,
@@ -864,13 +864,13 @@
                     "lg": 12,
                     "xl": 12,
                     "type": "accordion",
-                    "label": "cardMedia",
+                    "label": "jc_color_media",
                     "noDelete": true,
                     "items": [
                         {
                             "attr": "colMediaArtistOn",
                             "type": "color",
-                            "label": "mediaArtistOn",
+                            "label": "jc_color_media_artistOn",
                             "default": "#ffff00",
                             "xs": 12,
                             "sm": 6,
@@ -881,7 +881,7 @@
                         {
                             "attr": "colMediaArtistOff",
                             "type": "color",
-                            "label": "mediaArtistOff",
+                            "label": "jc_color_media_artistOff",
                             "default": "#808080",
                             "xs": 12,
                             "sm": 6,
@@ -892,7 +892,7 @@
                         {
                             "attr": "colMediaTitleOn",
                             "type": "color",
-                            "label": "mediaTitleOn",
+                            "label": "jc_color_media_titleOn",
                             "default": "#ffff00",
                             "xs": 12,
                             "sm": 6,
@@ -903,7 +903,7 @@
                         {
                             "attr": "colMediaTitleOff",
                             "type": "color",
-                            "label": "mediaTitleOff",
+                            "label": "jc_color_media_titleOff",
                             "default": "#808080",
                             "xs": 12,
                             "sm": 6,
@@ -914,7 +914,7 @@
                         {
                             "attr": "colMediaOnOffColor",
                             "type": "color",
-                            "label": "mediaOnOffColor",
+                            "label": "jc_color_media_power",
                             "default": "#ffffff",
                             "xs": 12,
                             "sm": 6,
@@ -928,7 +928,7 @@
         },
         "_pageConfig": {
             "type": "panel",
-            "label": "PageConfig",
+            "label": "jc_tab_pageConfig",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || ((data.mqttServer || !data.mqttCredentialId) && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pageConfig": {
@@ -945,7 +945,7 @@
         },
         "_screensaver": {
             "type": "panel",
-            "label": "Screensaver",
+            "label": "jc_tab_screensaver",
             "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || ((data.mqttServer || !data.mqttCredentialId) && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "screensaverConfig": {
@@ -1007,7 +1007,7 @@
                 },
                 "_tasmotaRestartSendTo": {
                     "type": "sendTo",
-                    "label": "Restart",
+                    "label": "jc_tasmota_restart",
                     "jsonData": "{ \"tasmotaIP\": \"${data._selectIpForTools}\"}",
                     "showProcess": true,
                     "command": "tasmotaRestartSendTo",
@@ -1016,7 +1016,7 @@
                     "confirm": {
                         "title": "tasmotaRestartConfirmTitle",
                         "text": "tasmotaRestartConfirmText",
-                        "ok": "Restart",
+                        "ok": "jc_tasmota_restart",
                         "cancel": "Cancel"
                     },
                     "newLine": true,
@@ -1072,7 +1072,7 @@
                 "_header": {
                     "type": "header",
                     "size": 5,
-                    "text": "Expert Mode",
+                    "text": "jc_tasmota_expertMode",
                     "expertMode": true,
                     "xs": 12,
                     "sm": 12,
@@ -1350,7 +1350,7 @@
                 },
                 "additionalLog": {
                     "type": "checkbox",
-                    "label": "additionalLog",
+                    "label": "jc_dev_additionalLog",
                     "default": false,
                     "xs": 12,
                     "sm": 12,
@@ -1360,7 +1360,7 @@
                 },
                 "debugLogMqtt": {
                     "type": "checkbox",
-                    "label": "debugLogMqtt",
+                    "label": "jc_dev_debugLogMqtt",
                     "default": false,
                     "xs": 12,
                     "sm": 12,
@@ -1370,7 +1370,7 @@
                 },
                 "debugLogStates": {
                     "type": "checkbox",
-                    "label": "debugLogStates",
+                    "label": "jc_dev_debugLogStates",
                     "default": false,
                     "xs": 12,
                     "sm": 12,
@@ -1380,7 +1380,7 @@
                 },
                 "debugLogPages": {
                     "type": "checkbox",
-                    "label": "debugLogPages",
+                    "label": "jc_dev_debugLogPages",
                     "default": false,
                     "xs": 12,
                     "sm": 12,
@@ -1410,7 +1410,7 @@
                 },
                 "forceTFTVersion": {
                     "type": "text",
-                    "label": "Pinned TFT firmware version. For testing only - no support or inquiries. Use at your own risk.",
+                    "label": "jc_dev_forceTftVersion",
                     "default": "",
                     "newLine": true,
                     "xs": 12,
@@ -1421,7 +1421,7 @@
                 },
                 "hideDeveloperSymbols": {
                     "type": "checkbox",
-                    "label": "hideDeveloperSymbols",
+                    "label": "jc_dev_hideDeveloperSymbols",
                     "default": false,
                     "xs": 12,
                     "sm": 12,
@@ -1473,9 +1473,9 @@
                 },
                 "_header1": {
                     "type": "header",
-                    "label": "Danger Zone - only for users who know exactly what they are doing",
+                    "label": "jc_dev_dangerZoneHint",
                     "size": 3,
-                    "text": "Danger Zone",
+                    "text": "jc_dev_dangerZone",
                     "hidden": "false",
                     "xs": 12,
                     "sm": 12,
@@ -1497,7 +1497,7 @@
                 },
                 "versionJsonUrl": {
                     "type": "text",
-                    "label": "Override URL for the version JSON file.",
+                    "label": "jc_dev_versionJsonUrl",
                     "tooltip": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
                     "default": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
                     "newLine": true,
@@ -1510,7 +1510,7 @@
                 },
                 "berryUrl": {
                     "type": "text",
-                    "label": "Override URL for the Berry Script.",
+                    "label": "jc_dev_berryUrl",
                     "tooltip": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
                     "default": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/tasmota/berry",
                     "disabled": "!data._activateURls",
@@ -1523,7 +1523,7 @@
                 },
                 "tftUrl": {
                     "type": "text",
-                    "label": "Override URL for the TFT Server. (http only)",
+                    "label": "jc_dev_tftUrl",
                     "tooltip": "http://nspanel.de",
                     "default": "http://nspanel.de",
                     "disabled": "!data._activateURls",
@@ -1536,9 +1536,9 @@
                 },
                 "_header": {
                     "type": "header",
-                    "label": "Not used",
+                    "label": "jc_dev_notUsed",
                     "size": 3,
-                    "text": "Not used",
+                    "text": "jc_dev_notUsed",
                     "hidden": "false",
                     "xs": 12,
                     "sm": 12,
@@ -1562,7 +1562,7 @@
                 },
                 "logUnknownTokens": {
                     "type": "checkbox",
-                    "label": "logUnknownTokens",
+                    "label": "jc_dev_logUnknownTokens",
                     "default": false,
                     "hidden": "false",
                     "xs": 12,
@@ -1585,7 +1585,7 @@
         },
         "NavigationFlow": {
             "type": "panel",
-            "label": "Navigation Flow",
+            "label": "jc_tab_navigationFlow",
             "items": {
                 "_myCustomAttribute": {
                     "type": "custom",
