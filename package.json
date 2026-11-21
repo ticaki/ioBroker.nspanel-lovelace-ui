@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.4.3",
-    "@simplewebauthn/server": "^14.0.3",
+    "@simplewebauthn/server": "^14.1.0",
     "aedes": "^1.2.0",
     "aedes-persistence-level": "^9.2.0",
     "aedes-server-factory": "^0.2.1",
