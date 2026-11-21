@@ -24,7 +24,8 @@ import * as ShareConfig from '../types/adminShareConfig';
 import type { PageBase } from '../types/pages';
 import { AdminConfiguration } from './admin';
 import { adminPageItemToScriptItem } from './admin-page-item';
-import { deviceDetailsRuntimeOf } from '../types/deviceDetails';
+import { deviceDetailsRuntimeOf, deviceShortPressOf } from '../types/deviceDetails';
+import type { NSPanel } from '../types/NSPanel';
 import { screensaverItemToScript } from './admin-screensaver-item';
 import { ensureMainPage } from './main-page';
 import { isScreensaverPage } from './admin-screensaver';
@@ -264,14 +265,16 @@ function loadConvertAdminPageItem(): ConvertAdminItem {
         'ConfigManager',
         'adminPageItemToScriptItem',
         'deviceDetailsRuntimeOf',
+        'deviceShortPressOf',
         js,
     ) as (
         module: typeof mod,
         configManager: typeof ConfigManager,
         toScriptItem: typeof adminPageItemToScriptItem,
         runtimeOf: typeof deviceDetailsRuntimeOf,
+        shortPressOf: typeof deviceShortPressOf,
     ) => void;
-    factory(mod, ConfigManager, adminPageItemToScriptItem, deviceDetailsRuntimeOf);
+    factory(mod, ConfigManager, adminPageItemToScriptItem, deviceDetailsRuntimeOf, deviceShortPressOf);
     return mod.exports!.prototype.convertAdminPageItemToPageItemConfig;
 }
 
@@ -4721,5 +4724,80 @@ describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and col
         await expectEquivalent(
             baseConfig({ subPages: [page({ type: 'cardGrid', uniqueName: 'p', heading: 'P', items: items() })] }),
         );
+    });
+});
+
+describe('lib/configuration - device with details: the short tap of the admin item at runtime', function () {
+    const DEV = 'shelly.0.shellyplus1pm#000000000009#1';
+    before(() => {
+        DB.objects[DEV] = { _id: DEV, type: 'device', common: { name: 'Kitchen lamp' }, native: {} };
+        addState(DB.objects, `${DEV}.Relay0.Switch`, { role: 'switch', type: 'boolean', write: true });
+        addState(DB.objects, `${DEV}.reboot`, { role: 'button', type: 'boolean', read: false, write: true });
+    });
+    const page = { card: 'cardGrid', uniqueName: 'dev' };
+    const device = (shortPress: string): ShareConfig.AdminPageItemConfig['device'] => ({
+        deviceId: DEV,
+        shortPress: shortPress === 'state' ? 'state' : shortPress === 'none' ? 'none' : 'navigation',
+        entries: [{ key: 'switch', id: `${DEV}.Relay0.Switch` }],
+    });
+    const runtime = { deviceId: DEV, entries: [{ key: 'switch', id: `${DEV}.Relay0.Switch` }] };
+
+    it('state: a custom item of the state, with the details', async () => {
+        const result = await convertAdminPageItem.call(
+            fakeAdapter([]),
+            {
+                channelId: ShareConfig.emptyChannelValueConfig(`${DEV}.Relay0.Switch`),
+                type: 'custom',
+                device: device('state'),
+            },
+            page,
+            [],
+        );
+        expect(result.error).to.equal(undefined);
+        const item = result.pageItem as NSPanel.PageItemDataItemsOptions;
+        expect(item.type).to.equal('button');
+        expect(item.deviceDetails).to.deep.equal(runtime);
+    });
+    it('none: a text item with the name of the device, a tap does nothing', async () => {
+        const result = await convertAdminPageItem.call(
+            fakeAdapter([]),
+            { channelId: ShareConfig.emptyChannelValueConfig(''), device: device('none') },
+            page,
+            [],
+        );
+        expect(result.error).to.equal(undefined);
+        const item = result.pageItem as NSPanel.PageItemDataItemsOptions;
+        expect(item.type).to.equal('text');
+        expect(JSON.parse(JSON.stringify(item.data)).text).to.deep.equal({
+            true: { type: 'const', constVal: 'Kitchen lamp' },
+        });
+        expect(item.deviceDetails).to.deep.equal(runtime);
+    });
+    it('navigation: navigates to the target page, the name of the device when none is set', async () => {
+        const result = await convertAdminPageItem.call(
+            fakeAdapter([]),
+            {
+                channelId: ShareConfig.emptyChannelValueConfig(''),
+                isNavigation: true,
+                targetPage: 'main',
+                device: device('navigation'),
+            },
+            page,
+            [],
+        );
+        expect(result.error).to.equal(undefined);
+        const item = JSON.parse(JSON.stringify(result.pageItem));
+        expect(item.data.setNavi).to.deep.equal({ type: 'const', constVal: 'main' });
+        expect(JSON.stringify(item.data.text)).to.include('Kitchen lamp');
+        expect(item.deviceDetails).to.deep.equal(runtime);
+    });
+    it('a name of the item wins over the name of the device', async () => {
+        const result = await convertAdminPageItem.call(
+            fakeAdapter([]),
+            { channelId: ShareConfig.emptyChannelValueConfig(''), name: 'Lamp', device: device('none') },
+            page,
+            [],
+        );
+        expect(JSON.stringify(result.pageItem)).to.include('"constVal":"Lamp"');
     });
 });

@@ -3255,11 +3255,19 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
+    var _a, _b, _c, _d;
     let error = void 0;
     let pageItem = void 0;
     let pageConfig = void 0;
     if (preItem && prePage) {
       const manager = new import_config_manager.ConfigManager(this);
+      const shortPress = preItem.device && !preItem.useNative ? (0, import_deviceDetails.deviceShortPressOf)(preItem.device) : void 0;
+      if (!preItem.name && preItem.device && (shortPress === "none" || shortPress === "navigation")) {
+        const device = await this.getForeignObjectAsync(preItem.device.deviceId);
+        const deviceName = (_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name;
+        const name = typeof deviceName === "string" ? deviceName : deviceName ? (_d = (_c = deviceName[(_b = this.language) != null ? _b : "en"]) != null ? _c : deviceName.en) != null ? _d : "" : "";
+        preItem = { ...preItem, name: name || preItem.device.deviceId.split(".").pop() };
+      }
       const item = (0, import_admin_page_item.adminPageItemToScriptItem)(preItem, (color) => this.log.warn(`Invalid color format: ${color}`));
       if (!item) {
         error = "Invalid/Empty item native configuration!";

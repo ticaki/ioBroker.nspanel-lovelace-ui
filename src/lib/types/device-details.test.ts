@@ -15,6 +15,8 @@ import {
     generalDeviceDetailMask,
     isDeviceDetailState,
     deviceDetailsLearnedOf,
+    deviceShortPressOf,
+    isDeviceShortPressState,
     exchangeDeviceDetailRowState,
     updatedDeviceDetailsLearned,
     type DeviceStateInfo,
@@ -351,6 +353,22 @@ describe('lib/types/deviceDetails', () => {
             expect(deviceDetailsRuntimeOf(undefined)).to.equal(undefined);
             expect(deviceDetailsRuntimeOf({ deviceId: '', entries: [] })).to.equal(undefined);
             expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: [{ key: 1 }] })).to.equal(undefined);
+        });
+    });
+    describe('short tap of a device item', () => {
+        it('state, none, navigation, popup; anything else counts as state', () => {
+            expect(deviceShortPressOf({})).to.equal('state');
+            expect(deviceShortPressOf({ shortPress: 'none' })).to.equal('none');
+            expect(deviceShortPressOf({ shortPress: 'navigation' })).to.equal('navigation');
+            expect(deviceShortPressOf({ shortPress: 'popup' })).to.equal('popup');
+            expect(deviceShortPressOf({ shortPress: 'foo' })).to.equal('state');
+        });
+        it('offers writable booleans, buttons with read: false included', () => {
+            expect(isDeviceShortPressState({ type: 'boolean', write: true })).to.equal(true);
+            expect(isDeviceShortPressState({ type: 'boolean', write: false })).to.equal(false);
+            expect(isDeviceShortPressState({ type: 'number', write: true })).to.equal(false);
+            const buttons = fixture[SHELLY].states.filter(isDeviceShortPressState).filter(s => !s.read);
+            expect(buttons.map(s => s.id.slice(SHELLY.length + 1))).to.include.members(['reboot', 'firmwareupdate']);
         });
     });
 });

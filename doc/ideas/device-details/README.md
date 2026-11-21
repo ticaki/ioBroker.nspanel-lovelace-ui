@@ -119,10 +119,15 @@ Der Adapter wird so gebaut, als wären beide schon drin. Getestet wird zunächst
 
 - **Item-Typ:** eigener Typ „Gerät mit Details“ im Page-Item-Dialog (Auswahl „Art des Items“ oben: Standard / Gerät mit
   Details), nur auf cardGrid/cardGrid2/cardGrid3 und cardEntities. Kurz-Tipp:
-  - „State des Geräts an/aus“: Auswahl aus den schreibbaren boolean-States des Geräts (vorbelegt mit dem State des
-    Masken-Eintrags `switch`); gespeichert als benutzerdefinierter Knopf (`type: 'custom'`, `channelId` = State).
+  - „State des Geräts“: Auswahl aus den schreibbaren boolean-States des Geräts (vorbelegt mit dem State des
+    Masken-Eintrags `switch`); ein schaltbarer State wird umgeschaltet, ein Taster (`read: false`) bekommt `true`.
+    Gespeichert als benutzerdefinierter Knopf (`type: 'custom'`, `channelId` = State).
+  - „Keine“: Kurz-Tipp tut nichts, nur der Long-Press öffnet die Details (Laufzeit-Item vom Typ `text`). Vorauswahl,
+    wenn ein neues Gerät keinen `switch`-State hat.
+  - „Navigation“: Kurz-Tipp öffnet eine Zielseite (gespeichert als Navigations-Item mit `targetPage`).
   - „Popup eines Alias-Kanals“: das Popup braucht die Rollen eines Alias-Kanals, der Kanal wird nur in diesem Fall gewählt;
     gespeichert als Standard-Item (`channelId` = Kanal).
+  - Ohne eigenen Namen zeigen „Keine“ und „Navigation“ den Namen des Geräts.
   - Gespeichert in `AdminPageItemConfig.device` (`deviceId`, `shortPress`, `entries` = angehakte Zeilen in Reihenfolge).
 - **Gerät:** nur `device`/`channel`, nie Instanz, Adapter-Wurzel oder Info-Kanal (`<adapter>.<n>.info`); bekannte
   Adapter legen die Ebene fest (3). sendTo `getDeviceDetails` liefert die States (Gerät + höchstens ein Unterordner).
@@ -146,6 +151,4 @@ Der Adapter wird so gebaut, als wären beide schon drin. Getestet wird zunächst
 - `popupSlider` per `pageType~popupSlider~<Name>~<id>~<Icon>` vom Adapter geöffnet: ungetestet. Öffnet die HMI das
   Popup nicht, bleibt die Detailseite schlafend, bis man wegnavigiert.
 - Darstellung der Zeilentypen `button` („drücken“) und `text` mit an/aus auf cardSchedule nicht am Panel geprüft.
-- Geräte ohne schreibbaren boolean-State (reine Sensoren) haben im Typ „Gerät mit Details“ nur den Weg über ein Popup –
-  ein Kurz-Tipp ohne Aktion ist nicht vorgesehen.
 - Länge der übersetzten Zeilennamen auf dem Panel prüfen (z. B. fr, pl, ru).

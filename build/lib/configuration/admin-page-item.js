@@ -23,6 +23,7 @@ __export(admin_page_item_exports, {
 module.exports = __toCommonJS(admin_page_item_exports);
 var import_Color = require("../const/Color");
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_deviceDetails = require("../types/deviceDetails");
 function hexToScriptColor(color, onInvalidColor) {
   if (!color) {
     return void 0;
@@ -35,9 +36,38 @@ function hexToScriptColor(color, onInvalidColor) {
     return void 0;
   }
 }
+function deviceWithoutShortPressItem(preItem) {
+  var _a;
+  let color = import_Color.Color.activated;
+  if (preItem.trueColor) {
+    try {
+      color = import_Color.Color.ConvertHexToRgb(preItem.trueColor);
+    } catch {
+    }
+  }
+  return {
+    native: {
+      type: "text",
+      role: "",
+      itemId: preItem.itemId,
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: preItem.trueIcon || "devices" },
+            color: { type: "const", constVal: color }
+          }
+        },
+        text: { true: { type: "const", constVal: (_a = preItem.name) != null ? _a : "" } }
+      }
+    }
+  };
+}
 function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
   var _a, _b, _c, _d, _e;
   let item = void 0;
+  if (!preItem.useNative && preItem.device && (0, import_deviceDetails.deviceShortPressOf)(preItem.device) === "none") {
+    return deviceWithoutShortPressItem(preItem);
+  }
   if (preItem.useNative) {
     const raw = (0, import_adminShareConfig.isRawItemObject)(preItem.native) ? structuredClone(preItem.native) : void 0;
     if (raw) {

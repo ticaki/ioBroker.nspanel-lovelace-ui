@@ -5,13 +5,14 @@
  * the config manager) and the admin (the raw data dialog starts with the script item of a standard item).
  * Must not import anything that pulls adapter code into the admin bundle.
  */
-import { Color } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 import {
     isIconColorScaleElement,
     isRawItemObject,
     pageItemRawFormat,
     type AdminPageItemConfig,
 } from '../types/adminShareConfig';
+import { deviceShortPressOf } from '../types/deviceDetails';
 
 /**
  * Hex color of the admin as RGB color of the script.
@@ -37,6 +38,41 @@ function hexToScriptColor(
 }
 
 /**
+ * The runtime item of a device item whose short tap does nothing (`device.shortPress: 'none'`): a text item with the
+ * icon and the name of the item - a tap does nothing, the long press opens the details.
+ *
+ * @param preItem item of the admin
+ * @returns the script item in native format
+ */
+function deviceWithoutShortPressItem(preItem: AdminPageItemConfig): ScriptConfig.PageItem {
+    // the runtime item takes the color as {r, g, b} - an own color of the item or the theme color activated
+    let color: RGB | string = Color.activated;
+    if (preItem.trueColor) {
+        try {
+            color = Color.ConvertHexToRgb(preItem.trueColor);
+        } catch {
+            // an invalid color keeps the theme color
+        }
+    }
+    return {
+        native: {
+            type: 'text',
+            role: '',
+            itemId: preItem.itemId,
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: preItem.trueIcon || 'devices' },
+                        color: { type: 'const', constVal: color },
+                    },
+                },
+                text: { true: { type: 'const', constVal: preItem.name ?? '' } },
+            },
+        },
+    };
+}
+
+/**
  * The script item of an admin page item, as the config manager gets it at runtime.
  *
  * A raw item (`useNative`) is taken as entered (a copy - the config manager changes the item it gets): format
@@ -53,6 +89,9 @@ export function adminPageItemToScriptItem(
 ): ScriptConfig.PageItem | undefined {
     let item: ScriptConfig.PageItem | undefined = undefined;
 
+    if (!preItem.useNative && preItem.device && deviceShortPressOf(preItem.device) === 'none') {
+        return deviceWithoutShortPressItem(preItem);
+    }
     if (preItem.useNative) {
         const raw = isRawItemObject(preItem.native) ? structuredClone(preItem.native) : undefined;
         if (raw) {

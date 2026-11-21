@@ -2708,7 +2708,12 @@ export class PageItem extends BaseTriggeredPage {
                     // writable (shown state, setTrue/setFalse) is never switched (Screensaver.isIndicatorKey)
                     const implicit = !this.parent.isScreensaver;
                     if (implicit && item.entity1 && item.entity1.set && item.entity1.set.writeable) {
-                        await item.entity1.set.setStateFlip();
+                        // device with details: a button of the device (`read: false`) is pressed, not switched
+                        if (this.config?.deviceDetails && item.entity1.set.common.read === false) {
+                            await item.entity1.set.setStateTrue();
+                        } else {
+                            await item.entity1.set.setStateFlip();
+                        }
                         break;
                     }
                     if (

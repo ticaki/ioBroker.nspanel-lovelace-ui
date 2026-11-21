@@ -37,11 +37,13 @@ __export(deviceDetails_exports, {
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf: () => deviceDetailsRuntimeOf,
   deviceSelectionError: () => deviceSelectionError,
+  deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
   generalDeviceDetailMask: () => generalDeviceDetailMask,
   hasOwnDeviceDetailMask: () => hasOwnDeviceDetailMask,
   isDeviceDetailState: () => isDeviceDetailState,
   isDeviceDetailsConfig: () => isDeviceDetailsConfig,
+  isDeviceShortPressState: () => isDeviceShortPressState,
   updatedDeviceDetailsLearned: () => updatedDeviceDetailsLearned
 });
 module.exports = __toCommonJS(deviceDetails_exports);
@@ -54,6 +56,19 @@ const deviceDetailGroupColorKey = {
   connection: "deviceConnection",
   info: "deviceInfo"
 };
+function isDeviceShortPressState(state) {
+  return state.type === "boolean" && state.write;
+}
+function deviceShortPressOf(config) {
+  switch (config.shortPress) {
+    case "none":
+    case "navigation":
+    case "popup":
+      return config.shortPress;
+    default:
+      return "state";
+  }
+}
 function deviceDetailRowKind(common) {
   const writable = common.write !== false;
   if (common.read === false) {
@@ -541,11 +556,13 @@ function updatedDeviceDetailsLearned(learned, before, after) {
   deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf,
   deviceSelectionError,
+  deviceShortPressOf,
   exchangeDeviceDetailRowState,
   generalDeviceDetailMask,
   hasOwnDeviceDetailMask,
   isDeviceDetailState,
   isDeviceDetailsConfig,
+  isDeviceShortPressState,
   updatedDeviceDetailsLearned
 });
 //# sourceMappingURL=deviceDetails.js.map

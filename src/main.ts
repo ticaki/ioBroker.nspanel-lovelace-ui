@@ -81,7 +81,11 @@ import {
 } from './lib/configuration/script-to-admin-runner';
 import { adminPageItemToScriptItem } from './lib/configuration/admin-page-item';
 import { deviceDetailsInfo } from './lib/configuration/admin-device-details';
-import { deviceDetailsRuntimeOf, SENDTO_GET_DEVICE_DETAILS_COMMAND } from './lib/types/deviceDetails';
+import {
+    deviceDetailsRuntimeOf,
+    deviceShortPressOf,
+    SENDTO_GET_DEVICE_DETAILS_COMMAND,
+} from './lib/types/deviceDetails';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
 import type {
@@ -3780,6 +3784,19 @@ class NspanelLovelaceUi extends utils.Adapter {
         let pageConfig: ScriptConfig.PageType | undefined = undefined;
         if (preItem && prePage) {
             const manager = new ConfigManager(this);
+            // device with details without own state or channel: an item without name shows the name of the device
+            const shortPress = preItem.device && !preItem.useNative ? deviceShortPressOf(preItem.device) : undefined;
+            if (!preItem.name && preItem.device && (shortPress === 'none' || shortPress === 'navigation')) {
+                const device = await this.getForeignObjectAsync(preItem.device.deviceId);
+                const deviceName = device?.common?.name;
+                const name =
+                    typeof deviceName === 'string'
+                        ? deviceName
+                        : deviceName
+                          ? (deviceName[this.language ?? 'en'] ?? deviceName.en ?? '')
+                          : '';
+                preItem = { ...preItem, name: name || preItem.device.deviceId.split('.').pop() };
+            }
             const item = adminPageItemToScriptItem(preItem, color => this.log.warn(`Invalid color format: ${color}`));
             if (!item) {
                 error = 'Invalid/Empty item native configuration!';

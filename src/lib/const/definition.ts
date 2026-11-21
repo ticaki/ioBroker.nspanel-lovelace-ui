@@ -82,6 +82,7 @@ export const genericStateObjects: {
                 mainNavigationPoint: ioBroker.StateObject;
                 power1: ioBroker.StateObject;
                 power2: ioBroker.StateObject;
+                TasmotaRestart: ioBroker.StateObject;
                 detachRight: ioBroker.StateObject;
                 detachLeft: ioBroker.StateObject;
                 hideCards: ioBroker.StateObject;
@@ -500,6 +501,18 @@ export const genericStateObjects: {
                         type: 'boolean',
                         role: 'switch',
                         read: true,
+                        write: true,
+                    },
+                    native: {},
+                },
+                TasmotaRestart: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.TasmotaRestart',
+                        type: 'boolean',
+                        role: 'button',
+                        read: false,
                         write: true,
                     },
                     native: {},
@@ -2229,7 +2242,6 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
                 read: true,
                 write: true,
             },
-            noTrigger: true,
         },
         'cmd/isBuzzerAllowed': {
             val: true,
@@ -2252,7 +2264,6 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
                 read: true,
                 write: true,
             },
-            noTrigger: true,
         },
         'cmd/bigIconRight': {
             val: true,

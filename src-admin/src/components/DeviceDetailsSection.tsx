@@ -33,6 +33,8 @@ import {
     deviceDetailMaskOf,
     deviceDetailEntryOfState,
     deviceDetailsAdapter,
+    deviceShortPressOf,
+    isDeviceShortPressState,
     SENDTO_GET_DEVICE_DETAILS_COMMAND,
     type DeviceDetailEntryConfig,
     type DeviceDetailsConfig,
@@ -40,7 +42,6 @@ import {
     type DeviceDetailsLearned,
     type DeviceSelectionError,
     type DeviceShortPress,
-    type DeviceStateInfo,
 } from '../../../src/lib/types/deviceDetails';
 
 /** errors that make a device unusable - a missing device (deleted, adapter offline) does not block the save */
@@ -52,14 +53,6 @@ const BLOCKING_ERRORS: readonly DeviceSelectionError[] = ['type', 'root', 'info'
  */
 export function isBlockingDeviceError(error: DeviceSelectionError | undefined): boolean {
     return !!error && BLOCKING_ERRORS.includes(error);
-}
-
-/**
- * @param state a state of the device
- * @returns true for a state the short tap can switch on/off
- */
-function isSwitchState(state: DeviceStateInfo): boolean {
-    return state.type === 'boolean' && state.read && state.write;
 }
 
 export interface DeviceDetailsSectionProps {
@@ -77,6 +70,8 @@ export interface DeviceDetailsSectionProps {
     onShortPressChange: (shortPress: DeviceShortPress) => void;
     /** short tap `popup`: the selector of the alias channel, rendered by the page item dialog */
     popupChannelSelector: React.ReactNode;
+    /** short tap `navigation`: the selector of the target page, rendered by the page item dialog */
+    navigationTargetSelector: React.ReactNode;
     /**
      * the configuration or the verdict of the adapter changed
      *
@@ -135,9 +130,9 @@ export default class DeviceDetailsSection extends React.Component<
     }
 
     /**
-     * Asks the adapter for the device. A device the entries do not belong to gets the learned ticks; without a chosen
-     * state the short tap takes the state of the entry `switch` of the mask. No answer (adapter offline) changes
-     * nothing.
+     * Asks the adapter for the device. A device the entries do not belong to gets the learned ticks and - with the
+     * short tap `state` - the state of the entry `switch` of the mask; a device without such a state gets the short
+     * tap `none`. No answer (adapter offline) changes nothing.
      *
      * @param rawId id of the device
      */
@@ -171,19 +166,26 @@ export default class DeviceDetailsSection extends React.Component<
             return;
         }
         let value = this.props.value;
-        if (this.entriesDeviceId !== id) {
+        const otherDevice = this.entriesDeviceId !== id;
+        if (otherDevice) {
             this.entriesDeviceId = id;
             const learned = this.props.learned[deviceDetailsAdapter(id)];
             const rows = buildDeviceDetailRows(id, answer.states, undefined, learned);
             value = { ...value, deviceId: id, entries: deviceDetailEntriesOfRows(rows) };
         }
         this.props.onChange(value, undefined);
-        if ((value.shortPress ?? 'state') === 'state' && !this.props.stateId.startsWith(`${id}.`)) {
+        if (deviceShortPressOf(value) === 'state' && !this.props.stateId.startsWith(`${id}.`)) {
             const mask = deviceDetailMaskOf(id);
             const suggested = answer.states.find(
-                s => isSwitchState(s) && deviceDetailEntryOfState(mask, s)?.key === 'switch',
+                s => isDeviceShortPressState(s) && s.read && deviceDetailEntryOfState(mask, s)?.key === 'switch',
             );
-            this.props.onStateChange(suggested?.id ?? '');
+            if (suggested) {
+                this.props.onStateChange(suggested.id);
+            } else if (otherDevice) {
+                this.props.onShortPressChange('none');
+            } else {
+                this.props.onStateChange('');
+            }
         }
     }
 
@@ -254,10 +256,10 @@ export default class DeviceDetailsSection extends React.Component<
         );
     }
 
-    /** short tap `state`: the writable boolean states of the device */
+    /** short tap `state`: the writable boolean states of the device, buttons (`read: false`) marked */
     private renderStateSelect(): React.JSX.Element {
         const { stateId, value } = this.props;
-        const states = this.state.info?.ok ? this.state.info.states.filter(isSwitchState) : [];
+        const states = this.state.info?.ok ? this.state.info.states.filter(isDeviceShortPressState) : [];
         const known = states.some(s => s.id === stateId);
         const rest = (id: string): string =>
             id.startsWith(`${value.deviceId}.`) ? id.slice(value.deviceId.length + 1) : id;
@@ -282,7 +284,7 @@ export default class DeviceDetailsSection extends React.Component<
                             key={s.id}
                             value={s.id}
                         >
-                            {rest(s.id)}
+                            {s.read ? rest(s.id) : `${rest(s.id)} (${I18n.t('deviceDetailsDialog_pushButton')})`}
                         </MenuItem>
                     ))}
                 </Select>
@@ -293,7 +295,7 @@ export default class DeviceDetailsSection extends React.Component<
     render(): React.JSX.Element {
         const { value, socket, theme, themeType } = this.props;
         const { info } = this.state;
-        const shortPress = value.shortPress ?? 'state';
+        const shortPress = deviceShortPressOf(value);
         return (
             <Box
                 sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
@@ -317,12 +319,24 @@ export default class DeviceDetailsSection extends React.Component<
                     <RadioGroup
                         row
                         value={shortPress}
-                        onChange={e => this.props.onShortPressChange(e.target.value === 'popup' ? 'popup' : 'state')}
+                        onChange={e =>
+                            this.props.onShortPressChange(deviceShortPressOf({ shortPress: e.target.value }))
+                        }
                     >
                         <FormControlLabel
                             value="state"
                             control={<Radio size="small" />}
                             label={I18n.t('deviceDetailsDialog_shortState')}
+                        />
+                        <FormControlLabel
+                            value="none"
+                            control={<Radio size="small" />}
+                            label={I18n.t('deviceDetailsDialog_shortNone')}
+                        />
+                        <FormControlLabel
+                            value="navigation"
+                            control={<Radio size="small" />}
+                            label={I18n.t('deviceDetailsDialog_shortNavigation')}
                         />
                         <FormControlLabel
                             value="popup"
@@ -331,7 +345,9 @@ export default class DeviceDetailsSection extends React.Component<
                         />
                     </RadioGroup>
                 </FormControl>
-                {shortPress === 'state' ? this.renderStateSelect() : this.props.popupChannelSelector}
+                {shortPress === 'state' && this.renderStateSelect()}
+                {shortPress === 'navigation' && this.props.navigationTargetSelector}
+                {shortPress === 'popup' && this.props.popupChannelSelector}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Button
                         size="small"

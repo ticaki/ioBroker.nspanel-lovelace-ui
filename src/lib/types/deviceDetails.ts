@@ -102,10 +102,43 @@ export type DeviceDetailEntryConfig = {
 
 /** what a short tap on a device item does */
 export type DeviceShortPress =
-    /** a writable boolean state of the device is switched on/off (stored as custom item, `channelId` = the state) */
+    /**
+     * a writable boolean state of the device (stored as custom item, `channelId` = the state): switched on/off, a
+     * button (`read: false`) is written with true
+     */
     | 'state'
+    /** nothing - only the long press opens the details (stored without channel, runtime item of type text) */
+    | 'none'
+    /** navigates to a target page (stored as navigation item, `targetPage`) */
+    | 'navigation'
     /** the popup of an alias channel (stored as standard item, `channelId` = the channel) */
     | 'popup';
+
+/**
+ * @param state a state of the device
+ * @param state.type common.type
+ * @param state.write common.write
+ * @returns true for a state the short tap `state` can use: a writable boolean (a button with `read: false` included)
+ */
+export function isDeviceShortPressState(state: { type: string; write: boolean }): boolean {
+    return state.type === 'boolean' && state.write;
+}
+
+/**
+ * @param config the device configuration of an item (or a value of the admin)
+ * @param config.shortPress the stored short tap
+ * @returns its short tap, `state` when not set or unknown
+ */
+export function deviceShortPressOf(config: { shortPress?: unknown }): DeviceShortPress {
+    switch (config.shortPress) {
+        case 'none':
+        case 'navigation':
+        case 'popup':
+            return config.shortPress;
+        default:
+            return 'state';
+    }
+}
 
 /** admin configuration of the device of a page item ({@link AdminPageItemConfig.device}) */
 export type DeviceDetailsConfig = {

@@ -42,6 +42,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
 import DeviceDetailsSection, { isBlockingDeviceError } from './DeviceDetailsSection';
 import {
+    deviceShortPressOf,
     isDeviceDetailsConfig,
     updatedDeviceDetailsLearned,
     type DeviceDetailsConfig,
@@ -797,10 +798,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             name,
             isNavigation,
             device:
-                device !== null && !isNavigation
+                device !== null
                     ? {
                           deviceId: device.deviceId.trim(),
-                          shortPress: device.shortPress ?? 'state',
+                          shortPress: deviceShortPressOf(device),
                           entries: device.entries,
                       }
                     : undefined,
@@ -1391,19 +1392,21 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     /**
-     * Short tap of a device item: a state of the device (custom item) or the popup of an alias channel; the chosen
-     * state / channel belongs to the old way and is dropped.
+     * Short tap of a device item: a state of the device (custom item), nothing, a navigation or the popup of an alias
+     * channel; the chosen state / channel belongs to the old way and is dropped.
      *
      * @param shortPress the new short tap
      */
     private handleDeviceShortPressChange = (shortPress: DeviceShortPress): void => {
         const { device } = this.state;
-        if (!device || (device.shortPress ?? 'state') === shortPress) {
+        if (!device || deviceShortPressOf(device) === shortPress) {
             return;
         }
         this.setState({
             device: { ...device, shortPress },
             isCustom: shortPress === 'state',
+            isNavigation: shortPress === 'navigation',
+            targetPage: shortPress === 'navigation' ? this.state.targetPage : '',
             channelId: emptyChannelValueConfig(''),
             channelExists: null,
             channelRole: null,
@@ -1427,6 +1430,49 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             void this.checkChannelExists(id, true);
         }
     };
+
+    /** the target page of a navigation (standard item with navigation, device item with short tap navigation) */
+    private renderTargetPageSelect(): React.JSX.Element {
+        const { loadingPages, availablePages, targetPage } = this.state;
+        return (
+            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                <Autocomplete
+                    sx={{ flex: 1 }}
+                    options={loadingPages ? [] : this.targetPageOptions(availablePages)}
+                    getOptionLabel={this.targetPageLabel}
+                    value={targetPage || null}
+                    onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
+                    onInputChange={(_e, val) => this.handleTargetPageChange(val)}
+                    disabled={loadingPages}
+                    freeSolo
+                    forcePopupIcon
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            variant="standard"
+                            label={I18n.t('channelConfigDialog_targetPage')}
+                            slotProps={{
+                                ...params.slotProps,
+                                input: {
+                                    ...params.slotProps.input,
+                                    endAdornment: (
+                                        <>
+                                            {loadingPages && <CircularProgress size={16} />}
+                                            {params.slotProps.input.endAdornment}
+                                        </>
+                                    ),
+                                },
+                            }}
+                        />
+                    )}
+                />
+                <DocHelp
+                    topic="pageitems.targetPage"
+                    sx={{ flexShrink: 0, mb: 0.5 }}
+                />
+            </Box>
+        );
+    }
 
     /** the kind of the item at the top of the dialog: standard or device with details */
     private renderKindSwitch(): React.JSX.Element | null {
@@ -1499,10 +1545,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     instance={this.props.oContext?.instance ?? this.props.instance ?? 0}
                     value={device}
                     learned={this.props.deviceDetailsLearned ?? {}}
-                    stateId={(device.shortPress ?? 'state') === 'state' ? channelId.valueStateId : ''}
+                    stateId={deviceShortPressOf(device) === 'state' ? channelId.valueStateId : ''}
                     onStateChange={this.handleDeviceStateChange}
                     onShortPressChange={this.handleDeviceShortPressChange}
                     popupChannelSelector={popupSelector}
+                    navigationTargetSelector={this.renderTargetPageSelect()}
                     onChange={this.handleDeviceDetailsChange}
                 />
                 <TextField
@@ -1982,8 +2029,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const { device, deviceError } = this.state;
         // a device item: device and state / channel chosen, the adapter did not refuse the device - no answer
         // (adapter offline) or a device that is gone keeps a stored item savable
+        const deviceShortPress = device !== null ? deviceShortPressOf(device) : 'none';
         const deviceCanSave =
-            device !== null && device.deviceId.trim() !== '' && channelIdValid && !isBlockingDeviceError(deviceError);
+            device !== null &&
+            device.deviceId.trim() !== '' &&
+            !isBlockingDeviceError(deviceError) &&
+            (deviceShortPress === 'none' ||
+                (deviceShortPress === 'navigation' && targetPage !== '') ||
+                ((deviceShortPress === 'state' || deviceShortPress === 'popup') && channelIdValid));
         const standardCanSave =
             device !== null
                 ? deviceCanSave
@@ -2184,44 +2237,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     />
                                 </Box>
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
-                                {isNavigation && (
-                                    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                        <Autocomplete
-                                            sx={{ flex: 1 }}
-                                            options={loadingPages ? [] : this.targetPageOptions(availablePages)}
-                                            getOptionLabel={this.targetPageLabel}
-                                            value={targetPage || null}
-                                            onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
-                                            onInputChange={(_e, val) => this.handleTargetPageChange(val)}
-                                            disabled={loadingPages}
-                                            freeSolo
-                                            forcePopupIcon
-                                            renderInput={params => (
-                                                <TextField
-                                                    {...params}
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_targetPage')}
-                                                    slotProps={{
-                                                        ...params.slotProps,
-                                                        input: {
-                                                            ...params.slotProps.input,
-                                                            endAdornment: (
-                                                                <>
-                                                                    {loadingPages && <CircularProgress size={16} />}
-                                                                    {params.slotProps.input.endAdornment}
-                                                                </>
-                                                            ),
-                                                        },
-                                                    }}
-                                                />
-                                            )}
-                                        />
-                                        <DocHelp
-                                            topic="pageitems.targetPage"
-                                            sx={{ flexShrink: 0, mb: 0.5 }}
-                                        />
-                                    </Box>
-                                )}
+                                {isNavigation && this.renderTargetPageSelect()}
 
                                 {/* ioBroker-Channel-Auswahl + Validierungsicons */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

@@ -281,3 +281,51 @@ describe('lib/pages/pageItem - openDeviceDetails', () => {
         expect(f.parent.directChildPage).to.equal(undefined);
     });
 });
+
+describe('lib/pages/pageItem - short tap state of a device item', () => {
+    /**
+     * @param read common.read of the state
+     * @param device the item is a device item
+     */
+    async function tap(read: boolean, device: boolean): Promise<{ setTrue: number; flip: number }> {
+        const noop = (): void => undefined;
+        const calls = { setTrue: 0, flip: 0 };
+        const item = Object.create(PageItem.prototype) as PageItem;
+        Object.assign(item, {
+            id: '3?0',
+            log: { debug: noop, warn: noop, error: noop, info: noop, silly: noop },
+            config: { type: 'button', deviceDetails: device ? { deviceId: 'a.0.b', entries: [] } : undefined },
+            dataItems: {
+                type: 'button',
+                data: {
+                    entity1: {
+                        set: {
+                            writeable: true,
+                            common: { read },
+                            setStateTrue: async () => {
+                                calls.setTrue++;
+                                return Promise.resolve();
+                            },
+                            setStateFlip: async () => {
+                                calls.flip++;
+                                return Promise.resolve();
+                            },
+                        },
+                    },
+                },
+            },
+            parent: { isScreensaver: false, card: 'cardGrid' },
+        });
+        await item.onCommand('button', '');
+        return calls;
+    }
+    it('a button of the device (read: false) is written with true', async () => {
+        expect(await tap(false, true)).to.deep.equal({ setTrue: 1, flip: 0 });
+    });
+    it('a switch of the device is switched', async () => {
+        expect(await tap(true, true)).to.deep.equal({ setTrue: 0, flip: 1 });
+    });
+    it('a custom item without device keeps switching', async () => {
+        expect(await tap(false, false)).to.deep.equal({ setTrue: 0, flip: 1 });
+    });
+});
