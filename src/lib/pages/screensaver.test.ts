@@ -608,6 +608,38 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
             expect(f.saver.shownInfoIcon).to.deep.equal({ name: 'cog-refresh-outline', user: false });
         });
 
+        it('order of the info icon: timer, icon of the user, development firmware, update', async () => {
+            const COG = Icons.GetIcon('cog-refresh-outline');
+            const WRENCH = Icons.GetIcon('wrench-clock');
+            const ALARM = Icons.GetIcon('alarm');
+            const cases: [string, string, boolean, string][] = [
+                // [infoIcon of the user, displayVersion, hideDeveloperSymbols, expected]
+                ['alarm', '0.0.0', false, `time~12:34~${ALARM}`],
+                ['', '0.0.0', false, `time~12:34~${COG}`],
+                ['', '0.0.0', true, 'time~12:34'],
+                ['alarm', '0.0.0', true, `time~12:34~${ALARM}`],
+                ['alarm', '6.0.8', false, `time~12:34~${ALARM}`],
+                ['', '6.0.8', false, `time~12:34~${WRENCH}`],
+            ];
+            for (const [user, displayVersion, hide, expected] of cases) {
+                const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': 0 });
+                f.saver._infoIcon = user;
+                f.saver.basePanel.isVirtual = false;
+                f.saver.basePanel.info.nspanel = { displayVersion, onlineVersion: '6.0.9' };
+                f.saver.adapter.config = { hideDeveloperSymbols: hide };
+                const sent = await f.during(() => f.saver.HandleTime());
+                expect(timesOf(sent), `${user} / ${displayVersion} / ${String(hide)}`).to.deep.equal([expected]);
+            }
+            // a running timer beats the icon of the user and the development firmware
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_000 });
+            f.saver._infoIcon = 'alarm';
+            f.saver.basePanel.isVirtual = false;
+            f.saver.basePanel.info.nspanel = { displayVersion: '0.0.0', onlineVersion: '6.0.9' };
+            f.saver.adapter.config = { hideDeveloperSymbols: false };
+            const sent = await f.during(() => f.saver.HandleTime());
+            expect(timesOf(sent)).to.deep.equal([`time~1.5~${SAND}`]);
+        });
+
         it('shows the clock with the info icon while the on/off state is off', async () => {
             const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': NOW + 90_000 });
             f.saver._infoIcon = 'wrench';

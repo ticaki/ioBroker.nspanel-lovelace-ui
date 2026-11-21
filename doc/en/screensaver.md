@@ -651,7 +651,7 @@ The info icon next to the clock can be tapped with the **TFT 6.2.0** – also in
 | `wrench-clock` | A popup: *A firmware update is available for the display.* |
 | own info icon (`panels.<panel>.cmd.screenSaver.infoIcon`) | While the own icon is shown, the adapter writes `true` to `panels.<panel>.buttons.infoIcon` (read only, role `button.press`). A popup with the own icon opens only when `panels.<panel>.cmd.screenSaver.infoText` (text, writable) is not empty – the text of the popup is its content. |
 
-- **Which icon is shown follows this order:** a running timer displaces everything, then comes the development firmware; the firmware update icon appears only when no own info icon is set. While the screensaver shows one of those icons, the state `buttons.infoIcon` stays away. A [web panel](WebPanel) has no TFT firmware and never shows the two firmware icons.
+- **Which icon is shown follows this order:** a running timer displaces everything, then comes the own info icon, last the system icons (development firmware before firmware update) – so the cog and the update icon appear only when no own info icon is set. A tap on a timer or system icon does not write the state `buttons.infoIcon`. A [web panel](WebPanel) has no TFT firmware and never shows the two firmware icons.
 - The popup is the usual notification popup with a small icon (see [Popups](pagePopup)). It closes with the cross or after the timeout of the panel; then the screensaver is back.
 
 ![The popup of your own info icon on the panel: the blue bell on the left, the text from infoText next to it, the cross at the top right; at the bottom left the button Next, because another message is waiting](../Pictures/screensaverAdmin/admin-31-infoicon-popup.png)

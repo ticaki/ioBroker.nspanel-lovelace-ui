@@ -1776,21 +1776,21 @@ export class Screensaver extends Page {
             }
             text = message.options.time[0].split('~')[5];
         }
+        // order: timer, the icon of the user, the system icons (development firmware before firmware update)
         let infoIcon: ScreensaverInfoIcon | undefined = this.infoIcon ? { name: this.infoIcon, user: true } : undefined;
         if (timerActive) {
             // stays while the timer is active, also after a tap to the clock - before everything else
             const iconName =
                 timer.status === 'expired' ? 'timer-alert' : timer.status === 'paused' ? 'timer-pause' : 'timer-sand';
             infoIcon = { name: iconName, user: false };
-        } else if (this.basePanel.isVirtual) {
-            // a web panel has no TFT firmware - no development and no update symbol
+        } else if (infoIcon || this.basePanel.isVirtual) {
+            // the icon of the user stays; a web panel has no TFT firmware - no development and no update symbol
         } else if (this.basePanel.info.nspanel.displayVersion === '0.0.0') {
-            // only for development firmware
+            // only for development firmware - never the update symbol, also not with hideDeveloperSymbols
             if (!this.adapter.config.hideDeveloperSymbols) {
                 infoIcon = { name: 'cog-refresh-outline', user: false };
             }
         } else if (
-            !infoIcon &&
             tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)
         ) {
             // only if a newer firmware is available - not for a newer TFT on the display or an unknown version

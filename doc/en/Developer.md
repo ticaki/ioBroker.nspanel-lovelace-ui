@@ -28,7 +28,7 @@ These switches produce a lot of log output. Turn them on for troubleshooting and
 |---|---|
 | **Fix broken common types** | A one-off repair: on the next start the adapter corrects alias objects whose type is wrongly `state` instead of `mixed` (a known issue from the devices adapter). Afterwards it clears the tick itself. |
 | **Pinned TFT firmware version** | Forces a specific TFT version instead of the one determined online. **For testing only**, without support — the adapter warns on every start while something is entered here. |
-| **hideDeveloperSymbols** | Hides the cog the screensaver shows while a developer build of the display firmware is running. |
+| **hideDeveloperSymbols** | Hides the cog the screensaver shows while a developer build of the display firmware is running. An own info icon takes precedence over the cog anyway. |
 | **Create test states** | Creates the states of the test environment — every channel role at once, without building objects yourself. Existing objects stay untouched. See [Test environment](Testumgebung). |
 
 ## Flashing a custom TFT
