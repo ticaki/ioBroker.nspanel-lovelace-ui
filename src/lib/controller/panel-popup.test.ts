@@ -20,6 +20,7 @@ function withDb(db: Record<string, { val: unknown } | undefined>): {
     const panel = Object.create(Panel.prototype) as Panel;
     Object.assign(panel, {
         name: 'NSPanel1',
+        options: { kind: 'tasmota' },
         library: {
             readdb: (id: string): { val: unknown } | undefined => db[id],
             writedp: async (id: string, val: unknown, _obj: unknown, ack = true): Promise<void> => {
@@ -81,4 +82,108 @@ describe('Panel.onStateChange - cmd.buttons.left/right', () => {
             }
         });
     }
+});
+
+describe('Panel.onDetachButtonEvent - web clone of a hardware panel', () => {
+    type Mode = 'button' | 'switch' | 'buttonOnDelayOff' | 'buttonOffDelayOn' | 'buttonDelayOn' | 'buttonDelayOff';
+    const stateModes: Mode[] = [
+        'button',
+        'switch',
+        'buttonOnDelayOff',
+        'buttonOffDelayOn',
+        'buttonDelayOn',
+        'buttonDelayOff',
+    ];
+
+    /**
+     * @param clone a web clone (kind web with sourceTopic) or the hardware panel
+     * @param left the configuration of the left button
+     * @returns the panel and what it did, in order
+     */
+    function button(clone: boolean, left: Record<string, unknown>): { panel: Panel; calls: string[] } {
+        const calls: string[] = [];
+        const panel = Object.create(Panel.prototype) as Panel;
+        const timers: (() => Promise<void>)[] = [];
+        Object.assign(panel, {
+            name: 'NSPanel1',
+            options: clone ? { kind: 'web', sourceTopic: 'nspanel1' } : { kind: 'tasmota' },
+            buttons: { left, right: null },
+            buttonBackFlipTimeout: { left: undefined, right: undefined },
+            log: { error: (m: string): void => void calls.push(`error:${m}`) },
+            adapter: {
+                unload: false,
+                setTimeout: (fn: (...args: unknown[]) => Promise<void>, _ms: number, ...args: unknown[]): number => {
+                    timers.push(() => fn(...args));
+                    calls.push('timer');
+                    return timers.length;
+                },
+                clearTimeout: (): void => undefined,
+            },
+            library: {
+                writedp: async (id: string, val: unknown): Promise<void> => {
+                    calls.push(`write:${id}=${String(val)}`);
+                    return Promise.resolve();
+                },
+            },
+            navigation: {
+                setTargetPageByName: async (page: string): Promise<void> => {
+                    calls.push(`page:${page}`);
+                    return Promise.resolve();
+                },
+            },
+            navigateByButton: async (target: string): Promise<void> => {
+                calls.push(`navigate:${target}`);
+                return Promise.resolve();
+            },
+        });
+        return { panel, calls };
+    }
+    const state = (calls: string[]): Record<string, unknown> => ({
+        setStateTrue: async (): Promise<void> => void calls.push('setStateTrue'),
+        setStateFlip: async (): Promise<void> => void calls.push('setStateFlip'),
+        setState: async (val: unknown): Promise<void> => void calls.push(`setState:${String(val)}`),
+    });
+    const press = (panel: Panel): Promise<void> => {
+        const s: Types.nsPanelState = { val: true, ack: false, ts: 0, lc: 0, from: '', q: 0 };
+        return panel.onStateChange('panels.NSPanel1.cmd.buttons.left', s);
+    };
+
+    for (const mode of stateModes) {
+        it(`${mode}: cmd.buttons.left switches the state only in the hardware panel`, async () => {
+            const hw = button(false, { mode, state: {} });
+            Object.assign(hw.panel.buttons!.left!, { state: state(hw.calls) });
+            await press(hw.panel);
+            expect(hw.calls[0]).to.equal('write:panels.NSPanel1.buttons.left=true');
+            expect(hw.calls.some(c => c.startsWith('setState') || c === 'timer')).to.equal(true);
+
+            const web = button(true, { mode, state: {} });
+            Object.assign(web.panel.buttons!.left!, { state: state(web.calls) });
+            await press(web.panel);
+            // only the reset of the command state - no action, no status state buttons.left
+            expect(web.calls).to.deep.equal(['write:panels.NSPanel1.cmd.buttons.left=false']);
+        });
+    }
+
+    it('switch: a press in the browser (event button1) still switches the state in the clone', async () => {
+        const web = button(true, { mode: 'switch', state: {} });
+        Object.assign(web.panel.buttons!.left!, { state: state(web.calls) });
+        await web.panel.onDetachButtonEvent('left');
+        expect(web.calls).to.deep.equal(['write:panels.NSPanel1.buttons.left=true', 'setStateFlip']);
+    });
+
+    it('page: the clone and the hardware panel both change their own page', async () => {
+        for (const clone of [false, true]) {
+            const p = button(clone, { mode: 'page', page: 'kitchen' });
+            await press(p.panel);
+            expect(p.calls).to.include('page:kitchen');
+        }
+    });
+
+    it('navigation: the clone and the hardware panel both navigate', async () => {
+        for (const clone of [false, true]) {
+            const p = button(clone, { mode: 'navigation', target: 'next' });
+            await press(p.panel);
+            expect(p.calls).to.include('navigate:next');
+        }
+    });
 });

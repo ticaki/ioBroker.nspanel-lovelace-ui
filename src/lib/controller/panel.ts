@@ -1891,7 +1891,7 @@ export class Panel extends BaseClass {
                 }
 
                 case 'buttons.left': {
-                    await this.onDetachButtonEvent('left');
+                    await this.onDetachButtonEvent('left', true);
                     await this.library.writedp(
                         `panels.${this.name}.cmd.buttons.left`,
                         false,
@@ -1900,7 +1900,7 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'buttons.right': {
-                    await this.onDetachButtonEvent('right');
+                    await this.onDetachButtonEvent('right', true);
                     await this.library.writedp(
                         `panels.${this.name}.cmd.buttons.right`,
                         false,
@@ -2832,14 +2832,31 @@ export class Panel extends BaseClass {
         }
     }
 
-    async onDetachButtonEvent(button: 'left' | 'right'): Promise<void> {
+    /**
+     * A hardware button was pressed: on the display, in the browser or through the state `cmd.buttons.<side>`.
+     *
+     * The state `cmd.buttons.<side>` reaches the hardware panel and its web clone alike (both share the states tree
+     * `panels.<name>`). For such a shared press the clone only follows with the modes that act on its own display
+     * (`page`, `navigation`) - the modes writing a foreign state and the state `buttons.<side>` are left to the
+     * hardware panel, else the action would run twice. A press in the browser reaches only the clone and runs in full.
+     *
+     * @param button which button
+     * @param shared the press comes from the state `cmd.buttons.<side>` that every panel of this name gets
+     */
+    async onDetachButtonEvent(button: 'left' | 'right', shared: boolean = false): Promise<void> {
         const action: Types.ConfigButtonFunction = this.buttons
             ? button === 'left'
                 ? this.buttons.left
                 : this.buttons.right
             : null;
-        await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
+        const ownDisplayOnly = shared && this.isClone;
+        if (!ownDisplayOnly) {
+            await this.library.writedp(`panels.${this.name}.buttons.${button}`, true, null, true, true);
+        }
         if (action) {
+            if (ownDisplayOnly && action.mode !== 'page' && action.mode !== 'navigation') {
+                return;
+            }
             switch (action.mode) {
                 case 'button': {
                     if (typeof action.state === 'string') {

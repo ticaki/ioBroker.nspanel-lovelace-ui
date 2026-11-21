@@ -332,6 +332,46 @@ describe('lib/web/virtual-panel-manager - clones', () => {
         expect(debug.filter(l => l === line).length).to.equal(2);
     });
 
+    it('removes a clone again whose hardware panel was removed while it was created', async () => {
+        const { ctrl, manager, real } = setup();
+        const create = ctrl.createPanel;
+        // the hardware panel is removed while addVirtualPanel waits (the clone is not in panels yet), as
+        // controller.removePanel does it: out of panels, then removeClonesOf
+        ctrl.addVirtualPanel = async (config: Partial<panelConfigPartial>, channel: PanelChannel) => {
+            ctrl.panels = ctrl.panels.filter((p: FakePanel) => p !== real);
+            await manager.removeClonesOf(REAL_TOPIC);
+            return create(config, channel);
+        };
+        const a = client();
+        expect(await manager.attach(REAL_TOPIC, a)).to.equal(undefined);
+        expect(ctrl.panels.filter((p: FakePanel) => p.isVirtual).length).to.equal(0);
+        expect(a.closed).to.deep.equal(['panel not running']);
+        expect(a.frames).to.deep.equal([]);
+        expect(manager.listPanels()[0].clients).to.equal(0);
+
+        // the hardware panel is back: the next browser gets a fresh clone
+        ctrl.addVirtualPanel = async (config: Partial<panelConfigPartial>, channel: PanelChannel) =>
+            create(config, channel);
+        ctrl.panels.push(real);
+        const b = client();
+        expect(await manager.attach(REAL_TOPIC, b)).to.not.equal(undefined);
+        expect(ctrl.panels.filter((p: FakePanel) => p.isVirtual).length).to.equal(1);
+    });
+
+    it('removes a clone and its entry when the hardware panel is gone after the clone was created', async () => {
+        const { ctrl, manager, real } = setup();
+        const create = ctrl.createPanel;
+        ctrl.addVirtualPanel = async (config: Partial<panelConfigPartial>, channel: PanelChannel) => {
+            ctrl.panels = ctrl.panels.filter((p: FakePanel) => p !== real);
+            return create(config, channel);
+        };
+        const a = client();
+        expect(await manager.attach(REAL_TOPIC, a)).to.equal(undefined);
+        expect(ctrl.panels.filter((p: FakePanel) => p.isVirtual).length).to.equal(0);
+        expect(a.closed).to.deep.equal(['panel not running']);
+        expect(manager.listPanels()[0].clients).to.equal(0);
+    });
+
     it('says goodbye to everyone on deleteAll', async () => {
         const { ctrl, manager } = setup();
         const a = client();

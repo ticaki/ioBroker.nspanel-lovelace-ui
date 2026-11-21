@@ -205,12 +205,19 @@ export class VirtualPanelManager extends BaseClass {
             }
             entry = this.entries.get(target.topic);
             if (!entry) {
-                entry = await this.createClone(target.topic, target.id, target.name);
-                if (!entry) {
+                const created = await this.createClone(target.topic, target.id, target.name);
+                if (created === 'notRunning') {
+                    // the hardware panel was removed while its clone was created - like above
+                    this.reportNotRunning(target.topic, `Panel ${target.topic} is not running - browser closed`);
+                    client.close('panel not running');
+                    return undefined;
+                }
+                if (!created) {
                     client.send({ t: 'bye', reason: 'unknown panel' });
                     client.close('unknown panel');
                     return undefined;
                 }
+                entry = created;
             }
             panel = this.panelOf(entry);
             if (!panel) {
@@ -430,9 +437,14 @@ export class VirtualPanelManager extends BaseClass {
      * @param topic topic of the hardware panel
      * @param id id of the hardware panel (admin table)
      * @param name name of the hardware panel (admin table)
-     * @returns the entry, undefined if the panel could not be created
+     * @returns the entry, undefined if the panel could not be created, `'notRunning'` if the hardware panel was
+     * removed while the clone was created (the clone is removed again)
      */
-    private async createClone(topic: string, id: string, name: string): Promise<WebPanelEntry | undefined> {
+    private async createClone(
+        topic: string,
+        id: string,
+        name: string,
+    ): Promise<WebPanelEntry | 'notRunning' | undefined> {
         const source = this.controller.getPanelConfig(topic);
         if (!source) {
             return undefined;
@@ -448,9 +460,23 @@ export class VirtualPanelManager extends BaseClass {
         const entry = this.createEntry(topic, 'clone', config.topic);
         const panel = await this.controller.addVirtualPanel(config, entry.channel);
         if (!panel) {
-            this.entries.delete(topic);
+            if (this.entries.get(topic) === entry) {
+                this.entries.delete(topic);
+            }
             await entry.channel.delete();
             return undefined;
+        }
+        if (this.entries.get(topic) !== entry || !this.controller.panels.some(p => !p.isVirtual && p.topic === topic)) {
+            // the hardware panel was removed (deactivated, reloaded) while the clone was created: removeClonesOf
+            // found no clone panel yet - remove it now, together with the internal states it registered
+            this.log.debug(`Panel ${topic} was removed while its web panel was created - web panel removed again`);
+            if (this.entries.get(topic) === entry) {
+                await this.removeEntry(entry, 'panel removed', false);
+            } else {
+                await this.controller.removePanel(panel);
+                await entry.channel.delete();
+            }
+            return 'notRunning';
         }
         this.log.info(`Web panel ${config.friendlyName} created for ${topic}`);
         return entry;

@@ -164,6 +164,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (ticaki) line chart: points are thinned out when the message would exceed the display limit (e.g. 24 h with 289 points) - the chart was black on the panel; first, last, minimum and maximum stay #925
 - (ticaki) web panel: bar chart follows the HMI axis logic (since TFT 6.0.3) - the y-axis is computed from the values (zero line, negative bars downwards, ticks with one decimal), bars of large values such as temperatures were flat on the base line #925
+- (ticaki) web panel clone: the hardware buttons written via `cmd.buttons.left/right` switch the target state only once (the clone no longer executes the action a second time, it only follows page and navigation)
 - (ticaki) states `cmd.pagePopup.activate`, `cmd.buttons.left`/`right` and `cmd.screenSaver.activate`: every write without ack triggers them, whatever the value, and the adapter sets them back to `false` afterwards - `cmd.screenSaver.activate` no longer ignores `false`
 - (ticaki) adapter start no longer restarts a Tasmota that is flashing a TFT
 - (ticaki) cmd.goToNavigationPoint: values written while a page change is running are queued - only the newest one is executed afterwards, several pages no longer become visible at the same time
