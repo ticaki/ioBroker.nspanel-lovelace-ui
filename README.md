@@ -201,6 +201,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: missing translations of the tabs "Maintain"/"Global Settings" and the state colors added, outdated keys removed - fixed #928
 - (ticaki) admin: the remaining untranslated labels of the instance settings (color theme, weather icons, screensaver colors, expert options) are translated #928
 - (ticaki) admin: outdated and wrong translations updated to the current English texts (e.g. remember last page, font size tooltip, page item dialog, relays) #928
+- (ticaki) admin: the labels of the instance settings use their own translation keys (`jc_…`), so state values shown on the panel (e.g. `true`, `sunny`) are not translated by accident #928
 
 ### 2.4.1 (2026-11-18)
 - (ticaki) TFT 6.1.1: popups opened from the screensaver (Advanced and Tiles, long press of an indicator) show the full name as heading - the light popup with color showed "change model conf to us-l/p", other popups cut the name after 11 characters
