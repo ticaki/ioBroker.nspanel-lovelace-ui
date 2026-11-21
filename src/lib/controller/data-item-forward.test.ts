@@ -6,6 +6,7 @@
 import { expect } from 'chai';
 import { StatesControler } from './states-controller';
 import { Dataitem } from './data-item';
+import { Panel } from './panel';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { NSPanel } from '../types/NSPanel';
@@ -200,3 +201,76 @@ function setupEnvSync(): Pick<Env, 'adapter' | 'states' | 'page'> {
     }
     return { adapter: fake, states: new StatesControler(fake), page: fakePage };
 }
+
+describe('Panel - internal cmd/power1/power2 give the relay state', () => {
+    /**
+     * A panel `p` (without constructor) whose internal relay states are registered in a real states controller,
+     * with handleInternalCommand as function like onInternalCommand.
+     *
+     * @returns panel, states controller, data item environment and the Tasmota commands
+     */
+    async function setupPanel(): Promise<{ panel: any; env: Env; tasmota: [string, string][] }> {
+        const env = await setupEnv();
+        const tasmota: [string, string][] = [];
+        const panel: any = Object.create(Panel.prototype);
+        Object.assign(panel, {
+            name: 'p',
+            topic: 'ns_panel',
+            relay: { power1: null, power2: null },
+            controller: { panels: [] },
+            statesControler: env.states,
+            library: { writedp: async (): Promise<void> => undefined },
+            sendToTasmota: (topic: string, payload: string): void => void tasmota.push([topic, payload]),
+        });
+        Object.defineProperty(panel, 'isVirtual', { value: false });
+        const common: ioBroker.StateCommon = { name: '', type: 'boolean', role: 'switch', read: true, write: true };
+        for (const id of ['p/cmd/power1', 'p/cmd/power2']) {
+            await env.states.setInternalState(id, false, true, common, (dp, state) =>
+                panel.handleInternalCommand(dp, state),
+            );
+        }
+        return { panel, env, tasmota };
+    }
+
+    it('null until Tasmota reported, then the state of stat/POWER1/2', async () => {
+        const { panel, env } = await setupPanel();
+        expect((await env.states.getState('p/cmd/power1'))?.val).to.equal(null);
+
+        await panel.onRelayState('power1', true);
+        await panel.onRelayState('power2', false);
+        expect((await env.states.getState('p/cmd/power1'))?.val).to.equal(true);
+        expect((await env.states.getState('p/cmd/power2'))?.val).to.equal(false);
+
+        const page = { ...env.page, basePanel: { name: 'p', unload: false } };
+        if (!isPage(page)) {
+            throw new Error('fake page incomplete');
+        }
+        const item = await Dataitem.create(
+            env.adapter,
+            { type: 'triggered', dp: `${NS}.panels.p.cmd.power1` },
+            page,
+            env.states,
+        );
+        expect(await item?.getBoolean()).to.equal(true);
+
+        await panel.onRelayState('power1', false);
+        expect(await item?.getBoolean()).to.equal(false);
+    });
+
+    it('writing the data item sends cmnd/POWER1', async () => {
+        const { panel, env, tasmota } = await setupPanel();
+        await panel.onRelayState('power1', false);
+        const page = { ...env.page, basePanel: { name: 'p', unload: false } };
+        if (!isPage(page)) {
+            throw new Error('fake page incomplete');
+        }
+        const item = await Dataitem.create(
+            env.adapter,
+            { type: 'state', dp: `${NS}.panels.p.cmd.power1` },
+            page,
+            env.states,
+        );
+        await item?.setState(true);
+        expect(tasmota).to.deep.equal([['ns_panel/cmnd/POWER1', 'ON']]);
+    });
+});

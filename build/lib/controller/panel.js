@@ -178,6 +178,8 @@ class Panel extends import_library.BaseClass {
   };
   screenSaverDoubleClick = true;
   detach = { left: false, right: false };
+  /** relay states from stat/POWER1/2 - null until Tasmota reported them */
+  relay = { power1: null, power2: null };
   persistentPageItems = {};
   info = {
     internal: {
@@ -1328,21 +1330,11 @@ class Panel extends import_library.BaseClass {
       if (command) {
         switch (command) {
           case "stat/POWER2": {
-            await this.library.writedp(
-              `panels.${this.name}.cmd.power2`,
-              message === "ON",
-              definition.genericStateObjects.panel.panels.cmd.power2
-            );
-            await this.statesControler.setInternalState(`${this.name}/cmd/power2`, message === "ON", true);
+            await this.onRelayState("power2", message === "ON");
             break;
           }
           case "stat/POWER1": {
-            await this.library.writedp(
-              `panels.${this.name}.cmd.power1`,
-              message === "ON",
-              definition.genericStateObjects.panel.panels.cmd.power1
-            );
-            await this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === "ON", true);
+            await this.onRelayState("power1", message === "ON");
             break;
           }
           case "stat/STATUS10": {
@@ -2635,7 +2627,32 @@ class Panel extends import_library.BaseClass {
     this.isOnline = false;
     await this.setStatus("offline");
   }
-  onInternalCommand = async (id, state) => {
+  /**
+   * A relay state reported by Tasmota (stat/POWER1/2): kept for the internal state, written to
+   * `panels.<name>.cmd.powerX` and to the internal state `<name>/cmd/powerX`.
+   *
+   * @param relay the relay
+   * @param on relay is on
+   */
+  async onRelayState(relay, on) {
+    this.relay[relay] = on;
+    await this.library.writedp(
+      `panels.${this.name}.cmd.${relay}`,
+      on,
+      definition.genericStateObjects.panel.panels.cmd[relay]
+    );
+    await this.statesControler.setInternalState(`${this.name}/cmd/${relay}`, on, true);
+  }
+  onInternalCommand = async (id, state) => this.handleInternalCommand(id, state);
+  /**
+   * Handles a command to an internal state `<name>/…` (state without ack) and gives the value of the internal
+   * state (state undefined).
+   *
+   * @param id internal state id
+   * @param state the new state or undefined to read the value
+   * @returns the value of the internal state or null
+   */
+  async handleInternalCommand(id, state) {
     var _a, _b, _c, _d, _e;
     if (!id.startsWith(this.name)) {
       return null;
@@ -2973,6 +2990,12 @@ class Panel extends import_library.BaseClass {
       }
     }
     switch (token) {
+      case "cmd/power1": {
+        return this.relay.power1;
+      }
+      case "cmd/power2": {
+        return this.relay.power2;
+      }
       case "cmd/bigIconLeft": {
         return this.info.nspanel.bigIconLeft;
       }
@@ -3077,7 +3100,7 @@ ${this.info.tasmota.onlineVersion}`;
       }
     }
     return null;
-  };
+  }
   /**
    * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.
    *
