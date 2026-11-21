@@ -162,6 +162,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) line chart: points are thinned out when the message would exceed the display limit (e.g. 24 h with 289 points) - the chart was black on the panel; first, last, minimum and maximum stay #925
 - (ticaki) adapter start no longer restarts a Tasmota that is flashing a TFT
 - (ticaki) cmd.goToNavigationPoint: values written while a page change is running are queued - only the newest one is executed afterwards, several pages no longer become visible at the same time
 - (ticaki) admin: the frame of the color theme select in the global settings no longer has an empty gap
