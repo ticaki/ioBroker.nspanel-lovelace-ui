@@ -161,6 +161,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) notification popup: `global` is only set when the notification went to more than one panel - acknowledging a popup sent to a single panel no longer removes the same id on the other panels; `panel` also accepts the MQTT topic
 - (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
+### **WORK IN PROGRESS**
+- (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)
+
 ### 2.5.1 (2026-11-21)
 - (ticaki) the panel's own states `cmd.power1`, `cmd.power2` and the new button `cmd.TasmotaRestart` can be selected as data points (e.g. screensaver indicator) - they show and switch the relays / restart Tasmota
 - (ticaki) fixed the wrong translations of the state name `safeboot` (fr, es, pt, ru, uk)
