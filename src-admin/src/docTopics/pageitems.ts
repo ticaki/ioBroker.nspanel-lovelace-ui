@@ -145,21 +145,21 @@ export function pageitemsTopicsOfRole(role: string | null): readonly PageitemsTo
 }
 
 /**
- * Help next to the option "standard" of the kind switch (standard / Alexa timer) of the page item dialog:
- * the description of what a standard item of this role shows - for a timer the timer popup, or the
- * section about the timer of the screensaver when the item uses it. The sections of the alias table are left
- * out, the dialog title already links them.
+ * Help next to the channel field of the page item dialog: the documentation of the chosen channel's role
+ * (alias table section, popup page if any), plus the section about the timer of the screensaver when the item
+ * uses it. Without a channel or with an unknown role (e.g. a custom state) the general section about the channel.
  *
- * @param role `common.role` of the chosen channel, `null` if none is chosen yet.
+ * @param role `common.role` of the chosen channel, `null` if none is chosen yet or the item has no channel role.
  * @param useScreensaverTimer True if the item shows the timer of the screensaver (`useScreensaverTimer` in effect).
- * @returns The topics, empty if the documentation has nothing beyond the alias table for this role.
+ * @returns The topics, never empty.
  */
-export function pageitemsTopicsOfStandardKind(
+export function pageitemsTopicsOfChannel(
     role: string | null,
     useScreensaverTimer: boolean,
 ): readonly PageitemsTopicKey[] {
-    if (useScreensaverTimer) {
-        return ['pageitems.screensaverTimer'];
+    const topics = pageitemsTopicsOfRole(role);
+    if (topics.length === 0) {
+        return ['pageitems.channel'];
     }
-    return pageitemsTopicsOfRole(role).filter(topic => !topic.startsWith('pageitems.role.'));
+    return useScreensaverTimer ? [...topics, 'pageitems.screensaverTimer'] : topics;
 }

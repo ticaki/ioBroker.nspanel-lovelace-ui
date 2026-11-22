@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import MarkdownIt from 'markdown-it';
 import { headingText, replaceHeadings, slug } from './docAnchors';
 import { DOC_TOPICS, cardDocTopic, CARD_DOC_PAGES, docTopicUrl, type DocTopic } from './docTopics';
-import { pageitemsTopicsOfStandardKind } from './docTopics/pageitems';
+import { pageitemsTopicsOfChannel } from './docTopics/pageitems';
 import { DOC_BASE, docPageUrl, resolveDocLanguage, type DocLanguage } from './docLink';
 
 const docRoot = path.join(__dirname, '..', '..', 'doc');
@@ -85,11 +85,19 @@ describe('docTopics', () => {
         expect(cardDocTopic(undefined)).to.deep.equal({ page: 'PageConfig' });
     });
 
-    it('help of the kind "standard": timer documentation, no alias table, nothing for other roles', () => {
-        expect(pageitemsTopicsOfStandardKind('level.timer', false)).to.deep.equal(['pageitems.popupTimer']);
-        expect(pageitemsTopicsOfStandardKind('level.timer', true)).to.deep.equal(['pageitems.screensaverTimer']);
-        expect(pageitemsTopicsOfStandardKind('light', false)).to.deep.equal([]);
-        expect(pageitemsTopicsOfStandardKind(null, false)).to.deep.equal([]);
+    it('help of the channel field: role topics, screensaver timer, otherwise the channel section', () => {
+        expect(pageitemsTopicsOfChannel('level.timer', false)).to.deep.equal([
+            'pageitems.role.level.timer',
+            'pageitems.popupTimer',
+        ]);
+        expect(pageitemsTopicsOfChannel('level.timer', true)).to.deep.equal([
+            'pageitems.role.level.timer',
+            'pageitems.popupTimer',
+            'pageitems.screensaverTimer',
+        ]);
+        expect(pageitemsTopicsOfChannel('light', false)).to.deep.equal(['pageitems.role.light']);
+        expect(pageitemsTopicsOfChannel('unknown.role', false)).to.deep.equal(['pageitems.channel']);
+        expect(pageitemsTopicsOfChannel(null, false)).to.deep.equal(['pageitems.channel']);
     });
 });
 
