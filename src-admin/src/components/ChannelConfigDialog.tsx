@@ -2378,9 +2378,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 value={this.state.filter === undefined ? '' : String(this.state.filter)}
                                                 onChange={e => {
                                                     const raw = String(e.target.value);
-                                                    this.setState({
-                                                        filter: raw === '' ? undefined : Number(raw),
-                                                    });
+                                                    this.setState({ filter: raw === '' ? undefined : Number(raw) });
                                                 }}
                                             >
                                                 <MenuItem value="">{I18n.t('thermo2_circuitAll')}</MenuItem>
@@ -2515,30 +2513,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     />
                                 )}
                                 {valueRangeVisible && (
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'flex-start',
-                                            gap: 2,
-                                            flexWrap: 'wrap',
-                                        }}
-                                    >
+                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
                                         <TextField
                                             variant="standard"
                                             type="number"
                                             label={I18n.t('channelConfigDialog_minValue')}
                                             value={this.state.minValue === undefined ? '' : String(this.state.minValue)}
                                             onChange={e =>
-                                                this.setState({
-                                                    minValue: this.parseRangeInput(e.target.value),
-                                                })
+                                                this.setState({ minValue: this.parseRangeInput(e.target.value) })
                                             }
                                             disabled={fieldsDisabled}
                                             sx={{ width: 160 }}
-                                            slotProps={{
-                                                inputLabel: { shrink: true },
-                                                htmlInput: { step: 'any' },
-                                            }}
+                                            slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
                                         />
                                         <TextField
                                             variant="standard"
@@ -2546,9 +2532,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             label={I18n.t('channelConfigDialog_maxValue')}
                                             value={this.state.maxValue === undefined ? '' : String(this.state.maxValue)}
                                             onChange={e =>
-                                                this.setState({
-                                                    maxValue: this.parseRangeInput(e.target.value),
-                                                })
+                                                this.setState({ maxValue: this.parseRangeInput(e.target.value) })
                                             }
                                             disabled={fieldsDisabled}
                                             helperText={
@@ -2558,10 +2542,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 </>
                                             }
                                             sx={{ width: 160 }}
-                                            slotProps={{
-                                                inputLabel: { shrink: true },
-                                                htmlInput: { step: 'any' },
-                                            }}
+                                            slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
                                         />
                                     </Box>
                                 )}
