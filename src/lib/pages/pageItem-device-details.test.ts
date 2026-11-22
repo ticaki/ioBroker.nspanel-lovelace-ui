@@ -135,15 +135,29 @@ describe('lib/pages/pageItem - device with details', () => {
             expect(calls.setTrue).to.equal(1);
             expect(calls.flip).to.equal(0);
         });
-        it('a writable number: the slider (number-set) writes the raw value, a tap opens no popup', async () => {
-            const { item, calls, parent, data } = makeItem({ type: 'number', role: DEVICE_DETAIL_ROW_ROLE });
-            Object.assign(data, { entity1: { value: dataitem(calls, { writeable: true, type: 'number' }) } });
-            await item.onCommand('button', '');
-            expect(calls.sent).to.deep.equal([]);
-            expect(parent.sleep).to.equal(false);
-            await item.onCommand('number-set', '42');
-            expect(calls.written).to.deep.equal([42]);
-        });
+        for (const type of ['number', 'string']) {
+            it(`a writable ${type} with common.states: the choice of popupInSel writes the key`, async () => {
+                const { item, calls, data } = makeItem({ type: 'input_sel', role: DEVICE_DETAIL_ROW_ROLE });
+                const states: Record<string, string> = { 0: 'off', 1: 'on', 2: 'auto' };
+                const value = {
+                    type,
+                    writeable: true,
+                    options: { type: 'triggered', dp: 'shelly.0.x.mode' },
+                    common: { type, states },
+                    getNumber: async (): Promise<number | null> => Promise.resolve(type === 'number' ? 1 : null),
+                    getString: async (): Promise<string> => Promise.resolve('1'),
+                    getCommonStates: async (): Promise<Record<string, string>> => Promise.resolve(states),
+                    setState: async (v: unknown): Promise<void> => {
+                        calls.written.push(v);
+                        return Promise.resolve();
+                    },
+                };
+                Object.assign(item, { library: { getTranslation: (s: string): string => s } });
+                Object.assign(data, { entityInSel: { value } });
+                await item.onCommand('mode-insel', '2');
+                expect(calls.written).to.deep.equal([type === 'number' ? 2 : '2']);
+            });
+        }
     });
 });
 

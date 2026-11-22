@@ -14,6 +14,7 @@ import {
     deviceDetailEntryOfRow,
     deviceDetailNameKey,
     deviceDetailRowKind,
+    hasCommonStatesList,
     type DeviceDetailEntryConfig,
     type DeviceDetailGroup,
     type DeviceDetailsRuntime,
@@ -60,6 +61,8 @@ export type DeviceDetailStateCommon = {
     min?: number;
     max?: number;
     step?: number;
+    /** a list (array or object) makes a writable number / string a selection, a read only one shows its text */
+    states?: ioBroker.StateCommon['states'];
 };
 
 /** icon of a row without mask entry, by its kind */
@@ -67,7 +70,7 @@ const fallbackIcon: Readonly<Record<ReturnType<typeof deviceDetailRowKind>, stri
     button: 'gesture-tap-button',
     switch: 'toggle-switch',
     boolean: 'toggle-switch',
-    numberSet: 'numeric',
+    select: 'format-list-bulleted',
     number: 'numeric',
     text: 'information-outline',
 };
@@ -148,9 +151,10 @@ export function deviceDetailRowNames(
 /**
  * The page item of a row of the detail page (doc/ideas/device-details/README.md, section Zeilen), with the controls
  * of cardEntities: a writable boolean = `switch` (OnOff switches), a readonly boolean = text on/off, both in the theme
- * colors activated / deactivated; `read: false` = `button` (writes true); a writable number = `number` (slider,
- * `value|min|max` with min / max of common, default 0 / 100); everything else a text with the formatted value and its
- * unit. Values take the color of the group of their entry.
+ * colors activated / deactivated; `read: false` = `button` (writes true); a writable number or string with
+ * `common.states` = `input_sel` (the selection popup popupInSel writes the key of the chosen entry, the row shows the
+ * text of the current value); everything else a read only text with the formatted value and its unit - a value of
+ * `common.states` shows its text. Values take the color of the group of their entry.
  *
  * @param deviceId id of the device
  * @param entry the row
@@ -220,22 +224,20 @@ export function deviceDetailRowItem(
                     text1: { true: { type: 'const', constVal: 'press' }, false: { type: 'const', constVal: 'press' } },
                 },
             };
-        case 'numberSet': {
-            const min = typeof common.min === 'number' ? common.min : 0;
-            const max = typeof common.max === 'number' ? common.max : 100;
+        case 'select':
             return {
-                type: 'number',
+                type: 'input_sel',
                 role: DEVICE_DETAIL_ROW_ROLE,
                 data: {
                     icon: { true: { value: icon, color: valueColor }, false: { value: icon, color: valueColor } },
-                    // the slider of the row works with the raw value: `value|min|max`
-                    entity1: { value },
-                    minValue1: { type: 'const', constVal: min },
-                    maxValue1: { type: 'const', constVal: max },
-                    text,
+                    // the list of popupInSel comes from common.states (PageItem.getListFromStates), the choice writes
+                    // its key (PageItem.setListCommand)
+                    entityInSel: { value },
+                    headline: nameItem,
+                    // the row shows the text of the current value: the input_sel row looks it up in common.states
+                    text: { true: value },
                 },
             };
-        }
         case 'number':
         case 'text':
             return {
@@ -243,7 +245,13 @@ export function deviceDetailRowItem(
                 role: DEVICE_DETAIL_ROW_ROLE,
                 data: {
                     icon: { true: { value: icon, color: valueColor }, false: { value: icon, color: valueColor } },
-                    entity2: { value },
+                    entity2: hasCommonStatesList(common.states)
+                        ? {
+                              // the text of the value in common.states (an unknown value as it is), no unit behind
+                              value: { ...value, commonStates: { mode: 'text', keepValue: true } },
+                              unit: { type: 'const', constVal: '' },
+                          }
+                        : { value },
                     text,
                 },
             };

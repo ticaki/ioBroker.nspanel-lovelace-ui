@@ -180,23 +180,43 @@ export type DeviceDetailRowKind =
     | 'switch'
     /** boolean, read only - on/off */
     | 'boolean'
-    /** number, writable - a slider (value|min|max) */
-    | 'numberSet'
-    /** number, read only - value with unit */
+    /** number or string with common.states, writable - a selection popup (input_sel / popupInSel) */
+    | 'select'
+    /** number, read only or writable without common.states - value with unit */
     | 'number'
     /** anything else - text, read only */
     | 'text';
 
 /**
+ * Whether `common.states` is a list the adapter can use: an array or an object with at least one entry. The old
+ * string form (`"0:off;1:on"`) is not used, as everywhere else at runtime (StatesController.getCommonStates).
+ *
+ * @param states common.states of a state
+ * @returns true for a usable list
+ */
+export function hasCommonStatesList(states: unknown): boolean {
+    if (Array.isArray(states)) {
+        return states.length > 0;
+    }
+    return !!states && typeof states === 'object' && Object.keys(states).length > 0;
+}
+
+/**
  * The kind of row a state gets on the detail page.
  *
- * @param common type, read and write of the state
+ * @param common type, read, write and states of the state
  * @param common.type common.type
  * @param common.read common.read (undefined counts as true)
  * @param common.write common.write (undefined counts as true)
+ * @param common.states common.states - a writable number or string with a usable list is a selection
  * @returns the kind of the row
  */
-export function deviceDetailRowKind(common: { type?: string; read?: boolean; write?: boolean }): DeviceDetailRowKind {
+export function deviceDetailRowKind(common: {
+    type?: string;
+    read?: boolean;
+    write?: boolean;
+    states?: unknown;
+}): DeviceDetailRowKind {
     const writable = common.write !== false;
     if (common.read === false) {
         return 'button';
@@ -204,8 +224,11 @@ export function deviceDetailRowKind(common: { type?: string; read?: boolean; wri
     if (common.type === 'boolean') {
         return writable ? 'switch' : 'boolean';
     }
+    if (writable && (common.type === 'number' || common.type === 'string') && hasCommonStatesList(common.states)) {
+        return 'select';
+    }
     if (common.type === 'number') {
-        return writable ? 'numberSet' : 'number';
+        return 'number';
     }
     return 'text';
 }

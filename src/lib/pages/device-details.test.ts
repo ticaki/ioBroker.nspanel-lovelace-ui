@@ -68,39 +68,78 @@ describe('lib/pages/device-details', () => {
             expect(data.text1.true.constVal).to.equal('press');
             expect(data.icon.true.value.constVal).to.equal('gesture-tap-button');
         });
-        it('number writable: type number (slider value|min|max), range from common, raw value', () => {
+        it('number writable without common.states: a read only text with value and unit, no slider', () => {
             const item = deviceDetailRowItem(
                 DEV,
                 { key: '', id: `${DEV}.Relay0.AutoTimerOffDelay` },
                 { type: 'number', write: true, role: 'level.timer', unit: 's', min: 1, max: 5000, step: 5 },
                 'Delay',
             );
-            expect(item.type).to.equal('number');
+            expect(item.type).to.equal('text');
             const data = dataOf(item);
-            // not scaled: the slider of cardEntities shows and sets the value itself
-            expect(data.entity1).to.deep.equal({
+            expect(data.entity2).to.deep.equal({
                 value: { type: 'triggered', dp: `${DEV}.Relay0.AutoTimerOffDelay` },
             });
-            expect(data.minValue1.constVal).to.equal(1);
-            expect(data.maxValue1.constVal).to.equal(5000);
+            expect(data.entity1).to.equal(undefined);
+            expect(data.minValue1).to.equal(undefined);
             expect(data.text.true.constVal).to.equal('Delay');
-            expect(data.heading1).to.equal(undefined);
         });
-        it('number writable without range: 0..100', () => {
+        it('number / string writable with common.states: input_sel (popupInSel), the row shows the text', () => {
+            for (const states of [{ 0: 'off', 1: 'on', 2: 'auto' }, ['off', 'on']]) {
+                for (const type of ['number', 'string']) {
+                    const item = deviceDetailRowItem(
+                        DEV,
+                        { key: '', id: `${DEV}.mode` },
+                        { type, write: true, role: 'level.mode', states },
+                        'Mode',
+                    );
+                    expect(item.type, `${type} ${JSON.stringify(states)}`).to.equal('input_sel');
+                    expect(item.role).to.equal(DEVICE_DETAIL_ROW_ROLE);
+                    const data = dataOf(item);
+                    expect(data.entityInSel).to.deep.equal({ value: { type: 'triggered', dp: `${DEV}.mode` } });
+                    expect(data.headline).to.deep.equal({ type: 'const', constVal: 'Mode' });
+                    expect(data.text).to.deep.equal({ true: { type: 'triggered', dp: `${DEV}.mode` } });
+                    expect(data.icon.true.value.constVal).to.equal('format-list-bulleted');
+                }
+            }
+        });
+        it('common.states read only: text with the text of the value (commonStates), no unit', () => {
             const data = dataOf(
-                deviceDetailRowItem(DEV, { key: '', id: `${DEV}.x` }, { type: 'number', write: true }, 'X'),
+                deviceDetailRowItem(
+                    DEV,
+                    { key: '', id: `${DEV}.mode` },
+                    { type: 'number', write: false, unit: 'x', states: { 0: 'off', 1: 'on' } },
+                    'Mode',
+                ),
             );
-            expect(data.minValue1.constVal).to.equal(0);
-            expect(data.maxValue1.constVal).to.equal(100);
+            expect(data.entity2).to.deep.equal({
+                value: { type: 'triggered', dp: `${DEV}.mode`, commonStates: { mode: 'text', keepValue: true } },
+                unit: { type: 'const', constVal: '' },
+            });
+        });
+        it('common.states as old string, empty object or empty array: no selection', () => {
+            for (const states of ['0:off;1:on', {}, []]) {
+                const item = deviceDetailRowItem(
+                    DEV,
+                    { key: '', id: `${DEV}.mode` },
+                    { type: 'number', write: true, states },
+                    'Mode',
+                );
+                expect(item.type, JSON.stringify(states)).to.equal('text');
+                expect(dataOf(item).entity2).to.deep.equal({ value: { type: 'triggered', dp: `${DEV}.mode` } });
+            }
         });
         it('every kind of state gets the row type of cardEntities', () => {
             const kinds: [Parameters<typeof deviceDetailRowItem>[2], string][] = [
                 [{ type: 'boolean', write: true }, 'switch'],
                 [{ type: 'boolean', write: false }, 'text'],
                 [{ type: 'boolean', read: false, write: true }, 'button'],
-                [{ type: 'number', write: true }, 'number'],
+                [{ type: 'number', write: true }, 'text'],
                 [{ type: 'number', write: false }, 'text'],
+                [{ type: 'number', write: true, states: { 1: 'a' } }, 'input_sel'],
+                [{ type: 'number', write: false, states: { 1: 'a' } }, 'text'],
                 [{ type: 'string', write: true }, 'text'],
+                [{ type: 'string', write: true, states: ['a', 'b'] }, 'input_sel'],
                 [{ type: 'string', write: false }, 'text'],
             ];
             for (const [common, type] of kinds) {

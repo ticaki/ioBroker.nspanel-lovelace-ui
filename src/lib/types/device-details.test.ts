@@ -220,10 +220,21 @@ describe('lib/types/deviceDetails', () => {
             expect(deviceDetailRowKind({ type: 'boolean', read: false, write: true })).to.equal('button');
             expect(deviceDetailRowKind({ type: 'boolean', read: true, write: true })).to.equal('switch');
             expect(deviceDetailRowKind({ type: 'boolean', read: true, write: false })).to.equal('boolean');
-            expect(deviceDetailRowKind({ type: 'number', write: true })).to.equal('numberSet');
+            expect(deviceDetailRowKind({ type: 'number', write: true })).to.equal('number');
             expect(deviceDetailRowKind({ type: 'number', write: false })).to.equal('number');
             expect(deviceDetailRowKind({ type: 'string', write: true })).to.equal('text');
             expect(deviceDetailRowKind({ type: 'mixed', write: false })).to.equal('text');
+        });
+        it('a writable number or string with a list in common.states is a selection', () => {
+            expect(deviceDetailRowKind({ type: 'number', write: true, states: { 0: 'a' } })).to.equal('select');
+            expect(deviceDetailRowKind({ type: 'string', write: true, states: ['a'] })).to.equal('select');
+            expect(deviceDetailRowKind({ type: 'number', write: false, states: { 0: 'a' } })).to.equal('number');
+            expect(deviceDetailRowKind({ type: 'string', states: { a: 'A' } })).to.equal('select');
+            expect(deviceDetailRowKind({ type: 'boolean', states: { true: 'a' } })).to.equal('switch');
+            // the old string form is not used at runtime, empty lists neither
+            expect(deviceDetailRowKind({ type: 'number', write: true, states: '0:a;1:b' })).to.equal('number');
+            expect(deviceDetailRowKind({ type: 'number', write: true, states: {} })).to.equal('number');
+            expect(deviceDetailRowKind({ type: 'string', write: true, states: [] })).to.equal('text');
         });
     });
 
