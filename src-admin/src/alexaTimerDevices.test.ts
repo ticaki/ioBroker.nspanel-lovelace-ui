@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { alexaInstancesOf, alexaTimerDevicesOf, loadAlexaTimerDevices } from './alexaTimerDevices';
+import { alexaAlarmChoicesOf, alexaInstancesOf, alexaTimerDevicesOf, loadAlexaTimerDevices } from './alexaTimerDevices';
 
 describe('alexaTimerDevices', () => {
     it('instances with the option for voice timers, sorted by number', () => {
@@ -56,5 +56,30 @@ describe('alexaTimerDevices', () => {
         );
         expect(asked).to.deep.equal(['alexa2.1.Echo-Devices.*.Info.capabilities', 'alexa2.1.Echo-Devices.*.Info.name']);
         expect(devices).to.deep.equal([{ serial: 'S1', name: 'S1' }]);
+    });
+
+    it('alarms of a device: only those with a channel, labelled', () => {
+        const p = 'alexa2.0.Echo-Devices.G091.Alarm.';
+        expect(
+            alexaAlarmChoicesOf(
+                'alexa2.0',
+                'G091',
+                { [`${p}u1`]: {}, [`${p}u2`]: {} },
+                {
+                    [`${p}u1.time`]: { val: '07:30:00' },
+                    [`${p}u1.recurringDays`]: { val: 'MO,TU,WE,TH,FR' },
+                    [`${p}u1.recurringPattern`]: { val: 'XXXX-WD' },
+                    [`${p}u2.time`]: { val: '06:00:00' },
+                    [`${p}u2.date`]: { val: '2026-11-13' },
+                    [`${p}u2.recurringPattern`]: { val: '0' },
+                    [`${p}gone.time`]: { val: '05:00:00' },
+                    [`${p}New`]: { val: '' },
+                },
+                'einmalig',
+            ),
+        ).to.deep.equal([
+            { id: 'u2', label: '06:00 · einmalig 2026-11-13' },
+            { id: 'u1', label: '07:30 · MO,TU,WE,TH,FR' },
+        ]);
     });
 });

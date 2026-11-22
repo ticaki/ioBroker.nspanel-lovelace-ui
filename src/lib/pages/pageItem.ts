@@ -32,6 +32,7 @@ import {
     type TimerPopupButtons,
 } from './screensaver-timer';
 import type { AlexaTimer } from '../classes/alexa-timer';
+import { alarmClockTime, isPastSingleAlarm, type AlexaAlarmEntry, type AlexaAlarms } from '../classes/alexa-alarm';
 
 /** panels that were told once that their screensaver has no timer for a page item */
 const panelsWarnedAboutClockTimer = new WeakSet<object>();
@@ -70,6 +71,10 @@ export class PageItem extends BaseTriggeredPage {
     private clockTimerSaver: Screensaver | undefined;
     /** the Echo device this item shows (`alexaTimer`), see {@link getAlexaTimerAccess} */
     private alexaTimer: AlexaTimer | undefined;
+    /** the alarms of the Echo device this item shows (`alexaTimer.show` alarm), see {@link getAlexaAlarmView} */
+    private alexaAlarms: AlexaAlarms | undefined;
+    /** the log was told once that the fixed alarm does not exist */
+    private alexaAlarmMissingWarned: boolean = false;
     /** index of the value a button with a value list wrote last, see {@link writeNextCycleValue} */
     private cycleLastIndex: number | undefined;
     /** the screensaver uses this item as the source of its timer */
@@ -198,6 +203,11 @@ export class PageItem extends BaseTriggeredPage {
 
             case 'timer': {
                 if (this.dataItems.role === 'timer' && this.tempData === undefined) {
+                    if (this.dataItems.alexaTimer?.show === 'alarm') {
+                        // like the alarm clock mode (ex-alarm), the states are those of the alarm
+                        this.tempData = { role: 'alexa-alarm' };
+                        break;
+                    }
                     if (this.dataItems.alexaTimer) {
                         // like the timer of the screensaver: the time set in the popup is kept until the start
                         this.tempData = { role: 'alexa-timer', editSeconds: 0 };
@@ -1619,6 +1629,54 @@ export class PageItem extends BaseTriggeredPage {
     }
 
     /**
+     * The alarm of the Echo device of this item in the form of the alarm clock mode (`ex-alarm`); changes of the alarms
+     * update this item from now on. A fixed alarm that does not exist is told once in the log.
+     *
+     * @returns the alarm, its time and what the popup may do
+     */
+    private async getAlexaAlarmView(): Promise<{
+        entry: AlexaAlarmEntry | undefined;
+        hour: number;
+        minute: number;
+        status: number | undefined;
+        canStatus: boolean;
+        canSet: boolean;
+    }> {
+        const none = { entry: undefined, hour: 0, minute: 0, status: undefined, canStatus: false, canSet: false };
+        const config = this.dataItems?.type === 'timer' ? this.dataItems.alexaTimer : undefined;
+        if (!config) {
+            return none;
+        }
+        if (!this.alexaAlarms) {
+            this.alexaAlarms = this.controller.alexaTimers.getAlarms(config);
+            this.alexaAlarms.addListener(this.onClockTimerChange);
+            await this.alexaAlarms.ready;
+        }
+        const selection = this.alexaAlarms.select(config.alarmId);
+        if (selection.missing && !this.alexaAlarmMissingWarned) {
+            this.alexaAlarmMissingWarned = true;
+            this.log.warn(
+                `${this.name}: the Alexa alarm '${config.alarmId ?? ''}' of ${this.alexaAlarms.prefix}* does not exist (any more) - the item stays without buttons.`,
+            );
+        }
+        const entry = selection.entry;
+        if (!entry) {
+            return none;
+        }
+        const fixed = config.alarmId !== undefined;
+        // a single alarm in the past can not be changed any more (alexa2): like a state that can not be written
+        const past = isPastSingleAlarm(entry, Date.now());
+        const clock = alarmClockTime(entry) ?? { hour: 0, minute: 0 };
+        return {
+            entry,
+            ...clock,
+            status: entry.enabled ? 2 : 0,
+            canStatus: entry.enabled || (fixed && !past),
+            canSet: fixed && !entry.enabled && !past,
+        };
+    }
+
+    /**
      * @returns the timer an item of the screensaver or of an Echo device shows, undefined for other timers
      */
     private async getSharedTimerAccess(): Promise<ClockTimerAccess | undefined> {
@@ -1682,6 +1740,13 @@ export class PageItem extends BaseTriggeredPage {
                 return {
                     opt: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
                     on: value > 0,
+                };
+            }
+            case 'alexa-alarm': {
+                const { entry, hour, minute } = await this.getAlexaAlarmView();
+                return {
+                    opt: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+                    on: !!entry?.enabled,
                 };
             }
             default: {
@@ -1754,6 +1819,20 @@ export class PageItem extends BaseTriggeredPage {
                     ...timerPopupButtons({ mode: 'ex-alarm', ...external }),
                 };
             }
+            case 'alexa-alarm': {
+                const view = await this.getAlexaAlarmView();
+                return {
+                    on: !!view.entry?.enabled,
+                    minutes: String(view.hour),
+                    seconds: String(view.minute),
+                    ...timerPopupButtons({
+                        mode: 'ex-alarm',
+                        status: view.status,
+                        canStatus: view.canStatus,
+                        canSet: view.canSet,
+                    }),
+                };
+            }
             default: {
                 return { on: false, ...timerPopupFields(0), ...none };
             }
@@ -1771,6 +1850,11 @@ export class PageItem extends BaseTriggeredPage {
         if (!this.lastPopupType && (this.tempData?.role === 'ss-timer' || this.tempData?.role === 'alexa-timer')) {
             // the time set in the popup lasts until it is opened again
             this.tempData.editSeconds = 0;
+        }
+        if (!this.lastPopupType && this.tempData?.role === 'alexa-alarm') {
+            // an alarm deleted by voice whose states were left over is dropped now
+            await this.getAlexaAlarmView();
+            await this.alexaAlarms?.refresh();
         }
         this.visibility = true;
         this.lastPopupType = mode;
@@ -2425,6 +2509,8 @@ export class PageItem extends BaseTriggeredPage {
         this.clockTimerSaver = undefined;
         this.alexaTimer?.removeListener(this.onClockTimerChange);
         this.alexaTimer = undefined;
+        this.alexaAlarms?.removeListener(this.onClockTimerChange);
+        this.alexaAlarms = undefined;
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
@@ -3162,6 +3248,13 @@ export class PageItem extends BaseTriggeredPage {
                     await this.parent.basePanel.screenSaver?.startClockTimer(this.tempData.editSeconds);
                     break;
                 }
+                if (this.tempData?.role === 'alexa-alarm') {
+                    const view = await this.getAlexaAlarmView();
+                    if (view.entry && view.status === 0 && view.canStatus) {
+                        await this.alexaAlarms?.setEnabled(view.entry.id, true);
+                    }
+                    break;
+                }
                 if (this.tempData?.role === 'alexa-timer') {
                     if ((await this.getAlexaTimerAccess())?.canStart) {
                         await this.alexaTimer?.start(Number(this.tempData.editSeconds) || 0);
@@ -3199,6 +3292,14 @@ export class PageItem extends BaseTriggeredPage {
                         await set?.setState(nextAlarmTs(input[1], input[2], Date.now()));
                         break;
                     }
+                    case 'alexa-alarm': {
+                        // the fields of the popup are hour and minute, as for ex-alarm
+                        const view = await this.getAlexaAlarmView();
+                        if (view.entry && view.canSet) {
+                            await this.alexaAlarms?.setTime(view.entry.id, input[1], input[2]);
+                        }
+                        break;
+                    }
                     case 'ex-timer': {
                         await set?.setState(timerValueOf(seconds, set.common.unit));
                         break;
@@ -3226,6 +3327,10 @@ export class PageItem extends BaseTriggeredPage {
                 }
                 if (this.tempData?.role === 'alexa-timer') {
                     await this.alexaTimer?.stop();
+                    break;
+                }
+                if (this.tempData?.role === 'alexa-alarm') {
+                    // the popup of an alarm has no cancel or finish
                     break;
                 }
                 const data = this.dataItems?.type === 'timer' ? this.dataItems.data : undefined;
@@ -3266,6 +3371,14 @@ export class PageItem extends BaseTriggeredPage {
             }
             case 'timer-pause': {
                 if (this.tempData?.role === 'ss-timer' || this.tempData?.role === 'alexa-timer') {
+                    break;
+                }
+                if (this.tempData?.role === 'alexa-alarm') {
+                    // the button off of an alarm
+                    const view = await this.getAlexaAlarmView();
+                    if (view.entry && view.status === 2 && view.canStatus) {
+                        await this.alexaAlarms?.setEnabled(view.entry.id, false);
+                    }
                     break;
                 }
                 if (this.tempData?.role === 'timer') {

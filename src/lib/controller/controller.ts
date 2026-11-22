@@ -102,6 +102,10 @@ export class Controller extends Library.BaseClass {
             setTimeout: (cb, ms) => this.adapter.setTimeout(cb, ms),
             clearTimeout: timer => this.adapter.clearTimeout(timer),
             now: () => Date.now(),
+            getChannelIds: async pattern =>
+                Object.keys(await this.adapter.getForeignObjectsAsync(pattern, 'channel')).map(
+                    id => id.split('.').pop() ?? id,
+                ),
         });
         this.options = options;
         if (this.adapter.mqttServer) {

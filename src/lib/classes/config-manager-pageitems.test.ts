@@ -929,6 +929,29 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             expect(config.data.entity1).to.equal(undefined);
         });
 
+        it('admin item with an alarm: the alarm fields and the alarm icons', async () => {
+            const item = adminPageItemToScriptItem({
+                channelId: { valueStateId: '', unit: '', prefix: '', suffix: '', dateFormat: '' },
+                role: 'level.timer',
+                alexaTimer: { ...alexaTimer, show: 'alarm', alarmId: 'u1' },
+            }) as unknown as Record<string, unknown>;
+            const result = await run('item', item, PAGES.entities);
+            expect(result.error).to.equal(undefined);
+            const config = result.itemConfig as any;
+            expect(config.alexaTimer).to.deep.equal({ ...alexaTimer, show: 'alarm', alarmId: 'u1' });
+            expect(config.data.icon.true.value).to.deep.equal({ type: 'const', constVal: 'alarm' });
+            expect(config.data.icon.false.value).to.deep.equal({ type: 'const', constVal: 'alarm-off' });
+        });
+
+        it('a fixed alarm without a pick: an error', async () => {
+            const result = await run(
+                'item',
+                { id: '', alexaTimer: { ...alexaTimer, show: 'alarm', alarmId: '' } },
+                PAGES.entities,
+            );
+            expect(String(result.error)).to.contain('Alexa alarm');
+        });
+
         it('without a device: an error', async () => {
             const result = await run(
                 'item',

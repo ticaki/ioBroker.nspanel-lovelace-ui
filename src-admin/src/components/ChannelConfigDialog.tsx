@@ -70,6 +70,7 @@ import {
     isIconTextSize,
     isAlexaTimerComplete,
     isAlexaTimerConfig,
+    copyAlexaTimerConfig,
 } from '../../../src/lib/types/adminShareConfig';
 import { AlexaTimerSelect } from './AlexaTimerSelect';
 import { textSizeLabel, textSizeOfOption, textSizeOptions } from '../textSizeOptions';
@@ -480,9 +481,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             secondRow: typeof data?.secondRow === 'string' ? data.secondRow : '',
             useScreensaverTimer: data?.useScreensaverTimer === true,
             alexaTimer:
-                !isNative && isAlexaTimerConfig(data?.alexaTimer)
-                    ? { instance: data.alexaTimer.instance, serial: data.alexaTimer.serial }
-                    : null,
+                !isNative && isAlexaTimerConfig(data?.alexaTimer) ? copyAlexaTimerConfig(data.alexaTimer) : null,
             itemId: typeof data?.itemId === 'string' ? data.itemId : undefined,
             minValueBrightness: typeof data?.minValueBrightness === 'number' ? data.minValueBrightness : undefined,
             maxValueBrightness: typeof data?.maxValueBrightness === 'number' ? data.maxValueBrightness : undefined,
@@ -844,7 +843,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             falseIcon,
             falseColor,
             itemId,
-            alexaTimer: { instance: alexaTimer.instance, serial: alexaTimer.serial },
+            alexaTimer: copyAlexaTimerConfig(alexaTimer),
         };
     }
 
@@ -917,13 +916,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     socket={this.props.oContext?.socket ?? this.props.socket}
                     value={alexaTimer}
                     onChange={value => this.setState({ alexaTimer: value })}
+                    offerAlarms
                 />
                 <Typography
                     variant="caption"
                     color="text.secondary"
                     sx={{ mt: -1 }}
                 >
-                    {I18n.t('channelConfigDialog_alexaTimerHint')}
+                    {I18n.t(
+                        alexaTimer.show === 'alarm'
+                            ? 'channelConfigDialog_alexaAlarmHint'
+                            : 'channelConfigDialog_alexaTimerHint',
+                    )}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                     <TextField
@@ -1718,10 +1722,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const themeName: string = this.props.themeType === 'dark' ? 'dark' : 'light';
 
         // Defaults from role
-        const defaults =
+        const roleDefaults =
             this.state.alexaTimer !== null
                 ? this.getDefaultsForRole(ALEXA_TIMER_ROLE, false)
                 : this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+        // an Alexa alarm shows the alarm icons of the adapter (config-manager getAlexaTimerItemConfig)
+        const defaults =
+            roleDefaults && this.state.alexaTimer?.show === 'alarm'
+                ? { ...roleDefaults, iconOn: 'alarm', iconOff: 'alarm-off' }
+                : roleDefaults;
         const defaultIconName = defaults ? (isTrue ? defaults.iconOn : defaults.iconOff) : '';
         const defaultColorKey = defaults ? (isTrue ? defaults.colorOn : defaults.colorOff) : '';
         const defaultColorRgb: RGB | null = defaultColorKey ? this.getThemeColorForKey(defaultColorKey) : null;

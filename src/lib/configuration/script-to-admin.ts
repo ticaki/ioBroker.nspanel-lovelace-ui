@@ -28,6 +28,7 @@ import {
     isLongPressCard,
     newScreensaverNotifyId,
     screensaverAlternateItems,
+    copyAlexaTimerConfig,
     isAlexaTimerConfig,
     normalizeScrollFields,
     screensaverWeatherItemKeys,
@@ -570,7 +571,7 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
         admin.useScreensaverTimer = true;
     }
     if (isAlexaTimerConfig(alexaTimer)) {
-        admin.alexaTimer = { instance: alexaTimer.instance, serial: alexaTimer.serial };
+        admin.alexaTimer = copyAlexaTimerConfig(alexaTimer);
         admin.role = 'level.timer';
     }
     const itemId = str(item.itemId, reason, `${where}.itemId`);

@@ -16,6 +16,7 @@
  * later. So stopped timers are hidden here at once ({@link selectAlexaTimer}).
  */
 import type { TimerCountdownView } from '../pages/screensaver-timer';
+import { AlexaAlarms } from './alexa-alarm';
 import { isAlexaTimerComplete, type AlexaTimerConfig } from '../types/adminShareConfig';
 
 /** one entry of `Timer.activeTimerList` */
@@ -201,6 +202,8 @@ export interface AlexaTimerHost {
     setTimeout: (cb: () => void, ms: number) => ioBroker.Timeout | undefined;
     clearTimeout: (timer: ioBroker.Timeout | undefined) => void;
     now: () => number;
+    /** ids (last part) of the channels below a pattern - the alarms that exist as objects (src/lib/classes/alexa-alarm.ts) */
+    getChannelIds?: (pattern: string) => Promise<string[]>;
 }
 
 /**
@@ -455,11 +458,13 @@ export class AlexaTimer {
 }
 
 /**
- * One {@link AlexaTimer} per device for the whole adapter: the screensaver and page items of the same Echo share it.
+ * One {@link AlexaTimer} and one {@link AlexaAlarms} per device for the whole adapter: the screensaver and page items of
+ * the same Echo share them.
  */
 export class AlexaTimerRegistry {
     private readonly host: AlexaTimerHost;
     private timers: Map<string, AlexaTimer> = new Map();
+    private alarms: Map<string, AlexaAlarms> = new Map();
 
     /**
      * @param host access to the adapter
@@ -482,9 +487,25 @@ export class AlexaTimerRegistry {
         return timer;
     }
 
+    /**
+     * @param config instance and device
+     * @returns the alarms of the device, its states are read (see {@link AlexaAlarms.ready})
+     */
+    getAlarms(config: AlexaTimerConfig): AlexaAlarms {
+        const key = `${config.instance}.Echo-Devices.${config.serial}`;
+        let alarms = this.alarms.get(key);
+        if (!alarms) {
+            alarms = new AlexaAlarms(config, this.host, this.host.getChannelIds);
+            this.alarms.set(key, alarms);
+        }
+        return alarms;
+    }
+
     async deleteAll(): Promise<void> {
         const timers = [...this.timers.values()];
+        const alarms = [...this.alarms.values()];
         this.timers.clear();
-        await Promise.all(timers.map(t => t.delete()));
+        this.alarms.clear();
+        await Promise.all([...timers.map(t => t.delete()), ...alarms.map(a => a.delete())]);
     }
 }

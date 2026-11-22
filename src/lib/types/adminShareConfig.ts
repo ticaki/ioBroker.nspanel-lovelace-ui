@@ -1192,6 +1192,16 @@ export type AlexaTimerConfig = {
     instance: string;
     /** serial number of the Echo device, the id part below `Echo-Devices` */
     serial: string;
+    /**
+     * Page items only: what the item shows - the timers (undefined, also every configuration before the field) or
+     * the alarms of the device (src/lib/classes/alexa-alarm.ts). The screensaver always shows the timers.
+     */
+    show?: 'timer' | 'alarm';
+    /**
+     * Page items with {@link show} `alarm` only: the id (uuid) of the alarm below `Alarm`; undefined = the next active
+     * alarm of the device, '' = a fixed alarm is wanted but none is picked yet.
+     */
+    alarmId?: string;
 };
 
 /**
@@ -1199,7 +1209,38 @@ export type AlexaTimerConfig = {
  * @returns true when it has the form of an {@link AlexaTimerConfig}
  */
 export function isAlexaTimerConfig(value: unknown): value is AlexaTimerConfig {
-    return isRawItemObject(value) && typeof value.instance === 'string' && typeof value.serial === 'string';
+    return (
+        isRawItemObject(value) &&
+        typeof value.instance === 'string' &&
+        typeof value.serial === 'string' &&
+        (value.show === undefined || value.show === 'timer' || value.show === 'alarm') &&
+        (value.alarmId === undefined || typeof value.alarmId === 'string')
+    );
+}
+
+/**
+ * A copy with the known fields only: an alarm id only with `show: 'alarm'`, `show` only when it is the alarm.
+ *
+ * @param config the configuration
+ * @returns the copy
+ */
+export function copyAlexaTimerConfig(config: AlexaTimerConfig): AlexaTimerConfig {
+    const out: AlexaTimerConfig = { instance: config.instance, serial: config.serial };
+    if (config.show === 'alarm') {
+        out.show = 'alarm';
+        if (config.alarmId !== undefined) {
+            out.alarmId = config.alarmId;
+        }
+    }
+    return out;
+}
+
+/**
+ * @param config the configuration
+ * @returns true when the item shows the alarms of the device
+ */
+export function alexaShowsAlarm(config: Pick<AlexaTimerConfig, 'show'>): boolean {
+    return config.show === 'alarm';
 }
 
 /**
@@ -1210,7 +1251,12 @@ export function isAlexaTimerConfig(value: unknown): value is AlexaTimerConfig {
  */
 export function isAlexaTimerComplete(config: AlexaTimerConfig | undefined): boolean {
     return (
-        !!config && /^alexa2\.\d+$/.test(config.instance) && /^[^.*\s]+$/.test(config.serial) && !!config.serial.trim()
+        !!config &&
+        /^alexa2\.\d+$/.test(config.instance) &&
+        /^[^.*\s]+$/.test(config.serial) &&
+        !!config.serial.trim() &&
+        // a fixed alarm must be picked
+        (config.show !== 'alarm' || config.alarmId === undefined || /^[^.*\s]+$/.test(config.alarmId))
     );
 }
 

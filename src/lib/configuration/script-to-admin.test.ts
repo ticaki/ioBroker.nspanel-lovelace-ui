@@ -4669,6 +4669,10 @@ describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and col
                         heading: 'P',
                         items: [
                             { id: '', name: 'Tee', alexaTimer: { instance: 'alexa2.0', serial: 'G091' } },
+                            {
+                                id: '',
+                                alexaTimer: { instance: 'alexa2.0', serial: 'G091', show: 'alarm', alarmId: 'u1' },
+                            },
                             { navigate: true, targetPage: 'x', alexaTimer: { instance: 'alexa2.0', serial: 'G091' } },
                         ],
                     }),
@@ -4681,8 +4685,14 @@ describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and col
             role: 'level.timer',
             alexaTimer: { instance: 'alexa2.0', serial: 'G091' },
         });
+        expect(converted[1]?.alexaTimer).to.deep.equal({
+            instance: 'alexa2.0',
+            serial: 'G091',
+            show: 'alarm',
+            alarmId: 'u1',
+        });
         // a navigation is never an Alexa timer: it stays a raw item
-        expect(converted[1]).to.include({ useNative: true });
+        expect(converted[2]).to.include({ useNative: true });
     });
 
     const items = (): Record<string, unknown>[] => [

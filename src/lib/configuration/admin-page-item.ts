@@ -7,6 +7,7 @@
  */
 import { Color } from '../const/Color';
 import {
+    copyAlexaTimerConfig,
     isAlexaTimerConfig,
     isIconColorScaleElement,
     isRawItemObject,
@@ -134,9 +135,9 @@ export function adminPageItemToScriptItem(
             item.secondRow = preItem.secondRow ? preItem.secondRow : undefined;
             // role level.timer: the timer of the screensaver of this panel instead of own states
             item.useScreensaverTimer = preItem.useScreensaverTimer === true ? true : undefined;
-            // kind "Alexa timer": the timer of an Echo device instead of the states of a channel
+            // kind "Alexa timer": the timer or an alarm of an Echo device instead of the states of a channel
             item.alexaTimer = isAlexaTimerConfig(preItem.alexaTimer)
-                ? { instance: preItem.alexaTimer.instance, serial: preItem.alexaTimer.serial }
+                ? copyAlexaTimerConfig(preItem.alexaTimer)
                 : undefined;
             // light ranges and color mode (dimmer, ct, rgb, rgbSingle, hue) - the config manager reads
             // the numbers only when truthy and the color mode only as set / not set

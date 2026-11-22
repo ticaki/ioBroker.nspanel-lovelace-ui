@@ -719,9 +719,10 @@ declare namespace ScriptConfig {
         useScreensaverTimer?: boolean;
         /**
          * timer of an Echo device of the alexa2 adapter instead of the states of a channel (src/lib/classes/alexa-timer.ts):
-         * `instance` e.g. `alexa2.0`, `serial` the serial number below `Echo-Devices`; `id` stays empty then
+         * `instance` e.g. `alexa2.0`, `serial` the serial number below `Echo-Devices`; `id` stays empty then.
+         * `show: 'alarm'` shows an alarm instead (`alarmId` = uuid of a fixed alarm, without it the next active one)
          */
-        alexaTimer?: { instance: string; serial: string };
+        alexaTimer?: { instance: string; serial: string; show?: 'timer' | 'alarm'; alarmId?: string };
         /** id of this item, unique in the instance: the screensaver can use it as the source of its timer (clockTimer.itemId) */
         itemId?: string;
     };

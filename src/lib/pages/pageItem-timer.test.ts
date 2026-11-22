@@ -1717,3 +1717,124 @@ describe('lib/pages - Alexa timer as screensaver source and page item', () => {
         expect((await s.saver.getClockTimerAccess()).selection.status).to.equal('off');
     });
 });
+
+describe('lib/pages - Alexa alarm as page item', () => {
+    const NOW = new Date(2026, 10, 22, 12).getTime();
+    const P = 'alexa2.0.Echo-Devices.G091.Alarm.';
+    let realNow: () => number;
+    before(() => {
+        realNow = Date.now;
+    });
+    beforeEach(() => {
+        Date.now = (): number => NOW;
+    });
+    after(() => {
+        Date.now = realNow;
+    });
+
+    function alarms(initial: Record<string, unknown>): {
+        registry: AlexaTimerRegistry;
+        writes: Write[];
+        push: (id: string, val: unknown) => void;
+    } {
+        const writes: Write[] = [];
+        const listeners: ((id: string, state: AlexaStateLike) => void)[] = [];
+        const registry = new AlexaTimerRegistry({
+            log: { debug: () => undefined, warn: () => undefined },
+            language: () => 'de',
+            subscribePattern: async (_p, l) => void listeners.push(l),
+            unsubscribePattern: async () => Promise.resolve(),
+            getForeignStates: async () =>
+                Promise.resolve(Object.fromEntries(Object.entries(initial).map(([k, v]) => [k, { val: v }]))),
+            setForeignState: async (id, val) => void writes.push({ id, val }),
+            setTimeout: () => undefined,
+            clearTimeout: () => undefined,
+            now: () => Date.now(),
+        });
+        return { registry, writes, push: (id, val) => listeners.forEach(l => l(id, { val })) };
+    }
+    const at = (h: number, m: number, day = 23): number => new Date(2026, 10, day, h, m).getTime();
+    const device = (show: Record<string, unknown>): { instance: string; serial: string } & Record<string, unknown> => ({
+        instance: 'alexa2.0',
+        serial: 'G091',
+        show: 'alarm',
+        ...show,
+    });
+
+    it('next active: shows the earliest active alarm, off switches exactly this one off', async () => {
+        const r = alarms({
+            [`${P}a.time`]: '07:30:00',
+            [`${P}a.enabled`]: true,
+            [`${P}a.nextTriggerDate`]: at(7, 30),
+            [`${P}b.time`]: '06:15:00',
+            [`${P}b.enabled`]: true,
+            [`${P}b.nextTriggerDate`]: at(6, 15),
+        });
+        const f = await makeItem({}, { alexaTimer: device({}), alexaTimers: r.registry });
+        expect(f.item.tempData.role).to.equal('alexa-alarm');
+        expect(await f.line()).to.equal('06:15');
+        const popup = await f.popup();
+        expect([popup.min, popup.sec, popup.editable]).to.deep.equal(['6', '15', '0']);
+        expect(popup.actions).to.deep.equal(['', 'pause', '']);
+        await f.item.onCommand('timer-pause', '');
+        expect(r.writes).to.deep.equal([{ id: `${P}b.enabled`, val: false }]);
+        // alexa2 reports it: the next one moves up
+        r.push(`${P}b.enabled`, false);
+        r.push(`${P}b.nextTriggerDate`, null);
+        expect(await f.line()).to.equal('07:30');
+    });
+
+    it('next active: none active - 00:00, off, no buttons, not editable', async () => {
+        const r = alarms({ [`${P}a.time`]: '07:30:00', [`${P}a.enabled`]: false });
+        const f = await makeItem({}, { alexaTimer: device({}), alexaTimers: r.registry });
+        expect(await f.line()).to.equal('00:00');
+        const popup = await f.popup();
+        expect(popup.actions).to.deep.equal(['', '', '']);
+        expect(popup.editable).to.equal('0');
+        await f.item.onCommand('timer-begin', '');
+        await f.item.onCommand('timer-start', '00:08:00');
+        expect(r.writes).to.deep.equal([]);
+    });
+
+    it('fixed alarm: on while off, time editable while off, written as hh:mm:00', async () => {
+        const r = alarms({
+            [`${P}a.time`]: '07:30:00',
+            [`${P}a.date`]: '2026-11-23',
+            [`${P}a.enabled`]: false,
+            [`${P}a.recurringPattern`]: '0',
+        });
+        const f = await makeItem({}, { alexaTimer: device({ alarmId: 'a' }), alexaTimers: r.registry });
+        expect(await f.line()).to.equal('07:30');
+        const popup = await f.popup();
+        expect(popup.actions).to.deep.equal(['', 'begin', '']);
+        expect(popup.editable).to.equal('1');
+        await f.item.onCommand('timer-start', '00:06:45');
+        await f.item.onCommand('timer-begin', '');
+        expect(r.writes).to.deep.equal([
+            { id: `${P}a.time`, val: '06:45:00' },
+            { id: `${P}a.enabled`, val: true },
+        ]);
+    });
+
+    it('fixed alarm: a single alarm in the past has no on and can not be edited', async () => {
+        const r = alarms({
+            [`${P}a.time`]: '07:30:00',
+            [`${P}a.date`]: '2026-11-13',
+            [`${P}a.enabled`]: false,
+            [`${P}a.recurringPattern`]: '0',
+        });
+        const f = await makeItem({}, { alexaTimer: device({ alarmId: 'a' }), alexaTimers: r.registry });
+        const popup = await f.popup();
+        expect(popup.actions).to.deep.equal(['', '', '']);
+        expect(popup.editable).to.equal('0');
+    });
+
+    it('fixed alarm that is gone: no buttons and one warning', async () => {
+        const r = alarms({});
+        const f = await makeItem({}, { alexaTimer: device({ alarmId: 'x' }), alexaTimers: r.registry });
+        expect(await f.line()).to.equal('00:00');
+        expect((await f.popup()).actions).to.deep.equal(['', '', '']);
+        await f.popup();
+        expect(f.warn).to.have.length(1);
+    });
+});

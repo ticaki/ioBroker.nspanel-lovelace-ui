@@ -3,6 +3,7 @@
  * devices that can do timers. The adapter side is src/lib/classes/alexa-timer.ts.
  */
 import { isRawItemObject } from '../../src/lib/types/adminShareConfig';
+import { alexaAlarmLabel, alexaAlarmsOf } from '../../src/lib/classes/alexa-alarm';
 
 /** an installed alexa2 instance */
 export type AlexaInstanceInfo = {
@@ -27,7 +28,7 @@ export const ALEXA_TIMER_CAPABILITY = 'TIMERS_AND_ALARMS';
 
 /** what is read through the socket of the admin */
 export interface AlexaSocket {
-    getObjectViewSystem: (type: 'instance', start: string, end: string) => Promise<Record<string, unknown>>;
+    getObjectViewSystem: (type: 'instance' | 'channel', start: string, end: string) => Promise<Record<string, unknown>>;
     getForeignStates: (pattern: string) => Promise<Record<string, unknown>>;
 }
 
@@ -109,4 +110,62 @@ export async function loadAlexaTimerDevices(socket: AlexaSocket, instance: strin
     const capabilities = await socket.getForeignStates(`${instance}.Echo-Devices.*.Info.capabilities`);
     const names = await socket.getForeignStates(`${instance}.Echo-Devices.*.Info.name`);
     return alexaTimerDevicesOf(instance, capabilities ?? {}, names ?? {});
+}
+
+/** an alarm of an Echo device as the dialog offers it */
+export type AlexaAlarmInfo = {
+    /** uuid of the alarm */
+    id: string;
+    /** e.g. `07:30 · MO,TU,WE,TH,FR` */
+    label: string;
+};
+
+/**
+ * The alarms of an Echo device: the channels below `Alarm` with their states (src/lib/classes/alexa-alarm.ts).
+ *
+ * @param instance e.g. `alexa2.0`
+ * @param serial the device
+ * @param channels channel objects below `Alarm`
+ * @param states states below `Alarm`
+ * @param once word for a single alarm
+ * @returns the alarms, sorted by label
+ */
+export function alexaAlarmChoicesOf(
+    instance: string,
+    serial: string,
+    channels: Record<string, unknown>,
+    states: Record<string, unknown>,
+    once: string,
+): AlexaAlarmInfo[] {
+    const prefix = `${instance}.Echo-Devices.${serial}.Alarm.`;
+    const existing = new Set(Object.keys(channels).map(id => id.slice(prefix.length)));
+    const values = new Map<string, unknown>();
+    for (const [id, state] of Object.entries(states)) {
+        const alarm = id.slice(prefix.length).split('.')[0];
+        if (id.startsWith(prefix) && existing.has(alarm)) {
+            values.set(id, isRawItemObject(state) ? state.val : undefined);
+        }
+    }
+    return alexaAlarmsOf(prefix, values)
+        .map(entry => ({ id: entry.id, label: alexaAlarmLabel(entry, once) }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+/**
+ * @param socket socket of the admin
+ * @param instance e.g. `alexa2.0`
+ * @param serial the device
+ * @param once word for a single alarm
+ * @returns the alarms of the device
+ */
+export async function loadAlexaAlarms(
+    socket: AlexaSocket,
+    instance: string,
+    serial: string,
+    once: string,
+): Promise<AlexaAlarmInfo[]> {
+    const prefix = `${instance}.Echo-Devices.${serial}.Alarm.`;
+    const channels = await socket.getObjectViewSystem('channel', prefix, `${prefix}香`);
+    const states = await socket.getForeignStates(`${prefix}*`);
+    return alexaAlarmChoicesOf(instance, serial, channels ?? {}, states ?? {}, once);
 }
