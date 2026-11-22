@@ -1,13 +1,13 @@
 # Timer-Popup
 
-Diese Seite erklärt Timer am Panel: zuerst in Alltagssprache, was ein Timer ist und welche Art man wofür nimmt, dann drei Anleitungen Schritt für Schritt. Ab [Nachschlagen](#nachschlagen) folgen die Einzelheiten – Datenpunkte, Tasten, Grenzen.
+Diese Seite erklärt Timer am Panel: zuerst in Alltagssprache, was ein Timer ist und welche Art man wofür nimmt, dann zwei Anleitungen Schritt für Schritt und ein Beispiel. Ab [Nachschlagen](#nachschlagen) folgen die Einzelheiten – Datenpunkte, Tasten, Grenzen und zuletzt die Timer und Wecker eines Echo-Geräts.
 
 Inhalt:
 - [Was ist ein Timer am Panel?](#was-ist-ein-timer-am-panel)
 - [Welche Art brauche ich?](#welche-art-brauche-ich)
 - [Schnellstart: Eieruhr (interner Timer)](#schnellstart-eieruhr-interner-timer)
-- [Schnellstart: Alexa-Timer als Pageitem](#schnellstart-alexa-timer-als-pageitem)
 - [Schnellstart: Restzeit im Bildschirmschoner anzeigen](#schnellstart-restzeit-im-bildschirmschoner-anzeigen)
+  - [Beispiel: Skript-Timer im Bildschirmschoner](#beispiel-skript-timer-im-bildschirmschoner)
 - [Nachschlagen](#nachschlagen)
   - [1. Betriebsarten](#1-betriebsarten)
   - [2. Datenpunkte](#2-datenpunkte)
@@ -42,13 +42,15 @@ Alle Arten sehen am Panel gleich aus. Sie unterscheiden sich darin, **wer die Ze
 | Ich möchte … | nimm … | wer zählt | was ich im Admin anlege | typisches Beispiel |
 |---|---|---|---|---|
 | am Panel eine Zeit einstellen und ablaufen lassen | **Intern** | der Adapter | einen Kanal mit der Rolle `level.timer` – Datenpunkte braucht er keine | Eieruhr in der Küche |
-| die Restzeit zeigen, die ein eigenes Skript oder ein anderer Adapter zählt | **Extern** | das Skript | einen Kanal `level.timer` mit `ACTUAL` (Restzeit in Sekunden), dazu `STATUS` und `SET`, damit es Tasten gibt | Restzeit der Waschmaschine |
+| die Restzeit zeigen, die ein eigenes Skript oder ein anderer Adapter zählt | **Extern** | das Skript | einen Kanal `level.timer` mit `ACTUAL` (Restzeit in Sekunden), dazu `STATUS` und `SET`, damit es Tasten gibt | Restzeit der Waschmaschine; ein Skript-Timer, den eine eigene Sprachsteuerung stellt |
 | eine feste Weckzeit zeigen und an- und ausschalten | **Wecker** | niemand, es ist eine Uhrzeit | einen Kanal `level.timer` mit `ACTUAL` der Rolle `date`, dazu `SET` und `STATUS` | Wecker um 6:30 |
-| die Timer eines Echo-Geräts zeigen, starten und stoppen | **Alexa-Timer** | das Echo-Gerät | keinen Kanal: im Item-Dialog die Art **Alexa-Timer** und das Echo-Gerät wählen | *„Alexa, stelle einen Timer auf 10 Minuten“* und die Zeit am Panel sehen |
-| einen Wecker eines Echo-Geräts sehen und an- oder ausschalten | **Alexa-Wecker** | das Echo-Gerät | keinen Kanal: Art **Alexa-Timer**, Echo-Gerät, bei **Anzeigen** **Wecker** | der Werktagswecker um 6:30 am Panel, vor dem Urlaub ausschalten |
 | auf einer Seite denselben Timer zeigen wie der Bildschirmschoner | **Vom Screensaver** | wie beim Bildschirmschoner | einen Kanal `level.timer` und das Häkchen **Timer aus dem Screensaver verwenden** | Bildschirmschoner zeigt die Restzeit, die Seite hat Start und Stopp dazu |
 
 Wer unsicher ist: Für eine einfache Eieruhr reicht **Intern**. Die genauen Erkennungsregeln stehen unter [Betriebsarten](#1-betriebsarten).
+
+Die Arten lassen sich verbinden. Ein typisches Beispiel: Ein eigenes Skript zählt einen Timer, gestellt wird er über eine eigene Sprachsteuerung, und der **Bildschirmschoner** zeigt die Restzeit – wie das geht, steht unter [Beispiel: Skript-Timer im Bildschirmschoner](#beispiel-skript-timer-im-bildschirmschoner).
+
+Timer und Wecker eines Echo-Geräts (Adapter alexa2) brauchen keinen Kanal; sie stehen in einem eigenen Abschnitt: [Alexa-Timer (alexa2)](#7-alexa-timer-alexa2).
 
 ## Schnellstart: Eieruhr (interner Timer)
 
@@ -69,36 +71,40 @@ Wer unsicher ist: Für eine einfache Eieruhr reicht **Intern**. Die genauen Erke
 
 Soll ein Skript vom Ablauf erfahren, legt man im Kanal zusätzlich `STATE` an (`boolean`, Rolle `button`, beschreibbar): Er wird `true`, wenn die Zeit abläuft und wenn **Fertig** gedrückt wird.
 
-## Schnellstart: Alexa-Timer als Pageitem
-
-Voraussetzung: der Adapter alexa2 läuft, und in seiner Instanz ist die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** eingeschaltet (warum, steht in [Abschnitt 7](#7-alexa-timer-alexa2)).
-
-1. Im Tab **PageConfig** eine Seite mit Pageitems öffnen und auf einen freien Platz klicken. – *Ergebnis: die Pageitem-Konfiguration ist offen.*
-2. Oben bei **Art des Items** **Alexa-Timer** wählen. – *Ergebnis: statt des Kanalfelds stehen dort **alexa2-Instanz** und **Echo-Gerät**.*
-3. Die **alexa2-Instanz** und das **Echo-Gerät** wählen. Angeboten werden nur Geräte, die Timer können. – *Ergebnis: Steht keine Warnung darunter, ist alles bereit.*
-4. **Name** eintragen (optional), z. B. *Küche*. – *Ergebnis: so heißt der Eintrag; ohne Namen *Timer*.*
-5. **Übernehmen** und im Tab **Speichern**. – *Ergebnis: die Seite zeigt den Eintrag.*
-6. **Ausprobieren:** *„Alexa, stelle einen Timer auf 3 Minuten“* zum gewählten Echo sagen. – *Ergebnis: nach etwa 10 Sekunden zeigt der Eintrag die Restzeit.* Im Popup lässt er sich mit **Abbrechen** stoppen; ist kein Timer aktiv, startet **Start** einen neuen am Echo.
-
 ## Schnellstart: Restzeit im Bildschirmschoner anzeigen
 
-Der Bildschirmschoner nimmt seinen Timer aus einer Quelle. Am einfachsten ist ein Timer-Pageitem (z. B. die Eieruhr von oben) oder direkt ein Echo-Gerät.
+Der Bildschirmschoner nimmt seinen Timer aus einer Quelle. Am einfachsten ist ein Timer-Pageitem (z. B. die Eieruhr von oben); zählt ein eigenes Skript, nimmt man dessen Datenpunkte.
 
 1. Im Tab **Screensaver** den Bildschirmschoner des Panels öffnen und im Panelbild auf die **Uhrzeit** klicken. – *Ergebnis: der Dialog der Uhrzeit ist offen.*
 2. Das Häkchen **Timer anzeigen** setzen. – *Ergebnis: das Feld **Quelle des Timers** erscheint.*
 3. Quelle wählen:
    - **Pageitem mit Timer-Popup** und im Feld **Pageitem** die Eieruhr wählen. Steht dort *Einige Timer sind erst auswählbar, nachdem eine Seite geändert und gespeichert wurde.*, die Seite der Eieruhr einmal ändern und speichern.
-   - oder **Alexa-Timer (alexa2)** und darunter **alexa2-Instanz** und **Echo-Gerät** wählen.
+   - oder **Datenpunkte oder Slot-Muster** und darunter den **An/Aus-Datenpunkt** und den **Daten-Datenpunkt** des Skripts wählen (Formate unter [Quelle: zwei Datenpunkte](screensaver#quelle-zwei-datenpunkte)).
+   - Die dritte Quelle, **Alexa-Timer (alexa2)**, ist unter [Alexa-Timer](#7-alexa-timer-alexa2) beschrieben.
 
    – *Ergebnis: die Warnung unter dem Feld verschwindet.*
 4. **Übernehmen** und danach **Speichern**. – *Ergebnis: der Adapter startet neu.*
-5. **Ausprobieren:** einen Timer starten (am Panel, oder per Sprache am Echo). – *Ergebnis: der Bildschirmschoner zeigt statt der Uhrzeit die Restzeit in Minuten, z. B. `2.5`; ein Tipp darauf schaltet zurück auf die Uhrzeit.*
+5. **Ausprobieren:** einen Timer starten (am Panel oder über das Skript). – *Ergebnis: der Bildschirmschoner zeigt statt der Uhrzeit die Restzeit in Minuten, z. B. `2.5`; ein Tipp darauf schaltet zurück auf die Uhrzeit.*
 
 Alle Einzelheiten zur Anzeige stehen unter [Timer statt Uhrzeit](screensaver#timer-statt-uhrzeit).
 
+### Beispiel: Skript-Timer im Bildschirmschoner
+
+Ein eigenes Skript zählt einen Timer; gestellt wird er über eine eigene Sprachsteuerung (das Skript wertet den Sprachbefehl aus). Am Panel soll der Bildschirmschoner die Restzeit zeigen, und eine Seite soll Start und Abbrechen anbieten.
+
+1. **Datenpunkte des Skripts:** Das Skript pflegt einen An/Aus-Datenpunkt (`true`, solange der Timer läuft) und einen Daten-Datenpunkt mit der Endzeit, z. B. als Zeitstempel in Millisekunden. Welche Formate gehen, steht unter [Quelle: zwei Datenpunkte](screensaver#quelle-zwei-datenpunkte). – *Ergebnis: Sprachbefehl und Skript stellen den Timer, ganz ohne Panel.*
+2. **Bildschirmschoner:** im Schnellstart oben als Quelle **Datenpunkte oder Slot-Muster** mit diesen beiden Datenpunkten wählen. – *Ergebnis: läuft der Timer, zeigt der Bildschirmschoner statt der Uhrzeit die Restzeit.*
+3. **Seite (optional):** ein Pageitem mit einem Kanal `level.timer` anlegen und das Häkchen **Timer aus dem Screensaver verwenden** setzen. – *Ergebnis: das Item zeigt denselben Timer; **Start** schreibt Daten und An/Aus, **Abbrechen** setzt An/Aus auf falsch* (Einzelheiten in [Abschnitt 5](#5-timer-aus-dem-screensaver-verwenden)).
+
+Das Skript braucht dafür nichts Besonderes: Es liest An/Aus und Daten, egal ob die Sprachsteuerung oder das Panel sie geschrieben hat. Wer statt der beiden Datenpunkte lieber einen Kanal `level.timer` mit `ACTUAL` und `STATUS` pflegt (Betriebsart **Extern**, siehe [Datenpunkte](#2-datenpunkte)), nimmt im Bildschirmschoner die Quelle **Pageitem mit Timer-Popup** und wählt dieses Item.
+
 ## Nachschlagen
 
-Die folgenden Abschnitte beschreiben jede Art im Detail. Wer nur eine Eieruhr oder einen Alexa-Timer will, braucht sie nicht.
+Die folgenden Abschnitte beschreiben jede Art im Detail. Wer nur eine Eieruhr will, braucht sie nicht.
+
+Ein Pageitem mit einem Kanal der Rolle `level.timer` ist ein Timer: In der Liste einer Seite zeigt es seinen Namen und die Zeit, ein Tipp darauf öffnet das **Timer-Popup** mit den Feldern für Minuten und Sekunden und bis zu drei Tasten. Gezählt wird je nach Kanal im Adapter, in einem eigenen Skript, gar nicht (Wecker mit fester Uhrzeit) – oder das Item zeigt den Timer des Bildschirmschoners.
+
+Angelegt wird das Item wie jedes andere über die [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration): als **ioBroker-Kanal** einen Kanal mit der Rolle `level.timer` wählen. Welche Datenpunkte der Kanal haben kann, steht in der [Alias-Tabelle](ALIAS#leveltimer). Der Name in Liste und Popup ist der **Name** aus dem Dialog, sonst der Name des Kanals, zuletzt *Timer*. Die Timer eines Echo-Geräts kommen ohne Kanal aus, siehe [Abschnitt 7](#7-alexa-timer-alexa2).
 
 ## 1. Betriebsarten
 
@@ -110,10 +116,10 @@ Die Betriebsart sagt, **wer die Zeit zählt**. Man stellt sie nirgends ein – d
 | **Extern** | `ACTUAL` mit der Rolle `value.timer` oder `level.timer`, oder mit der Einheit `s`, `sec` oder `ms` | ein eigenes Skript |
 | **Wecker** | `ACTUAL` mit der Rolle `date`, oder mit einer anderen Rolle ohne Zeiteinheit | niemand – eine feste Uhrzeit |
 | **Vom Screensaver** | Häkchen **Timer aus dem Screensaver verwenden** im Item-Dialog | wie der Bildschirmschoner, siehe [Abschnitt 5](#5-timer-aus-dem-screensaver-verwenden) |
-| **Alexa-Timer** | Art des Items **Alexa-Timer** im Item-Dialog, kein Kanal | das Echo-Gerät, siehe [Abschnitt 7](#7-alexa-timer-alexa2) |
-| **Alexa-Wecker** | Art **Alexa-Timer**, **Anzeigen** **Wecker** | niemand – eine feste Uhrzeit am Echo, siehe [Wecker](#wecker-eines-echo-geräts) |
 
 Ein Kanal, der nur einen `SET` hat, ist ein interner Timer – außer `SET` trägt die Rolle `date`, dann ist es ein Wecker. Ein externer Timer oder Wecker, bei dem nichts beschreibbar ist und der keinen `STATUS` hat, ist eine reine Zeitanzeige: Das Popup zeigt die Zeit, hat aber keine Tasten.
+
+Ein Item der Art **Alexa-Timer** hat keinen Kanal; dort zählt das Echo-Gerät, siehe [Abschnitt 7](#7-alexa-timer-alexa2).
 
 ## 2. Datenpunkte
 
@@ -130,7 +136,7 @@ Von außen geschriebene Werte wirken nur, wenn sie bestätigt sind (`ack` = der 
 
 ## 3. Tasten
 
-Welche Tasten das Popup zeigt und ob sich die Zeit bearbeiten lässt, hängt an Betriebsart und Zustand:
+Welche Tasten das Popup zeigt und ob sich die Zeit bearbeiten lässt, hängt an Betriebsart und Zustand (die Tasten des Alexa-Timers stehen in [Abschnitt 7](#tasten-des-alexa-timers)):
 
 ![Das Popup eines laufenden internen Timers](../Pictures/popupTimer/timer-02-intern-laeuft.png)
 
@@ -153,17 +159,8 @@ Welche Tasten das Popup zeigt und ob sich die Zeit bearbeiten lässt, hängt an 
 | Vom Screensaver, läuft oder pausiert | **Abbrechen** | nein |
 | Vom Screensaver, abgelaufen | **Fertig** | nein |
 | Vom Screensaver, nicht beschreibbar | keine | nein |
-| Alexa-Timer, kein Timer | **Start** | ja |
-| Alexa-Timer, läuft | **Abbrechen** | nein |
-| Alexa-Timer, klingelt | **Fertig** | nein |
-| Alexa-Wecker (bestimmter), aus | **An** | ja |
-| Alexa-Wecker (bestimmter), an | **Aus** | nein |
-| Alexa-Wecker (bestimmter), einmalig und vorbei | keine | nein |
-| Alexa-Wecker (nächster aktiver), einer ist aktiv | **Aus** | nein |
-| Alexa-Wecker (nächster aktiver), keiner aktiv | keine, Anzeige `00:00` | nein |
-| Alexa-Wecker, gewählter Wecker gibt es nicht mehr | keine, Anzeige `00:00` | nein |
 
-Das Schließen der Zeitfelder startet nichts. Beim externen Timer und beim Wecker schreibt der Adapter die Zeit sofort in `SET` (oder `ACTUAL`); beim internen Timer merkt er sie sich und schreibt sie zusätzlich in `SET`, falls es den gibt; bei *Vom Screensaver* und beim Alexa-Timer merkt er sie sich nur. Gestartet wird erst mit **Start**.
+Das Schließen der Zeitfelder startet nichts. Beim externen Timer und beim Wecker schreibt der Adapter die Zeit sofort in `SET` (oder `ACTUAL`); beim internen Timer merkt er sie sich und schreibt sie zusätzlich in `SET`, falls es den gibt; bei *Vom Screensaver* merkt er sie sich nur. Gestartet wird erst mit **Start**.
 
 **Abbrechen** und **Löschen** setzen `STATUS` auf 0 und beim externen Timer `SET` und `ACTUAL` auf 0; `STATE` bleibt unberührt. **Fertig** tut dasselbe und setzt zusätzlich `STATE` auf `true`.
 
@@ -211,7 +208,18 @@ Was Liste und Popup darstellen können – für alle Arten gleich:
 
 ## 7. Alexa-Timer (alexa2)
 
-Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen – oder einen seiner **Wecker** (siehe [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts)). Beides kommt aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht. Der Bildschirmschoner kennt nur die Timer, keine Wecker.
+Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen – oder einen seiner **Wecker** (siehe [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts)). Beides kommt aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht. Der Bildschirmschoner kennt nur die Timer, keine Wecker; seine Quelle **Alexa-Timer (alexa2)** steht unter [Quelle: Alexa-Timer (alexa2)](screensaver#quelle-alexa-timer-alexa2).
+
+### Schnellstart: Alexa-Timer als Pageitem
+
+Voraussetzung: der Adapter alexa2 läuft, und in seiner Instanz ist die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** eingeschaltet (warum, steht unter [Voraussetzungen](#voraussetzungen)).
+
+1. Im Tab **PageConfig** eine Seite mit Pageitems öffnen und auf einen freien Platz klicken. – *Ergebnis: die Pageitem-Konfiguration ist offen.*
+2. Oben bei **Art des Items** **Alexa-Timer** wählen. – *Ergebnis: statt des Kanalfelds stehen dort **alexa2-Instanz** und **Echo-Gerät**.*
+3. Die **alexa2-Instanz** und das **Echo-Gerät** wählen. Angeboten werden nur Geräte, die Timer können. – *Ergebnis: Steht keine Warnung darunter, ist alles bereit.*
+4. **Name** eintragen (optional), z. B. *Küche*. – *Ergebnis: so heißt der Eintrag; ohne Namen *Timer*.*
+5. **Übernehmen** und im Tab **Speichern**. – *Ergebnis: die Seite zeigt den Eintrag.*
+6. **Ausprobieren:** *„Alexa, stelle einen Timer auf 3 Minuten“* zum gewählten Echo sagen. – *Ergebnis: nach etwa 10 Sekunden zeigt der Eintrag die Restzeit.* Im Popup lässt er sich mit **Abbrechen** stoppen; ist kein Timer aktiv, startet **Start** einen neuen am Echo.
 
 ### Voraussetzungen
 
@@ -270,6 +278,21 @@ Wechselt man im offenen Dialog zwischen den beiden Arten, bleiben die Felder der
 - Eine **Pause** gibt es nicht.
 - Ist die Systemsprache von ioBroker nicht Deutsch, geht der Text englisch hinaus (*set a timer for 5 minutes*). Diese Form ist noch nicht an einem Echo erprobt.
 - Den Namen eines Timers (*„Nudeltimer“*) zeigt das Panel nicht.
+- Das Schließen der Zeitfelder startet nichts: Der Adapter merkt sich die Zeit nur, gestellt wird der Timer erst mit **Start**.
+
+### Tasten des Alexa-Timers
+
+| Art und Zustand | Tasten | Zeit bearbeitbar |
+|---|---|---|
+| Alexa-Timer, kein Timer | **Start** | ja |
+| Alexa-Timer, läuft | **Abbrechen** | nein |
+| Alexa-Timer, klingelt | **Fertig** | nein |
+| Alexa-Wecker (bestimmter), aus | **An** | ja |
+| Alexa-Wecker (bestimmter), an | **Aus** | nein |
+| Alexa-Wecker (bestimmter), einmalig und vorbei | keine | nein |
+| Alexa-Wecker (nächster aktiver), einer ist aktiv | **Aus** | nein |
+| Alexa-Wecker (nächster aktiver), keiner aktiv | keine, Anzeige `00:00` | nein |
+| Alexa-Wecker, gewählter Wecker gibt es nicht mehr | keine, Anzeige `00:00` | nein |
 
 ### Mehrere Timer
 
@@ -318,9 +341,9 @@ Was der Adapter schreibt:
 
 ## Fallstricke
 
-- **Alexa-Timer:** eigene Fallstricke siehe [Abschnitt 7](#fallstricke-beim-alexa-timer).
 - **Das Item hat keine Tasten:** Entweder ist nichts beschreibbar und es gibt keinen `STATUS` (reine Anzeige), oder das Item nutzt den Timer des Bildschirmschoners, der keinen vollständigen Timer hat – das Log nennt es einmal. Auch ein Kreis (das Item ist zugleich Quelle des Bildschirmschoner-Timers) lässt das Item ohne Tasten.
 - **Das Skript bekommt den Start nicht mit:** Ohne `STATUS` gibt es bei externem Timer und Wecker keine Start-, Pause- und An/Aus-Tasten. Den Datenpunkt anlegen, beschreibbar und mit `ack` lesen.
 - **Nach einem Neustart zählt der interne Timer nicht weiter.** Er lebt nur im Adapter; wer das braucht, zählt im Skript und gibt `ACTUAL` und `STATUS` an den Adapter.
 - **Das Popup zeigt `99:59`, obwohl mehr Zeit bleibt:** Die beiden Felder sind auf 99 Minuten begrenzt; die Liste zeigt mit `HH:MM:SS` die volle Zeit.
 - **`STATE` kommt nicht:** Nur der Ablauf eines internen Timers und die Taste **Fertig** setzen ihn. **Abbrechen** und **Löschen** sollen gerade keinen Ablauf melden.
+- **Alexa-Timer:** eigene Fallstricke siehe [Abschnitt 7](#fallstricke-beim-alexa-timer).
