@@ -2425,6 +2425,7 @@ export class PageItem extends BaseTriggeredPage {
             id => panel.statesControler.getObjectAsync(id),
             key => this.library.getTranslation(key),
             this.library.getLocalLanguage(),
+            panel.info.nspanel.model,
         );
         if (!isLatestDeviceDetailsRun(panel, run) || panel.getActivePage() !== parent) {
             return;

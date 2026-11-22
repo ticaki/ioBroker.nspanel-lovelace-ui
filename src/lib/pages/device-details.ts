@@ -7,8 +7,10 @@
  * detail page is shown (Page.onVisibilityChange), a device may have far more than 100 states.
  */
 import { Color, type RGB } from '../const/Color';
+import { charAdvance, ELLIPSIS, ELLIPSIS_FALLBACK, hasGlyph } from '../const/text-width';
 import type { NSPanel } from '../types/NSPanel';
 import type { PageBase } from '../types/pages';
+import type { NSpanelModel } from '../types/types';
 import {
     DEVICE_DETAIL_ROW_ROLE,
     deviceDetailEntryOfRow,
@@ -110,18 +112,112 @@ function nameOfCommon(name: ioBroker.StringOrTranslated | undefined, language: i
     return '';
 }
 
+/** font of the name field of cardEntities (tEntity1..n): font 0 = Noto Sans 24 */
+export const DEVICE_DETAIL_NAME_FONT = 0;
+
+/** the name field of a cardEntities row: width in px and the lines the field shows */
+export interface DeviceDetailNameField {
+    width: number;
+    lines: number;
+}
+
+/**
+ * The name field `tEntity` of cardEntities per model, measured with the font tables of the model (text-width.ts,
+ * web-l = eu, web-p = us-p):
+ * - eu / us-l: 184 px, 30 px high, `isbr=0` - one line,
+ * - us-p: 115 px, 53 px high, `isbr=1` - the Nextion wraps character by character into two lines (no CR LF from the
+ *   adapter, the text only has to fit into the two wrapped lines),
+ * - web-l: the eu field (184 px, one line) - the web panel has more room, the name is never cut there,
+ * - web-p: the us-p width in ONE line - the web panel does not wrap the name (`white-space: nowrap`, cut at the
+ *   field edge), 115 px of font 0 (24 px) are about 86 px at the 18 px of the web panel, inside its name box
+ *   (121 px on a text row, more on the other rows) even with a wider fallback font.
+ */
+export const DEVICE_DETAIL_NAME_FIELD: Readonly<Record<NSpanelModel, DeviceDetailNameField>> = {
+    eu: { width: 184, lines: 1 },
+    'us-l': { width: 184, lines: 1 },
+    'us-p': { width: 115, lines: 2 },
+    'web-l': { width: 184, lines: 1 },
+    'web-p': { width: 115, lines: 1 },
+};
+
+/**
+ * true if the text fits into the field: the characters are wrapped one by one into lines of the field width (the
+ * Nextion `isbr` wraps character by character, a single line is the same with one line)
+ *
+ * @param text the text
+ * @param model panel model
+ * @param field the name field
+ * @returns true if every character is drawn
+ */
+function fitsNameField(text: string, model: NSpanelModel, field: DeviceDetailNameField): boolean {
+    let lines = 1;
+    let width = 0;
+    for (const ch of text) {
+        const advance = charAdvance(ch.codePointAt(0) ?? 0, DEVICE_DETAIL_NAME_FONT, model);
+        if (width + advance > field.width) {
+            if (width === 0 || lines >= field.lines) {
+                return false;
+            }
+            lines++;
+            width = 0;
+        }
+        width += advance;
+    }
+    return true;
+}
+
+/**
+ * The name of a row with its suffix (second name line of the admin) on one line: `<name> <suffix>`. If that does not
+ * fit the name field of the model, only the name is shortened - with an ellipsis ('…' if the font has it, else
+ * '...', like fitText) and without spaces in front of it - so that the suffix stays visible completely:
+ * "Luftfeuchtigkeit Ext 100" on eu (184 px) → "Luftfeuchti... Ext 100". If not even one character of the name fits in front of
+ * ellipsis and suffix, the row shows the suffix alone (cut by the field as before when it is too wide on its own).
+ *
+ * @param name name of the row
+ * @param suffix the suffix, '' = none (the name is returned unchanged, it is never shortened here)
+ * @param model panel model
+ * @returns the text of the name field
+ */
+export function deviceDetailNameWithSuffix(name: string, suffix: string, model: NSpanelModel): string {
+    if (!suffix) {
+        return name;
+    }
+    const field = DEVICE_DETAIL_NAME_FIELD[model];
+    const full = `${name} ${suffix}`;
+    if (fitsNameField(full, model, field)) {
+        return full;
+    }
+    const ellipsis = hasGlyph(ELLIPSIS.codePointAt(0) ?? 0, DEVICE_DETAIL_NAME_FONT, model)
+        ? ELLIPSIS
+        : ELLIPSIS_FALLBACK;
+    const chars = Array.from(name);
+    for (let n = chars.length - 1; n > 0; n--) {
+        const base = chars.slice(0, n).join('').trimEnd();
+        if (!base) {
+            break;
+        }
+        const text = `${base}${ellipsis} ${suffix}`;
+        if (fitsNameField(text, model, field)) {
+            return text;
+        }
+    }
+    return suffix;
+}
+
 /**
  * The names of the rows: the translated name of the mask entry, a row without entry the name of its state (else the
  * last part of its id). The second name line of the admin ({@link deviceDetailSubNames}: an own text of the row,
  * else an automatic one for rows that share their name with another row, e.g. Relay0.temperatureC and
  * Ext.temperature100C) is appended on the same line with a space - the name field of the panel is a single line
- * (30 px high on eu / us-l).
+ * (30 px high on eu / us-l); if both do not fit the name field of the model, the name is shortened so that the
+ * appended text stays visible ({@link deviceDetailNameWithSuffix}).
  *
  * @param deviceId id of the device
  * @param entries the rows
  * @param commons common of the state of every row, same order
  * @param translate translates a key (library.getTranslation)
  * @param language the language of the system
+ * @param model model of the panel (width of the name field)
  * @returns the names, same order
  */
 export function deviceDetailRowNames(
@@ -130,6 +226,7 @@ export function deviceDetailRowNames(
     commons: readonly (DeviceDetailStateCommon | undefined)[],
     translate: (key: string) => string,
     language: ioBroker.Languages,
+    model: NSpanelModel,
 ): string[] {
     const rows = entries.map((e, index) => ({
         id: e.id,
@@ -139,10 +236,7 @@ export function deviceDetailRowNames(
         subName: e.subName,
     }));
     const subs = deviceDetailSubNames(deviceId, rows);
-    return rows.map((r, index) => {
-        const text = subs[index]?.text ?? '';
-        return text ? `${r.name} ${text}` : r.name;
-    });
+    return rows.map((r, index) => deviceDetailNameWithSuffix(r.name, subs[index]?.text ?? '', model));
 }
 
 /**
@@ -292,6 +386,7 @@ export function deviceDetailPageConfig(
  * @param getObject reads an object (states controller, cached)
  * @param translate translates a key (library.getTranslation)
  * @param language the language of the system
+ * @param model model of the panel (width of the name field)
  * @returns headline and the page items of the rows - rows whose state no longer exists are left out
  */
 export async function deviceDetailRows(
@@ -299,6 +394,7 @@ export async function deviceDetailRows(
     getObject: (id: string) => Promise<ioBroker.Object | null>,
     translate: (key: string) => string,
     language: ioBroker.Languages,
+    model: NSpanelModel,
 ): Promise<{ headline: string; rows: NSPanel.PageItemDataItemsOptions[] }> {
     const device = await getObject(details.deviceId);
     const headline = nameOfCommon(device?.common?.name, language) || details.deviceId.split('.').pop() || '';
@@ -312,7 +408,7 @@ export async function deviceDetailRows(
         entries.push(entry);
         commons.push(obj.common);
     }
-    const names = deviceDetailRowNames(details.deviceId, entries, commons, translate, language);
+    const names = deviceDetailRowNames(details.deviceId, entries, commons, translate, language, model);
     const rows = entries.map((entry, index) =>
         deviceDetailRowItem(details.deviceId, entry, commons[index], names[index]),
     );

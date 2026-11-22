@@ -197,6 +197,7 @@ describe('lib/pages/pageItem - openDeviceDetails', () => {
         const parent: Record<string, any> = { id: parentId, name: 'p', alwaysOn: 'none', directChildPage: undefined };
         const panel: Record<string, any> = {
             active: parent,
+            info: { nspanel: { model: 'eu' } },
             statesControler: {
                 getObjectAsync: async (id: string): Promise<unknown> => {
                     if (gate) {
