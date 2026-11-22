@@ -145,17 +145,19 @@ export function pruneStoppedTimers(
  *
  * @param seconds duration, above 0
  * @param language system language of ioBroker
- * @returns e.g. `stelle einen Timer auf 5 Minuten`
+ * @returns e.g. `stelle einen Timer auf 5 Minuten`, singular for exactly 1
  */
 export function alexaTimerCommand(seconds: number, language: string): string {
     const whole = Math.max(1, Math.round(seconds));
     const minutes = whole % 60 === 0 ? whole / 60 : undefined;
     if (language === 'de') {
         return minutes !== undefined
-            ? `stelle einen Timer auf ${minutes} Minuten`
-            : `stelle einen Timer auf ${whole} Sekunden`;
+            ? `stelle einen Timer auf ${minutes} ${minutes === 1 ? 'Minute' : 'Minuten'}`
+            : `stelle einen Timer auf ${whole} ${whole === 1 ? 'Sekunde' : 'Sekunden'}`;
     }
-    return minutes !== undefined ? `set a timer for ${minutes} minutes` : `set a timer for ${whole} seconds`;
+    return minutes !== undefined
+        ? `set a timer for ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
+        : `set a timer for ${whole} ${whole === 1 ? 'second' : 'seconds'}`;
 }
 
 /**

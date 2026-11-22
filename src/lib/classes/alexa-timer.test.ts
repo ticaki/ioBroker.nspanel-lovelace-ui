@@ -237,6 +237,12 @@ describe('alexa-timer', () => {
             expect(alexaTimerCommand(120, 'en')).to.equal('set a timer for 2 minutes');
             expect(alexaTimerCommand(75, 'fr')).to.equal('set a timer for 75 seconds');
         });
+        it('singular for exactly 1', () => {
+            expect(alexaTimerCommand(60, 'de')).to.equal('stelle einen Timer auf 1 Minute');
+            expect(alexaTimerCommand(1, 'de')).to.equal('stelle einen Timer auf 1 Sekunde');
+            expect(alexaTimerCommand(60, 'en')).to.equal('set a timer for 1 minute');
+            expect(alexaTimerCommand(1, 'en')).to.equal('set a timer for 1 second');
+        });
     });
 
     describe('alexaCountdownView', () => {
@@ -353,7 +359,7 @@ describe('alexa-timer', () => {
             const timer = new AlexaTimer({ instance: 'alexa2.0', serial: 'G091' }, f.host);
             await timer.ready;
             await timer.start(60);
-            expect(f.writes[0].val).to.equal('set a timer for 1 minutes');
+            expect(f.writes[0].val).to.equal('set a timer for 1 minute');
             await timer.delete();
             await f.advance(60_000);
             expect(f.writes).to.have.length(1);
