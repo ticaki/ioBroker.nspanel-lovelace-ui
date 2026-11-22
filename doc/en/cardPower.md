@@ -113,15 +113,17 @@ The **Speed scale** section controls the animation — it runs faster the greate
 
 | Field | Effect |
 |---|---|
-| **Minimum power** | The power at which the dot **stands still**. Default 0 — with it the dot is motionless at 0 W. |
-| **Maximum power** | The power at which the animation runs at **100 %**, that is fastest. Default 10000. In between the speed grows evenly with the power. |
+| **Minimum power** | The power from which the dot starts to move. Default 0. Both limits count with their **amount**: a pair of −4000 … 4000 for a battery is the same as 0 … 4000. |
+| **Maximum power** | The power at which the animation runs at **100 %**, that is fastest. Default 10000. In between the speed grows evenly with the amount of the power. |
 | **Reverse flow direction** | Reverses the direction of travel — for flows whose state carries the sign the other way round. |
 
-The direction of travel comes from the **sign**: a negative measurement makes the dot run the other way, and the checkbox *Reverse flow direction* reverses both.
+**At zero the dot always stands still**, whatever the two limits are. The direction of travel comes from the **sign** alone: a negative measurement makes the dot run the other way, and the checkbox *Reverse flow direction* reverses both.
+
+The sign is a **direction on the screen**, not a flow towards the house: a positive value moves the dot to the left in landscape and upwards in portrait — away from the house for the three tiles on the left, towards it for the three on the right.
 
 > The label **Maximum power** effectively exists twice: here for the animation, further up as *maximum power for color* for the gradient. They can only be told apart by the section headings *Color scale* and *Speed scale*.
 
-> **The speed is not capped.** Above the *Maximum power* the adapter keeps computing beyond 100 %, below the minimum into the negative — where the direction of travel flips. These two limits apply to the **raw value** of the state as well.
+> **Above the *Maximum power* the adapter keeps computing**, but limits the value to the **±120** the display understands. Below the minimum power the dot stands still instead of running backwards. Both limits apply to the **raw value** of the state.
 
 ## 6. The two house values
 
@@ -170,6 +172,7 @@ If a page that still comes from a script is to be managed here, the way leads th
 - **The gradient is red–yellow–green and cannot be configured.** Green sits on the *best value*, red on **both** ends. If you only want a rise from red to green, set the *best value* to the maximum (example 2).
 - **Best value and maximum power on the same value are allowed but delicate.** If the measurement hits that value exactly, the adapter computes a division by zero and the colour is undefined for that cycle. A small gap between the two fields avoids it.
 - **All limits for colour and speed apply to the raw value** of the state, not to the unit the panel shows.
+- **Two positive limits are a dead band.** With a *Minimum power* above 0 the dot stands still for every amount below it — wanted for flows that should only be shown from a minimum power on.
 - **Without an icon colour and without the colour scale the icon is white.** On pages from the old table that is the normal case when the checkbox *Color depends on value* was never touched there.
 - **A measurement outside the colour scale stretches it** instead of sticking at the end — the colours then shift for all other values too.
 - **"Maximum power" appears twice in the dialog** — once for the colour, once for the speed. Only the section heading tells them apart.

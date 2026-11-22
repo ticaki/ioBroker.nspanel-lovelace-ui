@@ -1184,11 +1184,21 @@ class StatesControler extends import_library.BaseClass {
    * @param options.triggered - If true, the returned object will be of type "triggered" instead of "state".
    * @param options.writeable - If true, only writeable states will be considered.
    * @param options.commonType - The expected common type of the state, either a single type or an array of types.
+   * @param options.warnIfNoStates - false: no warning when dpInit has no states at all (default true).
    * @returns A promise that resolves to a `DataItemsOptions` object if a matching state is found,
    * otherwise `undefined`.
    */
   async getIdbyAuto(options) {
-    const { dpInit, role = "", enums = "", regexp, triggered, writeable, commonType = "" } = options;
+    const {
+      dpInit,
+      role = "",
+      enums = "",
+      regexp,
+      triggered,
+      writeable,
+      commonType = "",
+      warnIfNoStates = true
+    } = options;
     const status = { ok: true };
     let item;
     if (triggered) {
@@ -1212,13 +1222,13 @@ class StatesControler extends import_library.BaseClass {
         commonType
       };
     }
-    const data = await this.getDataItemsFromAuto(dpInit, { item }, "", enums, status, true);
+    const data = await this.getDataItemsFromAuto(dpInit, { item }, "", enums, status, true, warnIfNoStates);
     if (status.ok && data && data.item && data.item.dp) {
       return item;
     }
     return void 0;
   }
-  async getDataItemsFromAuto(dpInit, data, appendix, enums = "", status, ignoreMultiple = false) {
+  async getDataItemsFromAuto(dpInit, data, appendix, enums = "", status, ignoreMultiple = false, warnIfNoStates = true) {
     if (dpInit === "" && enums === void 0) {
       return data;
     }
@@ -1230,14 +1240,22 @@ class StatesControler extends import_library.BaseClass {
           continue;
         }
         if (typeof t === "object" && !("type" in t)) {
-          data[i] = await this.getDataItemsFromAuto(dpInit, t, appendix, enums, status);
+          data[i] = await this.getDataItemsFromAuto(
+            dpInit,
+            t,
+            appendix,
+            enums,
+            status,
+            false,
+            warnIfNoStates
+          );
         } else if (typeof t === "object" && "type" in t) {
           const d = t;
           let found = false;
           if (d.type !== "triggered" && d.type !== "state" || !d.mode || d.mode !== "auto") {
             continue;
           }
-          if (tempObjectDB.keys.length === 0) {
+          if (tempObjectDB.keys.length === 0 && warnIfNoStates) {
             this.log.warn(`Dont finds states for ${dpInit} dpinit is ${typeof dpInit}`);
           }
           for (const role of Array.isArray(d.role) ? d.role : [d.role || ""]) {

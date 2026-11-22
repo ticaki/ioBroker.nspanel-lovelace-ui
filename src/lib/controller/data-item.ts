@@ -12,6 +12,23 @@ import { matchesStatesToken, resolveStatesText, resolveStatesToken, statesList }
  */
 export const DISPLAY_COMMON_KEYS = ['states', 'unit', 'min', 'max', 'step', 'name'] as const;
 
+/**
+ * States of a panel under `<namespace>.panels.<panel>.cmd.` that a data item of the same panel uses through the
+ * internal state `<panel>/cmd/<name>` - the adapter does not subscribe its own states, the internal state shows and
+ * switches the relays / restarts Tasmota.
+ */
+export const PANEL_CMD_FORWARD = ['power1', 'power2', 'TasmotaRestart'] as const;
+
+type DataItemsOptionsInternal = Extract<NSPanel.DataItemsOptions, { type: 'internal' }>;
+
+/**
+ * @param v candidate
+ * @returns true if v is one of {@link PANEL_CMD_FORWARD}
+ */
+function isPanelCmdForward(v: string): v is (typeof PANEL_CMD_FORWARD)[number] {
+    return PANEL_CMD_FORWARD.some(cmd => cmd === v);
+}
+
 export class Dataitem extends BaseClass {
     #compiledReadFn?: (
         val: unknown,
@@ -58,6 +75,14 @@ export class Dataitem extends BaseClass {
                 }
                 break;
             }
+            case 'state':
+            case 'triggered': {
+                const forwarded = this.forwardPanelCmd(this.options);
+                if (forwarded) {
+                    this.options = forwarded;
+                }
+                break;
+            }
         }
         switch (this.options.type) {
             case 'const':
@@ -77,6 +102,49 @@ export class Dataitem extends BaseClass {
                 this.type = undefined;
             }
         }
+    }
+    /**
+     * A state of this panel from {@link PANEL_CMD_FORWARD} becomes the internal state `cmd/<name>` - states of
+     * other panels stay as they are.
+     *
+     * @param options state or triggered options
+     * @returns the internal options or null if the state is not forwarded
+     */
+    private forwardPanelCmd(
+        options: Extract<NSPanel.DataItemsOptions, { type: 'state' | 'triggered' }>,
+    ): DataItemsOptionsInternal | null {
+        const panelName: unknown = this.parent?.basePanel?.name;
+        if (typeof panelName !== 'string' || !panelName || typeof options.dp !== 'string') {
+            return null;
+        }
+        const prefix = `${this.adapter.namespace}.panels.${panelName}.cmd.`;
+        if (!options.dp.startsWith(prefix)) {
+            return null;
+        }
+        const cmd = options.dp.slice(prefix.length);
+        if (!isPanelCmdForward(cmd)) {
+            return null;
+        }
+        const result: DataItemsOptionsInternal = { type: 'internal', dp: `cmd/${cmd}` };
+        if (options.name !== undefined) {
+            result.name = options.name;
+        }
+        if (options.scale !== undefined) {
+            result.scale = options.scale;
+        }
+        if (options.constants !== undefined) {
+            result.constants = options.constants;
+        }
+        if (options.read !== undefined) {
+            result.read = options.read;
+        }
+        if (options.write !== undefined) {
+            result.write = options.write;
+        }
+        if (options.type === 'triggered' && options.change !== undefined) {
+            result.change = options.change;
+        }
+        return result;
     }
     /**
      * Creates a Dataitem and initialises it in one step.

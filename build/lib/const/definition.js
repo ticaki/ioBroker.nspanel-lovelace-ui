@@ -436,6 +436,18 @@ const genericStateObjects = {
           },
           native: {}
         },
+        TasmotaRestart: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.TasmotaRestart",
+            type: "boolean",
+            role: "button",
+            read: false,
+            write: true
+          },
+          native: {}
+        },
         detachLeft: {
           _id: "",
           type: "state",
@@ -2153,8 +2165,7 @@ const InternalStates = {
         role: "switch",
         read: true,
         write: true
-      },
-      noTrigger: true
+      }
     },
     "cmd/isBuzzerAllowed": {
       val: true,
@@ -2176,8 +2187,7 @@ const InternalStates = {
         role: "switch",
         read: true,
         write: true
-      },
-      noTrigger: true
+      }
     },
     "cmd/bigIconRight": {
       val: true,

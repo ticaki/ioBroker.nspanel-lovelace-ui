@@ -29,6 +29,7 @@ var data_item_exports = {};
 __export(data_item_exports, {
   DISPLAY_COMMON_KEYS: () => DISPLAY_COMMON_KEYS,
   Dataitem: () => Dataitem,
+  PANEL_CMD_FORWARD: () => PANEL_CMD_FORWARD,
   isDataItem: () => isDataItem
 });
 module.exports = __toCommonJS(data_item_exports);
@@ -38,6 +39,10 @@ var import_function_and_const = require("../types/function-and-const");
 var import_common_states = require("../const/common-states");
 var _compiledReadFn, _compiledWriteFn, _frozenCommon, _liveCommon, _mergedCommon, _tokenWarned;
 const DISPLAY_COMMON_KEYS = ["states", "unit", "min", "max", "step", "name"];
+const PANEL_CMD_FORWARD = ["power1", "power2", "TasmotaRestart"];
+function isPanelCmdForward(v) {
+  return PANEL_CMD_FORWARD.some((cmd) => cmd === v);
+}
 const _Dataitem = class _Dataitem extends import_library.BaseClass {
   /**
    * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
@@ -78,6 +83,14 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
         }
         break;
       }
+      case "state":
+      case "triggered": {
+        const forwarded = this.forwardPanelCmd(this.options);
+        if (forwarded) {
+          this.options = forwarded;
+        }
+        break;
+      }
     }
     switch (this.options.type) {
       case "const":
@@ -96,6 +109,48 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
         this.type = void 0;
       }
     }
+  }
+  /**
+   * A state of this panel from {@link PANEL_CMD_FORWARD} becomes the internal state `cmd/<name>` - states of
+   * other panels stay as they are.
+   *
+   * @param options state or triggered options
+   * @returns the internal options or null if the state is not forwarded
+   */
+  forwardPanelCmd(options) {
+    var _a, _b;
+    const panelName = (_b = (_a = this.parent) == null ? void 0 : _a.basePanel) == null ? void 0 : _b.name;
+    if (typeof panelName !== "string" || !panelName || typeof options.dp !== "string") {
+      return null;
+    }
+    const prefix = `${this.adapter.namespace}.panels.${panelName}.cmd.`;
+    if (!options.dp.startsWith(prefix)) {
+      return null;
+    }
+    const cmd = options.dp.slice(prefix.length);
+    if (!isPanelCmdForward(cmd)) {
+      return null;
+    }
+    const result = { type: "internal", dp: `cmd/${cmd}` };
+    if (options.name !== void 0) {
+      result.name = options.name;
+    }
+    if (options.scale !== void 0) {
+      result.scale = options.scale;
+    }
+    if (options.constants !== void 0) {
+      result.constants = options.constants;
+    }
+    if (options.read !== void 0) {
+      result.read = options.read;
+    }
+    if (options.write !== void 0) {
+      result.write = options.write;
+    }
+    if (options.type === "triggered" && options.change !== void 0) {
+      result.change = options.change;
+    }
+    return result;
   }
   /**
    * Creates a Dataitem and initialises it in one step.
@@ -582,6 +637,7 @@ function isDataItem(F) {
 0 && (module.exports = {
   DISPLAY_COMMON_KEYS,
   Dataitem,
+  PANEL_CMD_FORWARD,
   isDataItem
 });
 //# sourceMappingURL=data-item.js.map

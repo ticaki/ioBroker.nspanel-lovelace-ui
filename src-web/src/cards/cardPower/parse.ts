@@ -30,7 +30,11 @@ export interface PowerSlot {
     name: string;
     /** value with unit, e.g. `3502.5 kWh` */
     value: string;
-    /** -120 … 120; positive = flow towards the house, negative = away from it, 0 = no flow */
+    /**
+     * -120 … 120, 0 = no flow. Like the HMI the sign is a screen direction, not a flow to/from the
+     * house: positive moves the dot to the left (landscape) / up (portrait), i.e. away from the
+     * house for the items 0…2 and towards it for the items 3…5; negative the other way
+     */
     speed: number;
     /** nothing to draw (adapter sends an item without data, readme uses `delete`) */
     empty: boolean;

@@ -257,6 +257,8 @@ export class Panel extends BaseClass {
     };
     screenSaverDoubleClick: boolean = true;
     detach: { left: boolean; right: boolean } = { left: false, right: false };
+    /** relay states from stat/POWER1/2 - null until Tasmota reported them */
+    relay: { power1: boolean | null; power2: boolean | null } = { power1: null, power2: null };
     public persistentPageItems: Record<string, PageItem> = {};
 
     info: Types.PanelInfo = {
@@ -870,6 +872,12 @@ export class Panel extends BaseClass {
             `panels.${this.name}.cmd.buzzer`,
             '',
             definition.genericStateObjects.panel.panels.cmd.buzzer,
+        );
+
+        await this.library.writedp(
+            `panels.${this.name}.cmd.TasmotaRestart`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.TasmotaRestart,
         );
 
         state = this.library.readdb(`panels.${this.name}.cmd.detachRight`);
@@ -1580,21 +1588,11 @@ export class Panel extends BaseClass {
             if (command) {
                 switch (command) {
                     case 'stat/POWER2': {
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.power2`,
-                            message === 'ON',
-                            definition.genericStateObjects.panel.panels.cmd.power2,
-                        );
-                        await this.statesControler.setInternalState(`${this.name}/cmd/power2`, message === 'ON', true);
+                        await this.onRelayState('power2', message === 'ON');
                         break;
                     }
                     case 'stat/POWER1': {
-                        await this.library.writedp(
-                            `panels.${this.name}.cmd.power1`,
-                            message === 'ON',
-                            definition.genericStateObjects.panel.panels.cmd.power1,
-                        );
-                        await this.statesControler.setInternalState(`${this.name}/cmd/power1`, message === 'ON', true);
+                        await this.onRelayState('power1', message === 'ON');
                         break;
                     }
                     case 'stat/STATUS10': {
@@ -1686,6 +1684,16 @@ export class Panel extends BaseClass {
                 }
                 case 'power2': {
                     this.sendToTasmota(`${this.topic}/cmnd/POWER2`, state.val ? 'ON' : 'OFF');
+                    break;
+                }
+                case 'TasmotaRestart': {
+                    // a button: every write without ack fires, the value does not matter
+                    await this.restartTasmota();
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.TasmotaRestart`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.TasmotaRestart,
+                    );
                     break;
                 }
                 case 'mainNavigationPoint': {
@@ -3009,7 +3017,50 @@ export class Panel extends BaseClass {
         await this.writeInfo();
     }
 
-    onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
+    /**
+     * Restarts Tasmota and sets the panel offline - from the internal state `cmd/TasmotaRestart` and from the
+     * state `panels.<name>.cmd.TasmotaRestart`.
+     */
+    async restartTasmota(): Promise<void> {
+        if (this.isVirtual) {
+            this.log.info('A web panel has no Tasmota to restart');
+            return;
+        }
+        this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
+        this.log.info('Going offline because of Tasmota restart!');
+        this.isOnline = false;
+        await this.setStatus('offline');
+    }
+
+    /**
+     * A relay state reported by Tasmota (stat/POWER1/2): kept for the internal state, written to
+     * `panels.<name>.cmd.powerX` and to the internal state `<name>/cmd/powerX`.
+     *
+     * @param relay the relay
+     * @param on relay is on
+     */
+    async onRelayState(relay: 'power1' | 'power2', on: boolean): Promise<void> {
+        this.relay[relay] = on;
+        await this.library.writedp(
+            `panels.${this.name}.cmd.${relay}`,
+            on,
+            definition.genericStateObjects.panel.panels.cmd[relay],
+        );
+        await this.statesControler.setInternalState(`${this.name}/cmd/${relay}`, on, true);
+    }
+
+    onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> =>
+        this.handleInternalCommand(id, state);
+
+    /**
+     * Handles a command to an internal state `<name>/…` (state without ack) and gives the value of the internal
+     * state (state undefined).
+     *
+     * @param id internal state id
+     * @param state the new state or undefined to read the value
+     * @returns the value of the internal state or null
+     */
+    async handleInternalCommand(id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> {
         if (!id.startsWith(this.name)) {
             return null;
         }
@@ -3216,14 +3267,7 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/TasmotaRestart': {
-                    if (this.isVirtual) {
-                        this.log.info('A web panel has no Tasmota to restart');
-                        break;
-                    }
-                    this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
-                    this.log.info('Going offline because of Tasmota restart!');
-                    this.isOnline = false;
-                    await this.setStatus('offline');
+                    await this.restartTasmota();
                     break;
                 }
                 case 'cmd/screenSaverRotationTime': {
@@ -3358,6 +3402,12 @@ export class Panel extends BaseClass {
             }
         }
         switch (token) {
+            case 'cmd/power1': {
+                return this.relay.power1;
+            }
+            case 'cmd/power2': {
+                return this.relay.power2;
+            }
             case 'cmd/bigIconLeft': {
                 return this.info.nspanel.bigIconLeft;
             }
@@ -3461,7 +3511,7 @@ export class Panel extends BaseClass {
             }
         }
         return null;
-    };
+    }
 
     /**
      * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.

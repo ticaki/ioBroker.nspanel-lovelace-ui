@@ -55,15 +55,19 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
+  alexaShowsAlarm: () => alexaShowsAlarm,
   assignMissingItemIds: () => assignMissingItemIds,
   chartDefaults: () => chartDefaults,
   checkClockTimerPatterns: () => checkClockTimerPatterns,
   clockTimerChannels: () => clockTimerChannels,
   clockTimerItemChoice: () => clockTimerItemChoice,
+  clockTimerSource: () => clockTimerSource,
+  clockTimerUsesAlexa: () => clockTimerUsesAlexa,
   clockTimerUsesPageItem: () => clockTimerUsesPageItem,
   clockTimerUsesSlots: () => clockTimerUsesSlots,
   conditionExpressionText: () => conditionExpressionText,
   conditionValueText: () => conditionValueText,
+  copyAlexaTimerConfig: () => copyAlexaTimerConfig,
   dropScriptNavigation: () => dropScriptNavigation,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
@@ -79,6 +83,8 @@ __export(adminShareConfig_exports, {
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
   hardwarePanelModels: () => hardwarePanelModels,
+  isAlexaTimerComplete: () => isAlexaTimerComplete,
+  isAlexaTimerConfig: () => isAlexaTimerConfig,
   isAsciiOnlyTextSize: () => isAsciiOnlyTextSize,
   isButtonNavigationTarget: () => isButtonNavigationTarget,
   isClockTimerComplete: () => isClockTimerComplete,
@@ -524,8 +530,37 @@ function migrateScreensaverNotify(entries, list) {
   });
   return { entries: converted, list: out, changed };
 }
+function isAlexaTimerConfig(value) {
+  return isRawItemObject(value) && typeof value.instance === "string" && typeof value.serial === "string" && (value.show === void 0 || value.show === "timer" || value.show === "alarm") && (value.alarmId === void 0 || typeof value.alarmId === "string");
+}
+function copyAlexaTimerConfig(config) {
+  const out = { instance: config.instance, serial: config.serial };
+  if (config.show === "alarm") {
+    out.show = "alarm";
+    if (config.alarmId !== void 0) {
+      out.alarmId = config.alarmId;
+    }
+  }
+  return out;
+}
+function alexaShowsAlarm(config) {
+  return config.show === "alarm";
+}
+function isAlexaTimerComplete(config) {
+  return !!config && /^alexa2\.\d+$/.test(config.instance) && /^[^.*\s]+$/.test(config.serial) && !!config.serial.trim() && // a fixed alarm must be picked
+  (config.show !== "alarm" || config.alarmId === void 0 || /^[^.*\s]+$/.test(config.alarmId));
+}
+function clockTimerSource(timer) {
+  if (timer.alexa !== void 0) {
+    return "alexa";
+  }
+  return timer.itemId !== void 0 ? "item" : "states";
+}
 function clockTimerUsesPageItem(timer) {
-  return timer.itemId !== void 0;
+  return clockTimerSource(timer) === "item";
+}
+function clockTimerUsesAlexa(timer) {
+  return clockTimerSource(timer) === "alexa";
 }
 function isCountdownChannel(actual, hasStatus) {
   if (!actual) {
@@ -678,6 +713,9 @@ function clockTimerUsesSlots(timer) {
 }
 function isClockTimerComplete(timer) {
   var _a, _b;
+  if (timer.alexa !== void 0) {
+    return isAlexaTimerComplete(timer.alexa);
+  }
   if (timer.itemId !== void 0) {
     return !!timer.itemId;
   }
@@ -2241,15 +2279,19 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
+  alexaShowsAlarm,
   assignMissingItemIds,
   chartDefaults,
   checkClockTimerPatterns,
   clockTimerChannels,
   clockTimerItemChoice,
+  clockTimerSource,
+  clockTimerUsesAlexa,
   clockTimerUsesPageItem,
   clockTimerUsesSlots,
   conditionExpressionText,
   conditionValueText,
+  copyAlexaTimerConfig,
   dropScriptNavigation,
   emptyChannelValueConfig,
   emptyChartEntry,
@@ -2265,6 +2307,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   findPowerEntryForScript,
   formatEntryNumber,
   hardwarePanelModels,
+  isAlexaTimerComplete,
+  isAlexaTimerConfig,
   isAsciiOnlyTextSize,
   isButtonNavigationTarget,
   isClockTimerComplete,

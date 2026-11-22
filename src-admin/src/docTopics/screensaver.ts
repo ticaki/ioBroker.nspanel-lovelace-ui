@@ -35,6 +35,11 @@ export const screensaverTopics = {
         de: 'Quelle: Pageitem mit Timer-Popup',
         en: 'Source: page item with timer popup',
     },
+    'screensaver.timerAlexa': {
+        page: 'screensaver',
+        de: 'Quelle: Alexa-Timer (alexa2)',
+        en: 'Source: Alexa timer (alexa2)',
+    },
     'screensaver.weather': { page: 'screensaver', de: '11. Wetter', en: '11. Weather' },
     'screensaver.options': {
         page: 'screensaver',

@@ -195,6 +195,11 @@ beide Seiten dieselbe Struktur vorfinden.
 5. Zum Schluss **`## Fallstricke`** (EN `## Pitfalls`), ohne Nummer: je ein fetter Merksatz plus Erklärung.
    Bekannte Fehler und Abweichungen zwischen Oberfläche und Verhalten gehören hierhin, nicht in den Fließtext.
 
+- **Ausnahme Einstieg:** Seiten, deren Thema Einsteigern schwerfällt, dürfen zwischen „Inhalt:“-Liste und `## 1.`
+  einen unnummerierten Einstieg haben: Erklärung in Alltagssprache, Entscheidungshilfe „Ich möchte … → nimm …“ und
+  Schnellstarts mit nummerierten Schritten. Die nummerierten Abschnitte danach bleiben der Nachschlageteil; ihre
+  Nummern und Anker ändern sich dadurch nicht. Beispiel: `popupTimer.md`.
+
 - **Felder als Tabelle** `| Feld | Bedeutung |` — die Spalte *Feld* trägt die Beschriftung aus dem Admin in
   Fettschrift. Was der Admin **nicht** anzeigt (Grenzen, Reihenfolge, Verhalten beim Speichern), steht in der
   Spalte *Bedeutung*, nicht in einer Fußnote.

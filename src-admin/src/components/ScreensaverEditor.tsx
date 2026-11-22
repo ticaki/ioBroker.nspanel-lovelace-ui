@@ -54,6 +54,7 @@ import ScreensaverNotifyListDialog from './ScreensaverNotifyListDialog';
 import IconSelect from '../IconSelect';
 import { commonNameText, screensaverEntryObjectIds, screensaverItemLabel } from '../screensaverItemLabel';
 import { loadAdapterColorTheme, rgbToHex } from '../adapterColorTheme';
+import { AlexaTimerSelect } from './AlexaTimerSelect';
 import { Color, type ColorThemenInterface } from '../../../src/lib/const/Color';
 import icons from '../icons.json';
 import {
@@ -70,7 +71,7 @@ import {
     type ScreensaverWeatherItemKey,
     checkClockTimerPatterns,
     clockTimerItemChoice,
-    clockTimerUsesPageItem,
+    clockTimerSource,
     loadClockTimerChannels,
     type ClockTimerChannelInfo,
     clockTimerUsesSlots,
@@ -1233,7 +1234,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             !out.activeState &&
             !out.dataState &&
             !clockTimerUsesSlots(out) &&
-            !clockTimerUsesPageItem(out);
+            clockTimerSource(out) === 'states';
         this.setEntryDraft('clockTimer', empty ? undefined : out);
     }
 
@@ -1321,6 +1322,28 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         );
     }
 
+    /** source Alexa timer: instance and Echo device */
+    private renderTimerAlexaField(): React.JSX.Element {
+        const alexa = this.draftTimer().alexa ?? { instance: '', serial: '' };
+        return (
+            <Box sx={{ mb: 1 }}>
+                <AlexaTimerSelect
+                    socket={this.props.oContext?.socket}
+                    value={alexa}
+                    onChange={value => this.setTimer({ alexa: value })}
+                    stacked
+                />
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mt: 1, whiteSpace: 'pre-line' }}
+                >
+                    {this.getText('screensaver_timer_alexaHint')}
+                </Typography>
+            </Box>
+        );
+    }
+
     private renderTimerStateField(field: 'activeState' | 'dataState', labelKey: string): React.JSX.Element {
         const { oContext, theme } = this.props;
         const themeType = oContext?.themeType ?? (theme?.palette?.mode || 'light');
@@ -1343,7 +1366,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     private renderTimerSection(): React.JSX.Element {
         const timer = this.draftTimer();
         const slots = clockTimerUsesSlots(timer);
-        const fromItem = clockTimerUsesPageItem(timer);
+        const source = clockTimerSource(timer);
+        const fromItem = source === 'item';
+        const fromStates = source === 'states';
         return (
             <Box
                 sx={{ mt: 2 }}
@@ -1372,22 +1397,35 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                 variant="standard"
                                 sx={{ flex: 1 }}
                                 label={this.getText('screensaver_timer_source')}
-                                value={fromItem ? 'item' : 'states'}
+                                value={source}
                                 onChange={e => {
-                                    const useItem = e.target.value === 'item';
-                                    this.setTimer({ itemId: useItem ? '' : undefined });
+                                    const next = e.target.value;
+                                    this.setTimer({
+                                        itemId: next === 'item' ? '' : undefined,
+                                        alexa: next === 'alexa' ? { instance: '', serial: '' } : undefined,
+                                    });
                                 }}
                                 slotProps={{ inputLabel: { shrink: true } }}
                             >
                                 <MenuItem value="states">{this.getText('screensaver_timer_source_states')}</MenuItem>
                                 <MenuItem value="item">{this.getText('screensaver_timer_source_item')}</MenuItem>
+                                <MenuItem value="alexa">{this.getText('screensaver_timer_source_alexa')}</MenuItem>
                             </TextField>
-                            <DocHelp topic={fromItem ? 'screensaver.timerItem' : 'screensaver.timerStates'} />
+                            <DocHelp
+                                topic={
+                                    fromItem
+                                        ? 'screensaver.timerItem'
+                                        : source === 'alexa'
+                                          ? 'screensaver.timerAlexa'
+                                          : 'screensaver.timerStates'
+                                }
+                            />
                         </Box>
                         {fromItem && this.renderTimerItemField()}
-                        {!fromItem && this.renderTimerStateField('activeState', 'screensaver_timer_activeState')}
-                        {!fromItem && this.renderTimerStateField('dataState', 'screensaver_timer_dataState')}
-                        {!fromItem && (
+                        {source === 'alexa' && this.renderTimerAlexaField()}
+                        {fromStates && this.renderTimerStateField('activeState', 'screensaver_timer_activeState')}
+                        {fromStates && this.renderTimerStateField('dataState', 'screensaver_timer_dataState')}
+                        {fromStates && (
                             <Typography
                                 variant="caption"
                                 color="text.secondary"
@@ -1396,7 +1434,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                 {this.getText('screensaver_timer_hint')}
                             </Typography>
                         )}
-                        {!fromItem && slots && (
+                        {fromStates && slots && (
                             <Alert
                                 severity="info"
                                 sx={{ mb: 1 }}
@@ -1409,10 +1447,14 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                 severity="warning"
                                 sx={{ mb: 1 }}
                             >
-                                {this.getText('screensaver_timer_incomplete')}
+                                {this.getText(
+                                    source === 'alexa'
+                                        ? 'screensaver_timer_alexaIncomplete'
+                                        : 'screensaver_timer_incomplete',
+                                )}
                             </Alert>
                         )}
-                        {!fromItem && (
+                        {fromStates && (
                             <Button
                                 size="small"
                                 onClick={() =>
