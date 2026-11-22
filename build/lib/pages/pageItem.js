@@ -42,6 +42,9 @@ var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
 var import_screensaver_timer = require("./screensaver-timer");
 const panelsWarnedAboutClockTimer = /* @__PURE__ */ new WeakSet();
+function isAlexaSpeaker(x) {
+  return !!x && typeof x === "object" && "id" in x && typeof x.id === "string" && "name" in x && typeof x.name === "string";
+}
 class PageItem extends import_baseClassPage.BaseTriggeredPage {
   defaultOnColor = import_Color.Color.White;
   defaultOffColor = import_Color.Color.Blue;
@@ -2880,7 +2883,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
    * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
    */
   async setListCommand(entry, value) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c;
     const item = entry.data;
     if (!item || !("entityInSel" in item)) {
       return false;
@@ -2900,18 +2903,15 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
       } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
-        const index = ((_a = sList.states) == null ? void 0 : _a[v2]) || -1;
-        if (((_b = this.parent.currentItem) == null ? void 0 : _b.ident) && await this.parent.isPlaying()) {
+        const speaker = Array.isArray(this.tempData) ? this.tempData[v2] : void 0;
+        if (((_a = this.parent.currentItem) == null ? void 0 : _a.ident) && await this.parent.isPlaying()) {
           await this.adapter.setForeignStateAsync(
             `${this.parent.currentItem.ident}.Commands.textCommand`,
             `Schiebe Musik auf ${sList.list[v2]}`
           );
         }
-        if (index !== -1) {
-          this.parent.card == "cardMedia" && await this.parent.updateCurrentPlayer(
-            ((_c = this.tempData[index]) == null ? void 0 : _c.id) || "",
-            ((_d = this.tempData[index]) == null ? void 0 : _d.name) || ""
-          );
+        if (isAlexaSpeaker(speaker) && speaker.id && this.parent.card == "cardMedia") {
+          await this.parent.updateCurrentPlayer(speaker.id, speaker.name);
         }
         const msg = await this.GeneratePopup("popupInSel");
         if (msg) {
@@ -2920,7 +2920,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         return true;
       } else if (entry.role === "alexa-playlist" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && sList.states && sList.states[parseInt(value)] !== void 0 && this.tempData.length > 0) {
         const v2 = parseInt(value);
-        if (((_e = this.dataItems) == null ? void 0 : _e.type) === "input_sel" && this.dataItems.data.valueList) {
+        if (((_b = this.dataItems) == null ? void 0 : _b.type) === "input_sel" && this.dataItems.data.valueList) {
           const dp = sList.states[v2];
           if (dp) {
             await this.adapter.setForeignStateAsync(dp, sList.list[v2], false);
@@ -2928,7 +2928,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
         const target = item.entityInSel.set && item.entityInSel.set.writeable ? item.entityInSel.set : item.entityInSel.value;
-        if (((_f = target.common) == null ? void 0 : _f.type) === "number") {
+        if (((_c = target.common) == null ? void 0 : _c.type) === "number") {
           await target.setState(parseInt(sList.states[parseInt(value)]));
         } else {
           await target.setState(sList.states[parseInt(value)]);

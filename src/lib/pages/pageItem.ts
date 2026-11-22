@@ -32,6 +32,23 @@ import {
 /** panels that were told once that their screensaver has no timer for a page item */
 const panelsWarnedAboutClockTimer = new WeakSet<object>();
 
+/**
+ * Type guard for an alexa device entry in tempData of the alexa-speaker item.
+ *
+ * @param x entry to check
+ * @returns true if x has a string id and a string name
+ */
+function isAlexaSpeaker(x: unknown): x is { id: string; name: string } {
+    return (
+        !!x &&
+        typeof x === 'object' &&
+        'id' in x &&
+        typeof x.id === 'string' &&
+        'name' in x &&
+        typeof x.name === 'string'
+    );
+}
+
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseTriggeredPage {
     defaultOnColor = Color.White;
@@ -3291,19 +3308,16 @@ export class PageItem extends BaseTriggeredPage {
                 item.entityInSel.set
             ) {
                 const v = parseInt(value);
-                const index = sList.states?.[v] || -1;
+                // sList.list is built 1:1 from tempData, so the selected position is the tempData index
+                const speaker: unknown = Array.isArray(this.tempData) ? this.tempData[v] : undefined;
                 if ((this.parent as PageMedia).currentItem?.ident && (await (this.parent as PageMedia).isPlaying())) {
                     await this.adapter.setForeignStateAsync(
                         `${(this.parent as PageMedia).currentItem!.ident}.Commands.textCommand`,
                         `Schiebe Musik auf ${sList.list[v]}`,
                     );
                 }
-                if (index !== -1) {
-                    this.parent.card == 'cardMedia' &&
-                        (await (this.parent as PageMedia).updateCurrentPlayer(
-                            this.tempData[index]?.id || '',
-                            this.tempData[index]?.name || '',
-                        ));
+                if (isAlexaSpeaker(speaker) && speaker.id && this.parent.card == 'cardMedia') {
+                    await (this.parent as PageMedia).updateCurrentPlayer(speaker.id, speaker.name);
                 }
                 const msg = await this.GeneratePopup('popupInSel');
                 if (msg) {
