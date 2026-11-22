@@ -1,7 +1,8 @@
 # Gerät mit Details
 
 Stand: 2026-11-22 – Konzept entschieden, Adapter und Admin im Branch `feat/device-details` umgesetzt; die Detailseite
-ist eine **cardEntities2**-Seite (neue TFT mit 5 Zeilen und Tipp links → `buttonPress3`, am Testpanel geflasht).
+ist eine normale **cardEntities**-Seite. cardEntities2 (5 Zeilen) gibt es nur als vorbereitete HMI-Seite, nicht im
+Adapter, Admin oder Web-Panel.
 
 ## Ausgangslage
 
@@ -20,18 +21,19 @@ Geräts.
 | Seite | Kurz | Detailseite |
 |---|---|---|
 | cardGrid / cardGrid2 / cardGrid3 | wie bisher (`buttonPress2`) | Long-Press (`buttonPress3`, gibt es schon) |
-| cardEntities / cardEntities2 | rechte Schaltfläche (Schalter usw.) wie bisher | Tipp links auf Icon/Bezeichnung → `buttonPress3` (HMI-Änderung 1) |
+| cardEntities | rechte Schaltfläche (Schalter usw.) wie bisher | Tipp links auf Icon/Bezeichnung → `buttonPress3` (HMI-Änderung 1) |
 
 - Auf den Grid-Seiten fällt ein nicht behandelter Long-Press weiterhin auf den Kurz-Druck zurück. Dort kann ein
   Long-Press auch einfach „der Finger lag zu lange“ sein.
-- Auf cardEntities und cardEntities2 tippt man die linke Fläche bewusst an. Ohne Long-Press-Behandlung passiert dort
+- Auf cardEntities tippt man die linke Fläche bewusst an. Ohne Long-Press-Behandlung passiert dort
   **nichts**, kein Rückfall auf den Kurz-Druck.
-- Long-Press wird für cardEntities im Adapter freigegeben (Admin, Skript-Konvertierung), für cardEntities2 im Admin
-  (die Seite gibt es im Skript nicht). Bis zur neuen HMI kommt auf cardEntities nur nichts an.
+- Long-Press wird für cardEntities im Adapter freigegeben (Admin, Skript-Konvertierung). Bis zur neuen HMI kommt auf
+  cardEntities nur nichts an.
 
 ## Die Detailseite
 
-- Seitentyp **cardEntities2** (5 Zeilen, echte Bedienelemente wie cardEntities), zur Laufzeit erzeugt (Vorbild: temporäre Seite des Sonos-/Squeezebox-Speakers in
+- Seitentyp **cardEntities** mit deren Zeilenzahl (eu/us-l 4, us-p 5, web-l 4, web-p 8), echte Bedienelemente, zur
+  Laufzeit erzeugt (Vorbild: temporäre Seite des Sonos-/Squeezebox-Speakers in
   `src/lib/pages/pageItem.ts`). Die Konfiguration der Seite ist nicht editierbar, die Seite selbst kann schalten.
 - Überschrift = Name des Geräts.
 - **Klassisch blätterbar** (`scrollPresentation: 'classic'`, `PageMenu.getOptions`).
@@ -40,20 +42,46 @@ Geräts.
 
 ### Zeilen
 
-| State | Zeilentyp auf cardEntities2 | Bedienung |
+| State | Zeilentyp auf cardEntities | Bedienung |
 |---|---|---|
 | boolean, `write: true` | `switch` | Schalter rechts (`OnOff`) schaltet |
 | boolean, nur lesbar | `text`, An/Aus (übersetzt) | nichts |
 | `read: false` (Button) | `button` („drücken“) | Knopf rechts (`button`) schreibt `true` |
-| number, `write: true` | `number`, Feld `wert\|min\|max` wie cardEntities (min/max aus `common`, sonst 0/100) | Slider (`number-set`) schreibt den Wert |
-| number, nur lesbar | `text`, Wert mit Einheit | nichts |
+| number/string, `write: true`, mit `common.states` | `input_sel`, zeigt den (übersetzten) Text des aktuellen Werts | Tipp öffnet `popupInSel` mit den Texten, die Auswahl schreibt den Schlüssel (number als Zahl) |
+| number/string mit `common.states`, nur lesbar | `text`, (übersetzter) Text des Werts, ohne Einheit | nichts |
+| number (auch `write: true`) | `text`, Wert mit Einheit | nichts – Zahlen werden nicht per Slider bearbeitet |
 | string | `text`, nur lesbar | nichts |
+
+`common.states` zählt als Objekt oder Array mit mindestens einem Eintrag (`hasCommonStatesList`). Die alte
+String-Form `"0:aus;1:an"` wird wie überall zur Laufzeit (`StatesController.getCommonStates`) nicht ausgewertet: so
+ein State ist eine normale Wert-/Textzeile.
 
 Ein Tipp links (Icon/Name) sendet auf diesen Zeilen `buttonPress3` und tut nichts.
 
 - Es wird nichts automatisch ausgeblendet. Was erscheint, bestimmt allein die Filterliste.
 - Icon aus der Maske bzw. Rolle (Thermometer, Blitz, WLAN, Batterie …), Name übersetzt über `getTranslation`.
 - Nicht pro Zeile einstellbar (erste Version): Icon und Farbe.
+
+### Zweite Namenszeile
+
+- Haben mehrere angehakte Zeilen einer Detailseite denselben angezeigten Namen (Shelly Plus 1PM: `Relay0.temperatureC`
+  und `Ext.temperature100C` … `104C` heißen alle „Temperatur“), bekommt jede davon eine zweite Namenszeile. Zeilen
+  ohne Dublette bekommen keine.
+- Automatischer Text (`deviceDetailAutoSubName`): Unterordner + Ziffernfolgen der End-ID, mehrere Ziffernfolgen mit
+  Leerzeichen getrennt; ohne Unterordner nur die Ziffern; ohne beides die End-ID. Beispiele: `Relay0.temperatureC` →
+  „Relay0“, `Ext.temperature100C` → „Ext 100“, `temperature1` → „1“, `rssi` → „rssi“.
+- Eindeutig (`deviceDetailSubNames`): ergeben zwei gleichnamige Zeilen denselben automatischen Text (z. B.
+  `Ext.temperature100C` und `Ext.temperature100F`), bekommen diese stattdessen die ID unterhalb des Geräts.
+- Admin: in der Filterliste bei jeder angehakten Dublette ein Feld „2. Zeile“ mit dem automatischen Text als Platzhalter;
+  ein eigener Text wird im Eintrag gespeichert (`DeviceDetailEntryConfig.subName`) und gilt immer, auch ohne Dublette.
+  Das Feld erscheint nur bei Dubletten und bei Zeilen mit eigenem Text (damit er sichtbar und löschbar bleibt) – bei
+  einem Shelly mit 78 States bleibt die Liste sonst übersichtlich.
+- **Panel: noch nicht.** Das Namensfeld `tEntity1..4` von cardEntities ist auf eu und us-l nur 30 px hoch (Font 0 =
+  24 px, `isbr=0`, 184 px breit) – zwei Zeilen (CR LF) passen nicht, und zu hoher Text wird von der Nextion gar nicht
+  gezeichnet. us-p hätte Platz (`tEntity1..6` 53 px hoch, `isbr=1`, 115 px breit). Der Adapter sendet die zweite
+  Zeile deshalb nicht, `subName` geht nicht in die Laufzeit (`deviceDetailsRuntimeOf`); bis dahin hängt der Adapter
+  bei mehreren Zeilen desselben Masken-Eintrags wie bisher den Unterordner an den Namen an. Das Web-Panel zeigt sie
+  folglich auch nicht. Voraussetzung ist eine HMI mit zweizeiligem Namensfeld auf eu/us-l.
 
 ### Farben
 
@@ -110,24 +138,18 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
 
 ## HMI-Änderungen
 
-1. **cardEntities** und **cardEntities2**, `m0`–`m3` / `m0`–`m4` (Icon/Bezeichnung): Typen ohne Popup senden
+1. **cardEntities** (und die vorbereitete cardEntities2), `m0`–`m3` / `m0`–`m4` (Icon/Bezeichnung): Typen ohne Popup senden
    `event,buttonPress3,<entn>,button` (vorher nichts, bei `text` `buttonPress2`). Umgesetzt mit
    `HMI/tools/entities2_five_rows.py`.
-2. Neue Seite **cardEntities2** = cardEntities mit 5 Zeilen (`pageType~cardEntities2`, `entityUpd` mit einer Zeile
+2. Vorbereitete Seite **cardEntities2** = cardEntities mit 5 Zeilen (`pageType~cardEntities2`, `entityUpd` mit einer Zeile
    mehr, Zeile 5 = Felder 38–43). Ersetzt die frühere Idee, cardSchedule für die Detailseite zu ändern (Typ `number`
    mit Wert, Tipp öffnet `popupSlider`) – das entfällt, **cardSchedule bleibt unverändert**.
 
-### TFT-Abhängigkeit von cardEntities2
+### cardEntities2 ist nicht im Adapter
 
-- Der Adapter kennt die TFT-Version aus `event,startup,<version>,<model>` (`info.nspanel.displayVersion`) und
-  vergleicht sie wie bei den 6.2.0-Funktionen (`Panel.meetsVersion`, `isVersionGreaterOrEqual`).
-- cardEntities2 gilt ab **TFT 6.2.1** (`CARD_ENTITIES2_MIN_VERSION` in `src/lib/const/tools.ts`, „nächste TFT nach
-  6.2.0“) und nur für eu; Web-Panels (web-l, web-p, eu) haben die Seite immer.
-- Ältere TFT, unbekannte Version und us-l/us-p: die Seite wird als **cardEntities** geladen
-  (`pageType~cardEntities`) und hat deren Zeilenzahl (eu/us-l 4, us-p 5). Entscheidung in `hmiMenuCard`, angewandt
-  in `PageEntities.getPageTypePayload` und `PageMenu.maxItems` (neu berechnet beim Sichtbarwerden, dann ist die
-  Version bekannt).
-- Wichtig: Die TFT mit cardEntities2 muss sich mit Version **≥ 6.2.1** melden, sonst zeigt der Adapter cardEntities.
+- cardEntities2 existiert nur in der HMI (Werkzeug `HMI/tools/entities2_five_rows.py`). Adapter, Admin und Web-Panel
+  kennen die Seitenart vorerst nicht: keine Seitenart im Admin, keine Versionsweiche nach TFT-Version, die Detailseite
+  ist cardEntities.
 
 ## Umsetzung (feat/device-details)
 
@@ -153,19 +175,24 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
   Items erhalten. „Nichts angehakt“ ist eine gültige Vorbelegung.
 - **Theme-Keys:** `deviceEnergy`, `deviceConnection`, `deviceInfo` (neu, Farbgruppe „Zustände“), Klima nutzt
   `temperature`; An/Aus `activated`/`deactivated`.
-- **Detailseite:** cardEntities2, Seiten-ID `dd_<Seite>`, Zeilen mit Rolle `deviceDetail`. Zwei sich überschneidende Long-Presses
+- **Detailseite:** cardEntities, Seiten-ID `dd_<Seite>`, Zeilen mit Rolle `deviceDetail`. Zwei sich überschneidende Long-Presses
   öffnen nur die letzte Seite; die alte Seite wird erst nach dem Wechsel gelöscht.
-- Zeilen: `switch`/`button`/`number`/`text` mit den Feldformaten von cardEntities (kein eigenes Format mehr, kein
-  `popupSlider` vom Adapter).
-- cardEntities und cardEntities2: ein unbehandelter `buttonPress3` fällt nicht auf den Kurz-Druck zurück.
-- **cardEntities2 als Seitenart:** im Admin wählbar (Listenkarten), 5 Einträge pro Seite, klassisch blätterbar,
-  Long-Press und „Gerät mit Details“ erlaubt; nicht im Skript-Weg.
+- Zeilen: `switch`/`button`/`input_sel`/`text` mit den Feldformaten von cardEntities (kein eigenes Format, kein
+  `popupSlider` vom Adapter, kein Slider für Zahlen); `input_sel` nutzt den vorhandenen Weg über `popupInSel`
+  (`PageItem.getListFromStates` / `setListCommand`).
+- cardEntities: ein unbehandelter `buttonPress3` fällt nicht auf den Kurz-Druck zurück.
+- **Filterliste:** angehakte Einträge stehen oben in ihrer gespeicherten Reihenfolge, darunter die nicht angehakten.
+  Anhaken setzt einen Eintrag ans Ende der angehakten, Abhaken an den Anfang der nicht angehakten
+  (`tickDeviceDetailRow`); Verschieben bleibt im eigenen Block (`tickedDeviceDetailRowsFirst`).
+- **Radiobuttons im Page-Item-Dialog** (Art des Items, Kurz-Tipp): Umschalten verliert nichts – die Felder der
+  verlassenen Option (State, Kanal, Zielseite, Gerät mit Filterliste) werden bis zum Schließen gemerkt und kommen beim
+  Zurückschalten wieder (`src-admin/src/itemOptionStash.ts`). Der Dialog hält immer nur die Felder der gewählten
+  Option; Übernehmen speichert nur diese, Abbrechen verwirft alles.
 
 ## Offen
 
-- Detailseite mit echten Geräten am Panel prüfen (Schalter, Knopf, Slider, Textwerte).
-- Der Slider schreibt ganze Zahlen (`number-set` wie auf cardEntities); Nachkommastellen/`step` gehen dabei verloren.
-- Web-Panel: der Tipp links auf Icon/Name sendet dort noch `buttonPress2` (number/button/switch) statt
+- Detailseite mit echten Geräten am Panel prüfen (Schalter, Knopf, Auswahl-Popup, Textwerte).
+- Web-Panel: der Tipp links auf Icon/Name sendet dort noch `buttonPress2` (button/switch) statt
   `buttonPress3` wie die neue TFT.
-- us-l/us-p: cardEntities2 (5 Zeilen) fehlt in der HMI.
+- Zweite Namenszeile auf dem Panel: braucht ein zweizeiliges Namensfeld in der cardEntities-HMI (eu, us-l).
 - Länge der übersetzten Zeilennamen auf dem Panel prüfen (z. B. fr, pl, ru).
