@@ -2,7 +2,12 @@ import { expect } from 'chai';
 import { applyDeviceAnswer, type DeviceAnswerTarget } from './deviceAnswer';
 import { freshKindFields, freshShortPressFields, switchOption } from './itemOptionStash';
 import { emptyChannelValueConfig } from '../../src/lib/types/adminShareConfig';
-import type { DeviceDetailsInfo, DeviceStateInfo } from '../../src/lib/types/deviceDetails';
+import {
+    buildDeviceDetailRows,
+    deviceDetailEntriesOfRows,
+    type DeviceDetailsInfo,
+    type DeviceStateInfo,
+} from '../../src/lib/types/deviceDetails';
 
 const DEV = 'shelly.0.shellyplus1pm#0cdc7ef765c0#1';
 const SWITCH = `${DEV}.Relay0.Switch`;
@@ -124,5 +129,104 @@ describe('deviceAnswer - late answer of getDeviceDetails', () => {
         expect(r!.kind.deviceError).to.equal('type');
         expect(r!.kind.channelId).to.deep.equal(target.kind.channelId);
         expect(r!.entriesDeviceId).to.equal('');
+    });
+});
+
+/**
+ * Two answers for the same device (sendTo on Tab and again when the section mounts after switching the kind) that come
+ * almost at once. The dialog applies them one after the other on the fields of the latest state (a setState updater);
+ * the device the entries belong to lives in the state next to the entries.
+ */
+describe('deviceAnswer - two answers for the same device', () => {
+    const learned = { shelly: ['power'] };
+    const keys = (t: DeviceAnswerTarget | null): string[] => t!.kind.device!.entries.map(e => e.key);
+
+    /**
+     * The kind of the item switched (standard and back): the fields go through the kind stash unchanged.
+     *
+     * @param target the fields of the device kind
+     * @returns the fields after switching to standard and back
+     */
+    function switchKindAndBack(target: DeviceAnswerTarget): DeviceAnswerTarget {
+        const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = target.kind;
+        const toStandard = switchOption(
+            {},
+            'device',
+            { device, deviceError, isNavigation, targetPage, isCustom, channelId },
+            'standard',
+            kind => freshKindFields(kind, emptyChannelValueConfig('')),
+        );
+        const back = switchOption(toStandard.stash, 'standard', toStandard.fields, 'device', kind =>
+            freshKindFields(kind, emptyChannelValueConfig('')),
+        );
+        return { ...target, kind: back.fields };
+    }
+
+    it('cause of the bug: the second answer on the old fields with the device of the first loses the entries', () => {
+        // what the dialog did before: this.state (not rendered yet) + the instance field set by the first answer
+        const before = newDeviceItem();
+        const first = applyDeviceAnswer(before, DEV, answer, learned)!;
+        expect(keys(first)).to.deep.equal(['power']);
+        const second = applyDeviceAnswer({ ...before, entriesDeviceId: first.entriesDeviceId }, DEV, answer, learned);
+        expect(keys(second)).to.deep.equal([]);
+    });
+
+    it('one after the other: the second answer keeps the learned entries of the first', () => {
+        const first = applyDeviceAnswer(newDeviceItem(), DEV, answer, learned)!;
+        const second = applyDeviceAnswer(first, DEV, answer, learned)!;
+        expect(keys(second)).to.deep.equal(['power']);
+        expect(second.kind.channelId.valueStateId).to.equal(SWITCH);
+        expect(second.kind.device!.shortPress).to.equal('state');
+    });
+
+    it('both on the same old fields (entries and their device of one moment): the same result twice', () => {
+        const before = newDeviceItem();
+        const first = applyDeviceAnswer(before, DEV, answer, learned)!;
+        const second = applyDeviceAnswer({ ...before, shortPressStash: first.shortPressStash }, DEV, answer, learned)!;
+        expect(second.kind).to.deep.equal(first.kind);
+        expect(second.entriesDeviceId).to.equal(DEV);
+    });
+
+    it('first answer while the short tap none is shown, second after switching back to state and the kind', () => {
+        // Tab, then state -> none: the first answer comes while none is shown
+        const first = applyDeviceAnswer(switchTap(newDeviceItem(), 'none'), DEV, answer, learned)!;
+        expect(keys(first)).to.deep.equal(['power']);
+        // none -> state brings the stashed state, then standard -> device remounts the section
+        const back = switchOption(
+            first.shortPressStash,
+            'none',
+            {
+                isNavigation: first.kind.isNavigation,
+                targetPage: first.kind.targetPage,
+                isCustom: first.kind.isCustom,
+                channelId: first.kind.channelId,
+            },
+            'state',
+            tap => freshShortPressFields(tap, emptyChannelValueConfig('')),
+        );
+        const shown = switchKindAndBack({
+            ...first,
+            kind: { ...first.kind, ...back.fields, device: { ...first.kind.device!, shortPress: 'state' } },
+            shortPressStash: back.stash,
+        });
+        const second = applyDeviceAnswer(shown, DEV, answer, learned)!;
+        expect(keys(second)).to.deep.equal(['power']);
+        expect(second.kind.channelId.valueStateId).to.equal(SWITCH);
+    });
+
+    it('nothing learned: the mask defaults; learned nothing: no entries - status and filter list agree', () => {
+        const mask = applyDeviceAnswer(newDeviceItem(), DEV, answer, {})!;
+        const maskAgain = applyDeviceAnswer(mask, DEV, answer, {})!;
+        expect(keys(maskAgain)).to.deep.equal(keys(mask));
+        expect(keys(mask).length).to.be.greaterThan(0);
+        const none = applyDeviceAnswer(newDeviceItem(), DEV, answer, { shelly: [] })!;
+        expect(none.kind.device!.entries).to.deep.equal([]);
+        expect(applyDeviceAnswer(none, DEV, answer, { shelly: ['power'] })!.kind.device!.entries).to.deep.equal([]);
+        // the filter list is built from the entries (the section passes an empty learned list): it ticks exactly them
+        for (const t of [mask, none]) {
+            const entries = t.kind.device!.entries;
+            const rows = buildDeviceDetailRows(DEV, answer.states, entries, []);
+            expect(deviceDetailEntriesOfRows(rows)).to.deep.equal(entries);
+        }
     });
 });

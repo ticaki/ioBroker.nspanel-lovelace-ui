@@ -185,7 +185,9 @@ export default class DeviceDetailsSection extends React.Component<
         if (!info?.ok) {
             return;
         }
-        const rows = buildDeviceDetailRows(value.deviceId, info.states, value.entries, undefined);
+        // the entries of the item are what it shows, also none: an empty list ticks nothing (no mask defaults) - the
+        // learned ticks or the mask came into the entries with the answer of the adapter already (deviceAnswer)
+        const rows = buildDeviceDetailRows(value.deviceId, info.states, value.entries, []);
         this.filterDialogRef.current?.openWith(value.deviceId, info.name, info.states, rows);
     };
 

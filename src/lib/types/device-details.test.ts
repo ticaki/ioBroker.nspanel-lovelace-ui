@@ -276,12 +276,12 @@ describe('lib/types/deviceDetails', () => {
             const before = { deviceId: SHELLY, entries: [{ key: 'power', id: `${SHELLY}.Relay0.Power` }] };
             const learned = { zigbee2mqtt: ['battery'] };
             // a new item teaches its adapter
-            expect(updatedDeviceDetailsLearned(learned, undefined, before)).to.deep.equal({
+            expect(updatedDeviceDetailsLearned(learned, undefined, before, true)).to.deep.equal({
                 zigbee2mqtt: ['battery'],
                 shelly: ['power'],
             });
             // the same ticks (only the name changed) teach nothing
-            expect(updatedDeviceDetailsLearned({ shelly: ['x'] }, before, { ...before })).to.equal(undefined);
+            expect(updatedDeviceDetailsLearned({ shelly: ['x'] }, before, { ...before }, true)).to.equal(undefined);
             // other order
             const after = {
                 deviceId: SHELLY,
@@ -290,13 +290,28 @@ describe('lib/types/deviceDetails', () => {
                     { key: 'power', id: `${SHELLY}.Relay0.Power` },
                 ],
             };
-            expect(updatedDeviceDetailsLearned({}, before, after)).to.deep.equal({
+            expect(updatedDeviceDetailsLearned({}, before, after, true)).to.deep.equal({
                 shelly: ['~Relay0.Frequency', 'power'],
             });
             // nothing ticked is a valid learned choice
-            expect(updatedDeviceDetailsLearned({}, before, { deviceId: SHELLY, entries: [] })).to.deep.equal({
+            expect(updatedDeviceDetailsLearned({}, before, { deviceId: SHELLY, entries: [] }, true)).to.deep.equal({
                 shelly: [],
             });
+        });
+        it('learned: entries the user did not edit in the filter list teach nothing', () => {
+            const learned = { shelly: ['power'] };
+            // a new item saved without opening the filter list - e.g. its entries stayed empty (no answer)
+            expect(updatedDeviceDetailsLearned(learned, undefined, { deviceId: SHELLY, entries: [] }, false)).to.equal(
+                undefined,
+            );
+            // another device of the adapter, entries only suggested
+            const before = { deviceId: `${SHELLY}x`, entries: [] };
+            const after = { deviceId: SHELLY, entries: [{ key: 'voltage', id: `${SHELLY}.Relay0.Voltage` }] };
+            expect(updatedDeviceDetailsLearned(learned, before, after, false)).to.equal(undefined);
+            // the user unticked everything in the filter list: a valid choice
+            expect(
+                updatedDeviceDetailsLearned(learned, undefined, { deviceId: SHELLY, entries: [] }, true),
+            ).to.deep.equal({ shelly: [] });
         });
         it('learned: an empty list ticks nothing (no fall back to the mask)', () => {
             const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, undefined, []);

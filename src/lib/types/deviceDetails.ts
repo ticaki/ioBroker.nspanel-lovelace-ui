@@ -914,20 +914,23 @@ export function deviceDetailsLearnedOf(value: unknown): DeviceDetailsLearned {
 }
 
 /**
- * The learned ticks after saving a device item: they change only when the ticks or their order changed at the item
- * (a new item counts as changed), not with other changes like the name.
+ * The learned ticks after saving a device item: they change only when the user saved the filter list of the device
+ * and the ticks or their order changed at the item (a new item counts as changed), not with other changes like the
+ * name. Entries the item only got as a suggestion (learned ticks, mask, no answer of the adapter) teach nothing.
  *
  * @param learned the learned ticks so far
  * @param before the device configuration of the item before the dialog, undefined for a new device item
  * @param after the saved device configuration
+ * @param edited the user saved the filter list of this device in the dialog
  * @returns the new learned ticks, undefined when nothing changes
  */
 export function updatedDeviceDetailsLearned(
     learned: DeviceDetailsLearned,
     before: DeviceDetailsConfig | undefined,
     after: DeviceDetailsConfig,
+    edited: boolean,
 ): DeviceDetailsLearned | undefined {
-    if (!after.deviceId) {
+    if (!after.deviceId || !edited) {
         return undefined;
     }
     const identifiers = (config: DeviceDetailsConfig): string[] =>

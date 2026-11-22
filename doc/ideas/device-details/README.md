@@ -181,8 +181,13 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
 - **Masken:** `src/lib/types/deviceDetails.ts` – shelly (Gen1 und Gen2), sonoff, zigbee2mqtt, hm-rpc, dazu die
   allgemeine Maske nur nach Rolle. Zeilennamen: Übersetzungsschlüssel `deviceDetail_<key>`.
 - **Gelernte Vorbelegung:** eigenes natives Attribut `deviceDetailsLearned` (Adapter → Einträge in Reihenfolge). Es
-  ändert sich nur, wenn sich beim Speichern eines Items Häkchen oder Reihenfolge ändern, und bleibt beim Löschen von
-  Items erhalten. „Nichts angehakt“ ist eine gültige Vorbelegung.
+  ändert sich nur, wenn der Nutzer im Dialog die Filterliste des Geräts übernommen hat und sich beim Speichern des Items
+  Häkchen oder Reihenfolge ändern; nur vorbelegte Einträge (gelernt, Maske, Adapter ohne Antwort) lehren nichts. Es
+  bleibt beim Löschen von Items erhalten. „Nichts angehakt“ ist eine gültige Vorbelegung.
+- Die Filterliste zeigt genau die Einträge des Items (leer = nichts angehakt); gelernte Vorbelegung bzw. Maske kommen
+  schon mit der Antwort des Adapters in die Einträge. Mehrere Antworten für dasselbe Gerät (Tab und erneutes Anzeigen
+  nach Wechsel der Art) wendet der Dialog nacheinander auf den jeweils neuesten Stand an (`setState`-Updater, Gerät
+  der Einträge im State).
 - **Theme-Keys:** `deviceEnergy`, `deviceConnection`, `deviceInfo` (neu, Farbgruppe „Zustände“), Klima nutzt
   `temperature`; An/Aus `activated`/`deactivated`.
 - **Detailseite:** cardEntities, Seiten-ID `dd_<Seite>`, Zeilen mit Rolle `deviceDetail`. Zwei sich überschneidende Long-Presses

@@ -278,6 +278,12 @@ interface ChannelConfigDialogState {
     device: DeviceDetailsConfig | null;
     /** the reason of the adapter why the device cannot be used, undefined = ok or no answer (adapter offline) */
     deviceError: DeviceSelectionError | undefined;
+    /**
+     * the device the entries of the device item belong to; another device gets the learned ticks (deviceAnswer). Kept
+     * in the state next to the entries: two answers of the adapter that come before React renders must see both of
+     * the same moment, else the second takes the first's device but the old (empty) entries.
+     */
+    deviceEntriesId: string;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -304,8 +310,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private kindStash: OptionStash<ItemKind, ItemKindFields<ChannelValueConfig>> = {};
     /** fields of the short taps of a device item not chosen right now (itemOptionStash) */
     private shortPressStash: OptionStash<DeviceShortPress, ItemTapFields<ChannelValueConfig>> = {};
-    /** the device the entries of the device item belong to; another device gets the learned ticks (deviceAnswer) */
-    private deviceEntriesId = '';
+    /** the device whose filter list the user saved in this dialog ('' = none) - only that may change the learned ticks */
+    private deviceEntriesEdited = '';
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -377,6 +383,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             colormode: false,
             device: null,
             deviceError: undefined,
+            deviceEntriesId: '',
         };
     }
 
@@ -488,11 +495,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             colormode: data?.colormode === true,
             device: isDeviceDetailsConfig(data?.device) ? { ...data.device, entries: [...data.device.entries] } : null,
             deviceError: undefined,
+            deviceEntriesId: isDeviceDetailsConfig(data?.device) ? data.device.deviceId.trim() : '',
         });
         this.deviceBefore = isDeviceDetailsConfig(data?.device) ? structuredClone(data.device) : undefined;
         this.kindStash = {};
         this.shortPressStash = {};
-        this.deviceEntriesId = isDeviceDetailsConfig(data?.device) ? data.device.deviceId.trim() : '';
+        this.deviceEntriesEdited = '';
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
         } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
@@ -869,6 +877,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 this.props.deviceDetailsLearned ?? {},
                 this.deviceBefore,
                 config.device,
+                this.deviceEntriesEdited !== '' && this.deviceEntriesEdited === config.device.deviceId.trim(),
             );
             if (learned) {
                 this.props.onDeviceDetailsLearnedChange(learned);
@@ -1471,8 +1480,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (!device) {
             return;
         }
-        this.deviceEntriesId = device.deviceId.trim();
-        this.setState({ device: { ...device, entries } });
+        const id = device.deviceId.trim();
+        this.deviceEntriesEdited = id;
+        this.setState({ device: { ...device, entries }, deviceEntriesId: id });
     };
 
     /**
@@ -1484,41 +1494,54 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param answer the answer
      */
     private handleDeviceAnswer = (id: string, answer: DeviceDetailsInfo): void => {
-        if (!this.state.open) {
-            return;
-        }
-        const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = this.state;
-        const shown = device !== null;
-        const kind = shown
-            ? { device, deviceError, isNavigation, targetPage, isCustom, channelId }
-            : this.kindStash.device;
-        if (!kind) {
-            return;
-        }
-        const result = applyDeviceAnswer(
-            { kind, shortPressStash: this.shortPressStash, entriesDeviceId: this.deviceEntriesId },
-            id,
-            answer,
-            this.props.deviceDetailsLearned ?? {},
+        const learned = this.props.deviceDetailsLearned ?? {};
+        // the short tap the answer changed - its channel checks run once the state is set
+        let recheck: ItemTapFields<ChannelValueConfig> | null = null;
+        // an updater, not this.state: two answers before React renders must not apply the second to the old fields
+        this.setState(
+            prev => {
+                if (!prev.open) {
+                    return null;
+                }
+                const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = prev;
+                const shown = device !== null;
+                const kind = shown
+                    ? { device, deviceError, isNavigation, targetPage, isCustom, channelId }
+                    : this.kindStash.device;
+                if (!kind) {
+                    return null;
+                }
+                const result = applyDeviceAnswer(
+                    { kind, shortPressStash: this.shortPressStash, entriesDeviceId: prev.deviceEntriesId },
+                    id,
+                    answer,
+                    learned,
+                );
+                if (!result) {
+                    return null;
+                }
+                this.shortPressStash = result.shortPressStash;
+                if (!shown) {
+                    this.kindStash = { ...this.kindStash, device: result.kind };
+                    return { deviceEntriesId: result.entriesDeviceId };
+                }
+                const tapChanged =
+                    result.kind.channelId.valueStateId !== channelId.valueStateId ||
+                    (result.kind.device !== null &&
+                        deviceShortPressOf(result.kind.device) !== deviceShortPressOf(device));
+                if (!tapChanged) {
+                    return { ...result.kind, deviceEntriesId: result.entriesDeviceId };
+                }
+                recheck = result.kind;
+                return { ...result.kind, ...this.resetChannelChecks(), deviceEntriesId: result.entriesDeviceId };
+            },
+            () => {
+                if (recheck) {
+                    this.recheckChannel(recheck);
+                    recheck = null;
+                }
+            },
         );
-        if (!result) {
-            return;
-        }
-        this.shortPressStash = result.shortPressStash;
-        this.deviceEntriesId = result.entriesDeviceId;
-        if (!shown) {
-            this.kindStash = { ...this.kindStash, device: result.kind };
-            return;
-        }
-        const tapChanged =
-            result.kind.channelId.valueStateId !== channelId.valueStateId ||
-            (result.kind.device !== null && deviceShortPressOf(result.kind.device) !== deviceShortPressOf(device));
-        if (!tapChanged) {
-            this.setState({ ...result.kind });
-            return;
-        }
-        this.setState({ ...result.kind, ...this.resetChannelChecks() });
-        this.recheckChannel(result.kind);
     };
 
     /**
