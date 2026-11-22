@@ -59,12 +59,12 @@ If in doubt: for a simple egg timer **Internal** is enough. The exact rules are 
 2. **Create a page item.** In the **PageConfig** tab open a page with page items (e.g. a cardEntities or cardGrid) and click on a free place. – *Result: the Pageitem Configuration is open.*
 3. **Choose the channel.** **Kind of item** stays at **Standard**. In the field **ioBroker Channel** choose the channel `0_userdata.0.EggTimer`. – *Result: next to the title it says `(level.timer)`, below the field "ok (role=level.timer)".*
 
-   Because the channel has no states, the red warning sign also stands left of the field, the ID below it in red, and the button at the bottom reads **Details...** instead of **Apply**. For the egg timer that is normal: the admin marks every channel without any states like this (see [check marks](PageConfig-Dialoge#the-iobroker-channel-and-its-check-marks)). The item still works on the panel.
+   That the channel has no states is not an error here: no state of `level.timer` is mandatory, so there is no warning sign at the field and the button at the bottom reads **Apply** (see [check marks](PageConfig-Dialoge#the-iobroker-channel-and-its-check-marks)).
 
-   ![The Pageitem Configuration with the channel 0_userdata.0.Eieruhr: title (level.timer), ok (role=level.timer), the red warning sign at the field because the channel has no states, and the button Details...](../Pictures/popupTimer/timer-09-eieruhr-item.png)
+   ![The Pageitem Configuration with the channel 0_userdata.0.Eieruhr: title (level.timer), ok (role=level.timer), no warning sign at the field although the channel has no states, and the button Apply](../Pictures/popupTimer/timer-09-eieruhr-item.png)
 
 4. **Enter a name** (optional), e.g. *Egg timer*. Without a name the adapter takes the name of the channel, as a last resort *Timer*. – *Result: that is the name of the entry in the list and in the popup.*
-5. **Apply** (here **Details...**, see step 3 – the adapter checks the item and takes it over), then **Save** in the tab. – *Result: the adapter restarts, the page shows the entry with `00:00:00`.*
+5. **Apply** (the adapter checks the item and takes it over), then **Save** in the tab. – *Result: the adapter restarts, the page shows the entry with `00:00:00`.*
 6. **Try it on the panel:** tap the entry, set 5 minutes in the popup, **Start**. – *Result: the time runs down; at 0 `00:00:00` stays until **Finish** is pressed.*
 
 If a script should learn about the end, create `STATE` in the channel as well (`boolean`, role `button`, writable): it becomes `true` when the time runs out and when **Finish** is pressed.
@@ -193,7 +193,7 @@ The checkbox **Use the timer of the screensaver** stands in the Pageitem Configu
 ![The checkbox "Use the timer of the screensaver" in the item dialog](../Pictures/screensaverAdmin/admin-25-item-screensaver-timer.png)
 
 - List and popup show the same timer as the screensaver of this panel – also while it is tapped away there; with slot patterns the slot chosen there right now.
-- The item does not read the states of the channel – it does not need them. The admin checks the channel like any other one though: without the mandatory states of the role `level.timer` the red ✖ stands at the field (see [check marks](PageConfig-Dialoge#the-iobroker-channel-and-its-check-marks)). The item still works on the panel.
+- The item does not read the states of the channel – it does not need them. Because no state of the role `level.timer` is mandatory, the field shows no error sign even for a channel without any states (see [check marks](PageConfig-Dialoge#the-iobroker-channel-and-its-check-marks)).
 - The checkbox is locked when the screensaver of this panel uses exactly this item as the source of its timer: *Not possible: the screensaver of this panel uses this item as the source of its timer, that would be a circle.*
 
 **Start** writes the data state of the screensaver timer first and then its on/off state. Which value goes into the data depends on the state: the remaining time with the unit `s`, `sec` or `ms` or the role `value.timer` or `level.timer`, an ISO date for a text state, otherwise the end as a timestamp in milliseconds. With slot patterns Start takes the lowest slot whose on/off is not true – without one no start is possible. **Cancel** and **Finish** set the on/off state of the shown slot to false. There is no pause here. If the source of the screensaver is a page item, the checkbox item starts and stops that page item.

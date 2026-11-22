@@ -311,7 +311,7 @@ Title *Mode list (inSel_Alias / modeList)*. This gives a page item a **selection
 
 The messages are the **English log texts** of the adapter, regardless of the language of the admin.
 
-If states were already detected as missing or duplicated, or the role does not fit, the button is not called *Apply* but **Details…** and is orange — it leads straight into that window.
+If states were already detected as missing or duplicated, or the role does not fit, the button is not called *Apply* but **Details…** and is orange — it leads straight into that window. A channel without any states counts as well, unless its role has no mandatory state — e.g. `level.timer`, which is an internal timer when empty.
 
 > **A missing object is not the same as a missing state.** If the channel field says *Object not found in ioBroker*, the dialog locks every field except the ID, and while the button is labelled **Details…** it stays **grey and does nothing** (it is the same button as *Apply* and needs an existing channel). The only way out of that state is to correct the ID — or **Cancel**.
 
