@@ -43,6 +43,16 @@ import ChannelValueDialog from './ChannelValueDialog';
 import DeviceDetailsSection, { isBlockingDeviceError } from './DeviceDetailsSection';
 import { pageItemSaveState } from '../pageItemSaveState';
 import {
+    freshKindFields,
+    freshShortPressFields,
+    isItemKind,
+    switchOption,
+    type ItemKind,
+    type ItemKindFields,
+    type ItemTapFields,
+    type OptionStash,
+} from '../itemOptionStash';
+import {
     deviceShortPressOf,
     isDeviceDetailsConfig,
     updatedDeviceDetailsLearned,
@@ -287,6 +297,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private rawDialogRef = React.createRef<RawItemConfigDialog>();
     /** the device configuration of the item when the dialog was opened - the learned ticks change only with its ticks */
     private deviceBefore: DeviceDetailsConfig | undefined = undefined;
+    /** fields of the kinds not chosen right now (itemOptionStash) - kept while the dialog is open */
+    private kindStash: OptionStash<ItemKind, ItemKindFields<ChannelValueConfig>> = {};
+    /** fields of the short taps of a device item not chosen right now (itemOptionStash) */
+    private shortPressStash: OptionStash<DeviceShortPress, ItemTapFields<ChannelValueConfig>> = {};
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -471,6 +485,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             deviceError: undefined,
         });
         this.deviceBefore = isDeviceDetailsConfig(data?.device) ? structuredClone(data.device) : undefined;
+        this.kindStash = {};
+        this.shortPressStash = {};
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
         } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
@@ -642,10 +658,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /**
      * The kind "device with details" is offered where a long press (grid pages) or a tap on the left part of an item
-     * (cardEntities) reaches the item ({@link isLongPressCard}) - a stored device item keeps it everywhere.
+     * (cardEntities) reaches the item ({@link isLongPressCard}) - a device item keeps it everywhere, also while the
+     * dialog shows the standard kind.
      */
     private isDeviceAllowed(): boolean {
-        return this.state.device !== null || isLongPressCard(this.props.currentPageCard);
+        return (
+            this.state.device !== null ||
+            this.kindStash.device !== undefined ||
+            isLongPressCard(this.props.currentPageCard)
+        );
     }
 
     /**
@@ -1355,23 +1376,26 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     /**
-     * The kind of the item: standard (channel, custom button, navigation) or device with details. A new device item
-     * switches a state of the device on a short tap; the channel / state of the standard item does not belong to it.
-     *
-     * @param kind the kind
+     * The fields that belong to the chosen channel / state and are computed from it - reset when the option changes,
+     * {@link recheckChannel} computes them again.
      */
-    private handleKindChange = (kind: string): void => {
-        const toDevice = kind === 'device';
-        if (toDevice === (this.state.device !== null)) {
-            return;
+    private resetChannelChecks(): Pick<
+        ChannelConfigDialogState,
+        | 'channelExists'
+        | 'channelRole'
+        | 'stateIsWriteable'
+        | 'roleIsValid'
+        | 'datapointErrors'
+        | 'datapointDuplicates'
+        | 'checkingChannel'
+        | 'checkingDatapoints'
+        | 'hasProblems'
+    > {
+        if (this.datapointCheckTimer !== null) {
+            clearTimeout(this.datapointCheckTimer);
+            this.datapointCheckTimer = null;
         }
-        this.setState({
-            device: toDevice ? { deviceId: '', shortPress: 'state', entries: [] } : null,
-            deviceError: undefined,
-            isNavigation: false,
-            targetPage: '',
-            isCustom: toDevice,
-            channelId: emptyChannelValueConfig(''),
+        return {
             channelExists: null,
             channelRole: null,
             stateIsWriteable: null,
@@ -1381,7 +1405,47 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkingChannel: false,
             checkingDatapoints: false,
             hasProblems: false,
-        });
+        };
+    }
+
+    /**
+     * Checks the channel / state an option brought back (the checks are not kept with it).
+     *
+     * @param fields the fields of the option
+     */
+    private recheckChannel(fields: ItemTapFields<ChannelValueConfig>): void {
+        const id = fields.channelId.valueStateId.trim();
+        if (id) {
+            void this.checkChannelExists(id, fields.isCustom);
+        }
+    }
+
+    /**
+     * The kind of the item: standard (channel, custom button, navigation) or device with details. The fields of the
+     * kind left are kept until the dialog closes and come back with it ({@link switchOption}); a kind chosen for the
+     * first time starts empty - a new device item switches a state of the device on a short tap.
+     *
+     * @param value the value of the radio group
+     */
+    private handleKindChange = (value: string): void => {
+        if (!isItemKind(value)) {
+            return;
+        }
+        const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = this.state;
+        const from: ItemKind = device !== null ? 'device' : 'standard';
+        if (value === from) {
+            return;
+        }
+        const { stash, fields } = switchOption(
+            this.kindStash,
+            from,
+            { device, deviceError, isNavigation, targetPage, isCustom, channelId },
+            value,
+            kind => freshKindFields(kind, emptyChannelValueConfig('')),
+        );
+        this.kindStash = stash;
+        this.setState({ ...fields, ...this.resetChannelChecks() });
+        this.recheckChannel(fields);
     };
 
     private handleDeviceDetailsChange = (
@@ -1393,29 +1457,30 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /**
      * Short tap of a device item: a state of the device (custom item), nothing, a navigation or the popup of an alias
-     * channel; the chosen state / channel belongs to the old way and is dropped.
+     * channel. The state / channel / target page of the short tap left is kept until the dialog closes and comes back
+     * with it ({@link switchOption}).
      *
      * @param shortPress the new short tap
      */
     private handleDeviceShortPressChange = (shortPress: DeviceShortPress): void => {
-        const { device } = this.state;
-        if (!device || deviceShortPressOf(device) === shortPress) {
+        const { device, isNavigation, targetPage, isCustom, channelId } = this.state;
+        if (!device) {
             return;
         }
-        this.setState({
-            device: { ...device, shortPress },
-            isCustom: shortPress === 'state',
-            isNavigation: shortPress === 'navigation',
-            targetPage: shortPress === 'navigation' ? this.state.targetPage : '',
-            channelId: emptyChannelValueConfig(''),
-            channelExists: null,
-            channelRole: null,
-            roleIsValid: null,
-            datapointErrors: [],
-            datapointDuplicates: [],
-            checkingDatapoints: false,
-            hasProblems: false,
-        });
+        const from = deviceShortPressOf(device);
+        if (from === shortPress) {
+            return;
+        }
+        const { stash, fields } = switchOption(
+            this.shortPressStash,
+            from,
+            { isNavigation, targetPage, isCustom, channelId },
+            shortPress,
+            tap => freshShortPressFields(tap, emptyChannelValueConfig('')),
+        );
+        this.shortPressStash = stash;
+        this.setState({ device: { ...device, shortPress }, ...fields, ...this.resetChannelChecks() });
+        this.recheckChannel(fields);
     };
 
     /**
