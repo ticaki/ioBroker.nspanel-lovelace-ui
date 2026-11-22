@@ -165,6 +165,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: new page item kind "device with details" - a short tap switches or presses a state of the device, navigates, opens the popup of an alias channel or does nothing, a long press (grid pages) or a tap on icon/name (cardEntities, needs a new TFT) opens a generated detail page with the ticked states of the device (filter list with masks for shelly, sonoff, zigbee2mqtt, hm-rpc, ticks learned per adapter; new theme colors for energy, connection and info)
 - (ticaki) cardEntities: an unhandled long press no longer falls back to the short press
 - (ticaki) device with details: the detail page is a cardEntities page (rows per page as on every cardEntities page, classic paging) with real controls - switch for a writable boolean, button for `read: false`, a selection popup for a writable number or string with `common.states`, value with unit (or the text of `common.states`) for every other state - numbers are not edited with a slider
+- (ticaki) device with details: rows with the same name show their difference (or an own text) behind the name; if both do not fit the name field, the name is shortened so the appended text stays visible (e.g. "Luftfeuchti... Ext 100")
 - (ticaki) cardEntities, cardGrid, cardGrid2, cardGrid3, cardSchedule, cardThermo2, cardMedia: closing a popup no longer jumps back to the first items, the page stays where it was scrolled to
 
 ### 2.5.1 (2026-11-21)

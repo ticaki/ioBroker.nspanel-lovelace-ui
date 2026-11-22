@@ -92,6 +92,26 @@ Ein Tipp links (Icon/Name) sendet auf diesen Zeilen `buttonPress3` und tut nicht
   „Temperatur Ext 100“), gleiche Basisnamen und gleiche Dubletten-Erkennung wie die Filterliste. Ein eigener Text
   (`subName`, geht über `deviceDetailsRuntimeOf` in die Laufzeit) wird auch ohne Dublette angehängt. Das Web-Panel
   zeigt denselben Namen.
+- **Kürzen, damit der Zusatz sichtbar bleibt** (Entscheidung 2026-11-22, `deviceDetailNameWithSuffix`): Passt
+  „Name Zusatz“ nicht ins Namensfeld des Modells, kürzt der Adapter nur den Namen und setzt das Auslassungszeichen
+  selbst; der Zusatz bleibt vollständig, ein Leerzeichen dazwischen bleibt. Font 0 hat kein „…“ (HMI 6.1.1/6.2.0),
+  daher „...“ wie bei `fitText`; Leerzeichen vor den Punkten fallen weg. Gemessen mit den Zeichenbreiten aus
+  `text-width.ts` (Font 0), Feld je Modell (`DEVICE_DETAIL_NAME_FIELD`):
+
+  | Modell | Feld | Grund |
+  |---|---|---|
+  | eu, us-l | 184 px, 1 Zeile | `tEntity` 184 × 30 px, `isbr=0` |
+  | us-p | 115 px, 2 Zeilen | `tEntity` 115 × 53 px, `isbr=1`: die Nextion bricht zeichenweise um; der Adapter prüft, ob der Text zeichenweise umbrochen in zwei Zeilen passt (kein CR LF) |
+  | web-l | 184 px, 1 Zeile (eu-Tabellen) | bildet eu nach; das Web-Panel hat mehr Platz, dort wird nie gekürzt |
+  | web-p | 115 px, **1 Zeile** (us-p-Tabellen) | bildet us-p nach, bricht den Namen aber nicht um (`nowrap`); 115 px Font 0 (24 px) ≈ 86 px bei den 18 px des Web-Panels, das passt in dessen Namensfeld (121 px bei Textzeilen) auch mit breiterer Ersatzschrift |
+
+  - Beispiele (echte Ergebnisse): eu/us-l/us-p/web-l: „Temperatur 100“ (134 px), „Temperatur Ext 100“ (165 px) und
+    „Temperatur Relay0“ (159 px) passen ungekürzt; „Luftfeuchtigkeit Ext 100“ (203 px) → eu „Luftfeuchti... Ext 100“,
+    us-p ungekürzt (zwei Zeilen). web-p: „Temper... 100“, „Te... Ext 100“, „Tem... Relay0“.
+  - Grenzfall: passt vor Zusatz und „...“ nicht einmal ein Zeichen des Namens, zeigt die Zeile nur den Zusatz
+    (eu: „Signalstärke“ + „Wohnzimmer Decke“ → „Wohnzimmer Decke“). Ist der Zusatz allein schon breiter als das Feld,
+    schneidet ihn das Feld wie bisher am Ende ab (kein Kürzen durch den Adapter).
+  - Zeilen ohne Zusatz werden nicht gekürzt, das Feld schneidet sie wie jede andere cardEntities-Zeile ab.
 
 ### Farben
 

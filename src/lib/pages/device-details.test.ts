@@ -8,6 +8,7 @@ import {
     deviceDetailGroupColor,
     deviceDetailPageConfig,
     deviceDetailRowItem,
+    deviceDetailNameWithSuffix,
     deviceDetailRowNames,
     deviceDetailRows,
 } from './device-details';
@@ -209,10 +210,12 @@ describe('lib/pages/device-details', () => {
                 [{}, {}, {}, { name: { en: 'Frequency', de: 'Frequenz' } }, undefined],
                 key => `T(${key})`,
                 'de',
+                'eu',
             );
+            // the long test name 'T(deviceDetail_power)' does not fit 184 px together with its suffix
             expect(names).to.deep.equal([
-                'T(deviceDetail_power) Relay0',
-                'T(deviceDetail_power) Relay1',
+                'T(deviceDet... Relay0',
+                'T(deviceDet... Relay1',
                 'T(deviceDetail_rssi)',
                 'Frequenz',
                 'Unnamed',
@@ -228,6 +231,7 @@ describe('lib/pages/device-details', () => {
                 [{}, {}],
                 () => 'Temperatur',
                 'de',
+                'eu',
             );
             expect(names).to.deep.equal(['Temperatur Relay0', 'Temperatur Ext 100']);
         });
@@ -238,6 +242,7 @@ describe('lib/pages/device-details', () => {
                 [{}],
                 () => 'Temperatur',
                 'de',
+                'eu',
             );
             expect(names).to.deep.equal(['Temperatur']);
         });
@@ -251,8 +256,92 @@ describe('lib/pages/device-details', () => {
                 [{}, {}],
                 key => (key === 'deviceDetail_temperature' ? 'Temperatur' : 'WLAN'),
                 'de',
+                'eu',
             );
             expect(names).to.deep.equal(['Temperatur Garten', 'WLAN']);
+        });
+        it('the suffix fits the name field of eu (184 px): nothing is shortened', () => {
+            const names = deviceDetailRowNames(
+                DEV,
+                [
+                    { key: 'temperature', id: `${DEV}.Ext.temperature100C` },
+                    { key: 'temperature', id: `${DEV}.Ext.temperature101C` },
+                    { key: 'temperature', id: `${DEV}.Relay0.temperatureC` },
+                ],
+                [{}, {}, {}],
+                () => 'Temperatur',
+                'de',
+                'eu',
+            );
+            // 'Temperatur Ext 100' = 165 px, 'Temperatur Relay0' = 159 px of font 0
+            expect(names).to.deep.equal(['Temperatur Ext 100', 'Temperatur Ext 101', 'Temperatur Relay0']);
+        });
+        it('a row without suffix is never shortened', () => {
+            const long = 'Luftfeuchtigkeit Luftfeuchtigkeit Luftfeuchtigkeit';
+            const names = deviceDetailRowNames(
+                DEV,
+                [{ key: 'humidity', id: `${DEV}.humidity` }],
+                [{}],
+                () => long,
+                'de',
+                'web-p',
+            );
+            expect(names).to.deep.equal([long]);
+        });
+    });
+
+    describe('name with suffix in the name field', () => {
+        it('fits: unchanged, on every model', () => {
+            for (const model of ['eu', 'us-l', 'us-p', 'web-l'] as const) {
+                expect(deviceDetailNameWithSuffix('Temperatur', '100', model)).to.equal('Temperatur 100');
+                expect(deviceDetailNameWithSuffix('Temperatur', 'Ext 100', model)).to.equal('Temperatur Ext 100');
+            }
+        });
+        it('no suffix: the name as it is', () => {
+            expect(deviceDetailNameWithSuffix('Luftfeuchtigkeit Luftfeuchtigkeit', '', 'eu')).to.equal(
+                'Luftfeuchtigkeit Luftfeuchtigkeit',
+            );
+        });
+        it('eu: only the name is shortened (font 0 has no …: "..."), the suffix stays complete', () => {
+            // 'Luftfeuchtigkeit Ext 100' = 203 px > 184, 'Luftfeuchti... Ext 100' = 175 px
+            expect(deviceDetailNameWithSuffix('Luftfeuchtigkeit', 'Ext 100', 'eu')).to.equal('Luftfeuchti... Ext 100');
+            expect(deviceDetailNameWithSuffix('Luftfeuchtigkeit', 'Ext 100', 'us-l')).to.equal(
+                'Luftfeuchti... Ext 100',
+            );
+        });
+        it('web-p: one line of the us-p width (115 px)', () => {
+            expect(deviceDetailNameWithSuffix('Temperatur', '100', 'web-p')).to.equal('Temper... 100');
+            expect(deviceDetailNameWithSuffix('Temperatur', 'Ext 100', 'web-p')).to.equal('Te... Ext 100');
+            expect(deviceDetailNameWithSuffix('Temperatur', 'Relay0', 'web-p')).to.equal('Tem... Relay0');
+        });
+        it('us-p: two lines of 115 px wrapped character by character', () => {
+            // 203 px: 'Luftfeuchtigkeit E' / 'xt 100' - both lines drawn
+            expect(deviceDetailNameWithSuffix('Luftfeuchtigkeit', 'Ext 100', 'us-p')).to.equal(
+                'Luftfeuchtigkeit Ext 100',
+            );
+            expect(deviceDetailNameWithSuffix('Signalstärke', 'Wohnzimmer Decke', 'us-p')).to.equal(
+                'Sign... Wohnzimmer Decke',
+            );
+        });
+        it('long own text: the name is dropped if not one character fits in front of it', () => {
+            // 'Wohnzimmer Decke' = 168 px fits alone, 'S... Wohnzimmer Decke' does not
+            expect(deviceDetailNameWithSuffix('Signalstärke', 'Wohnzimmer Decke', 'eu')).to.equal('Wohnzimmer Decke');
+            // wider than the field on its own: the suffix alone, the field cuts it
+            expect(deviceDetailNameWithSuffix('Temperatur', 'Garten hinten links am Zaun', 'eu')).to.equal(
+                'Garten hinten links am Zaun',
+            );
+        });
+        it('own text through the row names on web-p', () => {
+            const names = deviceDetailRowNames(
+                DEV,
+                [{ key: 'temperature', id: `${DEV}.Ext.temperature100C`, subName: 'Garten Süd' }],
+                [{}],
+                () => 'Temperatur',
+                'de',
+                'web-p',
+            );
+            // 'Garten Süd' fits 115 px alone, 'T... Garten Süd' does not
+            expect(names).to.deep.equal(['Garten Süd']);
         });
     });
 
@@ -291,6 +380,7 @@ describe('lib/pages/device-details', () => {
                 async id => Promise.resolve(objects[id] ?? null),
                 key => key,
                 'en',
+                'eu',
             );
             expect(result.headline).to.equal('Kitchen light');
             expect(result.rows).to.have.length(1);
