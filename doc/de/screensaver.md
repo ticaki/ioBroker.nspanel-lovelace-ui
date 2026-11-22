@@ -469,9 +469,14 @@ Das Feld **Pageitem** listet die Timer-Items auf den Seiten der Panels dieses Bi
 
 #### Quelle: Alexa-Timer (alexa2)
 
-Zwei Auswahlfelder: **alexa2-Instanz** und **Echo-Gerät**. Angeboten werden die Geräte der Instanz, die Timer können (`Info.capabilities` enthält `TIMERS_AND_ALARMS`), mit ihrem Namen aus `Info.name`. Solange eines der beiden Felder leer ist, meldet der Dialog *Bitte alexa2-Instanz und Echo-Gerät wählen.*
+| Feld | Bedeutung |
+|---|---|
+| **alexa2-Instanz** | Die alexa2-Instanz mit dem Echo-Gerät. Angeboten werden alle installierten Instanzen. |
+| **Echo-Gerät** | Das Gerät, dessen Timer der Bildschirmschoner zeigt. Angeboten werden nur Geräte, deren `Info.capabilities` `TIMERS_AND_ALARMS` enthält, beschriftet mit `Info.name` und der Seriennummer. |
 
-**Wichtig – Option in alexa2:** Ist in der gewählten alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** (`autoQueryActivityOnTrigger`) aus, warnt der Dialog. Ohne sie erscheinen per Sprache gestellte Timer nie in alexa2 und damit auch nicht am Panel. Die Option in den Einstellungen der alexa2-Instanz einschalten.
+Solange eines der beiden Felder leer ist, meldet der Dialog *Bitte alexa2-Instanz und Echo-Gerät wählen.* Wecker zeigt der Bildschirmschoner nicht, nur Timer.
+
+**Wichtig – Option in alexa2:** Ist in der gewählten alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** (`autoQueryActivityOnTrigger`) aus, meldet der Dialog *In dieser alexa2-Instanz ist die Option „Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab“ aus: per Sprache gestellte Timer erscheinen dann nie. Bitte in den Einstellungen der alexa2-Instanz einschalten.* Ohne die Option erscheinen per Sprache gestellte Timer nie in alexa2 und damit auch nicht am Panel.
 
 - Angezeigt wird ein klingelnder Timer, sonst der laufende mit der kürzesten Restzeit. Die Restzeit rechnet der Adapter aus der Endzeit des Timers.
 - Ein per Sprache gestellter Timer erscheint etwa 10 Sekunden später am Panel – so lange braucht alexa2.

@@ -469,9 +469,14 @@ The field **Page item** lists the timer items on the pages of the panels of this
 
 #### Source: Alexa timer (alexa2)
 
-Two select fields: **alexa2 instance** and **Echo device**. Offered are the devices of the instance that can do timers (`Info.capabilities` contains `TIMERS_AND_ALARMS`), with their name from `Info.name`. While one of the two fields is empty, the dialog says *Choose the alexa2 instance and the Echo device.*
+| Field | Meaning |
+|---|---|
+| **alexa2 instance** | The alexa2 instance with the Echo device. All installed instances are offered. |
+| **Echo device** | The device whose timers the screensaver shows. Only devices whose `Info.capabilities` contains `TIMERS_AND_ALARMS` are offered, labelled with `Info.name` and the serial number. |
 
-**Important – option in alexa2:** If the option **Automatically query activity on device interaction** (`autoQueryActivityOnTrigger`) is off in the chosen alexa2 instance, the dialog warns. Without it, timers set by voice never show up in alexa2 and so not on the panel either. Switch the option on in the settings of the alexa2 instance.
+While one of the two fields is empty, the dialog says *Choose the alexa2 instance and the Echo device.* The screensaver shows timers only, no alarms.
+
+**Important – option in alexa2:** If the option **Automatically query activity on device interaction** (`autoQueryActivityOnTrigger`) is off in the chosen alexa2 instance, the dialog says *In this alexa2 instance the option "Automatically query activity on device interaction" is off: timers set by voice never show up. Switch it on in the settings of the alexa2 instance.* Without the option, timers set by voice never show up in alexa2 and so not on the panel either.
 
 - Shown is a ringing timer, otherwise the running one with the shortest remaining time. The adapter counts the remaining time from the end time of the timer.
 - A timer set by voice shows up on the panel about 10 seconds later – that is how long alexa2 takes.
