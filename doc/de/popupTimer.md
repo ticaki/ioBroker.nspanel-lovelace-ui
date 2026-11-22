@@ -217,16 +217,30 @@ Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen �
 
 Oben in der [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration) steht die **Art des Items**: **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** oder **Alexa-Timer**. Die Wahl gibt es auf allen Seiten mit Pageitems (cardGrid, cardGrid2, cardGrid3, cardEntities, cardSchedule, cardThermo2, cardMedia). Ist **Ist eine Navigation** gesetzt, ist **Alexa-Timer** gesperrt – eine Navigation kann kein Timer sein.
 
-Bei **Alexa-Timer** wählt man **alexa2-Instanz** und **Echo-Gerät**, bei **Anzeigen** **Timer** (Vorgabe) oder **Wecker**, dazu **Name**, Symbole und Farben für *Bedingung ist wahr* (ein Timer ist aktiv) und *Bedingung ist unwahr*. Ohne Namen heißt der Eintrag *Timer*. **Übernehmen** bleibt gesperrt, bis Instanz und Gerät gewählt sind.
+Bei **Alexa-Timer** zeigt der Dialog diese Felder:
+
+| Feld | Bedeutung |
+|---|---|
+| **alexa2-Instanz** | Die alexa2-Instanz mit dem Echo-Gerät. Angeboten werden alle installierten Instanzen. |
+| **Echo-Gerät** | Das Gerät, dessen Timer oder Wecker das Item zeigt. Angeboten werden nur Geräte, deren `Info.capabilities` `TIMERS_AND_ALARMS` enthält, beschriftet mit `Info.name` und der Seriennummer. Wechselt man Instanz oder Gerät, muss ein bestimmter Wecker neu gewählt werden. |
+| **Anzeigen** | **Timer** (Vorgabe) oder **Wecker**. Was der Wecker zeigt, steht unter [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts). |
+| **Welcher Wecker** | Nur bei **Wecker**: **Nächster aktiver Wecker** (Vorgabe) oder **Bestimmter Wecker**. |
+| **Wecker des Geräts** | Nur bei **Bestimmter Wecker**: einer der Wecker des Echos, beschriftet mit Uhrzeit und Wiederholung. |
+| **Name** | Name in Liste und Popup; leer = *Timer*. |
+| **Bedingung ist wahr** / **Bedingung ist unwahr** | Symbol und Farbe, solange ein Timer aktiv bzw. der Wecker eingeschaltet ist, und sonst. Leer = Vorgaben `timer` / `timer-off`, beim Wecker `alarm` / `alarm-off`. |
+
+**Übernehmen** bleibt gesperrt, bis Instanz und Gerät gewählt sind – bei **Bestimmter Wecker** auch der Wecker.
 
 Meldungen des Dialogs:
 
 | Meldung | Bedeutung |
 |---|---|
-| *In dieser alexa2-Instanz ist die Option „…“ aus: per Sprache gestellte Timer erscheinen dann nie.* | Option in den Einstellungen der alexa2-Instanz einschalten. |
+| *In dieser alexa2-Instanz ist die Option „Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab“ aus: per Sprache gestellte Timer erscheinen dann nie. Bitte in den Einstellungen der alexa2-Instanz einschalten.* | Option in den Einstellungen der alexa2-Instanz einschalten. |
 | *Es ist keine alexa2-Instanz installiert.* | alexa2 installieren und einrichten. |
 | *Diese Instanz hat kein Echo-Gerät mit Timern.* | Andere Instanz wählen, oder alexa2 hat die Geräte noch nicht gelesen. |
 | *Das gewählte Gerät gibt es in dieser Instanz nicht mehr oder es hat keine Timer.* | Ein anderes Gerät wählen. |
+| *Dieses Gerät hat keine Wecker.* | Bei **Bestimmter Wecker**: Am Echo gibt es keinen Wecker, der gewählt werden könnte. |
+| *Den gewählten Wecker gibt es nicht mehr. Am Panel bleibt das Item ohne Tasten, bis ein anderer gewählt wird.* | Der Wecker wurde gelöscht; einen anderen wählen. |
 
 Wechselt man im offenen Dialog zwischen den beiden Arten, bleiben die Felder der anderen Art bis zum Schließen erhalten; gespeichert wird nur die gewählte Art.
 
@@ -262,7 +276,7 @@ Darunter folgt die Auswahl **Welcher Wecker**:
 | **Nächster aktiver Wecker** (Vorgabe) | den eingeschalteten Wecker, der als nächster klingelt | **Aus** schaltet genau diesen Wecker aus. Danach zeigt das Item den nächsten eingeschalteten – ein weiterer Druck auf **Aus** würde auch diesen ausschalten. Die Uhrzeit lässt sich hier nicht ändern. Ist keiner eingeschaltet: `00:00`, Symbol aus, keine Tasten. |
 | **Bestimmter Wecker** | immer denselben Wecker, auch wenn er aus ist | **An** und **Aus**; solange er aus ist, lässt sich die Uhrzeit im Popup ändern. |
 
-Bei **Bestimmter Wecker** erscheint das Feld **Wecker des Geräts** mit allen Weckern des Echos, beschriftet mit Uhrzeit und Wiederholung, z. B. *07:30 · MO,TU,WE,TH,FR* oder *06:00 · einmalig 2026-11-13*; hat der Wecker einen Namen, steht er vorn. **Übernehmen** bleibt gesperrt, bis ein Wecker gewählt ist. Gibt es den gewählten Wecker nicht mehr, sagt der Dialog *Den gewählten Wecker gibt es nicht mehr. Am Panel bleibt das Item ohne Tasten, bis ein anderer gewählt wird.* – am Panel zeigt das Item dann `00:00` ohne Tasten, und das Log warnt einmal.
+Das Feld **Wecker des Geräts** beschriftet jeden Wecker mit Uhrzeit und Wiederholung, z. B. *07:30 · MO,TU,WE,TH,FR* oder *06:00 · einmalig 2026-11-13*; hat der Wecker einen Namen, steht er vorn. Gibt es den gewählten Wecker nicht mehr, zeigt das Item am Panel `00:00` ohne Tasten, und das Log warnt einmal.
 
 Was der Adapter schreibt:
 

@@ -217,16 +217,30 @@ Instead of a channel, a timer item can show the timers of an **Echo device** –
 
 At the top of the [Pageitem Configuration](PageConfig-Dialoge#1-pageitem-configuration) there is the **Kind of item**: **Standard (channel, custom button, navigation)** or **Alexa timer**. The choice exists on all pages with page items (cardGrid, cardGrid2, cardGrid3, cardEntities, cardSchedule, cardThermo2, cardMedia). With **Is a navigation** ticked, **Alexa timer** is locked – a navigation cannot be a timer.
 
-With **Alexa timer** you choose the **alexa2 instance** and the **Echo device**, at **Show** **Timer** (default) or **Alarm**, plus **Name**, icons and colours for *Condition is true* (a timer is active) and *Condition is false*. Without a name the entry is called *Timer*. **Apply** stays disabled until instance and device are chosen.
+With **Alexa timer** the dialog shows these fields:
+
+| Field | Meaning |
+|---|---|
+| **alexa2 instance** | The alexa2 instance with the Echo device. All installed instances are offered. |
+| **Echo device** | The device whose timers or alarms the item shows. Only devices whose `Info.capabilities` contains `TIMERS_AND_ALARMS` are offered, labelled with `Info.name` and the serial number. After changing instance or device a specific alarm has to be chosen again. |
+| **Show** | **Timer** (default) or **Alarm**. What the alarm shows is under [Alarms of an Echo device](#alarms-of-an-echo-device). |
+| **Which alarm** | With **Alarm** only: **Next active alarm** (default) or **A specific alarm**. |
+| **Alarm of the device** | With **A specific alarm** only: one of the alarms of the Echo, labelled with time and repetition. |
+| **Name** | Name in list and popup; empty = *Timer*. |
+| **Condition is true** / **Condition is false** | Icon and colour while a timer is active or the alarm is switched on, and otherwise. Empty = defaults `timer` / `timer-off`, for an alarm `alarm` / `alarm-off`. |
+
+**Apply** stays disabled until instance and device are chosen – with **A specific alarm** also the alarm.
 
 Messages of the dialog:
 
 | Message | Meaning |
 |---|---|
-| *In this alexa2 instance the option "…" is off: timers set by voice never show up.* | Switch the option on in the settings of the alexa2 instance. |
+| *In this alexa2 instance the option "Automatically query activity on device interaction" is off: timers set by voice never show up. Switch it on in the settings of the alexa2 instance.* | Switch the option on in the settings of the alexa2 instance. |
 | *No alexa2 instance is installed.* | Install and set up alexa2. |
 | *This instance has no Echo device with timers.* | Choose another instance, or alexa2 has not read the devices yet. |
 | *The chosen device is no longer found in this instance or has no timers.* | Choose another device. |
+| *This device has no alarms.* | With **A specific alarm**: the Echo has no alarm that could be chosen. |
+| *The chosen alarm no longer exists. On the panel the item stays without buttons until another one is chosen.* | The alarm was deleted; choose another one. |
 
 Switching between the two kinds in the open dialog keeps the fields of the other kind until the dialog closes; only the chosen kind is saved.
 
@@ -262,7 +276,7 @@ Below follows the choice **Which alarm**:
 | **Next active alarm** (default) | the switched-on alarm that rings next | **Off** switches exactly this alarm off. Afterwards the item shows the next switched-on one – another press on **Off** would switch that one off as well. The time cannot be changed here. With none switched on: `00:00`, icon off, no buttons. |
 | **A specific alarm** | always the same alarm, also while it is off | **On** and **Off**; while it is off, the time can be changed in the popup. |
 
-With **A specific alarm** the field **Alarm of the device** appears with all alarms of the Echo, labelled with time and repetition, e.g. *07:30 · MO,TU,WE,TH,FR* or *06:00 · once 2026-11-13*; an alarm with a name has it in front. **Apply** stays disabled until an alarm is chosen. If the chosen alarm no longer exists, the dialog says *The chosen alarm no longer exists. On the panel the item stays without buttons until another one is chosen.* – on the panel the item then shows `00:00` without buttons, and the log warns once.
+The field **Alarm of the device** labels each alarm with time and repetition, e.g. *07:30 · MO,TU,WE,TH,FR* or *06:00 · once 2026-11-13*; an alarm with a name has it in front. If the chosen alarm no longer exists, the item shows `00:00` without buttons on the panel, and the log warns once.
 
 What the adapter writes:
 
