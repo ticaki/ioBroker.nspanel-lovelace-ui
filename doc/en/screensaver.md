@@ -469,6 +469,8 @@ The field **Page item** lists the timer items on the pages of the panels of this
 
 #### Source: Alexa timer (alexa2)
 
+![The dialog of the time with the source Alexa timer: alexa2 instance and Echo device](../Pictures/screensaverAdmin/admin-32-timer-quelle-alexa.png)
+
 | Field | Meaning |
 |---|---|
 | **alexa2 instance** | The alexa2 instance with the Echo device. All installed instances are offered. |
@@ -479,11 +481,13 @@ While one of the two fields is empty, the dialog says *Choose the alexa2 instanc
 **Important – option in alexa2:** If the option **Automatically query activity on device interaction** (`autoQueryActivityOnTrigger`) is off in the chosen alexa2 instance, the dialog says *In this alexa2 instance the option "Automatically query activity on device interaction" is off: timers set by voice never show up. Switch it on in the settings of the alexa2 instance.* Without the option, timers set by voice never show up in alexa2 and so not on the panel either.
 
 - Shown is a ringing timer, otherwise the running one with the shortest remaining time. The adapter counts the remaining time from the end time of the timer.
-- A timer set by voice shows up on the panel about 10 seconds later – that is how long alexa2 takes.
+- A timer set by voice shows up on the panel about 10 seconds later – that is how long alexa2 takes. Started through a page item it is about 6 seconds.
 - A ringing timer stands as `0.0` in red until it is stopped – on the Echo by voice or through a page item.
 - There is no pause; the info icon `timer-pause` does not occur with this source.
 - Page items with **Use the timer of the screensaver** start and stop the timer through the Echo device, as described in the [timer popup](popupTimer#7-alexa-timer-alexa2). A page item of the kind **Alexa timer** with the same device works the same way.
 - If the device cannot be found, the panel shows the clock and the log warns; further pitfalls under [Pitfalls of the Alexa timer](popupTimer#pitfalls-of-the-alexa-timer).
+
+![The web panel shows the remaining time 1.3 of an Alexa timer on the screensaver, with the hourglass as info icon](../Pictures/screensaverAdmin/admin-33-timer-alexa-restzeit.png)
 
 #### Display on the panel
 

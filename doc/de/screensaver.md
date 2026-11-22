@@ -469,6 +469,8 @@ Das Feld **Pageitem** listet die Timer-Items auf den Seiten der Panels dieses Bi
 
 #### Quelle: Alexa-Timer (alexa2)
 
+![Der Uhrzeit-Dialog mit der Quelle Alexa-Timer: alexa2-Instanz und Echo-Gerät](../Pictures/screensaverAdmin/admin-32-timer-quelle-alexa.png)
+
 | Feld | Bedeutung |
 |---|---|
 | **alexa2-Instanz** | Die alexa2-Instanz mit dem Echo-Gerät. Angeboten werden alle installierten Instanzen. |
@@ -479,11 +481,13 @@ Solange eines der beiden Felder leer ist, meldet der Dialog *Bitte alexa2-Instan
 **Wichtig – Option in alexa2:** Ist in der gewählten alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** (`autoQueryActivityOnTrigger`) aus, meldet der Dialog *In dieser alexa2-Instanz ist die Option „Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab“ aus: per Sprache gestellte Timer erscheinen dann nie. Bitte in den Einstellungen der alexa2-Instanz einschalten.* Ohne die Option erscheinen per Sprache gestellte Timer nie in alexa2 und damit auch nicht am Panel.
 
 - Angezeigt wird ein klingelnder Timer, sonst der laufende mit der kürzesten Restzeit. Die Restzeit rechnet der Adapter aus der Endzeit des Timers.
-- Ein per Sprache gestellter Timer erscheint etwa 10 Sekunden später am Panel – so lange braucht alexa2.
+- Ein per Sprache gestellter Timer erscheint etwa 10 Sekunden später am Panel – so lange braucht alexa2. Über ein Pageitem gestartet sind es etwa 6 Sekunden.
 - Ein klingelnder Timer steht als `0.0` in Rot da, bis er gestoppt ist – am Echo per Sprache oder über ein Pageitem.
 - Eine Pause gibt es nicht; das Infoicon `timer-pause` kommt bei dieser Quelle nicht vor.
 - Pageitems mit **Timer aus dem Screensaver verwenden** starten und stoppen den Timer über das Echo-Gerät, wie im [Timer-Popup](popupTimer#7-alexa-timer-alexa2) beschrieben. Ebenso geht ein Pageitem der Art **Alexa-Timer** mit demselben Gerät.
 - Ist das Gerät nicht zu finden, zeigt das Panel die Uhrzeit und das Log warnt; weitere Fallstricke unter [Fallstricke beim Alexa-Timer](popupTimer#fallstricke-beim-alexa-timer).
+
+![Das Web-Panel zeigt auf dem Bildschirmschoner die Restzeit 1.3 eines Alexa-Timers mit der Sanduhr als Infoicon](../Pictures/screensaverAdmin/admin-33-timer-alexa-restzeit.png)
 
 #### Anzeige am Panel
 
