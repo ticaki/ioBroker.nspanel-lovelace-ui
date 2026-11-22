@@ -20,6 +20,8 @@ type AlexaTimerSelectProps = {
     disabled?: boolean;
     /** page items: the choice between the timers and an alarm of the device (`show`, `alarmId`) */
     offerAlarms?: boolean;
+    /** instance and device one below the other in full width (narrow dialogs), else side by side */
+    stacked?: boolean;
 };
 
 type AlexaTimerSelectState = {
@@ -321,7 +323,14 @@ export class AlexaTimerSelect extends React.Component<AlexaTimerSelectProps, Ale
         const loaded = devicesOf === instance && !loadingDevices;
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', '& > *': { flex: '1 1 200px' } }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        gap: this.props.stacked ? 1 : 2,
+                        flexWrap: 'wrap',
+                        '& > *': { flex: this.props.stacked ? '1 1 100%' : '1 1 200px' },
+                    }}
+                >
                     {this.renderInstance()}
                     {this.renderDevice()}
                 </Box>

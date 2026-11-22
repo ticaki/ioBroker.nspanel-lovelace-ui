@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "Valeur maximale",
     "channelConfigColor_valMin": "Valeur minimale",
     "channelConfigDialog_LongPressChannelId": "ID du canal (appui long)",
-    "channelConfigDialog_alexaAlarmHint": "L'élément affiche un réveil de l'appareil Echo en HH:MM : Marche/Arrêt le commute, l'heure d'un réveil précis peut être modifiée tant qu'il est désactivé. Aucun canal n'est nécessaire.",
+    "channelConfigDialog_alexaAlarmHint": "L'élément affiche un réveil de l'appareil Echo en HH:MM : Marche/Arrêt le commute, l'heure d'un réveil précis peut être modifiée tant qu'il est désactivé. Aucun canal n'est nécessaire. Une nouvelle heure réactive le réveil chez Amazon.",
     "channelConfigDialog_alexaTimerHint": "L'élément affiche le minuteur de l'appareil Echo ; sa fenêtre contextuelle lance un minuteur avec la durée réglée et arrête le minuteur affiché. Aucun canal n'est nécessaire.",
     "channelConfigDialog_brightnessRange": "Plage du curseur de luminosité ; vide ou 0 = valeur du panel",
     "channelConfigDialog_buttonTargetPage": "Page cible après l'appui",

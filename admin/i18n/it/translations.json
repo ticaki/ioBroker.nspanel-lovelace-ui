@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "Valore massimo",
     "channelConfigColor_valMin": "Valore minimo",
     "channelConfigDialog_LongPressChannelId": "ID canale (pressione lunga)",
-    "channelConfigDialog_alexaAlarmHint": "L'elemento mostra una sveglia del dispositivo Echo come HH:MM: On/Off la commuta, l'ora di una sveglia specifica può essere cambiata finché è spenta. Non serve un canale.",
+    "channelConfigDialog_alexaAlarmHint": "L'elemento mostra una sveglia del dispositivo Echo come HH:MM: On/Off la commuta, l'ora di una sveglia specifica può essere cambiata finché è spenta. Non serve un canale. Un nuovo orario riattiva la sveglia presso Amazon.",
     "channelConfigDialog_alexaTimerHint": "L'elemento mostra il timer del dispositivo Echo; il suo popup avvia un timer con il tempo impostato e ferma il timer mostrato. Non serve un canale.",
     "channelConfigDialog_brightnessRange": "Intervallo del cursore di luminosità; vuoto o 0 = predefinito del pannello",
     "channelConfigDialog_buttonTargetPage": "Pagina di destinazione dopo la pressione",

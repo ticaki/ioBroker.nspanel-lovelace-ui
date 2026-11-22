@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "Valor máximo",
     "channelConfigColor_valMin": "Valor mínimo",
     "channelConfigDialog_LongPressChannelId": "ID de canal (pulsación larga)",
-    "channelConfigDialog_alexaAlarmHint": "El elemento muestra una alarma del dispositivo Echo como HH:MM: Encendido/Apagado la conmuta, la hora de una alarma concreta se puede cambiar mientras está apagada. No se necesita ningún canal.",
+    "channelConfigDialog_alexaAlarmHint": "El elemento muestra una alarma del dispositivo Echo como HH:MM: Encendido/Apagado la conmuta, la hora de una alarma concreta se puede cambiar mientras está apagada. No se necesita ningún canal. Una nueva hora vuelve a activar la alarma en Amazon.",
     "channelConfigDialog_alexaTimerHint": "El elemento muestra el temporizador del dispositivo Echo; su ventana emergente inicia un temporizador con el tiempo ajustado y detiene el temporizador mostrado. No se necesita ningún canal.",
     "channelConfigDialog_brightnessRange": "Rango del control de brillo; vacío o 0 = valor del panel",
     "channelConfigDialog_buttonTargetPage": "Página de destino tras pulsar",

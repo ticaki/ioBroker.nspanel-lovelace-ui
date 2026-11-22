@@ -1331,6 +1331,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     socket={this.props.oContext?.socket}
                     value={alexa}
                     onChange={value => this.setTimer({ alexa: value })}
+                    stacked
                 />
                 <Typography
                     variant="caption"

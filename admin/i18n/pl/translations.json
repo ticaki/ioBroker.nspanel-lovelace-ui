@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "Maksymalna wartość",
     "channelConfigColor_valMin": "Wartość minimalna",
     "channelConfigDialog_LongPressChannelId": "ID kanału (długie naciśnięcie)",
-    "channelConfigDialog_alexaAlarmHint": "Element pokazuje budzik urządzenia Echo jako GG:MM: Wł./Wył. przełącza go, godzinę określonego budzika można zmienić, gdy jest wyłączony. Kanał nie jest potrzebny.",
+    "channelConfigDialog_alexaAlarmHint": "Element pokazuje budzik urządzenia Echo jako GG:MM: Wł./Wył. przełącza go, godzinę określonego budzika można zmienić, gdy jest wyłączony. Kanał nie jest potrzebny. Nowa godzina ponownie włącza budzik w Amazon.",
     "channelConfigDialog_alexaTimerHint": "Element pokazuje minutnik urządzenia Echo; jego okno uruchamia minutnik z ustawionym czasem i zatrzymuje pokazany minutnik. Kanał nie jest potrzebny.",
     "channelConfigDialog_brightnessRange": "Zakres suwaka jasności; puste lub 0 = domyślne panelu",
     "channelConfigDialog_buttonTargetPage": "Strona docelowa po naciśnięciu",
