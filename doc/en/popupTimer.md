@@ -1,13 +1,13 @@
 # Timer popup
 
-This page explains timers on the panel: first in plain words what a timer is and which kind to take for what, then three step-by-step guides. From [Reference](#reference) on follow the details – states, buttons, limits.
+This page explains timers on the panel: first in plain words what a timer is and which kind to take for what, then two step-by-step guides and an example. From [Reference](#reference) on follow the details – states, buttons, limits and finally the timers and alarms of an Echo device.
 
 Contents:
 - [What is a timer on the panel?](#what-is-a-timer-on-the-panel)
 - [Which kind do I need?](#which-kind-do-i-need)
 - [Quick start: egg timer (internal timer)](#quick-start-egg-timer-internal-timer)
-- [Quick start: Alexa timer as a page item](#quick-start-alexa-timer-as-a-page-item)
 - [Quick start: remaining time on the screensaver](#quick-start-remaining-time-on-the-screensaver)
+  - [Example: script timer on the screensaver](#example-script-timer-on-the-screensaver)
 - [Reference](#reference)
   - [1. Operating modes](#1-operating-modes)
   - [2. States](#2-states)
@@ -42,13 +42,15 @@ All kinds look the same on the panel. They differ in **who counts the time** and
 | I want to … | take … | who counts | what I create in the admin | typical example |
 |---|---|---|---|---|
 | set a time on the panel and let it run down | **Internal** | the adapter | a channel with the role `level.timer` – it needs no states | egg timer in the kitchen |
-| show the remaining time a script of my own or another adapter counts | **External** | the script | a channel `level.timer` with `ACTUAL` (remaining time in seconds), plus `STATUS` and `SET` so that there are buttons | remaining time of the washing machine |
+| show the remaining time a script of my own or another adapter counts | **External** | the script | a channel `level.timer` with `ACTUAL` (remaining time in seconds), plus `STATUS` and `SET` so that there are buttons | remaining time of the washing machine; a script timer set by a voice control of your own |
 | show a fixed wake-up time and switch it on and off | **Alarm clock** | nobody, it is a clock time | a channel `level.timer` with `ACTUAL` of the role `date`, plus `SET` and `STATUS` | alarm at 6:30 |
-| show, start and stop the timers of an Echo device | **Alexa timer** | the Echo device | no channel: in the item dialog choose the kind **Alexa timer** and the Echo device | *"Alexa, set a timer for 10 minutes"* and see the time on the panel |
-| see an alarm of an Echo device and switch it on or off | **Alexa alarm** | the Echo device | no channel: kind **Alexa timer**, Echo device, **Show** **Alarm** | the weekday alarm at 6:30 on the panel, switched off before the holidays |
 | show the same timer on a page as the screensaver | **From the screensaver** | like the screensaver | a channel `level.timer` and the checkbox **Use the timer of the screensaver** | the screensaver shows the remaining time, the page adds Start and Stop |
 
 If in doubt: for a simple egg timer **Internal** is enough. The exact rules are under [Operating modes](#1-operating-modes).
+
+The kinds can be combined. A typical example: a script of your own counts a timer, it is set through a voice control of your own, and the **screensaver** shows the remaining time – how that works is under [Example: script timer on the screensaver](#example-script-timer-on-the-screensaver).
+
+Timers and alarms of an Echo device (alexa2 adapter) need no channel; they have a section of their own: [Alexa timer (alexa2)](#7-alexa-timer-alexa2).
 
 ## Quick start: egg timer (internal timer)
 
@@ -69,36 +71,40 @@ If in doubt: for a simple egg timer **Internal** is enough. The exact rules are 
 
 If a script should learn about the end, create `STATE` in the channel as well (`boolean`, role `button`, writable): it becomes `true` when the time runs out and when **Finish** is pressed.
 
-## Quick start: Alexa timer as a page item
-
-Requirement: the alexa2 adapter is running, and in its instance the option **Automatically query activity on device interaction** is switched on (why: see [section 7](#7-alexa-timer-alexa2)).
-
-1. In the **PageConfig** tab open a page with page items and click on a free place. – *Result: the Pageitem Configuration is open.*
-2. At the top, at **Kind of item**, choose **Alexa timer**. – *Result: instead of the channel field there are **alexa2 instance** and **Echo device**.*
-3. Choose the **alexa2 instance** and the **Echo device**. Only devices that can do timers are offered. – *Result: without a warning below, everything is ready.*
-4. Enter a **Name** (optional), e.g. *Kitchen*. – *Result: that is the name of the entry; without a name *Timer*.*
-5. **Apply** and **Save** in the tab. – *Result: the page shows the entry.*
-6. **Try it:** say *"Alexa, set a timer for 3 minutes"* to the chosen Echo. – *Result: after about 10 seconds the entry shows the remaining time.* In the popup **Cancel** stops it; while no timer is active, **Start** starts a new one on the Echo.
-
 ## Quick start: remaining time on the screensaver
 
-The screensaver takes its timer from one source. Easiest is a timer page item (e.g. the egg timer from above) or an Echo device directly.
+The screensaver takes its timer from one source. Easiest is a timer page item (e.g. the egg timer from above); if a script of your own counts, take its states.
 
 1. In the **Screensaver** tab open the screensaver of the panel and click on the **time** in the panel picture. – *Result: the dialog of the time is open.*
 2. Tick **Show timer**. – *Result: the field **Source of the timer** appears.*
 3. Choose the source:
    - **Page item with timer popup** and in the field **Page item** the egg timer. If it says *Some timers can only be selected after a page has been changed and saved.*, change the page of the egg timer once and save it.
-   - or **Alexa timer (alexa2)** and below it **alexa2 instance** and **Echo device**.
+   - or **Data points or slot patterns** and below it the **On/off state** and the **Data state** of the script (formats under [Source: two states](screensaver#source-two-states)).
+   - The third source, **Alexa timer (alexa2)**, is described under [Alexa timer](#7-alexa-timer-alexa2).
 
    – *Result: the warning below the field disappears.*
 4. **Apply**, then **Save**. – *Result: the adapter restarts.*
-5. **Try it:** start a timer (on the panel, or by voice on the Echo). – *Result: instead of the clock the screensaver shows the remaining time in minutes, e.g. `2.5`; a tap on it switches back to the clock.*
+5. **Try it:** start a timer (on the panel or through the script). – *Result: instead of the clock the screensaver shows the remaining time in minutes, e.g. `2.5`; a tap on it switches back to the clock.*
 
 All details of the display are under [Timer instead of the clock](screensaver#timer-instead-of-the-clock).
 
+### Example: script timer on the screensaver
+
+A script of your own counts a timer; it is set through a voice control of your own (the script evaluates the voice command). On the panel the screensaver should show the remaining time, and a page should offer Start and Cancel.
+
+1. **States of the script:** the script keeps an on/off state (`true` while the timer runs) and a data state with the end time, e.g. as a timestamp in milliseconds. Which formats work is under [Source: two states](screensaver#source-two-states). – *Result: voice command and script set the timer, without the panel at all.*
+2. **Screensaver:** in the quick start above choose the source **Data points or slot patterns** with these two states. – *Result: while the timer runs, the screensaver shows the remaining time instead of the clock.*
+3. **Page (optional):** create a page item with a channel `level.timer` and tick **Use the timer of the screensaver**. – *Result: the item shows the same timer; **Start** writes data and on/off, **Cancel** sets on/off to false* (details in [section 5](#5-use-the-timer-of-the-screensaver)).
+
+The script needs nothing special for this: it reads on/off and data, no matter whether the voice control or the panel wrote them. Whoever prefers to keep a channel `level.timer` with `ACTUAL` and `STATUS` instead of the two states (mode **External**, see [States](#2-states)) takes the source **Page item with timer popup** in the screensaver and chooses that item.
+
 ## Reference
 
-The following sections describe every kind in detail. Whoever only wants an egg timer or an Alexa timer does not need them.
+The following sections describe every kind in detail. Whoever only wants an egg timer does not need them.
+
+A page item with a channel of the role `level.timer` is a timer: in the list of a page it shows its name and its time, a tap on it opens the **timer popup** with the fields for minutes and seconds and up to three buttons. Depending on the channel the counting is done by the adapter, by a script of your own, by nobody (an alarm clock with a fixed time) – or the item shows the timer of the screensaver.
+
+The item is created like any other through the [Pageitem Configuration](PageConfig-Dialoge#1-pageitem-configuration): pick a channel with the role `level.timer` as the **ioBroker Channel**. Which states the channel may have is listed in the [alias table](ALIAS#leveltimer). The name in the list and in the popup is the **Name** of the dialog, otherwise the name of the channel, and as a last resort *Timer*. The timers of an Echo device do without a channel, see [section 7](#7-alexa-timer-alexa2).
 
 ## 1. Operating modes
 
@@ -110,10 +116,10 @@ The operating mode says **who counts the time**. It is not set anywhere – the 
 | **External** | `ACTUAL` with the role `value.timer` or `level.timer`, or with the unit `s`, `sec` or `ms` | a script of your own |
 | **Alarm clock** | `ACTUAL` with the role `date`, or with another role without a unit of time | nobody – a fixed clock time |
 | **From the screensaver** | checkbox **Use the timer of the screensaver** in the item dialog | like the screensaver, see [section 5](#5-use-the-timer-of-the-screensaver) |
-| **Alexa timer** | kind of item **Alexa timer** in the item dialog, no channel | the Echo device, see [section 7](#7-alexa-timer-alexa2) |
-| **Alexa alarm** | kind **Alexa timer**, **Show** **Alarm** | nobody – a fixed clock time on the Echo, see [Alarms](#alarms-of-an-echo-device) |
 
 A channel with a `SET` only is an internal timer – unless `SET` carries the role `date`, then it is an alarm clock. An external timer or alarm clock with nothing writable and no `STATUS` is a plain time display: the popup shows the time but has no buttons.
+
+An item of the kind **Alexa timer** has no channel; there the Echo device counts, see [section 7](#7-alexa-timer-alexa2).
 
 ## 2. States
 
@@ -130,7 +136,7 @@ Values written from outside only count when they are confirmed (`ack` = the valu
 
 ## 3. Buttons
 
-Which buttons the popup shows and whether the time can be edited depends on the mode and the state:
+Which buttons the popup shows and whether the time can be edited depends on the mode and the state (the buttons of the Alexa timer are in [section 7](#buttons-of-the-alexa-timer)):
 
 ![The popup of a running internal timer](../Pictures/popupTimer/timer-02-intern-laeuft.png)
 
@@ -153,17 +159,8 @@ Which buttons the popup shows and whether the time can be edited depends on the 
 | From the screensaver, running or paused | **Cancel** | no |
 | From the screensaver, expired | **Finish** | no |
 | From the screensaver, not writable | none | no |
-| Alexa timer, no timer | **Start** | yes |
-| Alexa timer, running | **Cancel** | no |
-| Alexa timer, ringing | **Finish** | no |
-| Alexa alarm (specific), off | **On** | yes |
-| Alexa alarm (specific), on | **Off** | no |
-| Alexa alarm (specific), single and past | none | no |
-| Alexa alarm (next active), one is active | **Off** | no |
-| Alexa alarm (next active), none active | none, display `00:00` | no |
-| Alexa alarm, chosen alarm no longer exists | none, display `00:00` | no |
 
-Closing the time fields starts nothing. For an external timer and an alarm clock the adapter writes the time to `SET` (or `ACTUAL`) at once; for an internal timer it remembers it and writes it to `SET` as well, if there is one; with *From the screensaver* and the Alexa timer it only remembers it. Counting begins with **Start** only.
+Closing the time fields starts nothing. For an external timer and an alarm clock the adapter writes the time to `SET` (or `ACTUAL`) at once; for an internal timer it remembers it and writes it to `SET` as well, if there is one; with *From the screensaver* it only remembers it. Counting begins with **Start** only.
 
 **Cancel** and **Clear** set `STATUS` to 0 and, for an external timer, `SET` and `ACTUAL` to 0; `STATE` is left alone. **Finish** does the same and sets `STATE` to `true` in addition.
 
@@ -211,7 +208,18 @@ What list and popup can show – the same for all kinds:
 
 ## 7. Alexa timer (alexa2)
 
-Instead of a channel, a timer item can show the timers of an **Echo device** – or one of its **alarms** (see [Alarms of an Echo device](#alarms-of-an-echo-device)). Both come from the **alexa2** adapter, which maps the Echo devices into ioBroker. No channel is needed. The screensaver knows the timers only, no alarms.
+Instead of a channel, a timer item can show the timers of an **Echo device** – or one of its **alarms** (see [Alarms of an Echo device](#alarms-of-an-echo-device)). Both come from the **alexa2** adapter, which maps the Echo devices into ioBroker. No channel is needed. The screensaver knows the timers only, no alarms; its source **Alexa timer (alexa2)** is under [Source: Alexa timer (alexa2)](screensaver#source-alexa-timer-alexa2).
+
+### Quick start: Alexa timer as a page item
+
+Requirement: the alexa2 adapter is running, and in its instance the option **Automatically query activity on device interaction** is switched on (why: see [Requirements](#requirements)).
+
+1. In the **PageConfig** tab open a page with page items and click on a free place. – *Result: the Pageitem Configuration is open.*
+2. At the top, at **Kind of item**, choose **Alexa timer**. – *Result: instead of the channel field there are **alexa2 instance** and **Echo device**.*
+3. Choose the **alexa2 instance** and the **Echo device**. Only devices that can do timers are offered. – *Result: without a warning below, everything is ready.*
+4. Enter a **Name** (optional), e.g. *Kitchen*. – *Result: that is the name of the entry; without a name *Timer*.*
+5. **Apply** and **Save** in the tab. – *Result: the page shows the entry.*
+6. **Try it:** say *"Alexa, set a timer for 3 minutes"* to the chosen Echo. – *Result: after about 10 seconds the entry shows the remaining time.* In the popup **Cancel** stops it; while no timer is active, **Start** starts a new one on the Echo.
 
 ### Requirements
 
@@ -270,6 +278,21 @@ Switching between the two kinds in the open dialog keeps the fields of the other
 - There is no **pause**.
 - If the system language of ioBroker is not German, the text goes out in English (*set a timer for 5 minutes*). This form has not been tried on an Echo yet.
 - The panel does not show the name of a timer (*"pasta timer"*).
+- Closing the time fields starts nothing: the adapter only remembers the time, the timer is set with **Start** only.
+
+### Buttons of the Alexa timer
+
+| Kind and state | Buttons | Time editable |
+|---|---|---|
+| Alexa timer, no timer | **Start** | yes |
+| Alexa timer, running | **Cancel** | no |
+| Alexa timer, ringing | **Finish** | no |
+| Alexa alarm (specific), off | **On** | yes |
+| Alexa alarm (specific), on | **Off** | no |
+| Alexa alarm (specific), single and past | none | no |
+| Alexa alarm (next active), one is active | **Off** | no |
+| Alexa alarm (next active), none active | none, display `00:00` | no |
+| Alexa alarm, chosen alarm no longer exists | none, display `00:00` | no |
 
 ### Several timers
 
@@ -318,9 +341,9 @@ What the adapter writes:
 
 ## Pitfalls
 
-- **Alexa timer:** its own pitfalls see [section 7](#pitfalls-of-the-alexa-timer).
 - **The item has no buttons:** Either nothing is writable and there is no `STATUS` (plain display), or the item uses the timer of the screensaver and that has no complete timer – the log says so once. A circle (the item is the source of the screensaver timer at the same time) leaves the item without buttons as well.
 - **The script does not notice the start:** Without `STATUS` there are no Start, Pause and On/Off buttons for an external timer and an alarm clock. Create the state, writable, and read it with `ack`.
 - **After a restart the internal timer does not go on.** It lives in the adapter only; whoever needs that counts in the script and hands `ACTUAL` and `STATUS` to the adapter.
 - **The popup shows `99:59` although more time is left:** The two fields are limited to 99 minutes; the list shows the full time as `HH:MM:SS`.
 - **`STATE` does not come:** Only the end of an internal timer and the button **Finish** set it. **Cancel** and **Clear** are meant not to report an end.
+- **Alexa timer:** its own pitfalls see [section 7](#pitfalls-of-the-alexa-timer).

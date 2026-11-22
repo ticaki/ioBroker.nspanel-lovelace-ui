@@ -52,7 +52,7 @@
 
 **Auf dem Panel**  
 - [Popups](pagePopup)  
-- [Timer und Timer-Popup (auch Alexa)](popupTimer)  
+- [Timer und Timer-Popup](popupTimer)  
 
 **Nachschlagen**  
 - [Alias-Tabelle](ALIAS)  
