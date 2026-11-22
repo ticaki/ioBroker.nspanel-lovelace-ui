@@ -1707,6 +1707,7 @@
     "sendToRequestFail4": "Request to the panel failed",
     "sendToRequestFailBerry": "Did not receive download confirmation from Tasmota after berry installation",
     "sendToStepTimeout": "The adapter did not answer within 30 seconds, the setup keeps running in the background - see the adapter log",
+    "sendToTasmotaNotReachable": "The panel does not answer at this IP. Is the HTTP API enabled in Tasmota? Since Tasmota 15.4.0.2 it is off after flashing: tick Configuration → Configure Other → \"HTTP API enable\" or enter SetOption128 1 in the console. Otherwise check the IP and the network connection.",
     "sendToTopicInUse": "This MQTT topic is already used by another panel.",
     "short": "short",
     "show_home_edges": "Show home links to main",
