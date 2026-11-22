@@ -18,8 +18,9 @@ export interface PowerSlotGeometry {
     /** `true`: the line runs top to bottom (portrait), the dot moves along y */
     vertical: boolean;
     /**
-     * `true` when the start of the line (left / top end) is the item, i.e. a flow towards the
-     * house moves the dot in the direction of the line
+     * `true` when the start of the line (left / top end) is the item (items 0…2), `false` when it
+     * is the house (items 3…5). The dot direction does not depend on it: a positive speed always
+     * moves it to the start of the line, like the HMI (see `flowAlongLine` in CardPower.tsx)
      */
     startsAtItem: boolean;
     /** text box of the name (single line); `undefined`: the layout shows no name (us-p HMI) */

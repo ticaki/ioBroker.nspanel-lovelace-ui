@@ -16,6 +16,10 @@ import { PageChart } from '../pages/pageChart';
 import {
     findChartEntryForScript,
     findPowerEntryForScript,
+    alexaShowsAlarm,
+    copyAlexaTimerConfig,
+    isAlexaTimerComplete,
+    isAlexaTimerConfig,
     isHmiTextSize,
     isScriptNavigatedChart,
     isScriptNavigatedPower,
@@ -2410,6 +2414,9 @@ export class ConfigManager extends BaseClass {
 
         if (db[role] && db[role].data && result[role]) {
             const data = db[role].data;
+            // a role whose datapoints are all optional works with an empty channel (level.timer: internal timer),
+            // so a channel without states is no reason for a warning there
+            const warnIfNoStates = Object.values(data).some(e => e?.required === true);
 
             for (const d of Object.keys(data) as Array<keyof typeof data>) {
                 const dp = d;
@@ -2430,6 +2437,7 @@ export class ConfigManager extends BaseClass {
                             triggered: entry.trigger,
                             writeable: entry.writeable,
                             commonType: entry.type,
+                            warnIfNoStates,
                         });
                     } else {
                         result[role][dp2] = undefined;
@@ -2449,6 +2457,7 @@ export class ConfigManager extends BaseClass {
                                 triggered: entry.trigger,
                                 writeable: entry2.writeable,
                                 commonType: entry.type,
+                                warnIfNoStates,
                             });
                         }
                         if (result[role][dp2]) {
@@ -2524,6 +2533,52 @@ export class ConfigManager extends BaseClass {
         };
     }
 
+    /**
+     * Page item of kind "Alexa timer": a timer item without states, the Echo device is read by the item itself
+     * (src/lib/classes/alexa-timer.ts, for an alarm src/lib/classes/alexa-alarm.ts).
+     *
+     * @param item the script item with `alexaTimer`
+     * @returns the item
+     */
+    private async getAlexaTimerItemConfig(item: ScriptConfig.PageBaseItem): Promise<NSPanel.PageItemDataItemsOptions> {
+        const alexa = item.alexaTimer;
+        if (!isAlexaTimerConfig(alexa) || !isAlexaTimerComplete(alexa)) {
+            throw new Error(
+                alexa?.show === 'alarm' && alexa.alarmId === ''
+                    ? `Alexa alarm: no alarm picked!`
+                    : `Alexa timer: alexa2 instance or Echo device missing!`,
+            );
+        }
+        const alarm = alexaShowsAlarm(alexa);
+        const iconOn = alarm ? pageItemDefaults.timer.iconAlarm : pageItemDefaults.timer.iconOn;
+        const iconOff = alarm ? pageItemDefaults.timer.iconAlarmOff : pageItemDefaults.timer.iconOff;
+        return {
+            role: 'timer',
+            type: 'timer',
+            dpInit: '',
+            alexaTimer: copyAlexaTimerConfig(alexa),
+            itemId: item.itemId,
+            data: {
+                icon: {
+                    true: {
+                        value: await this.getFieldAsDataItemConfig(item.icon || iconOn, true),
+                        color: await this.getIconColor(item.onColor, Color[pageItemDefaults.timer.colorOn]),
+                    },
+                    false: {
+                        value: await this.getFieldAsDataItemConfig(item.icon2 || item.icon || iconOff, true),
+                        color: await this.getIconColor(item.offColor, Color[pageItemDefaults.timer.colorOff]),
+                    },
+                    scale: globals.isIconColorScaleElement(item.colorScale)
+                        ? { type: 'const', constVal: item.colorScale }
+                        : undefined,
+                    maxBri: undefined,
+                    minBri: undefined,
+                },
+                headline: await this.getFieldAsDataItemConfig(item.name || 'Timer', true),
+            },
+        };
+    }
+
     async getPageItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
@@ -2547,6 +2602,9 @@ export class ConfigManager extends BaseClass {
             }
             itemConfig = item.native;
             return { itemConfig, messages };
+        }
+        if ('alexaTimer' in item && item.alexaTimer !== undefined) {
+            return { itemConfig: await this.getAlexaTimerItemConfig(item), messages };
         }
         if ('id' in item && item.id) {
             if (['delete', 'empty'].includes(item.id)) {

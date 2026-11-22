@@ -42,6 +42,10 @@ Zwei Haken am Kopf des Dialogs entscheiden, welche Art von Element entsteht:
 
 **Die beiden Haken schließen sich aus.** Wer den einen setzt, nimmt den anderen zurück — ein Pageitem ist entweder Navigation oder benutzerdefinierter Knopf. (Bis einschließlich 2.2.0 ließen sich beide setzen; der Adapter nahm dann die Navigation.)
 
+#### Art des Items: Standard oder Alexa-Timer
+
+Auf Seiten mit Pageitems steht ganz oben die **Art des Items**. **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** ist alles, was dieser Abschnitt beschreibt. **Alexa-Timer** macht aus dem Item einen Timer, der die Timer eines Echo-Geräts zeigt – statt des Kanalfelds stehen dann **alexa2-Instanz** und **Echo-Gerät** da, dazu **Anzeigen** (**Timer** oder **Wecker**, beim Wecker noch **Welcher Wecker**), Name, Symbole und Farben. Bei gesetztem **Ist eine Navigation** ist **Alexa-Timer** gesperrt. Einzelheiten unter [Timer-Popup](popupTimer#7-alexa-timer-alexa2).
+
 #### Die Zielseite
 
 Ist *Ist eine Navigation* gesetzt, erscheint das Feld **Zielseite**. Es listet die Seiten auf, die dieses Panel kennt — die eigene Seite ist aus der Liste genommen, `main` steht vorn, der Rest alphabetisch. Das Feld nimmt auch einen frei getippten Namen an; praktisch für eine Seite, die erst noch entsteht, aber auch die Stelle, an der ein Tippfehler unbemerkt bleibt.
@@ -307,7 +311,7 @@ Titel *Modusliste (inSel_Alias / modeList)*. Damit bekommt ein Pageitem eine **A
 
 Die Meldungen sind die **englischen Logtexte** des Adapters, unabhängig von der Sprache des Admins.
 
-Sind schon vorher Datenpunkte als fehlend oder doppelt erkannt oder passt die Rolle nicht, heißt der Knopf nicht *Übernehmen*, sondern **Details…** und ist orange — er führt direkt in dieses Fenster.
+Sind schon vorher Datenpunkte als fehlend oder doppelt erkannt oder passt die Rolle nicht, heißt der Knopf nicht *Übernehmen*, sondern **Details…** und ist orange — er führt direkt in dieses Fenster. Ein Kanal ganz ohne Datenpunkte zählt dazu, außer seine Rolle hat keinen Pflicht-Datenpunkt — etwa `level.timer`, der leer ein interner Timer ist.
 
 > **Ein fehlendes Objekt ist etwas anderes als ein fehlender Datenpunkt.** Steht unter dem Kanalfeld *Objekt nicht in ioBroker gefunden*, sperrt der Dialog alle Felder außer der ID, und der Knopf heißt zwar **Details…**, bleibt aber **grau und ohne Funktion** (er ist derselbe Knopf wie *Übernehmen* und braucht einen existierenden Kanal). Der einzige Weg aus diesem Zustand ist, die ID richtigzustellen — oder **Abbrechen**.
 

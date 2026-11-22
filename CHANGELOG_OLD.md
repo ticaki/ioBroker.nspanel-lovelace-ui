@@ -1,4 +1,25 @@
 # Older changes
+## 2.3.1 (2026-11-16)
+- (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language
+- (tt-tom17) Admin, developer tab: flashing a custom TFT also works with an external MQTT broker - the box asks for the "IP of the ioBroker" itself
+- (ticaki) color scale: with a best value and a best color, the range above the best value is no longer inverted - the colors now run min color → best color → max color; no more invalid color when the best value equals the max value (fixed #896)
+- (ticaki) Admin, color options: in the gradient modes (triGrad, quadriGrad and their anchor variants) the color fields Min/Max/Best are disabled, as these modes do not use them
+
+## 2.3.0 (2026-11-16)
+- (ticaki) panel: with the TFT 6.1.0 and the berry driver 12 the display confirms every message with its checksum and the adapter sends the next one right away instead of waiting 250 ms - pages and the screensaver build up noticeably faster; the screensaver takes its colors with the page change (no black flash), screensaver advanced follows the color theme
+- (ticaki) berry driver 12 (also the emulator berry): faster checksum, takes it ready-made from the adapter, a message split over two serial reads is no longer lost; the maintain tab shows the berry driver of every panel and offers an update
+- (ticaki) screensaver: changes arriving right after each other are sent together, weatherUpdate at most once per second instead of every 2 s, outdated values no longer pile up in the send queue; the update symbol only shows for a TFT older than the recommended one
+- (ticaki) screensaver notification at standby brightness 0: the first tap wakes the display, the second clears the notification, the third leaves the screensaver
+- (ticaki) adapter start: one startup per panel instead of a startup storm; an adapter restart during a TFT update no longer breaks the update
+- (ticaki) changed state texts and display values (`common.states`, unit, min, max, step, name) are picked up at runtime without an adapter restart
+- (ticaki) icons: media player logos `alexa`, `mpd`, `sonos`, `bose` and `volumio` (TFT 6.1.0)
+- (ticaki) admin: flash a custom TFT on one or all panels (tab developer, expert mode); page name filter in the page config, search in the navigation flow, readable zoom buttons in the dark theme
+- (ticaki) Admin >= 8.1.0 required; dependencies updated (MQTT broker aedes 1.2.0 with security fixes)
+- (tt-tom17) popup notification: the left button writes the plain id to `setStateID` and the id with the panel name to `setGlobalID` like the other buttons - **check scripts that read the local datapoint**; a missing `textSize` falls back to 3
+- (tt-tom17) cardThermo/cardThermo2: mode row also with `common.states` as object, fan mode `FAN_ONLY` shown, no outline A on inactive modes, no doubled wrench; fan and dry mode translated by what they do (de: `Lüften`/`Trocknen`)
+- (tt-tom17) screensaver: a tap on a notification that cannot be dismissed is no longer lost; an acknowledged notification of the ioBroker host no longer comes back
+- (tt-tom17) admin: color scale checkbox for item colors, value condition for more navigation roles, "navigation" and "custom button" exclude each other, clearer start page summary and notices, failed script updates are reported, timezone hint, warning about unsaved panels
+
 ## 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
 - (ticaki) admin: export and import the configuration of one panel (merge or overwrite completely, conflict review, secrets only on request)

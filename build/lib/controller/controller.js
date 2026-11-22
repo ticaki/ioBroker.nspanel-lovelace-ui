@@ -44,6 +44,7 @@ var adminShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_panel_setup = require("../tools/panel-setup");
 var import_panel_target = require("./panel-target");
 var import_screensaver_notify_queue = require("../pages/screensaver-notify-queue");
+var import_alexa_timer = require("../classes/alexa-timer");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -65,6 +66,8 @@ class Controller extends Library.BaseClass {
   initPromise;
   /** Owner of the web panels - set by the web server, removes clones with their real panel */
   virtualPanelManager;
+  /** timers of Echo devices (alexa2), shared by screensavers and page items */
+  alexaTimers;
   constructor(adapter, options) {
     super(adapter, options.name);
     switch (this.adapter.config.colorTheme) {
@@ -95,6 +98,25 @@ class Controller extends Library.BaseClass {
     this.mqttClient = options.mqttClient;
     this.statesControler = new import_states_controller.StatesControler(this.adapter);
     this.systemNotification = new import_system_notifications.SystemNotifications(this.adapter);
+    this.alexaTimers = new import_alexa_timer.AlexaTimerRegistry({
+      log: this.log,
+      language: () => this.library.getLocalLanguage(),
+      subscribePattern: (pattern, listener) => this.statesControler.subscribePattern(pattern, listener),
+      unsubscribePattern: (pattern, listener) => this.statesControler.unsubscribePattern(pattern, listener),
+      getForeignStates: (pattern) => this.adapter.getForeignStatesAsync(pattern),
+      setForeignState: async (id, val) => {
+        await this.adapter.setForeignStateAsync(id, val, false);
+      },
+      setTimeout: (cb, ms) => this.adapter.setTimeout(cb, ms),
+      clearTimeout: (timer) => this.adapter.clearTimeout(timer),
+      now: () => Date.now(),
+      getChannelIds: async (pattern) => Object.keys(await this.adapter.getForeignObjectsAsync(pattern, "channel")).map(
+        (id) => {
+          var _a;
+          return (_a = id.split(".").pop()) != null ? _a : id;
+        }
+      )
+    });
     this.options = options;
     if (this.adapter.mqttServer) {
       this.adapter.mqttServer.controller = this;
@@ -684,6 +706,7 @@ class Controller extends Library.BaseClass {
     }
   }
   async delete() {
+    var _a;
     this.unload = true;
     if (this.minuteLoopTimeout) {
       this.adapter.clearTimeout(this.minuteLoopTimeout);
@@ -703,6 +726,7 @@ class Controller extends Library.BaseClass {
     if (this.virtualPanelManager) {
       await this.virtualPanelManager.deleteAll();
     }
+    await ((_a = this.alexaTimers) == null ? void 0 : _a.deleteAll());
     if (this.statesControler) {
       await this.statesControler.delete();
     }

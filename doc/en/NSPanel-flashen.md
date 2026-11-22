@@ -49,3 +49,14 @@ Use the web installer - that is the quickest way - https://tasmota.github.io/ins
 5) Flash Tasmota.
 
 Follow the instructions of the Tasmota web installer - after about 5 minutes your NSPanel is ready for live operation.
+
+> [!IMPORTANT]
+> **Afterwards, be sure to enable the HTTP API!**
+> Since Tasmota **15.4.0.2** the HTTP API is **switched off** after flashing. The adapter sets up the panel through exactly this interface (`http://<IP>/cm?cmnd=…`) — without it the initialisation fails immediately with *Request to the panel failed*, and the log shows `Error in nsPanelInit step 1 … TypeError: fetch failed`.
+>
+> Enable it in the Tasmota web interface under **Configuration → Configure Other → "HTTP API enable"** (tick, save) or on the Tasmota console with:
+> ```
+> SetOption128 1
+> ```
+
+Continue with the [adapter installation and putting the panel into service](Adapter-Installation).

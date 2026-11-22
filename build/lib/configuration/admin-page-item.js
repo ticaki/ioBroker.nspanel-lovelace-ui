@@ -102,6 +102,7 @@ function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
       item.maxValue = typeof preItem.maxValue === "number" ? preItem.maxValue : void 0;
       item.secondRow = preItem.secondRow ? preItem.secondRow : void 0;
       item.useScreensaverTimer = preItem.useScreensaverTimer === true ? true : void 0;
+      item.alexaTimer = (0, import_adminShareConfig.isAlexaTimerConfig)(preItem.alexaTimer) ? (0, import_adminShareConfig.copyAlexaTimerConfig)(preItem.alexaTimer) : void 0;
       item.minValueBrightness = preItem.minValueBrightness ? preItem.minValueBrightness : void 0;
       item.maxValueBrightness = preItem.maxValueBrightness ? preItem.maxValueBrightness : void 0;
       item.minValueColorTemp = preItem.minValueColorTemp ? preItem.minValueColorTemp : void 0;
