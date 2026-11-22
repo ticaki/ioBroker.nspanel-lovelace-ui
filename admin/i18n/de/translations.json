@@ -597,6 +597,7 @@
     "deviceDetailsDialog_shortPress": "Kurzer Tipp",
     "deviceDetailsDialog_shortState": "Ein State des Geräts (an/aus oder Taster)",
     "deviceDetailsDialog_shortStateId": "State des Geräts (an/aus)",
+    "deviceDetailsDialog_stateRequired": "Wähle einen State oder den Kurz-Tipp „Keine“ – ohne State lässt sich das Item nicht übernehmen.",
     "deviceDetailsDialog_state": "State",
     "deviceDetailsDialog_status": "%s – %d Einträge angehakt",
     "deviceDetailsDialog_statusOne": "%s – 1 Eintrag angehakt",

@@ -14,6 +14,7 @@ import {
     CircularProgress,
     FormControl,
     FormControlLabel,
+    FormHelperText,
     FormLabel,
     InputLabel,
     MenuItem,
@@ -29,17 +30,12 @@ import DeviceDetailsFilterDialog from './DeviceDetailsFilterDialog';
 import { ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 import {
     buildDeviceDetailRows,
-    deviceDetailEntriesOfRows,
-    deviceDetailMaskOf,
-    deviceDetailEntryOfState,
-    deviceDetailsAdapter,
     deviceShortPressOf,
     isDeviceShortPressState,
     SENDTO_GET_DEVICE_DETAILS_COMMAND,
     type DeviceDetailEntryConfig,
     type DeviceDetailsConfig,
     type DeviceDetailsInfo,
-    type DeviceDetailsLearned,
     type DeviceSelectionError,
     type DeviceShortPress,
 } from '../../../src/lib/types/deviceDetails';
@@ -62,8 +58,6 @@ export interface DeviceDetailsSectionProps {
     instance: number | string;
     /** the device configuration of the item */
     value: DeviceDetailsConfig;
-    /** the learned ticks per adapter */
-    learned: DeviceDetailsLearned;
     /** short tap `state`: the chosen state of the device ('' = none) */
     stateId: string;
     onStateChange: (id: string) => void;
@@ -79,6 +73,20 @@ export interface DeviceDetailsSectionProps {
      * @param error the reason of the adapter, undefined = ok or no answer
      */
     onChange: (value: DeviceDetailsConfig, error: DeviceSelectionError | undefined) => void;
+    /**
+     * the adapter answered for a device - also after this section was unmounted (the kind of the item was switched
+     * meanwhile): the dialog puts the answer into the fields of the device wherever they are now (deviceAnswer.ts)
+     *
+     * @param id the device the answer is for (trimmed)
+     * @param answer the answer
+     */
+    onAnswer: (id: string, answer: DeviceDetailsInfo) => void;
+    /**
+     * the filter list was saved: the entries belong to the device now
+     *
+     * @param entries the ticked rows in their order
+     */
+    onEntriesChange: (entries: DeviceDetailEntryConfig[]) => void;
 }
 
 interface DeviceDetailsSectionState {
@@ -109,13 +117,10 @@ export default class DeviceDetailsSection extends React.Component<
     DeviceDetailsSectionState
 > {
     private filterDialogRef = React.createRef<DeviceDetailsFilterDialog>();
-    /** the device the saved entries belong to; another device gets the learned ticks */
-    private entriesDeviceId: string;
     private unmounted = false;
 
     constructor(props: DeviceDetailsSectionProps) {
         super(props);
-        this.entriesDeviceId = props.value.deviceId;
         this.state = { info: null, checking: false };
     }
 
@@ -130,9 +135,9 @@ export default class DeviceDetailsSection extends React.Component<
     }
 
     /**
-     * Asks the adapter for the device. A device the entries do not belong to gets the learned ticks and - with the
-     * short tap `state` - the state of the entry `switch` of the mask; a device without such a state gets the short
-     * tap `none`. No answer (adapter offline) changes nothing.
+     * Asks the adapter for the device. The dialog applies the answer ({@link DeviceDetailsSectionProps.onAnswer}) -
+     * also when it comes after the short tap or the kind of the item was switched. No answer (adapter offline) changes
+     * nothing.
      *
      * @param rawId id of the device
      */
@@ -153,39 +158,15 @@ export default class DeviceDetailsSection extends React.Component<
         } catch {
             answer = undefined;
         }
+        if (isDeviceDetailsInfo(answer)) {
+            this.props.onAnswer(id, answer);
+        }
         if (this.unmounted) {
             return;
         }
         this.setState({ checking: false });
-        if (id !== this.props.value.deviceId.trim() || !isDeviceDetailsInfo(answer)) {
-            return;
-        }
-        this.setState({ info: { ...answer, id } });
-        if (!answer.ok) {
-            this.props.onChange(this.props.value, answer.error ?? 'notFound');
-            return;
-        }
-        let value = this.props.value;
-        const otherDevice = this.entriesDeviceId !== id;
-        if (otherDevice) {
-            this.entriesDeviceId = id;
-            const learned = this.props.learned[deviceDetailsAdapter(id)];
-            const rows = buildDeviceDetailRows(id, answer.states, undefined, learned);
-            value = { ...value, deviceId: id, entries: deviceDetailEntriesOfRows(rows) };
-        }
-        this.props.onChange(value, undefined);
-        if (deviceShortPressOf(value) === 'state' && !this.props.stateId.startsWith(`${id}.`)) {
-            const mask = deviceDetailMaskOf(id);
-            const suggested = answer.states.find(
-                s => isDeviceShortPressState(s) && s.read && deviceDetailEntryOfState(mask, s)?.key === 'switch',
-            );
-            if (suggested) {
-                this.props.onStateChange(suggested.id);
-            } else if (otherDevice) {
-                this.props.onShortPressChange('none');
-            } else {
-                this.props.onStateChange('');
-            }
+        if (id === this.props.value.deviceId.trim() && isDeviceDetailsInfo(answer)) {
+            this.setState({ info: { ...answer, id } });
         }
     }
 
@@ -209,8 +190,7 @@ export default class DeviceDetailsSection extends React.Component<
     };
 
     private handleFilterSave = (entries: DeviceDetailEntryConfig[]): void => {
-        this.entriesDeviceId = this.props.value.deviceId;
-        this.props.onChange({ ...this.props.value, entries }, undefined);
+        this.props.onEntriesChange(entries);
     };
 
     /** the line below the device: checking, the reason it cannot be chosen, or the number of ticked rows */
@@ -261,6 +241,8 @@ export default class DeviceDetailsSection extends React.Component<
         const { stateId, value } = this.props;
         const states = this.state.info?.ok ? this.state.info.states.filter(isDeviceShortPressState) : [];
         const known = states.some(s => s.id === stateId);
+        // the item cannot be applied without a state - say why, once the adapter has answered
+        const stateMissing = stateId === '' && !this.state.checking;
         const rest = (id: string): string =>
             id.startsWith(`${value.deviceId}.`) ? id.slice(value.deviceId.length + 1) : id;
         return (
@@ -268,6 +250,7 @@ export default class DeviceDetailsSection extends React.Component<
                 variant="standard"
                 size="small"
                 sx={{ minWidth: 260 }}
+                error={stateMissing}
             >
                 <InputLabel>{I18n.t('deviceDetailsDialog_shortStateId')}</InputLabel>
                 <Select
@@ -288,6 +271,7 @@ export default class DeviceDetailsSection extends React.Component<
                         </MenuItem>
                     ))}
                 </Select>
+                {stateMissing && <FormHelperText>{I18n.t('deviceDetailsDialog_stateRequired')}</FormHelperText>}
             </FormControl>
         );
     }

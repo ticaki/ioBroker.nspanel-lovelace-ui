@@ -597,6 +597,7 @@
     "deviceDetailsDialog_shortPress": "短按",
     "deviceDetailsDialog_shortState": "设备的一个状态（开/关或按钮）",
     "deviceDetailsDialog_shortStateId": "设备状态（开/关）",
+    "deviceDetailsDialog_stateRequired": "请选择一个状态或短按“无” – 没有状态无法应用此项。",
     "deviceDetailsDialog_state": "状态",
     "deviceDetailsDialog_status": "%s - 已勾选 %d 项",
     "deviceDetailsDialog_statusOne": "%s - 已勾选 1 项",
