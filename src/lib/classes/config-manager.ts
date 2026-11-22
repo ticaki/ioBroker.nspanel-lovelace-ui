@@ -2414,6 +2414,9 @@ export class ConfigManager extends BaseClass {
 
         if (db[role] && db[role].data && result[role]) {
             const data = db[role].data;
+            // a role whose datapoints are all optional works with an empty channel (level.timer: internal timer),
+            // so a channel without states is no reason for a warning there
+            const warnIfNoStates = Object.values(data).some(e => e?.required === true);
 
             for (const d of Object.keys(data) as Array<keyof typeof data>) {
                 const dp = d;
@@ -2434,6 +2437,7 @@ export class ConfigManager extends BaseClass {
                             triggered: entry.trigger,
                             writeable: entry.writeable,
                             commonType: entry.type,
+                            warnIfNoStates,
                         });
                     } else {
                         result[role][dp2] = undefined;
@@ -2453,6 +2457,7 @@ export class ConfigManager extends BaseClass {
                                 triggered: entry.trigger,
                                 writeable: entry2.writeable,
                                 commonType: entry.type,
+                                warnIfNoStates,
                             });
                         }
                         if (result[role][dp2]) {
