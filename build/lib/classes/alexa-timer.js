@@ -97,9 +97,9 @@ function alexaTimerCommand(seconds, language) {
   const whole = Math.max(1, Math.round(seconds));
   const minutes = whole % 60 === 0 ? whole / 60 : void 0;
   if (language === "de") {
-    return minutes !== void 0 ? `stelle einen Timer auf ${minutes} Minuten` : `stelle einen Timer auf ${whole} Sekunden`;
+    return minutes !== void 0 ? `stelle einen Timer auf ${minutes} ${minutes === 1 ? "Minute" : "Minuten"}` : `stelle einen Timer auf ${whole} ${whole === 1 ? "Sekunde" : "Sekunden"}`;
   }
-  return minutes !== void 0 ? `set a timer for ${minutes} minutes` : `set a timer for ${whole} seconds`;
+  return minutes !== void 0 ? `set a timer for ${minutes} ${minutes === 1 ? "minute" : "minutes"}` : `set a timer for ${whole} ${whole === 1 ? "second" : "seconds"}`;
 }
 function alexaCountdownView(selection, canStart, now) {
   const entry = selection.entry;
