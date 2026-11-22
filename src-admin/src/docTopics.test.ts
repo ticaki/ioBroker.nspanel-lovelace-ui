@@ -4,6 +4,7 @@ import * as path from 'node:path';
 import MarkdownIt from 'markdown-it';
 import { headingText, replaceHeadings, slug } from './docAnchors';
 import { DOC_TOPICS, cardDocTopic, CARD_DOC_PAGES, docTopicUrl, type DocTopic } from './docTopics';
+import { pageitemsTopicsOfChannel } from './docTopics/pageitems';
 import { DOC_BASE, docPageUrl, resolveDocLanguage, type DocLanguage } from './docLink';
 
 const docRoot = path.join(__dirname, '..', '..', 'doc');
@@ -82,6 +83,21 @@ describe('docTopics', () => {
         expect(cardDocTopic('cardChart')).to.deep.equal({ page: 'cardChart' });
         expect(cardDocTopic('screensaver')).to.deep.equal({ page: 'PageConfig' });
         expect(cardDocTopic(undefined)).to.deep.equal({ page: 'PageConfig' });
+    });
+
+    it('help of the channel field: role topics, screensaver timer, otherwise the channel section', () => {
+        expect(pageitemsTopicsOfChannel('level.timer', false)).to.deep.equal([
+            'pageitems.role.level.timer',
+            'pageitems.popupTimer',
+        ]);
+        expect(pageitemsTopicsOfChannel('level.timer', true)).to.deep.equal([
+            'pageitems.role.level.timer',
+            'pageitems.popupTimer',
+            'pageitems.screensaverTimer',
+        ]);
+        expect(pageitemsTopicsOfChannel('light', false)).to.deep.equal(['pageitems.role.light']);
+        expect(pageitemsTopicsOfChannel('unknown.role', false)).to.deep.equal(['pageitems.channel']);
+        expect(pageitemsTopicsOfChannel(null, false)).to.deep.equal(['pageitems.channel']);
     });
 });
 

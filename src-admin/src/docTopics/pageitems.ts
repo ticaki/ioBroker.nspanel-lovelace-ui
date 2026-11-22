@@ -143,3 +143,23 @@ const roleTopicMap = new Map<string, readonly PageitemsTopicKey[]>(Object.entrie
 export function pageitemsTopicsOfRole(role: string | null): readonly PageitemsTopicKey[] {
     return role === null ? [] : (roleTopicMap.get(role) ?? []);
 }
+
+/**
+ * Help next to the channel field of the page item dialog: the documentation of the chosen channel's role
+ * (alias table section, popup page if any), plus the section about the timer of the screensaver when the item
+ * uses it. Without a channel or with an unknown role (e.g. a custom state) the general section about the channel.
+ *
+ * @param role `common.role` of the chosen channel, `null` if none is chosen yet or the item has no channel role.
+ * @param useScreensaverTimer True if the item shows the timer of the screensaver (`useScreensaverTimer` in effect).
+ * @returns The topics, never empty.
+ */
+export function pageitemsTopicsOfChannel(
+    role: string | null,
+    useScreensaverTimer: boolean,
+): readonly PageitemsTopicKey[] {
+    const topics = pageitemsTopicsOfRole(role);
+    if (topics.length === 0) {
+        return ['pageitems.channel'];
+    }
+    return useScreensaverTimer ? [...topics, 'pageitems.screensaverTimer'] : topics;
+}

@@ -32,13 +32,15 @@
 
 ## E2E-Test vor dem Push (Pflicht bei Codeänderungen)
 
-Bevor eine Änderung gepusht wird, die **Code berührt** (`src/`, `src-admin/`, `src-web/`, `package.json`/Abhängigkeiten,
-Tests), muss der lokale End-to-End-Test grün sein:
+Bevor eine Änderung gepusht wird, die **Adapter- oder Web-Panel-Code berührt** (`src/`, `src-web/`,
+`package.json`/Abhängigkeiten, Tests), muss der lokale End-to-End-Test grün sein:
 ```
 npm run build
 npm run test:e2e
 ```
-Nicht nötig bei reinen Änderungen an Doku (`*.md`, `doc/`), HMI-Dateien, Bildern, Übersetzungen ohne Codebezug o. Ä.
+Nicht nötig bei reinen Änderungen an Doku (`*.md`, `doc/`), HMI-Dateien, Bildern, Übersetzungen ohne Codebezug o. Ä.,
+ebenso bei reinen Änderungen am Admin (`src-admin/`, `admin/custom/`, `admin/i18n/`), solange kein geteilter Code unter
+`src/` (z. B. `src/lib/types/`) mitgeändert wird – der E2E-Test lädt das Admin-Bundle nicht.
 Der Test läuft nur lokal (nicht in der CI); Details in `test/e2e/README.md`. Schlägt er fehl: nicht pushen, Ursache klären.
 Weicht nur ein Snapshot wegen einer **gewollten** Änderung ab: `UPDATE_SNAPSHOTS=1 npm run test:e2e`, den Diff von
 `test/e2e/__snapshots__/e2e.snap.json` Eintrag für Eintrag prüfen und mitcommitten – nie blind neu aufnehmen.
