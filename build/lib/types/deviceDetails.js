@@ -554,8 +554,8 @@ function deviceDetailsLearnedOf(value) {
   }
   return out;
 }
-function updatedDeviceDetailsLearned(learned, before, after) {
-  if (!after.deviceId) {
+function updatedDeviceDetailsLearned(learned, before, after, edited) {
+  if (!after.deviceId || !edited) {
     return void 0;
   }
   const identifiers = (config) => config.entries.map((e) => deviceDetailIdentifier(config.deviceId, e));
