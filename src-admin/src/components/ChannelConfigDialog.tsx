@@ -65,6 +65,7 @@ import {
     type DeviceShortPress,
 } from '../../../src/lib/types/deviceDetails';
 import type {
+    AlexaTimerConfig,
     IconScaleElement,
     AdminPageItemConfig,
     MenuEntry,
@@ -91,7 +92,11 @@ import {
     pageItemRawFormat,
     isAsciiOnlyTextSize,
     isIconTextSize,
+    isAlexaTimerComplete,
+    isAlexaTimerConfig,
+    copyAlexaTimerConfig,
 } from '../../../src/lib/types/adminShareConfig';
+import { AlexaTimerSelect } from './AlexaTimerSelect';
 import { textSizeLabel, textSizeOfOption, textSizeOptions } from '../textSizeOptions';
 import { adminPageItemToScriptItem } from '../../../src/lib/configuration/admin-page-item';
 import ChannelColorDialog from './ChannelColorDialog';
@@ -99,6 +104,7 @@ import ChannelModeListDialog from './ChannelModeListDialog';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { DocButton, DocHelp } from './DocHelp';
 import { pageitemsTopicsOfRole } from '../docTopics/pageitems';
+import { isChannelStatesProblem } from '../channelDatapointCheck';
 
 /**
  * Channel roles for which the adapter evaluates `modeList` (config-manager.ts): the light roles also use
@@ -141,6 +147,23 @@ const VALUE_RANGE_ROLES: readonly string[] = ['volume'];
 const SECOND_ROW_ROLES: readonly string[] = ['blind'];
 /** Channel roles whose page item reads `useScreensaverTimer` (config-manager.ts, case 'level.timer'). */
 const SCREENSAVER_TIMER_ROLES: readonly string[] = ['level.timer'];
+
+/**
+ * Page types whose items can be a timer (role level.timer - no page type of the dialog excludes it): only there the
+ * dialog offers the kind "Alexa timer".
+ */
+const ALEXA_TIMER_CARDS: readonly string[] = [
+    'cardGrid',
+    'cardGrid2',
+    'cardGrid3',
+    'cardEntities',
+    'cardSchedule',
+    'cardThermo2',
+    'cardMedia',
+];
+
+/** role an item of kind "Alexa timer" is stored with: icons and defaults of a timer */
+const ALEXA_TIMER_ROLE = 'level.timer';
 
 /**
  * Channel roles whose page item reads `minValueBrightness` / `maxValueBrightness` and `colormode`
@@ -262,6 +285,8 @@ interface ChannelConfigDialogState {
     secondRow: string;
     /** Role level.timer: the item uses the timer of the screensaver of this panel */
     useScreensaverTimer: boolean;
+    /** kind "Alexa timer": the Echo device, null = standard item (channel, custom button, navigation) */
+    alexaTimer: AlexaTimerConfig | null;
     /** internal id of the item: kept as it is, the page editor gives a new item its id */
     itemId: string | undefined;
     /** stored tables: the screensaver of the panel may use this item as its source (circle) */
@@ -374,6 +399,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             maxValue: undefined,
             secondRow: '',
             useScreensaverTimer: false,
+            alexaTimer: null,
             itemId: undefined,
             timerSourceTables: { screensavers: [], pages: [] },
             minValueBrightness: undefined,
@@ -487,6 +513,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             maxValue: typeof data?.maxValue === 'number' ? data.maxValue : undefined,
             secondRow: typeof data?.secondRow === 'string' ? data.secondRow : '',
             useScreensaverTimer: data?.useScreensaverTimer === true,
+            alexaTimer:
+                !isNative && isAlexaTimerConfig(data?.alexaTimer) ? copyAlexaTimerConfig(data.alexaTimer) : null,
             itemId: typeof data?.itemId === 'string' ? data.itemId : undefined,
             minValueBrightness: typeof data?.minValueBrightness === 'number' ? data.minValueBrightness : undefined,
             maxValueBrightness: typeof data?.maxValueBrightness === 'number' ? data.maxValueBrightness : undefined,
@@ -771,6 +799,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /** the item from the standard fields of the dialog, regardless of the raw mode */
     private buildStandardConfig(): AdminPageItemConfig {
+        const alexaTimer = this.state.alexaTimer;
+        if (alexaTimer !== null) {
+            return this.buildAlexaTimerConfig(alexaTimer);
+        }
         const {
             channelId,
             name,
@@ -861,6 +893,85 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             ...extraFields,
             valueEntry: this.state.valueEntry,
         };
+    }
+
+    /**
+     * The item of kind "Alexa timer": the Echo device, name, icons and colors - the fields of the standard kind are
+     * not stored with it.
+     *
+     * @param alexaTimer the Echo device
+     */
+    private buildAlexaTimerConfig(alexaTimer: AlexaTimerConfig): AdminPageItemConfig {
+        const { name, trueIcon, trueColor, falseIcon, falseColor, itemId } = this.state;
+        return {
+            channelId: emptyChannelValueConfig(''),
+            role: ALEXA_TIMER_ROLE,
+            name,
+            trueIcon,
+            trueColor,
+            falseIcon,
+            falseColor,
+            itemId,
+            alexaTimer: copyAlexaTimerConfig(alexaTimer),
+        };
+    }
+
+    /** the dialog offers the kind "Alexa timer": pages with timer items, or an item that is one already */
+    private isAlexaTimerAllowed(): boolean {
+        return (
+            this.state.alexaTimer !== null ||
+            this.kindStash.alexaTimer !== undefined ||
+            ALEXA_TIMER_CARDS.includes(this.props.currentPageCard ?? '')
+        );
+    }
+
+    /**
+     * The page item of kind "Alexa timer": Echo device, name, icons and colors.
+     *
+     * @param alexaTimer the Echo device
+     */
+    private renderAlexaTimerFields(alexaTimer: AlexaTimerConfig): React.JSX.Element {
+        const { name } = this.state;
+        return (
+            <>
+                <AlexaTimerSelect
+                    socket={this.props.oContext?.socket ?? this.props.socket}
+                    value={alexaTimer}
+                    onChange={value => this.setState({ alexaTimer: value })}
+                    offerAlarms
+                />
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: -1 }}
+                >
+                    {I18n.t(
+                        alexaTimer.show === 'alarm'
+                            ? 'channelConfigDialog_alexaAlarmHint'
+                            : 'channelConfigDialog_alexaTimerHint',
+                    )}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <TextField
+                        label={I18n.t('channelConfigDialog_name')}
+                        value={name}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ name: e.target.value })}
+                        variant="standard"
+                        sx={{ flex: 1 }}
+                        helperText={name === '' ? I18n.t('channelConfigDialog_defaultName') : undefined}
+                        slotProps={{ formHelperText: { sx: { color: 'text.disabled' } } }}
+                    />
+                    <DocHelp
+                        topic="pageitems.name"
+                        sx={{ ml: 0, flexShrink: 0 }}
+                    />
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    {this.renderBranchColumn('true')}
+                    {this.renderBranchColumn('false')}
+                </Box>
+            </>
+        );
     }
 
     /**
@@ -1238,11 +1349,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                       }
                   >
                 | undefined;
-            if (!dpDef || childStates.length === 0) {
+            // an empty channel is fine for a role whose datapoints are all optional (level.timer: internal timer)
+            if (!dpDef || isChannelStatesProblem(dpDef, childStates.length)) {
                 console.warn(
-                    '[ChannelConfigDialog] checkDatapoints: no dpDef found for role',
+                    '[ChannelConfigDialog] checkDatapoints: no dpDef or no required states for role',
                     role,
-                    '– skipping datapoint check',
+                    'in',
+                    channelId,
                 );
                 this.setState({
                     datapointErrors: [],
@@ -1435,10 +1548,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
     }
 
+    /** the kind of the item the dialog shows */
+    private currentKind(): ItemKind {
+        return this.state.alexaTimer !== null ? 'alexaTimer' : this.state.device !== null ? 'device' : 'standard';
+    }
+
     /**
-     * The kind of the item: standard (channel, custom button, navigation) or device with details. The fields of the
-     * kind left are kept until the dialog closes and come back with it ({@link switchOption}); a kind chosen for the
-     * first time starts empty - a new device item switches a state of the device on a short tap.
+     * The kind of the item: standard (channel, custom button, navigation), device with details or Alexa timer. The
+     * fields of the kind left are kept until the dialog closes and come back with it ({@link switchOption}); a kind
+     * chosen for the first time starts empty - a new device item switches a state of the device on a short tap.
      *
      * @param value the value of the radio group
      */
@@ -1446,15 +1564,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (!isItemKind(value)) {
             return;
         }
-        const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = this.state;
-        const from: ItemKind = device !== null ? 'device' : 'standard';
+        const { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId } = this.state;
+        const from = this.currentKind();
         if (value === from) {
             return;
         }
         const { stash, fields } = switchOption(
             this.kindStash,
             from,
-            { device, deviceError, isNavigation, targetPage, isCustom, channelId },
+            { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId },
             value,
             kind => freshKindFields(kind, emptyChannelValueConfig('')),
         );
@@ -1503,10 +1621,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 if (!prev.open) {
                     return null;
                 }
-                const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = prev;
+                const { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId } = prev;
                 const shown = device !== null;
                 const kind = shown
-                    ? { device, deviceError, isNavigation, targetPage, isCustom, channelId }
+                    ? { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId }
                     : this.kindStash.device;
                 if (!kind) {
                     return null;
@@ -1639,17 +1757,26 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         );
     }
 
-    /** the kind of the item at the top of the dialog: standard or device with details */
+    /**
+     * the kind of the item at the top of the dialog: standard, device with details (grid pages, cardEntities) or
+     * Alexa timer (pages with timer items; not for navigation items)
+     */
     private renderKindSwitch(): React.JSX.Element | null {
-        if (!this.isDeviceAllowed()) {
+        const deviceAllowed = this.isDeviceAllowed();
+        const alexaAllowed = this.isAlexaTimerAllowed();
+        if (!deviceAllowed && !alexaAllowed) {
             return null;
         }
+        const kind = this.currentKind();
         return (
             <FormControl>
-                <FormLabel sx={{ fontSize: 12 }}>{I18n.t('channelConfigDialog_kind')}</FormLabel>
+                <FormLabel sx={{ fontSize: 12 }}>
+                    {I18n.t('channelConfigDialog_kind')}
+                    {alexaAllowed && <DocHelp topic="pageitems.alexaTimer" />}
+                </FormLabel>
                 <RadioGroup
                     row
-                    value={this.state.device !== null ? 'device' : 'standard'}
+                    value={kind}
                     onChange={e => this.handleKindChange(e.target.value)}
                 >
                     <FormControlLabel
@@ -1657,11 +1784,21 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         control={<Radio size="small" />}
                         label={I18n.t('channelConfigDialog_kindStandard')}
                     />
-                    <FormControlLabel
-                        value="device"
-                        control={<Radio size="small" />}
-                        label={I18n.t('channelConfigDialog_isDevice')}
-                    />
+                    {deviceAllowed && (
+                        <FormControlLabel
+                            value="device"
+                            control={<Radio size="small" />}
+                            label={I18n.t('channelConfigDialog_isDevice')}
+                        />
+                    )}
+                    {alexaAllowed && (
+                        <FormControlLabel
+                            value="alexaTimer"
+                            control={<Radio size="small" />}
+                            disabled={kind === 'standard' && this.state.isNavigation}
+                            label={I18n.t('channelConfigDialog_kindAlexaTimer')}
+                        />
+                    )}
                 </RadioGroup>
             </FormControl>
         );
@@ -1993,7 +2130,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const themeName: string = this.props.themeType === 'dark' ? 'dark' : 'light';
 
         // Defaults from role
-        const defaults = this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+        const roleDefaults =
+            this.state.alexaTimer !== null
+                ? this.getDefaultsForRole(ALEXA_TIMER_ROLE, false)
+                : this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+        // an Alexa alarm shows the alarm icons of the adapter (config-manager getAlexaTimerItemConfig)
+        const defaults =
+            roleDefaults && this.state.alexaTimer?.show === 'alarm'
+                ? { ...roleDefaults, iconOn: 'alarm', iconOff: 'alarm-off' }
+                : roleDefaults;
         const defaultIconName = defaults ? (isTrue ? defaults.iconOn : defaults.iconOff) : '';
         const defaultColorKey = defaults ? (isTrue ? defaults.colorOn : defaults.colorOff) : '';
         const defaultColorRgb: RGB | null = defaultColorKey ? this.getThemeColorForKey(defaultColorKey) : null;
@@ -2186,12 +2331,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const rawMode = raw !== null;
         const channelIdValid = channelId.valueStateId !== '';
         const { device, deviceError } = this.state;
+        const alexaTimer = this.state.alexaTimer;
+        /** kind "Alexa timer": no channel, none of its checks apply */
+        const alexaMode = !rawMode && alexaTimer !== null;
         // a device item is checked by its short tap - the channel checks apply to the popup of an alias channel only;
         // no answer of the adapter (offline) or a device that is gone keeps a stored item savable
         const saveState = pageItemSaveState({
             rawMode,
             device: device !== null ? { deviceId: device.deviceId, shortPress: deviceShortPressOf(device) } : null,
             deviceErrorBlocks: isBlockingDeviceError(deviceError),
+            alexaTimerComplete: alexaTimer !== null ? isAlexaTimerComplete(alexaTimer) : null,
             isNavigation,
             isCustom,
             targetPage,
@@ -2259,14 +2408,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const colorTempVisible = pageItemOfRole(COLOR_TEMP_ROLES);
 
         // Untertitel neben dem Titel
-        const titleSuffix =
-            channelId.valueStateId === ''
-                ? I18n.t('channelConfigDialog_noChannelSelected')
-                : channelRole !== null
-                  ? `${channelRole}${roleIsValid === false ? ` (${I18n.t('channelConfigDialog_unknownRole')})` : ''}`
-                  : channelExists === false
-                    ? I18n.t('channelConfigDialog_channelNotFound')
-                    : '…';
+        const titleSuffix = alexaMode
+            ? I18n.t('channelConfigDialog_kindAlexaTimer')
+            : channelId.valueStateId === ''
+              ? I18n.t('channelConfigDialog_noChannelSelected')
+              : channelRole !== null
+                ? `${channelRole}${roleIsValid === false ? ` (${I18n.t('channelConfigDialog_unknownRole')})` : ''}`
+                : channelExists === false
+                  ? I18n.t('channelConfigDialog_channelNotFound')
+                  : '…';
 
         // Optik analog zu den Panel-Boxen in PagePanelOverview (border: 3, p: 2, borderRadius: 1)
         const panelBoxStyle = {
@@ -2331,6 +2481,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 </Typography>
                                 {/* type-dependent help: the documentation of exactly this role */}
                                 {!rawMode &&
+                                    !alexaMode &&
                                     pageitemsTopicsOfRole(channelRole).map(topic => (
                                         <DocHelp
                                             key={topic}
@@ -2354,6 +2505,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             />
                         ) : device !== null ? (
                             this.renderDeviceItem(device, panelBoxStyle)
+                        ) : alexaTimer !== null ? (
+                            <Box sx={panelBoxStyle}>
+                                {this.renderKindSwitch()}
+                                {this.renderAlexaTimerFields(alexaTimer)}
+                            </Box>
                         ) : (
                             <Box sx={panelBoxStyle}>
                                 {this.renderKindSwitch()}

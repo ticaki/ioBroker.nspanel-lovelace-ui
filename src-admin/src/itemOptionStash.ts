@@ -1,9 +1,10 @@
 import type { DeviceDetailsConfig, DeviceSelectionError, DeviceShortPress } from '../../src/lib/types/deviceDetails';
+import type { AlexaTimerConfig } from '../../src/lib/types/adminShareConfig';
 
 /**
  * The radio buttons of the page item dialog (ChannelConfigDialog): the kind of the item (standard / device with
- * details) and the short tap of a device item. Switching an option keeps the fields of the option it leaves in a
- * stash and brings back the fields of the option it goes to - nothing is lost while the dialog is open. The dialog
+ * details / Alexa timer) and the short tap of a device item. Switching an option keeps the fields of the option it
+ * leaves in a stash and brings back the fields of the option it goes to - nothing is lost while the dialog is open. The dialog
  * state only ever holds the fields of the chosen option, so saving stores just these (the others are dropped then);
  * cancel drops the stash with everything else.
  */
@@ -34,14 +35,14 @@ export function switchOption<O extends string, F>(
 }
 
 /** the kind of a page item */
-export type ItemKind = 'standard' | 'device';
+export type ItemKind = 'standard' | 'device' | 'alexaTimer';
 
 /**
  * @param value a value of the radio group
  * @returns true for a kind of a page item
  */
 export function isItemKind(value: string): value is ItemKind {
-    return value === 'standard' || value === 'device';
+    return value === 'standard' || value === 'device' || value === 'alexaTimer';
 }
 
 /** what a short tap does: the fields the options of the kind and of the short tap set (C = the channel / state) */
@@ -57,6 +58,8 @@ export interface ItemKindFields<C> extends ItemTapFields<C> {
     /** device with details, null = standard item */
     device: DeviceDetailsConfig | null;
     deviceError: DeviceSelectionError | undefined;
+    /** Alexa timer: the Echo device, null = no Alexa timer item */
+    alexaTimer: AlexaTimerConfig | null;
 }
 
 /**
@@ -71,6 +74,7 @@ export function freshKindFields<C>(kind: ItemKind, emptyChannel: C): ItemKindFie
     return {
         device: toDevice ? { deviceId: '', shortPress: 'state', entries: [] } : null,
         deviceError: undefined,
+        alexaTimer: kind === 'alexaTimer' ? { instance: '', serial: '' } : null,
         isNavigation: false,
         targetPage: '',
         // a new device item switches a state of the device (a custom item)

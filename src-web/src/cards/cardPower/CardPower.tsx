@@ -29,9 +29,24 @@ export function flowDuration(speed: number): number {
 }
 
 /**
+ * The direction of the dot like the HMI (page `cardPower`, timer `tm0` moves the sliders `h0`…`h5`
+ * by `t<n>Speed`): landscape (eu, us-l) negates the speed (`if(p0.h==320)`) on horizontal sliders,
+ * portrait (us-p) keeps it on vertical sliders (value grows upwards). A positive speed therefore
+ * moves the dot to the left / upper end of the line on every model: away from the house for the
+ * items 0…2 (left / above), towards the house for the items 3…5 (right / below).
+ *
+ * @param speed the speed of the item (-120 … 120, not 0)
+ * @returns `true`: the dot runs along the line (left -> right / top -> bottom)
+ */
+export function flowAlongLine(speed: number): boolean {
+    return speed < 0;
+}
+
+/**
  * `cardPower`: the house in the middle with two values, up to three items on each side
- * with icon, value and a line to the house on which a dot moves - towards the house for
- * a positive speed, away from it for a negative one. The items send no events (the
+ * with icon, value and a line to the house on which a dot moves - for a positive speed to the
+ * left / upper end of the line, for a negative one to the right / lower end (see
+ * {@link flowAlongLine}). The items send no events (the
  * adapter's `onButtonEvent` of pagePower is empty), only the navigation does. Portrait models get
  * the layout of the us-p HMI: the house as a wide bar, three items above and three below it.
  */
@@ -42,9 +57,7 @@ export class CardPower extends React.Component<CardProps<CardPowerModel>> {
             return null;
         }
         const { box, line, vertical } = geometry;
-        // the dot moves to the house for speed > 0; the line runs left -> right / top -> bottom
-        const towardsHouse = slot.speed > 0;
-        const forward = geometry.startsAtItem ? towardsHouse : !towardsHouse;
+        const forward = flowAlongLine(slot.speed);
         const color = color565ToCss(slot.iconColor);
         const text = (area: Box): React.CSSProperties => ({
             position: 'absolute',

@@ -8,7 +8,6 @@ import {
     getIconEntryValue,
     getPayload,
     getPayloadRemoveTilde,
-    getScaledNumber,
     getValueAutoUnit,
     getValueEntryNumber,
     getValueEntryString,
@@ -70,6 +69,69 @@ const PagePowerMessageDefault: pages.PagePowerMessage = {
         name: '',
     },
 };
+
+/** the HMI moves the flow dot with a speed of -120 … 120 (HMI/Readme.md, page `cardPower`) */
+export const MAX_POWER_SPEED = 120;
+
+/**
+ * Speed of a flow dot of the `cardPower` from the measured power.
+ *
+ * The two limits of the speed scale describe the **amount** of the power, the sign of the measurement
+ * alone gives the direction: zero power always means a standing dot, and a negative measurement always
+ * runs the dot the other way round. A limit entered as a negative number (a battery with -4000 … 4000 is
+ * the obvious case) therefore no longer shifts the zero point - it counts with its amount.
+ *
+ * The result is limited to the range the HMI understands (see {@link MAX_POWER_SPEED}); the panel gets
+ * a whole number.
+ *
+ * @param value the measured power (already multiplied by the factor)
+ * @param min lower limit of the speed scale, `null` when not configured
+ * @param max upper limit of the speed scale, `null` when not configured
+ * @returns speed for the panel: 0 … ±120, the sign is the direction
+ */
+export function powerSpeedFromValue(value: number, min: number | null, max: number | null): number {
+    const amount = Math.abs(value);
+    let percent: number;
+    if (min === null || max === null) {
+        // without a scale the raw value is the speed, as before
+        percent = amount;
+    } else {
+        // both limits count with their amount; a dead band only exists when both are above zero
+        const high = Math.max(Math.abs(min), Math.abs(max));
+        const low = min > 0 && max > 0 ? Math.min(Math.abs(min), Math.abs(max)) : 0;
+        percent = high > low ? Color.scale(amount, low, high, 0, 100) : amount > low ? 100 : 0;
+    }
+    percent = Math.min(MAX_POWER_SPEED, Math.max(0, Math.round(percent)));
+    return value < 0 ? -percent : percent;
+}
+
+/**
+ * Reads the speed item of a tile and turns it into the speed for the panel. Same data item as the
+ * generic scaled number uses, but with the rules of {@link powerSpeedFromValue}; the checkbox
+ * Reverse flow direction* (`negate`) turns the result around at the end.
+ *
+ * @param i the `speed` item of a tile
+ * @returns speed for the panel or `null` when the state has no number
+ */
+export async function getPowerSpeed(
+    i: NonNullable<pages.cardPowerDataItems['data']['leftBottom']>['speed'],
+): Promise<number | null> {
+    if (!i) {
+        return null;
+    }
+    const raw = i.value && (await i.value.getNumber());
+    if (raw == null) {
+        return null;
+    }
+    const value = raw * ((i.factor && (await i.factor.getNumber())) ?? 1);
+    const min = i.minScale ? await i.minScale.getNumber() : null;
+    const max = i.maxScale ? await i.maxScale.getNumber() : null;
+    let speed = powerSpeedFromValue(value, min, max);
+    if (i.negate && (await i.negate.getBoolean())) {
+        speed = -speed;
+    }
+    return speed;
+}
 
 /**
  * untested
@@ -247,7 +309,7 @@ export class PagePower extends Page {
         message.icon = (await getIconEntryValue(item.icon, value >= 0, '')) ?? undefined;
         message.iconColor = (await getIconEntryColor(item.icon, value, Color.White)) ?? undefined;
         message.name = (await getEntryTextOnOff(item.text, value >= 0)) ?? undefined;
-        message.speed = (await getScaledNumber(item.speed)) ?? undefined;
+        message.speed = (await getPowerSpeed(item.speed)) ?? undefined;
         const {
             value: newValue,
             unit,

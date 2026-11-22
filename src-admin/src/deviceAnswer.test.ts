@@ -148,13 +148,8 @@ describe('deviceAnswer - two answers for the same device', () => {
      * @returns the fields after switching to standard and back
      */
     function switchKindAndBack(target: DeviceAnswerTarget): DeviceAnswerTarget {
-        const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = target.kind;
-        const toStandard = switchOption(
-            {},
-            'device',
-            { device, deviceError, isNavigation, targetPage, isCustom, channelId },
-            'standard',
-            kind => freshKindFields(kind, emptyChannelValueConfig('')),
+        const toStandard = switchOption({}, 'device', target.kind, 'standard', kind =>
+            freshKindFields(kind, emptyChannelValueConfig('')),
         );
         const back = switchOption(toStandard.stash, 'standard', toStandard.fields, 'device', kind =>
             freshKindFields(kind, emptyChannelValueConfig('')),

@@ -37,6 +37,7 @@ describe('itemOptionStash - radio buttons of the page item dialog', () => {
     it('isItemKind', () => {
         expect(isItemKind('standard')).to.equal(true);
         expect(isItemKind('device')).to.equal(true);
+        expect(isItemKind('alexaTimer')).to.equal(true);
         expect(isItemKind('popup')).to.equal(false);
     });
 
@@ -44,6 +45,7 @@ describe('itemOptionStash - radio buttons of the page item dialog', () => {
         const standard: ItemKindFields<string> = {
             device: null,
             deviceError: undefined,
+            alexaTimer: null,
             isNavigation: true,
             targetPage: 'kitchen',
             isCustom: false,
@@ -54,6 +56,7 @@ describe('itemOptionStash - radio buttons of the page item dialog', () => {
             expect(freshKindFields<string>('device', '')).to.deep.equal({
                 device: { deviceId: '', shortPress: 'state', entries: [] },
                 deviceError: undefined,
+                alexaTimer: null,
                 isNavigation: false,
                 targetPage: '',
                 isCustom: true,
@@ -62,6 +65,7 @@ describe('itemOptionStash - radio buttons of the page item dialog', () => {
             expect(freshKindFields<string>('standard', '')).to.deep.equal({
                 device: null,
                 deviceError: undefined,
+                alexaTimer: null,
                 isNavigation: false,
                 targetPage: '',
                 isCustom: false,

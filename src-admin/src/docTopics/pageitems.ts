@@ -53,6 +53,11 @@ export const pageitemsTopics = {
         de: '5. Timer aus dem Screensaver verwenden',
         en: '5. Use the timer of the screensaver',
     },
+    'pageitems.alexaTimer': {
+        page: 'popupTimer',
+        de: '7. Alexa-Timer (alexa2)',
+        en: '7. Alexa timer (alexa2)',
+    },
     // one section per channel role in the alias table (the heading is the role itself, in both languages)
     'pageitems.role.airCondition': { page: 'ALIAS', de: 'airCondition', en: 'airCondition' },
     'pageitems.role.blind': { page: 'ALIAS', de: 'blind', en: 'blind' },

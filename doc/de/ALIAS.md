@@ -141,6 +141,8 @@
 | " | ~~STATE~~ | boolean | button |  | X | Wird `true`, wenn ein interner Timer abläuft und wenn **Fertig** gedrückt wird – nie bei Abbrechen oder Löschen. |
 | " | ~~STATUS~~ | number | level.mode |  | X | 0: aus, 1: Pause, 2: läuft. Bei externem Timer und Wecker nötig für Start, Pause und An/Aus; beim internen Timer auch von außen (2 startet, 1 pausiert, 0 bricht ab), der Adapter spiegelt seinen Zustand hinein. |
 
+Keiner der Datenpunkte ist Pflicht: Ein Kanal `level.timer` ganz ohne Datenpunkte ist ein interner Timer (Eieruhr). Welche Art man wofür nimmt und wie man sie anlegt, steht unter [Timer-Popup – Welche Art brauche ich?](popupTimer#welche-art-brauche-ich). Für die Timer eines Echo-Geräts braucht es keinen Kanal, siehe [Alexa-Timer](popupTimer#7-alexa-timer-alexa2).
+
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |

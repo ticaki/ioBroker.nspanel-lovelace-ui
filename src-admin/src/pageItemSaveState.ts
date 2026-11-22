@@ -8,6 +8,8 @@ export interface PageItemSaveFields {
     device: { deviceId: string; shortPress: DeviceShortPress } | null;
     /** the adapter refused the device (isBlockingDeviceError) */
     deviceErrorBlocks: boolean;
+    /** kind "Alexa timer": the Echo device is complete (isAlexaTimerComplete), null = another kind */
+    alexaTimerComplete: boolean | null;
     isNavigation: boolean;
     isCustom: boolean;
     targetPage: string;
@@ -39,7 +41,8 @@ export interface PageItemSaveState {
  *
  * A device item is checked by its short tap: only `popup` has an alias channel, so only there the channel, role and
  * datapoint checks of the standard item apply. `none` needs nothing but the device, `navigation` the target page and
- * `state` the chosen state of the device.
+ * `state` the chosen state of the device. An Alexa timer item has no channel, none of its checks apply - it needs the
+ * Echo device only.
  *
  * @param f the fields of the dialog
  * @returns whether the item can be saved and which problems the button shows
@@ -47,8 +50,9 @@ export interface PageItemSaveState {
 export function pageItemSaveState(f: PageItemSaveFields): PageItemSaveState {
     const channelIdValid = f.channelId !== '';
     const shortPress = f.device?.shortPress;
+    const alexaMode = !f.rawMode && f.alexaTimerComplete !== null;
     // the checks of a channel: standard items and the popup of a device item
-    const channelChecks = !f.rawMode && (f.device === null || shortPress === 'popup');
+    const channelChecks = !f.rawMode && !alexaMode && (f.device === null || shortPress === 'popup');
     const datapointProblems =
         channelChecks && !f.checkingDatapoints && (f.datapointErrors > 0 || f.datapointDuplicates > 0 || f.hasProblems);
     const roleProblem =
@@ -68,7 +72,7 @@ export function pageItemSaveState(f: PageItemSaveFields): PageItemSaveState {
         standardCanSave = f.isNavigation ? f.targetPage !== '' : channelReady;
     }
     return {
-        canSave: f.rawMode || standardCanSave,
+        canSave: f.rawMode || (alexaMode ? f.alexaTimerComplete === true : standardCanSave),
         standardCanSave,
         datapointProblems,
         roleProblem,

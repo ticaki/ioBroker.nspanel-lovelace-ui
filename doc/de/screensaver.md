@@ -403,18 +403,21 @@ Klick auf die Uhrzeit: **Adapter-Standard**, **24 Stunden** oder **12 Stunden**,
 
 ### Timer statt Uhrzeit
 
+Läuft irgendwo ein Timer – eine Eieruhr auf einer Seite, ein Skript-Timer oder ein Timer am Echo –, kann der Bildschirmschoner **statt der Uhrzeit die Restzeit** zeigen. Ist der Timer vorbei und gestoppt, steht wieder die Uhrzeit da. Eine Anleitung Schritt für Schritt steht unter [Schnellstart: Restzeit im Bildschirmschoner anzeigen](popupTimer#schnellstart-restzeit-im-bildschirmschoner-anzeigen).
+
 Im Dialog der Uhrzeit steht unter der Formatwahl das Häkchen **Timer anzeigen**. Solange ein Timer aktiv ist, zeigt das Panel an der Stelle der Uhrzeit seine Restzeit; ohne aktiven Timer steht dort die Uhrzeit wie gewohnt. Das gilt für alle Versionen des Bildschirmschoners und auch im [Web-Panel](WebPanel).
 
 ![Der Dialog der Uhrzeit mit eingeschaltetem Timer](../Pictures/screensaverAdmin/admin-22-uhrzeit-timer.png)
 
-Mit dem Häkchen erscheint das Feld **Quelle des Timers** mit zwei Möglichkeiten:
+Mit dem Häkchen erscheint das Feld **Quelle des Timers** mit drei Möglichkeiten:
 
-| Quelle | Was dahinter steckt |
-|---|---|
-| **Datenpunkte oder Slot-Muster** | Zwei Datenpunkte, die ein eigenes Skript pflegt – oder, hinter **Erweitert**, zwei Muster für Timer in wechselnden Slots. |
-| **Pageitem mit Timer-Popup** | Ein Timer-Item von einer Seite dieses Panels, siehe [Timer-Popup](popupTimer). |
+| Quelle | Was dahinter steckt | Wann nehmen |
+|---|---|---|
+| **Datenpunkte oder Slot-Muster** | Zwei Datenpunkte, die ein eigenes Skript pflegt – oder, hinter **Advanced**, zwei Muster für Timer in wechselnden Slots. | Ein Skript verwaltet die Timer selbst. |
+| **Pageitem mit Timer-Popup** | Ein Timer-Item von einer Seite dieses Panels, siehe [Timer-Popup](popupTimer). | Der Timer wird am Panel gestellt, z. B. eine Eieruhr. |
+| **Alexa-Timer (alexa2)** | Die Timer eines Echo-Geräts aus dem Adapter alexa2. | Die Timer werden per Sprache am Echo gestellt. |
 
-**Übernehmen** bleibt gesperrt, solange der Timer unvollständig ist – der Dialog meldet *Ein Timer braucht beide Datenpunkte oder zwei gültige Muster.*
+**Übernehmen** bleibt gesperrt, solange der Timer unvollständig ist – der Dialog meldet *Ein Timer braucht beide Datenpunkte oder zwei gültige Muster.*, bei der Alexa-Quelle *Bitte alexa2-Instanz und Echo-Gerät wählen.*
 
 #### Quelle: zwei Datenpunkte
 
@@ -437,7 +440,7 @@ Was im Daten-Datenpunkt stehen darf:
 
 Der Hilfstext im Dialog fasst das zusammen: *Die Formate werden automatisch erkannt: Endzeit als Unix-ms oder Unix-Sekunden (0 = kein Timer), verbleibende Sekunden eines herunterzählenden States (Einheit ms: Millisekunden), ISO-Datum oder HH:MM. Ist die Zeit vorbei: 0.0 mit Alarm-Icon, bis der An/Aus-Datenpunkt false ist. Die Anzeige zeigt die Restzeit in Minuten, z. B. 125.5, ab 1000 Minuten 1234.*
 
-**Erweitert – Timer in wechselnden Slots:** Der Knopf **Erweitert** öffnet den Dialog **Timer in wechselnden Slots**, einen Sonderfall für Skripte, die ihre Timer unter einem festen Pfad in wechselnden Unterordnern ablegen. Statt der beiden Datenpunkte werden zwei Muster eingetragen, **Muster An/Aus** und **Muster Daten**, jedes mit genau einem `*` und einem Pfad davor:
+**Advanced – Timer in wechselnden Slots:** Der Knopf **Advanced** (er heißt auch im deutschen Admin so) öffnet den Dialog **Timer in wechselnden Slots**, einen Sonderfall für Skripte, die ihre Timer unter einem festen Pfad in wechselnden Unterordnern ablegen. Statt der beiden Datenpunkte werden zwei Muster eingetragen, **Muster An/Aus** und **Muster Daten**, jedes mit genau einem `*` und einem Pfad davor:
 
 ```text
 javascript.0.timer.global.*.aktiv
@@ -447,7 +450,7 @@ javascript.0.timer.global.*.targetTs
 - An/Aus und Daten gehören zusammen, wenn der Teil an der Stelle des `*` gleich ist.
 - Angezeigt wird ein abgelaufener aktiver Slot, sonst der laufende Slot mit der kürzesten Restzeit. Slots, die erst später entstehen, erkennt der Adapter von selbst.
 - Der Dialog prüft die Muster und meldet *Beide Muster sind nötig.*, *Jedes Muster braucht genau ein \*.*, *Vor dem \* muss ein Pfad stehen, z. B. adapter.0.\*.* oder *Die beiden Muster müssen sich unterscheiden.* Beide Felder leer lassen, um wieder die zwei Datenpunkte zu nutzen.
-- Sind Muster gesetzt, sagt es der Uhrzeit-Dialog: *Unter Erweitert sind Slot-Muster gesetzt - sie ersetzen die beiden Datenpunkte oben.*
+- Sind Muster gesetzt, sagt es der Uhrzeit-Dialog: *Unter Advanced sind Slot-Muster gesetzt - sie ersetzen die beiden Datenpunkte oben.*
 
 ![Der Dialog „Timer in wechselnden Slots"](../Pictures/screensaverAdmin/admin-23-timer-slots.png)
 
@@ -463,6 +466,28 @@ Das Feld **Pageitem** listet die Timer-Items auf den Seiten der Panels dieses Bi
 - Gibt es kein passendes Item, steht dort *Kein passendes Pageitem auf den Seiten der Panels dieses Screensavers.*
 
 **Kein Kreis:** Ein Bildschirmschoner kann kein Item als Quelle nehmen, das selbst den Timer dieses Bildschirmschoners verwendet. Der Dialog bietet solche Items nicht an, und im Item-Dialog ist das Häkchen gesperrt, sobald der Bildschirmschoner dieses Item als Quelle nutzt. Käme es trotzdem dazu, zeigt das Panel die Uhrzeit, das Log warnt, und das Item hat keine Tasten. Erlaubt ist die Kette: Item A nutzt den Bildschirmschoner, der Bildschirmschoner nutzt ein anderes Item B.
+
+#### Quelle: Alexa-Timer (alexa2)
+
+![Der Uhrzeit-Dialog mit der Quelle Alexa-Timer: alexa2-Instanz und Echo-Gerät](../Pictures/screensaverAdmin/admin-32-timer-quelle-alexa.png)
+
+| Feld | Bedeutung |
+|---|---|
+| **alexa2-Instanz** | Die alexa2-Instanz mit dem Echo-Gerät. Angeboten werden alle installierten Instanzen. |
+| **Echo-Gerät** | Das Gerät, dessen Timer der Bildschirmschoner zeigt. Angeboten werden nur Geräte, deren `Info.capabilities` `TIMERS_AND_ALARMS` enthält, beschriftet mit `Info.name` und der Seriennummer. |
+
+Solange eines der beiden Felder leer ist, meldet der Dialog *Bitte alexa2-Instanz und Echo-Gerät wählen.* Wecker zeigt der Bildschirmschoner nicht, nur Timer.
+
+**Wichtig – Option in alexa2:** Ist in der gewählten alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** (`autoQueryActivityOnTrigger`) aus, meldet der Dialog *In dieser alexa2-Instanz ist die Option „Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab“ aus: per Sprache gestellte Timer erscheinen dann nie. Bitte in den Einstellungen der alexa2-Instanz einschalten.* Ohne die Option erscheinen per Sprache gestellte Timer nie in alexa2 und damit auch nicht am Panel.
+
+- Angezeigt wird ein klingelnder Timer, sonst der laufende mit der kürzesten Restzeit. Die Restzeit rechnet der Adapter aus der Endzeit des Timers.
+- Ein per Sprache gestellter Timer erscheint etwa 10 Sekunden später am Panel – so lange braucht alexa2. Über ein Pageitem gestartet sind es etwa 6 Sekunden.
+- Ein klingelnder Timer steht als `0.0` in Rot da, bis er gestoppt ist – am Echo per Sprache oder über ein Pageitem.
+- Eine Pause gibt es nicht; das Infoicon `timer-pause` kommt bei dieser Quelle nicht vor.
+- Pageitems mit **Timer aus dem Screensaver verwenden** starten und stoppen den Timer über das Echo-Gerät, wie im [Timer-Popup](popupTimer#7-alexa-timer-alexa2) beschrieben. Ebenso geht ein Pageitem der Art **Alexa-Timer** mit demselben Gerät.
+- Ist das Gerät nicht zu finden, zeigt das Panel die Uhrzeit und das Log warnt; weitere Fallstricke unter [Fallstricke beim Alexa-Timer](popupTimer#fallstricke-beim-alexa-timer).
+
+![Das Web-Panel zeigt auf dem Bildschirmschoner die Restzeit 1.3 eines Alexa-Timers mit der Sanduhr als Infoicon](../Pictures/screensaverAdmin/admin-33-timer-alexa-restzeit.png)
 
 #### Anzeige am Panel
 
@@ -487,7 +512,7 @@ Die Restzeit steht in **Minuten mit Punkt**, damit sie sich nicht mit der Uhrzei
 - Eine AM/PM-Angabe gibt es beim Timer nicht, auch nicht im 12-Stunden-Format.
 - In der Version **Advanced** behalten Uhrzeit und Infoicon bis zur **TFT 6.0.9** ihre gewohnte Farbe – diese Seite des Panels kennt den Farbbefehl dort noch nicht. Ab der **TFT 6.1.0** und im [Web-Panel](WebPanel) nehmen sie die Farbe des Timers an.
 
-**Abgelaufen** bleibt stehen, bis der An/Aus-Datenpunkt falsch wird. Neue Daten beenden den Alarm nur, wenn sie in der Zukunft liegen.
+**Abgelaufen** bleibt stehen, bis der An/Aus-Datenpunkt falsch wird. Neue Daten beenden den Alarm nur, wenn sie in der Zukunft liegen. Mit einem Pageitem als Quelle endet er mit **Fertig** am Item, mit der Alexa-Quelle, sobald der Timer gestoppt ist.
 
 **Tippen:** Der erste Tipp auf einen angezeigten Timer schaltet auf die Uhrzeit um – auch ohne Doppelklick und noch vor dem Wegtippen einer Benachrichtigung. Er löst weder eine Geste noch einen Seitenwechsel aus. Das Panel zählt die Tipps aber weiter, bis das Display abdunkelt: Ist der Doppelklick aktiv (`cmd.screenSaver.doubleClick`), führt deshalb der nächste Tipp zur Hauptseite, sobald er mehr als eine Sekunde später kommt. Der Timer erscheint wieder, sobald der Bildschirmschoner neu startet oder ein neuer Timer beginnt.
 

@@ -8,6 +8,7 @@ const fields = (over: Partial<PageItemSaveFields>): PageItemSaveFields => ({
     rawMode: false,
     device: null,
     deviceErrorBlocks: false,
+    alexaTimerComplete: null,
     isNavigation: false,
     isCustom: false,
     targetPage: '',
@@ -154,6 +155,16 @@ describe('src-admin - pageItemSaveState', () => {
             expect(s.standardCanSave).to.equal(false);
             expect(s.roleProblem).to.equal(false);
             expect(s.datapointProblems).to.equal(false);
+        });
+    });
+    describe('Alexa timer', () => {
+        it('needs the complete Echo device only, no channel checks', () => {
+            const base = { hasProblems: true, datapointErrors: 1, roleIsValid: false };
+            const incomplete = pageItemSaveState(fields({ ...base, alexaTimerComplete: false }));
+            expect(incomplete.canSave).to.equal(false);
+            expect(incomplete.roleProblem).to.equal(false);
+            expect(incomplete.datapointProblems).to.equal(false);
+            expect(pageItemSaveState(fields({ ...base, alexaTimerComplete: true })).canSave).to.equal(true);
         });
     });
 });
