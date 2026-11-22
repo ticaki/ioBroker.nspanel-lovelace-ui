@@ -113,15 +113,17 @@ Der Abschnitt **Geschwindigkeitsskala** steuert die Animation — sie läuft ums
 
 | Feld | Wirkung |
 |---|---|
-| **minimale Leistung** | Die Leistung, bei der der Punkt **steht**. Vorgabe 0 — mit ihr steht der Punkt bei 0 W still. |
-| **maximale Leistung** | Die Leistung, bei der die Animation mit **100 %** läuft, also am schnellsten. Vorgabe 10000. Dazwischen wächst die Geschwindigkeit gleichmäßig mit der Leistung. |
+| **minimale Leistung** | Die Leistung, ab der sich der Punkt bewegt. Vorgabe 0. Beide Grenzen zählen mit ihrem **Betrag**: Ein Feldpaar −4000 … 4000 für eine Batterie ist dasselbe wie 0 … 4000. |
+| **maximale Leistung** | Die Leistung, bei der die Animation mit **100 %** läuft, also am schnellsten. Vorgabe 10000. Dazwischen wächst die Geschwindigkeit gleichmäßig mit dem Betrag der Leistung. |
 | **Flussrichtung umkehren** | Dreht die Laufrichtung um — für Flüsse, deren Datenpunkt das Vorzeichen andersherum führt. |
 
-Die Laufrichtung kommt aus dem **Vorzeichen**: Ein negativer Messwert lässt den Punkt in die andere Richtung laufen, der Haken *Flussrichtung umkehren* dreht beides um.
+**Bei 0 steht der Punkt immer still**, unabhängig von den beiden Grenzen. Die Laufrichtung kommt allein aus dem **Vorzeichen**: Ein negativer Messwert lässt den Punkt in die andere Richtung laufen, der Haken *Flussrichtung umkehren* dreht beides um.
+
+Dabei ist das Vorzeichen eine **Richtung auf dem Bildschirm**, kein Fluss zum Haus: Ein positiver Wert bewegt den Punkt im Querformat nach links und im Hochformat nach oben — bei den drei Flächen links also **vom Haus weg**, bei den dreien rechts **zum Haus hin**.
 
 > Die Beschriftung **maximale Leistung** gibt es faktisch zweimal: hier für die Animation, weiter oben als *maximale Leistung für Farbe* für den Farbverlauf. Auseinanderhalten kann man sie nur über die Abschnittsüberschriften *Farbskala* und *Geschwindigkeitsskala*.
 
-> **Die Geschwindigkeit wird nicht begrenzt.** Über der *maximalen Leistung* rechnet der Adapter weiter über 100 % hinaus, unter der minimalen ins Negative — dort kippt die Laufrichtung. Auch diese beiden Grenzen gelten für den **Rohwert** des Datenpunkts.
+> **Über der maximalen Leistung rechnet der Adapter weiter**, begrenzt den Wert aber auf die **±120**, die die Anzeige versteht. Unter der minimalen Leistung steht der Punkt still statt rückwärts zu laufen. Beide Grenzen gelten für den **Rohwert** des Datenpunkts.
 
 ## 6. Die beiden Hauswerte
 
@@ -170,6 +172,7 @@ Soll eine Seite, die heute noch aus einem Skript kommt, hier verwaltet werden, f
 - **Der Farbverlauf ist Rot–Gelb–Grün und nicht einstellbar.** Grün sitzt auf der *besten Leistung*, Rot auf **beiden** Rändern. Wer nur einen Anstieg von Rot nach Grün will, setzt die *beste Leistung* auf das Maximum (Beispiel 2).
 - **Beste und maximale Leistung auf demselben Wert sind erlaubt, aber heikel.** Trifft der Messwert diesen Wert genau, rechnet der Adapter mit einer Division durch null und die Farbe ist für diesen Takt unbestimmt. Ein kleiner Abstand zwischen den beiden Feldern vermeidet das.
 - **Alle Grenzen für Farbe und Geschwindigkeit gelten für den Rohwert** des Datenpunkts, nicht für die Einheit, die das Panel zeigt.
+- **Zwei positive Grenzen sind eine Totzone.** Steht die *minimale Leistung* über 0, steht der Punkt bei jedem Betrag darunter still — gewollt für Flüsse, die nur ab einer Mindestleistung angezeigt werden sollen.
 - **Ohne Iconfarbe und ohne Farbskala ist das Symbol weiß.** Bei Seiten aus der alten Tabelle ist das der Normalfall, wenn der Haken *Farbe vom Wert abhängig* dort nie angefasst wurde.
 - **Ein Messwert außerhalb der Farbskala dehnt sie**, statt am Rand stehen zu bleiben — die Farben verschieben sich dann für alle anderen Werte mit.
 - **„maximale Leistung" steht zweimal im Dialog** — einmal für die Farbe, einmal für die Geschwindigkeit. Nur die Abschnittsüberschrift unterscheidet sie.

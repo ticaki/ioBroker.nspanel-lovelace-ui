@@ -18,9 +18,12 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pagePower_exports = {};
 __export(pagePower_exports, {
+  MAX_POWER_SPEED: () => MAX_POWER_SPEED,
   PagePower: () => PagePower,
   buildPowerPage: () => buildPowerPage,
-  buildPowerSlotData: () => buildPowerSlotData
+  buildPowerSlotData: () => buildPowerSlotData,
+  getPowerSpeed: () => getPowerSpeed,
+  powerSpeedFromValue: () => powerSpeedFromValue
 });
 module.exports = __toCommonJS(pagePower_exports);
 var import_Page = require("../classes/Page");
@@ -78,6 +81,38 @@ const PagePowerMessageDefault = {
     name: ""
   }
 };
+const MAX_POWER_SPEED = 120;
+function powerSpeedFromValue(value, min, max) {
+  const amount = Math.abs(value);
+  let percent;
+  if (min === null || max === null) {
+    percent = amount;
+  } else {
+    const high = Math.max(Math.abs(min), Math.abs(max));
+    const low = min > 0 && max > 0 ? Math.min(Math.abs(min), Math.abs(max)) : 0;
+    percent = high > low ? import_Color.Color.scale(amount, low, high, 0, 100) : amount > low ? 100 : 0;
+  }
+  percent = Math.min(MAX_POWER_SPEED, Math.max(0, Math.round(percent)));
+  return value < 0 ? -percent : percent;
+}
+async function getPowerSpeed(i) {
+  var _a;
+  if (!i) {
+    return null;
+  }
+  const raw = i.value && await i.value.getNumber();
+  if (raw == null) {
+    return null;
+  }
+  const value = raw * ((_a = i.factor && await i.factor.getNumber()) != null ? _a : 1);
+  const min = i.minScale ? await i.minScale.getNumber() : null;
+  const max = i.maxScale ? await i.maxScale.getNumber() : null;
+  let speed = powerSpeedFromValue(value, min, max);
+  if (i.negate && await i.negate.getBoolean()) {
+    speed = -speed;
+  }
+  return speed;
+}
 class PagePower extends import_Page.Page {
   //items: pages.PageBaseConfig['items'];
   items;
@@ -219,7 +254,7 @@ class PagePower extends import_Page.Page {
     message.icon = (_b = await (0, import_tools.getIconEntryValue)(item.icon, value >= 0, "")) != null ? _b : void 0;
     message.iconColor = (_c = await (0, import_tools.getIconEntryColor)(item.icon, value, import_Color.Color.White)) != null ? _c : void 0;
     message.name = (_d = await (0, import_tools.getEntryTextOnOff)(item.text, value >= 0)) != null ? _d : void 0;
-    message.speed = (_e = await (0, import_tools.getScaledNumber)(item.speed)) != null ? _e : void 0;
+    message.speed = (_e = await getPowerSpeed(item.speed)) != null ? _e : void 0;
     const {
       value: newValue,
       unit,
@@ -445,8 +480,11 @@ function buildPowerPage(entry, adapter, pageName = entry.uniqueName) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  MAX_POWER_SPEED,
   PagePower,
   buildPowerPage,
-  buildPowerSlotData
+  buildPowerSlotData,
+  getPowerSpeed,
+  powerSpeedFromValue
 });
 //# sourceMappingURL=pagePower.js.map
