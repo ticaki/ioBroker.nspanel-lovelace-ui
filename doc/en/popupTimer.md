@@ -219,6 +219,8 @@ At the top of the [Pageitem Configuration](PageConfig-Dialoge#1-pageitem-configu
 
 With **Alexa timer** the dialog shows these fields:
 
+![The Pageitem Configuration with the kind Alexa timer: alexa2 instance, Echo device and Show Timer](../Pictures/popupTimer/timer-04-alexa-timer.png)
+
 | Field | Meaning |
 |---|---|
 | **alexa2 instance** | The alexa2 instance with the Echo device. All installed instances are offered. |
@@ -249,9 +251,11 @@ Switching between the two kinds in the open dialog keeps the fields of the other
 | Situation | What you see |
 |---|---|
 | timer set by voice | After about 10 seconds the entry shows the remaining time – that is how long alexa2 takes to know the timer. |
-| **Start** in the popup | The adapter sends the text *stelle einen Timer auf 5 Minuten* (whole minutes, for exactly one *1 Minute*) or *stelle einen Timer auf 90 Sekunden* to the Echo. The Echo speaks the confirmation. The timer appears on the panel after about 8 to 10 seconds. |
-| **Cancel** (running) or **Finish** (ringing) | The timer disappears from the panel at once; at Amazon it is deleted in the background – also while it rings. |
+| **Start** in the popup | The adapter sends the text *stelle einen Timer auf 5 Minuten* (whole minutes, for exactly one *1 Minute*) or *stelle einen Timer auf 90 Sekunden* to the Echo. The Echo speaks the confirmation. 5 seconds after the text the adapter has alexa2 query the activities again; so the timer appears on the panel about 6 seconds after **Start**. |
+| **Cancel** (running) or **Finish** (ringing) | The timer disappears from the panel at once; at Amazon it is deleted in the background (confirmed within a fraction of a second) – also while it rings. alexa2 then reports the ringing as over about 2.5 seconds later. |
 | time is up | `00:00:00`, only **Finish** in the popup, until the timer is stopped. |
+
+![The web panel with three Alexa items: a timer without a running timer, a specific alarm and the next active alarm, both at 15:40](../Pictures/popupTimer/timer-06-alexa-liste.png)
 
 - The adapter counts the remaining time itself from the end time of the timer; alexa2 does not count.
 - **Start** exists only while no timer of the device is active.
@@ -271,22 +275,26 @@ With **Show** **Alarm** the item shows an alarm of the Echo device like the [ala
 
 Below follows the choice **Which alarm**:
 
+![The Pageitem Configuration with Show Alarm and a specific alarm of the Echo device](../Pictures/popupTimer/timer-05-alexa-wecker-bestimmt.png)
+
 | Choice | What the item shows | What you can do |
 |---|---|---|
 | **Next active alarm** (default) | the switched-on alarm that rings next | **Off** switches exactly this alarm off. Afterwards the item shows the next switched-on one – another press on **Off** would switch that one off as well. The time cannot be changed here. With none switched on: `00:00`, icon off, no buttons. |
-| **A specific alarm** | always the same alarm, also while it is off | **On** and **Off**; while it is off, the time can be changed in the popup. |
+| **A specific alarm** | always the same alarm, also while it is off | **On** and **Off**; while it is off, the time can be changed in the popup – that switches it on again at Amazon. |
 
-The field **Alarm of the device** labels each alarm with time and repetition, e.g. *07:30 · MO,TU,WE,TH,FR* or *06:00 · once 2026-11-13*; an alarm with a name has it in front. If the chosen alarm no longer exists, the item shows `00:00` without buttons on the panel, and the log warns once.
+The field **Alarm of the device** labels each alarm with time and repetition, e.g. *07:30 · MO,TU,WE,TH,FR* or *06:00 · once 2026-11-13*; an alarm with a name has it in front. If the chosen alarm no longer exists, the dialog warns, the item shows `00:00` without buttons on the panel, and the log warns once.
+
+![The Pageitem Configuration with the warning that the chosen alarm no longer exists](../Pictures/popupTimer/timer-07-alexa-wecker-geloescht.png)
 
 What the adapter writes:
 
 | Action | state of alexa2 written |
 |---|---|
 | **On** / **Off** | `Alarm.<id>.enabled` = `true` / `false` |
-| time changed in the popup (specific alarm only, only while off) | `Alarm.<id>.time` = `hh:mm:00` – the two fields of the popup are hour and minute |
+| time changed in the popup (specific alarm only, only while off) | `Alarm.<id>.time` = `hh:mm:00` – the two fields of the popup are hour and minute. Amazon switches the alarm on again with it: alexa2 reports it back with `enabled` = `true`. |
 
-- The display follows the states of alexa2: after **On**, **Off** or a new time it only changes once alexa2 reports the new state.
-- New alarms (e.g. set by voice) appear as soon as alexa2 creates their states; deleted ones disappear as soon as alexa2 deletes them. When the popup opens, the adapter checks in addition whether the alarms still exist.
+- The display follows the states of alexa2: after **On**, **Off** or a new time it only changes once alexa2 reports the new state – after about 2.5 seconds.
+- New alarms appear as soon as alexa2 creates their states – an alarm set by a text command about 3.5 seconds later, without the adapter having to ask. Deleted ones disappear at once, because alexa2 deletes their states with them. When the popup opens, the adapter checks in addition whether the alarms still exist.
 - A **single alarm whose time has passed** cannot be changed any more according to alexa2. The item offers neither **On** nor a new time for it.
 - The item does not show that an alarm is ringing right now, and it cannot stop it – like the alarm clock mode of a channel.
 
@@ -297,7 +305,8 @@ What the adapter writes:
 - **The Echo speaks when the panel starts a timer:** That is how it is; the timer is set as if by voice.
 - **An alarm cannot be switched on:** A single alarm whose time has passed gets no **On** – alexa2 cannot change it any more. Set a new alarm.
 - **The specific alarm is gone:** It was deleted, e.g. by voice. Choose another one in the item dialog or take **Next active alarm**.
-- **After On, Off or a new time the display does not change at once:** It waits for alexa2 to report.
+- **After On, Off or a new time the display does not change at once:** It waits for alexa2 to report, about 2.5 seconds.
+- **A new time switches the alarm on again:** Changing the time of a switched-off alarm finds it switched on shortly after – Amazon activates it. To keep it off, press **Off** afterwards.
 
 ## Pitfalls
 

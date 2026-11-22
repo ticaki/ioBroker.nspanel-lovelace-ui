@@ -219,6 +219,8 @@ Oben in der [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration
 
 Bei **Alexa-Timer** zeigt der Dialog diese Felder:
 
+![Die Pageitem-Konfiguration mit der Art Alexa-Timer: alexa2-Instanz, Echo-Gerät und Anzeigen Timer](../Pictures/popupTimer/timer-04-alexa-timer.png)
+
 | Feld | Bedeutung |
 |---|---|
 | **alexa2-Instanz** | Die alexa2-Instanz mit dem Echo-Gerät. Angeboten werden alle installierten Instanzen. |
@@ -249,9 +251,11 @@ Wechselt man im offenen Dialog zwischen den beiden Arten, bleiben die Felder der
 | Situation | Was man sieht |
 |---|---|
 | Timer per Sprache gestellt | Nach etwa 10 Sekunden zeigt der Eintrag die Restzeit – so lange braucht alexa2, bis es den Timer kennt. |
-| **Start** im Popup | Der Adapter schickt dem Echo den Text *stelle einen Timer auf 5 Minuten* (ganze Minuten, bei genau einer *1 Minute*) bzw. *stelle einen Timer auf 90 Sekunden*. Das Echo spricht die Bestätigung. Am Panel erscheint der Timer nach etwa 8 bis 10 Sekunden. |
-| **Abbrechen** (läuft) oder **Fertig** (klingelt) | Der Timer verschwindet sofort vom Panel; bei Amazon wird er im Hintergrund gelöscht – auch während er klingelt. |
+| **Start** im Popup | Der Adapter schickt dem Echo den Text *stelle einen Timer auf 5 Minuten* (ganze Minuten, bei genau einer *1 Minute*) bzw. *stelle einen Timer auf 90 Sekunden*. Das Echo spricht die Bestätigung. 5 Sekunden nach dem Text lässt der Adapter alexa2 die Aktivitäten neu abfragen; am Panel erscheint der Timer damit etwa 6 Sekunden nach **Start**. |
+| **Abbrechen** (läuft) oder **Fertig** (klingelt) | Der Timer verschwindet sofort vom Panel; bei Amazon wird er im Hintergrund gelöscht (bestätigt nach Bruchteilen einer Sekunde) – auch während er klingelt. Das Klingeln meldet alexa2 dann etwa 2,5 Sekunden später als beendet. |
 | Zeit abgelaufen | `00:00:00`, im Popup nur **Fertig**, bis der Timer gestoppt ist. |
+
+![Das Web-Panel mit drei Alexa-Items: ein Timer ohne laufenden Timer, ein bestimmter Wecker und der nächste aktive Wecker, beide um 15:40](../Pictures/popupTimer/timer-06-alexa-liste.png)
 
 - Die Restzeit rechnet der Adapter selbst aus der Endzeit des Timers; alexa2 zählt nicht mit.
 - **Start** gibt es nur, wenn gerade kein Timer des Geräts aktiv ist.
@@ -271,22 +275,26 @@ Mit **Anzeigen** **Wecker** zeigt das Item einen Wecker des Echo-Geräts so wie 
 
 Darunter folgt die Auswahl **Welcher Wecker**:
 
+![Die Pageitem-Konfiguration mit Anzeigen Wecker und einem bestimmten Wecker des Echo-Geräts](../Pictures/popupTimer/timer-05-alexa-wecker-bestimmt.png)
+
 | Auswahl | Was das Item zeigt | Was man tun kann |
 |---|---|---|
 | **Nächster aktiver Wecker** (Vorgabe) | den eingeschalteten Wecker, der als nächster klingelt | **Aus** schaltet genau diesen Wecker aus. Danach zeigt das Item den nächsten eingeschalteten – ein weiterer Druck auf **Aus** würde auch diesen ausschalten. Die Uhrzeit lässt sich hier nicht ändern. Ist keiner eingeschaltet: `00:00`, Symbol aus, keine Tasten. |
-| **Bestimmter Wecker** | immer denselben Wecker, auch wenn er aus ist | **An** und **Aus**; solange er aus ist, lässt sich die Uhrzeit im Popup ändern. |
+| **Bestimmter Wecker** | immer denselben Wecker, auch wenn er aus ist | **An** und **Aus**; solange er aus ist, lässt sich die Uhrzeit im Popup ändern – das schaltet ihn bei Amazon wieder ein. |
 
-Das Feld **Wecker des Geräts** beschriftet jeden Wecker mit Uhrzeit und Wiederholung, z. B. *07:30 · MO,TU,WE,TH,FR* oder *06:00 · einmalig 2026-11-13*; hat der Wecker einen Namen, steht er vorn. Gibt es den gewählten Wecker nicht mehr, zeigt das Item am Panel `00:00` ohne Tasten, und das Log warnt einmal.
+Das Feld **Wecker des Geräts** beschriftet jeden Wecker mit Uhrzeit und Wiederholung, z. B. *07:30 · MO,TU,WE,TH,FR* oder *06:00 · einmalig 2026-11-13*; hat der Wecker einen Namen, steht er vorn. Gibt es den gewählten Wecker nicht mehr, warnt der Dialog, das Item zeigt am Panel `00:00` ohne Tasten, und das Log warnt einmal.
+
+![Die Pageitem-Konfiguration mit der Warnung, dass es den gewählten Wecker nicht mehr gibt](../Pictures/popupTimer/timer-07-alexa-wecker-geloescht.png)
 
 Was der Adapter schreibt:
 
 | Aktion | geschriebener Datenpunkt von alexa2 |
 |---|---|
 | **An** / **Aus** | `Alarm.<id>.enabled` = `true` / `false` |
-| Uhrzeit im Popup geändert (nur bestimmter Wecker, nur wenn aus) | `Alarm.<id>.time` = `hh:mm:00` – die beiden Felder des Popups sind Stunde und Minute |
+| Uhrzeit im Popup geändert (nur bestimmter Wecker, nur wenn aus) | `Alarm.<id>.time` = `hh:mm:00` – die beiden Felder des Popups sind Stunde und Minute. Amazon schaltet den Wecker damit wieder ein: alexa2 meldet ihn danach mit `enabled` = `true` zurück. |
 
-- Die Anzeige folgt den Datenpunkten von alexa2: Nach **An**, **Aus** oder einer neuen Uhrzeit ändert sie sich erst, wenn alexa2 den neuen Stand meldet.
-- Neue Wecker (z. B. per Sprache gestellt) erscheinen, sobald alexa2 ihre Datenpunkte anlegt; gelöschte verschwinden, sobald alexa2 sie löscht. Beim Öffnen des Popups prüft der Adapter zusätzlich, ob es die Wecker noch gibt.
+- Die Anzeige folgt den Datenpunkten von alexa2: Nach **An**, **Aus** oder einer neuen Uhrzeit ändert sie sich erst, wenn alexa2 den neuen Stand meldet – nach etwa 2,5 Sekunden.
+- Neue Wecker erscheinen, sobald alexa2 ihre Datenpunkte anlegt – ein per Textbefehl gestellter Wecker etwa 3,5 Sekunden später, ohne dass der Adapter nachfragen muss. Gelöschte verschwinden sofort, weil alexa2 ihre Datenpunkte mitlöscht. Beim Öffnen des Popups prüft der Adapter zusätzlich, ob es die Wecker noch gibt.
 - Ein **einmaliger Wecker, dessen Zeitpunkt vorbei ist**, lässt sich laut alexa2 nicht mehr ändern. Das Item bietet für ihn weder **An** noch eine neue Uhrzeit an.
 - Dass ein Wecker gerade klingelt, zeigt das Item nicht an, und es kann ihn nicht stoppen – wie beim Wecker-Modus eines Kanals.
 
@@ -297,7 +305,8 @@ Was der Adapter schreibt:
 - **Das Echo spricht beim Start vom Panel:** Das ist so; der Timer wird wie per Sprache gestellt.
 - **Ein Wecker lässt sich nicht einschalten:** Ein einmaliger Wecker, dessen Zeitpunkt vorbei ist, bekommt kein **An** – alexa2 kann ihn nicht mehr ändern. Einen neuen Wecker stellen.
 - **Der bestimmte Wecker ist weg:** Er wurde gelöscht, z. B. per Sprache. Im Item-Dialog einen anderen wählen oder **Nächster aktiver Wecker** nehmen.
-- **Nach An, Aus oder einer neuen Uhrzeit ändert sich die Anzeige nicht sofort:** Sie wartet auf die Meldung von alexa2.
+- **Nach An, Aus oder einer neuen Uhrzeit ändert sich die Anzeige nicht sofort:** Sie wartet auf die Meldung von alexa2, etwa 2,5 Sekunden.
+- **Eine neue Uhrzeit schaltet den Wecker wieder ein:** Wer die Uhrzeit eines ausgeschalteten Weckers ändert, findet ihn kurz darauf eingeschaltet – Amazon aktiviert ihn dabei. Soll er aus bleiben, danach **Aus** drücken.
 
 ## Fallstricke
 
