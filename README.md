@@ -158,7 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 2.6.0 (2026-11-22)
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)
 - (tt-tom17) cardPower: the limits of the speed scale count with their amount, so a battery configured as -4000 … 4000 no longer shifts the zero point - zero power always stands still, the sign alone gives the direction and the speed is limited to the ±120 of the HMI
 - (ticaki) alexa media page: choosing another Echo in the speaker popup switches the player again (also the first Echo of the list)
@@ -209,12 +209,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) gate channel: a boolean status (`sensor.gate`) or a channel with only SET is shown, up/down work again; with a boolean status up is disabled when open and down when closed, stop no longer depends on the status
 - (ticaki) fixes: a temperature offset set in Tasmota (`TempOffset`) is taken over instead of overwritten; the internal MQTT server matches topics exactly and no longer mistakes a panel whose name starts with the name of another one; a failed Berry driver download restores the previous driver
 - (ticaki) log: no error without configured panels, no "Update detected" on every MQTT connect, panel name in the screensaver message, clearer script update errors, "setActivePage called but nothing changed" only as debug
-
-### 2.3.1 (2026-11-16)
-- (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language
-- (tt-tom17) Admin, developer tab: flashing a custom TFT also works with an external MQTT broker - the box asks for the "IP of the ioBroker" itself
-- (ticaki) color scale: with a best value and a best color, the range above the best value is no longer inverted - the colors now run min color → best color → max color; no more invalid color when the best value equals the max value (fixed #896)
-- (ticaki) Admin, color options: in the gradient modes (triGrad, quadriGrad and their anchor variants) the color fields Min/Max/Best are disabled, as these modes do not use them
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
