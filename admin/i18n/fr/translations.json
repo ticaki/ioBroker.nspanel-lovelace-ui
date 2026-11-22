@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "État",
     "deviceDetailsDialog_status": "%s - %d entrées cochées",
     "deviceDetailsDialog_statusOne": "%s - 1 entrée cochée",
+    "deviceDetailsDialog_subName": "2e ligne",
+    "deviceDetailsDialog_subNameHint": "Deuxième ligne du nom : les lignes cochées portant le même nom la reçoivent automatiquement (sous-dossier et numéro de l'état). Vide = automatique, un texte propre s'applique toujours.",
     "deviceDetailsDialog_ticked": "%s cochées",
     "deviceDetailsDialog_tickedOne": "1 cochée",
     "deviceDetailsDialog_title": "Liste de filtres",

@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "Стан",
     "deviceDetailsDialog_status": "%s - позначено записів: %d",
     "deviceDetailsDialog_statusOne": "%s - позначено 1 запис",
+    "deviceDetailsDialog_subName": "2-й рядок",
+    "deviceDetailsDialog_subNameHint": "Другий рядок назви: позначені рядки з однаковою назвою отримують його автоматично (підпапка та номер стану). Порожньо = автоматично, власний текст діє завжди.",
     "deviceDetailsDialog_ticked": "Позначено: %s",
     "deviceDetailsDialog_tickedOne": "Позначено: 1",
     "deviceDetailsDialog_title": "Список фільтрів",

@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "Состояние",
     "deviceDetailsDialog_status": "%s - отмечено записей: %d",
     "deviceDetailsDialog_statusOne": "%s - отмечена 1 запись",
+    "deviceDetailsDialog_subName": "2-я строка",
+    "deviceDetailsDialog_subNameHint": "Вторая строка имени: отмеченные строки с одинаковым именем получают её автоматически (подпапка и номер состояния). Пусто = автоматически, собственный текст действует всегда.",
     "deviceDetailsDialog_ticked": "Отмечено: %s",
     "deviceDetailsDialog_tickedOne": "Отмечено: 1",
     "deviceDetailsDialog_title": "Список фильтров",

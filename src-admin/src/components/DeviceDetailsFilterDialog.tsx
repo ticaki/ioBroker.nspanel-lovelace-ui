@@ -3,7 +3,7 @@
  * (or of the general mask) with the states they found, plus every other state of the device. One tick per row; the
  * user sees the found state, not the rule behind it, and can exchange it. With an adapter without mask of its own every
  * row can be assigned to an entry of the general mask (the role suggests it). The order (drag & drop) is the order of
- * the detail page.
+ * the detail page. Ticked rows with the same name get a second name line (automatic, can be overwritten).
  */
 import React from 'react';
 import {
@@ -19,6 +19,7 @@ import {
     InputLabel,
     MenuItem,
     Select,
+    TextField,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -30,11 +31,13 @@ import {
     deviceDetailEntriesOfRows,
     deviceDetailEntryOfState,
     deviceDetailNameKey,
+    deviceDetailSubNames,
     exchangeDeviceDetailRowState,
     generalDeviceDetailMask,
     hasOwnDeviceDetailMask,
     type DeviceDetailEntryConfig,
     type DeviceDetailRow,
+    type DeviceDetailSubName,
     type DeviceStateInfo,
 } from '../../../src/lib/types/deviceDetails';
 
@@ -224,7 +227,57 @@ export default class DeviceDetailsFilterDialog extends React.Component<
         return extra ? `${rest} (${extra})` : rest;
     }
 
-    private renderRow(row: FilterRow, index: number, ownMask: boolean): React.JSX.Element {
+    /**
+     * The second name lines of the ticked rows (deviceDetailSubNames).
+     *
+     * @param rows the rows of the dialog
+     * @returns rowKey -> second line, only for ticked rows with a state
+     */
+    private subNamesOf(rows: readonly FilterRow[]): Map<number, DeviceDetailSubName> {
+        const ticked = rows.filter(r => r.enabled && r.id !== '');
+        const subs = deviceDetailSubNames(
+            this.state.deviceId,
+            ticked.map(r => ({ id: r.id, name: this.rowName(r), subName: r.subName })),
+        );
+        const out = new Map<number, DeviceDetailSubName>();
+        ticked.forEach((r, i) => out.set(r.rowKey, subs[i]));
+        return out;
+    }
+
+    /**
+     * The field of the second name line: shown for a ticked row that shares its name with another ticked row, or that
+     * has an own text (it applies without duplicate as well and must stay removable).
+     *
+     * @param row the row
+     * @param sub its second line, undefined for an unticked row
+     * @returns the field or null
+     */
+    private renderSubName(row: FilterRow, sub: DeviceDetailSubName | undefined): React.JSX.Element | null {
+        if (!sub || (!sub.duplicate && row.subName === undefined)) {
+            return null;
+        }
+        return (
+            <Tooltip title={I18n.t('deviceDetailsDialog_subNameHint')}>
+                <TextField
+                    variant="standard"
+                    size="small"
+                    label={I18n.t('deviceDetailsDialog_subName')}
+                    value={row.subName ?? ''}
+                    placeholder={sub.auto}
+                    sx={{ width: 130, flexShrink: 0 }}
+                    slotProps={{ inputLabel: { shrink: true }, htmlInput: { 'data-dd': 'sub-name' } }}
+                    onChange={e => this.update(row.rowKey, { subName: e.target.value })}
+                />
+            </Tooltip>
+        );
+    }
+
+    private renderRow(
+        row: FilterRow,
+        index: number,
+        ownMask: boolean,
+        sub: DeviceDetailSubName | undefined,
+    ): React.JSX.Element {
         const { rows, dragKey, overKey, states } = this.state;
         return (
             <Box
@@ -292,6 +345,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
                         {this.rowName(row)}
                     </Typography>
                 </Tooltip>
+                {this.renderSubName(row, sub)}
                 {!ownMask && (
                     <FormControl
                         variant="standard"
@@ -347,6 +401,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
         const { open, rows, deviceId, deviceName } = this.state;
         const ownMask = hasOwnDeviceDetailMask(deviceId);
         const ticked = rows.filter(r => r.enabled && r.id !== '').length;
+        const subNames = this.subNamesOf(rows);
         return (
             <Dialog
                 open={open}
@@ -373,7 +428,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
                     >
                         {I18n.t(ownMask ? 'deviceDetailsDialog_hint' : 'deviceDetailsDialog_hintGeneral')}
                     </Typography>
-                    {rows.map((row, index) => this.renderRow(row, index, ownMask))}
+                    {rows.map((row, index) => this.renderRow(row, index, ownMask, subNames.get(row.rowKey)))}
                 </DialogContent>
                 <DialogActions>
                     <Typography

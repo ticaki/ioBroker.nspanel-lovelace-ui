@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "State",
     "deviceDetailsDialog_status": "%s - %d items aangevinkt",
     "deviceDetailsDialog_statusOne": "%s - 1 item aangevinkt",
+    "deviceDetailsDialog_subName": "2e regel",
+    "deviceDetailsDialog_subNameHint": "Tweede regel van de naam: aangevinkte regels met dezelfde naam krijgen hem automatisch (submap en nummer van de state). Leeg = automatisch, een eigen tekst geldt altijd.",
     "deviceDetailsDialog_ticked": "%s aangevinkt",
     "deviceDetailsDialog_tickedOne": "1 aangevinkt",
     "deviceDetailsDialog_title": "Filterlijst",

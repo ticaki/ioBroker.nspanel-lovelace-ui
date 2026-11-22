@@ -3,7 +3,9 @@ import objects from '../../../test/fixtures/device-details/objects.json';
 import { Icons } from '../const/icon_mapping';
 import {
     buildDeviceDetailRows,
+    deviceDetailAutoSubName,
     deviceDetailEntriesOfRows,
+    deviceDetailSubNames,
     deviceDetailEntryOfRow,
     deviceDetailIdentifier,
     deviceDetailMaskOf,
@@ -380,6 +382,78 @@ describe('lib/types/deviceDetails', () => {
             expect(isDeviceShortPressState({ type: 'number', write: true })).to.equal(false);
             const buttons = fixture[SHELLY].states.filter(isDeviceShortPressState).filter(s => !s.read);
             expect(buttons.map(s => s.id.slice(SHELLY.length + 1))).to.include.members(['reboot', 'firmwareupdate']);
+        });
+    });
+
+    describe('second name line of rows with the same name', () => {
+        const ids = ['Relay0.temperatureC', 'Ext.temperature100C', 'Ext.temperature101C', 'Ext.temperature104C'];
+        it('automatic text: sub folder + digits of the end id, else the end id', () => {
+            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Relay0.temperatureC`)).to.equal('Relay0');
+            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Ext.temperature100C`)).to.equal('Ext 100');
+            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Ext.temperature104F`)).to.equal('Ext 104');
+            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.rssi`)).to.equal('rssi');
+            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.temperature1`)).to.equal('1');
+            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Sensor.pm2_5`)).to.equal('Sensor 2 5');
+        });
+        it('the fixture: every "Temperatur" gets a second line, the other rows none', () => {
+            const states = fixture[SHELLY].states;
+            for (const id of ids) {
+                expect(
+                    states.some(st => st.id === `${SHELLY}.${id}`),
+                    id,
+                ).to.equal(true);
+            }
+            const rows = [
+                ...ids.map(id => ({ id: `${SHELLY}.${id}`, name: 'Temperatur' })),
+                { id: `${SHELLY}.rssi`, name: 'WLAN' },
+            ];
+            expect(deviceDetailSubNames(SHELLY, rows)).to.deep.equal([
+                { duplicate: true, auto: 'Relay0', text: 'Relay0' },
+                { duplicate: true, auto: 'Ext 100', text: 'Ext 100' },
+                { duplicate: true, auto: 'Ext 101', text: 'Ext 101' },
+                { duplicate: true, auto: 'Ext 104', text: 'Ext 104' },
+                { duplicate: false, auto: 'rssi', text: '' },
+            ]);
+        });
+        it('the same automatic text twice (°C and °F of one sensor): the id below the device', () => {
+            const rows = [
+                { id: `${SHELLY}.Ext.temperature100C`, name: 'Temperatur' },
+                { id: `${SHELLY}.Ext.temperature100F`, name: 'Temperatur' },
+                { id: `${SHELLY}.Relay0.temperatureC`, name: 'Temperatur' },
+            ];
+            expect(deviceDetailSubNames(SHELLY, rows).map(r => r.text)).to.deep.equal([
+                'Ext.temperature100C',
+                'Ext.temperature100F',
+                'Relay0',
+            ]);
+        });
+        it('an own text wins, also without duplicate; blanks only = automatic', () => {
+            const rows = [
+                { id: `${SHELLY}.Relay0.temperatureC`, name: 'Temperatur', subName: 'Gerät' },
+                { id: `${SHELLY}.Ext.temperature100C`, name: 'Temperatur', subName: '  ' },
+                { id: `${SHELLY}.rssi`, name: 'WLAN', subName: 'Router' },
+            ];
+            expect(deviceDetailSubNames(SHELLY, rows).map(r => r.text)).to.deep.equal(['Gerät', 'Ext 100', 'Router']);
+        });
+        it('the own text is saved with the row and read back', () => {
+            const saved = deviceDetailEntriesOfRows([
+                { key: 'temperature', id: `${SHELLY}.Relay0.temperatureC`, enabled: true, subName: ' Gerät ' },
+                { key: '', id: `${SHELLY}.Ext.temperature100C`, enabled: true, subName: '' },
+            ]);
+            expect(saved).to.deep.equal([
+                { key: 'temperature', id: `${SHELLY}.Relay0.temperatureC`, subName: 'Gerät' },
+                { key: '', id: `${SHELLY}.Ext.temperature100C` },
+            ]);
+            const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, saved, undefined);
+            expect(rows[0]).to.deep.equal({ ...saved[0], enabled: true });
+            expect(rows[1]).to.deep.equal({ ...saved[1], enabled: true });
+            // the panel does not show the second line yet (the name field of cardEntities is one line high on eu / us-l)
+            expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: saved })?.entries).to.deep.equal(
+                saved.map(e => ({ key: e.key, id: e.id })),
+            );
+            expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: [{ key: '', id: 'x', subName: 1 }] })).to.equal(
+                undefined,
+            );
         });
     });
 });

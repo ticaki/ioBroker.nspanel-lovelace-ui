@@ -98,6 +98,11 @@ export type DeviceDetailEntryConfig = {
     key: string;
     /** full id of the state */
     id: string;
+    /**
+     * own text of the second name line (admin), missing or '' = the automatic text of
+     * {@link deviceDetailSubNames} - only rows with the same name as another ticked row get one automatically
+     */
+    subName?: string;
 };
 
 /** what a short tap on a device item does */
@@ -170,6 +175,8 @@ export type DeviceDetailRow = {
     id: string;
     /** ticked: shown on the detail page */
     enabled: boolean;
+    /** own text of the second name line ({@link DeviceDetailEntryConfig.subName}) */
+    subName?: string;
 };
 
 /** what the detail page does with a state (doc/ideas/device-details/README.md, section Zeilen) */
@@ -706,7 +713,11 @@ export function buildDeviceDetailRows(
         const first: DeviceDetailRow[] = [];
         for (const s of saved) {
             if (s.id !== '' && !first.some(f => f.id === s.id)) {
-                first.push({ key: s.key, id: s.id, enabled: true });
+                first.push(
+                    s.subName
+                        ? { key: s.key, id: s.id, enabled: true, subName: s.subName }
+                        : { key: s.key, id: s.id, enabled: true },
+                );
             }
         }
         // a state is shown once: a candidate whose state a saved row already shows (exchanged by the user) stays
@@ -751,7 +762,8 @@ export function deviceDetailEntriesOfRows(rows: readonly DeviceDetailRow[]): Dev
     const out: DeviceDetailEntryConfig[] = [];
     for (const r of rows) {
         if (r.enabled && r.id !== '' && !out.some(o => o.id === r.id)) {
-            out.push({ key: r.key, id: r.id });
+            const subName = r.subName?.trim();
+            out.push(subName ? { key: r.key, id: r.id, subName } : { key: r.key, id: r.id });
         }
     }
     return out;
@@ -807,7 +819,8 @@ function isDeviceDetailEntryConfig(value: unknown): value is DeviceDetailEntryCo
         'key' in value &&
         typeof value.key === 'string' &&
         'id' in value &&
-        typeof value.id === 'string'
+        typeof value.id === 'string' &&
+        (!('subName' in value) || value.subName === undefined || typeof value.subName === 'string')
     );
 }
 
@@ -889,4 +902,63 @@ export function updatedDeviceDetailsLearned(
         return undefined;
     }
     return { ...learned, [adapter]: now };
+}
+
+/**
+ * The automatic second name line of a row (doc/ideas/device-details/README.md, section Zweite Namenszeile): the sub
+ * folder of the state and the digits of its end id - `Relay0.temperatureC` -> `Relay0`, `Ext.temperature100C` ->
+ * `Ext 100`, `temperature1` (no sub folder) -> `1`, `rssi` -> `rssi` (neither sub folder nor digits: the end id).
+ * Several runs of digits are joined with a blank (`pm2_5` -> `2 5`).
+ *
+ * @param deviceId id of the device
+ * @param id full id of the state
+ * @returns the text
+ */
+export function deviceDetailAutoSubName(deviceId: string, id: string): string {
+    const rest = id.startsWith(`${deviceId}.`) ? id.slice(deviceId.length + 1) : id;
+    const parts = rest.split('.');
+    const end = parts[parts.length - 1] ?? '';
+    const folder = parts.slice(0, -1).join('.');
+    const digits = (end.match(/\d+/g) ?? []).join(' ');
+    return [folder, digits].filter(Boolean).join(' ') || end;
+}
+
+/** the second name line of a row ({@link deviceDetailSubNames}) */
+export type DeviceDetailSubName = {
+    /** another ticked row has the same name */
+    duplicate: boolean;
+    /** the automatic text ({@link deviceDetailAutoSubName}, made unique within the rows of the same name) */
+    auto: string;
+    /** what the row shows: the own text, else the automatic one for a duplicate, else '' (no second line) */
+    text: string;
+};
+
+/**
+ * The second name lines of the ticked rows of a detail page: rows whose name another row has as well get the
+ * automatic text ({@link deviceDetailAutoSubName}); if two of them would get the same text, these get the id below
+ * the device instead (`Ext.temperature100C`), which is unique. An own text ({@link DeviceDetailEntryConfig.subName})
+ * always wins, also without duplicate.
+ *
+ * @param deviceId id of the device
+ * @param rows the ticked rows in their order: id of the state, shown name, own text
+ * @returns one entry per row, same order
+ */
+export function deviceDetailSubNames(
+    deviceId: string,
+    rows: readonly { id: string; name: string; subName?: string }[],
+): DeviceDetailSubName[] {
+    const count = new Map<string, number>();
+    for (const r of rows) {
+        count.set(r.name, (count.get(r.name) ?? 0) + 1);
+    }
+    const autos = rows.map(r => deviceDetailAutoSubName(deviceId, r.id));
+    return rows.map((r, index) => {
+        const duplicate = (count.get(r.name) ?? 0) > 1;
+        let auto = autos[index];
+        if (duplicate && rows.some((o, i) => i !== index && o.name === r.name && autos[i] === auto)) {
+            auto = r.id.startsWith(`${deviceId}.`) ? r.id.slice(deviceId.length + 1) : r.id;
+        }
+        const own = r.subName?.trim() ?? '';
+        return { duplicate, auto, text: own || (duplicate ? auto : '') };
+    });
 }

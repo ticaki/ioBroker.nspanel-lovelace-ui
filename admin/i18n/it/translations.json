@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "Stato",
     "deviceDetailsDialog_status": "%s - %d voci selezionate",
     "deviceDetailsDialog_statusOne": "%s - 1 voce selezionata",
+    "deviceDetailsDialog_subName": "2ª riga",
+    "deviceDetailsDialog_subNameHint": "Seconda riga del nome: le righe spuntate con lo stesso nome la ricevono automaticamente (sottocartella e numero dello stato). Vuoto = automatico, un testo proprio vale sempre.",
     "deviceDetailsDialog_ticked": "%s selezionate",
     "deviceDetailsDialog_tickedOne": "1 selezionata",
     "deviceDetailsDialog_title": "Elenco filtri",

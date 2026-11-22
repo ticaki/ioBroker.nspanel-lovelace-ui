@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "状态",
     "deviceDetailsDialog_status": "%s - 已勾选 %d 项",
     "deviceDetailsDialog_statusOne": "%s - 已勾选 1 项",
+    "deviceDetailsDialog_subName": "第二行",
+    "deviceDetailsDialog_subNameHint": "名称的第二行:同名的已勾选行会自动获得(状态的子文件夹和编号)。留空 = 自动,自定义文本始终生效。",
     "deviceDetailsDialog_ticked": "已勾选 %s",
     "deviceDetailsDialog_tickedOne": "已勾选 1",
     "deviceDetailsDialog_title": "过滤列表",

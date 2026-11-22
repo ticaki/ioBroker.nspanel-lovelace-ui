@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "State",
     "deviceDetailsDialog_status": "%s - %d entries ticked",
     "deviceDetailsDialog_statusOne": "%s - 1 entry ticked",
+    "deviceDetailsDialog_subName": "2nd line",
+    "deviceDetailsDialog_subNameHint": "Second line of the name: ticked rows with the same name get it automatically (sub folder and number of the state). Empty = automatic, an own text always applies.",
     "deviceDetailsDialog_ticked": "%s ticked",
     "deviceDetailsDialog_tickedOne": "1 ticked",
     "deviceDetailsDialog_title": "Filter list",

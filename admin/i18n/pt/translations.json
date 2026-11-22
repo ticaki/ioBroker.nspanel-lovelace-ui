@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "Estado",
     "deviceDetailsDialog_status": "%s - %d entradas marcadas",
     "deviceDetailsDialog_statusOne": "%s - 1 entrada marcada",
+    "deviceDetailsDialog_subName": "2.ª linha",
+    "deviceDetailsDialog_subNameHint": "Segunda linha do nome: as linhas marcadas com o mesmo nome recebem-na automaticamente (subpasta e número do estado). Vazio = automático, um texto próprio aplica-se sempre.",
     "deviceDetailsDialog_ticked": "%s marcadas",
     "deviceDetailsDialog_tickedOne": "1 marcada",
     "deviceDetailsDialog_title": "Lista de filtros",

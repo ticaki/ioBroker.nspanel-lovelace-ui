@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "State",
     "deviceDetailsDialog_status": "%s – %d Einträge angehakt",
     "deviceDetailsDialog_statusOne": "%s – 1 Eintrag angehakt",
+    "deviceDetailsDialog_subName": "2. Zeile",
+    "deviceDetailsDialog_subNameHint": "Zweite Zeile des Namens: angehakte Zeilen mit gleichem Namen bekommen sie automatisch (Unterordner und Nummer des States). Leer = automatisch, ein eigener Text gilt immer.",
     "deviceDetailsDialog_ticked": "%s angehakt",
     "deviceDetailsDialog_tickedOne": "1 angehakt",
     "deviceDetailsDialog_title": "Filterliste",

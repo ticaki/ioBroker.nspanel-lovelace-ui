@@ -600,6 +600,8 @@
     "deviceDetailsDialog_state": "Stan",
     "deviceDetailsDialog_status": "%s - zaznaczono wpisów: %d",
     "deviceDetailsDialog_statusOne": "%s - zaznaczono 1 wpis",
+    "deviceDetailsDialog_subName": "2. wiersz",
+    "deviceDetailsDialog_subNameHint": "Drugi wiersz nazwy: zaznaczone wiersze o tej samej nazwie otrzymują go automatycznie (podfolder i numer stanu). Puste = automatycznie, własny tekst obowiązuje zawsze.",
     "deviceDetailsDialog_ticked": "Zaznaczono: %s",
     "deviceDetailsDialog_tickedOne": "Zaznaczono: 1",
     "deviceDetailsDialog_title": "Lista filtrów",
