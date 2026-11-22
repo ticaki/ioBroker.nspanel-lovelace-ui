@@ -9,13 +9,18 @@ Contents:
 - [4. What the initialisation does](#4-what-the-initialisation-does)
 - [5. After the initialisation](#5-after-the-initialisation)
 - [6. When it does not work](#6-when-it-does-not-work)
+- [Pitfalls](#pitfalls)
 
 ## 1. Prerequisites
 
-- **Tasmota** is running on the panel. Do **not** install the Berry driver or the TFT firmware by hand.
+- **Tasmota** is running on the panel ([flashing the NSPanel](NSPanel-flashen)). Do **not** install the Berry driver or the TFT firmware by hand.
+- Tasmota's **HTTP API is enabled** — see the note below.
 - The panel has a **fixed IP** (reserve it in the router) and **internet access** — it downloads the Berry driver and the TFT file itself.
 - An **MQTT broker** is reachable: either the adapter's built-in server or an external one (Mosquitto, MQTT adapter).
 - The adapter is installed and an instance exists.
+
+> [!IMPORTANT]
+> **Enable the HTTP API!** Since Tasmota **15.4.0.2** it is **off** after flashing. The adapter transfers the settings via HTTP (`http://<IP>/cm?cmnd=…`) — without the HTTP API the initialisation fails immediately. Enable it in the Tasmota web interface under **Configuration → Configure Other → "HTTP API enable"** or on the Tasmota console with `SetOption128 1`.
 
 > ⚠️ **Was the panel connected to a different host before?** Run `reset 4` once on the Tasmota console so the old connection is forgotten.
 > **After restoring an ioBroker backup**, delete the panels from the configuration and create them again — the TLS certificates are regenerated, otherwise pairing fails.
@@ -78,6 +83,7 @@ Every sub-step can be followed in the instance **log**. Once it is done, the pan
 
 | Symptom | Cause and remedy |
 |---|---|
+| Right after confirming the initialisation: *Request to the panel failed*, the log shows `Error in nsPanelInit step 1 … TypeError: fetch failed` | Tasmota's **HTTP API is off** (default since Tasmota 15.4.0.2) → tick "HTTP API enable" under *Configuration → Configure Other* or run `SetOption128 1` on the console, then initialise again. If that does not help: check the IP and whether the ioBroker host can reach the panel at all (different VLAN/subnet, firewall). |
 | The panel does not connect to the broker | It was attached to another host before → run `reset 4` on the Tasmota console, then initialise again. |
 | No connection after restoring an ioBroker backup | Delete the panels from the configuration and create them again (the TLS certificates are regenerated). |
 | The installation stalls at the Berry driver | The panel has no internet access (DNS, firewall, guest Wi-Fi) — the adapter checks this beforehand with a ping to `raw.githubusercontent.com`. |
@@ -87,5 +93,9 @@ Every sub-step can be followed in the instance **log**. Once it is done, the pan
 | You want a test build of the TFT firmware | The *Global settings* tab has the **beta TFT** switch. For testing only, leave it off in normal operation. |
 | Versions in the *Maintain* tab stay at `???` | The panel is not answering over MQTT — check the connection, the topic and the power supply. After an adapter start it takes a moment for the values to arrive. |
 | A panel should be removed completely | The bin on the panel card removes the entry from the configuration. The device itself keeps its Tasmota settings — to really wipe it, use the factory reset in *tasmotaTools* (expert mode). |
+
+## Pitfalls
+
+- **Enable the HTTP API after flashing.** Since 15.4.0.2 Tasmota ships with it switched off; the adapter then cannot reach the panel at all. The error message (*fetch failed*) does not say so — it looks like a network problem. Remedy: `SetOption128 1` or tick "HTTP API enable" under *Configuration → Configure Other*.
 
 Questions: [ioBroker forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1) or [GitHub issues](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues).

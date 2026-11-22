@@ -1707,6 +1707,7 @@
     "sendToRequestFail4": "La solicitud al panel falló",
     "sendToRequestFailBerry": "No se recibió confirmación de descarga de Tasmota después de la instalación de berry",
     "sendToStepTimeout": "El adaptador no respondió en 30 segundos, la configuración continúa en segundo plano: consulte el registro del adaptador",
+    "sendToTasmotaNotReachable": "El panel no responde en esta IP. ¿Está activada la HTTP API en Tasmota? Desde Tasmota 15.4.0.2 está desactivada tras el flasheo: marque Configuration → Configure Other → \"HTTP API enable\" o introduzca SetOption128 1 en la consola. De lo contrario, compruebe la IP y la conexión de red.",
     "sendToTopicInUse": "Este topic MQTT ya lo utiliza otro panel.",
     "short": "corto",
     "show_home_edges": "Mostrar enlaces home a main",

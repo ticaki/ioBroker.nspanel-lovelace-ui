@@ -158,6 +158,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) panel setup, berry/TFT install, restart and reset of tasmota: the log shows the cause of network errors (e.g. `ECONNREFUSED`, `EHOSTUNREACH`) instead of only "fetch failed"
+- (ticaki) panel setup: clear hint in the admin if the panel does not answer (Tasmota HTTP API off since 15.4.0.2, enable with SetOption128 1)
+
 ### 2.6.0 (2026-11-22)
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)
 - (tt-tom17) cardPower: the limits of the speed scale count with their amount, so a battery configured as -4000 … 4000 no longer shifts the zero point - zero power always stands still, the sign alone gives the direction and the speed is limited to the ±120 of the HMI
