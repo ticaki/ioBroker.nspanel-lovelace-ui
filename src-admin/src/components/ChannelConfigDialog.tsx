@@ -103,7 +103,7 @@ import ChannelColorDialog from './ChannelColorDialog';
 import ChannelModeListDialog from './ChannelModeListDialog';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { DocButton, DocHelp } from './DocHelp';
-import { pageitemsTopicsOfRole } from '../docTopics/pageitems';
+import { pageitemsTopicsOfChannel, pageitemsTopicsOfRole } from '../docTopics/pageitems';
 import { isChannelStatesProblem } from '../channelDatapointCheck';
 
 /**
@@ -602,6 +602,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private isTimerSourceOfScreensaver(): boolean {
         const { screensavers, pages } = this.state.timerSourceTables;
         return isClockTimerSourceItem(screensavers, pages, this.props.currentPageName ?? '', this.state.itemId);
+    }
+
+    /**
+     * Whether the item shows the timer of the screensaver: option set, timer role, and not the screensaver's source.
+     *
+     * @returns True if `useScreensaverTimer` takes effect.
+     */
+    private usesScreensaverTimer(): boolean {
+        return (
+            this.state.useScreensaverTimer &&
+            SCREENSAVER_TIMER_ROLES.includes(this.state.channelRole ?? '') &&
+            !this.isTimerSourceOfScreensaver()
+        );
     }
 
     private async loadAdapterColorTheme(): Promise<void> {
@@ -1768,11 +1781,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             return null;
         }
         const kind = this.currentKind();
+        // the "?" inside a radio label is a link: activating it does not toggle the radio, DocHelp stops the click
         return (
             <FormControl>
                 <FormLabel sx={{ fontSize: 12 }}>
                     {I18n.t('channelConfigDialog_kind')}
-                    {alexaAllowed && <DocHelp topic="pageitems.alexaTimer" />}
+                    <DocHelp topic="pageitems.dialog" />
                 </FormLabel>
                 <RadioGroup
                     row
@@ -1796,7 +1810,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             value="alexaTimer"
                             control={<Radio size="small" />}
                             disabled={kind === 'standard' && this.state.isNavigation}
-                            label={I18n.t('channelConfigDialog_kindAlexaTimer')}
+                            label={
+                                <>
+                                    {I18n.t('channelConfigDialog_kindAlexaTimer')}
+                                    <DocHelp topic="pageitems.alexaTimer" />
+                                </>
+                            }
                         />
                     )}
                 </RadioGroup>
@@ -2638,10 +2657,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             sx={{ flexShrink: 0 }}
                                         />
                                     )}
-                                    <DocHelp
-                                        topic="pageitems.channel"
-                                        sx={{ ml: 0, flexShrink: 0 }}
-                                    />
+                                    {/* role-dependent help: the documentation of the chosen channel's role */}
+                                    {pageitemsTopicsOfChannel(
+                                        isCustom ? null : channelRole,
+                                        this.usesScreensaverTimer(),
+                                    ).map(topic => (
+                                        <DocHelp
+                                            key={topic}
+                                            topic={topic}
+                                            sx={{ ml: 0, flexShrink: 0 }}
+                                        />
+                                    ))}
                                 </Box>
                                 {/* Validierungshinweis Channel */}
                                 {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
