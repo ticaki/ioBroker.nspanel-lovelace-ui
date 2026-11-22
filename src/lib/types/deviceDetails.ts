@@ -809,6 +809,40 @@ export function exchangeDeviceDetailRowState<T extends DeviceDetailRow>(
 }
 
 /**
+ * The filter list shows the ticked rows on top, in their order, then the unticked ones (stable: the order within both
+ * blocks stays).
+ *
+ * @param rows the rows
+ * @returns the rows, ticked first
+ */
+export function tickedDeviceDetailRowsFirst<T extends DeviceDetailRow>(rows: readonly T[]): T[] {
+    return [...rows.filter(r => r.enabled), ...rows.filter(r => !r.enabled)];
+}
+
+/**
+ * Ticks or unticks a row of the filter list and moves it to the border of both blocks: a ticked row becomes the last
+ * ticked one, an unticked row the first unticked one.
+ *
+ * @param rows the rows, ticked first ({@link tickedDeviceDetailRowsFirst})
+ * @param index index of the row
+ * @param enabled ticked or not
+ * @returns the new rows
+ */
+export function tickDeviceDetailRow<T extends DeviceDetailRow>(
+    rows: readonly T[],
+    index: number,
+    enabled: boolean,
+): T[] {
+    const row = rows[index];
+    if (!row) {
+        return [...rows];
+    }
+    const others = tickedDeviceDetailRowsFirst(rows.filter((_r, i) => i !== index));
+    const border = others.filter(r => r.enabled).length;
+    return [...others.slice(0, border), { ...row, enabled }, ...others.slice(border)];
+}
+
+/**
  * @param value anything
  * @returns true for a saved row
  */

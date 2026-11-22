@@ -3,7 +3,8 @@
  * (or of the general mask) with the states they found, plus every other state of the device. One tick per row; the
  * user sees the found state, not the rule behind it, and can exchange it. With an adapter without mask of its own every
  * row can be assigned to an entry of the general mask (the role suggests it). The order (drag & drop) is the order of
- * the detail page. Ticked rows with the same name get a second name line (automatic, can be overwritten).
+ * the detail page; the ticked rows stand on top, ticking or unticking moves a row to the border of both blocks.
+ * Ticked rows with the same name get a second name line (automatic, can be overwritten).
  */
 import React from 'react';
 import {
@@ -35,6 +36,8 @@ import {
     exchangeDeviceDetailRowState,
     generalDeviceDetailMask,
     hasOwnDeviceDetailMask,
+    tickDeviceDetailRow,
+    tickedDeviceDetailRowsFirst,
     type DeviceDetailEntryConfig,
     type DeviceDetailRow,
     type DeviceDetailSubName,
@@ -99,7 +102,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
             deviceId,
             deviceName,
             states,
-            rows: rows.map(r => ({ ...r, rowKey: this.nextKey++ })),
+            rows: tickedDeviceDetailRowsFirst(rows.map(r => ({ ...r, rowKey: this.nextKey++ }))),
             dragKey: null,
             overKey: null,
         });
@@ -120,6 +123,22 @@ export default class DeviceDetailsFilterDialog extends React.Component<
         return this.stateOf(row.id)?.name || row.id.split('.').pop() || '';
     }
 
+    /**
+     * Ticks or unticks a row: it becomes the last ticked row or the first unticked one.
+     *
+     * @param rowKey key of the row
+     * @param enabled ticked or not
+     */
+    private tick(rowKey: number, enabled: boolean): void {
+        this.setState(prev => ({
+            rows: tickDeviceDetailRow(
+                prev.rows,
+                prev.rows.findIndex(r => r.rowKey === rowKey),
+                enabled,
+            ),
+        }));
+    }
+
     private update(rowKey: number, change: Partial<DeviceDetailRow>): void {
         this.setState(prev => ({ rows: prev.rows.map(r => (r.rowKey === rowKey ? { ...r, ...change } : r)) }));
     }
@@ -137,18 +156,21 @@ export default class DeviceDetailsFilterDialog extends React.Component<
             change.key = deviceDetailEntryOfState(generalDeviceDetailMask, state)?.key ?? '';
         }
         // a state is shown in one row only: the row that had it takes the old state of this row
+        // a row that becomes empty is unticked and moves below the ticked ones
         this.setState(prev => ({
-            rows: exchangeDeviceDetailRowState(
-                prev.rows,
-                prev.rows.findIndex(r => r.rowKey === row.rowKey),
-                id,
-                change,
+            rows: tickedDeviceDetailRowsFirst(
+                exchangeDeviceDetailRowState(
+                    prev.rows,
+                    prev.rows.findIndex(r => r.rowKey === row.rowKey),
+                    id,
+                    change,
+                ),
             ),
         }));
     }
 
     /**
-     * moves a row to a position
+     * moves a row to a position - within its block: the ticked rows stay on top
      *
      * @param rowKey key of the row
      * @param target index the row has afterwards
@@ -162,7 +184,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
             const rows = [...prev.rows];
             const [row] = rows.splice(from, 1);
             rows.splice(target, 0, row);
-            return { rows };
+            return { rows: tickedDeviceDetailRowsFirst(rows) };
         });
     }
 
@@ -312,7 +334,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
                     <span>
                         <IconButton
                             size="small"
-                            disabled={index === 0}
+                            disabled={index === 0 || (!row.enabled && !!rows[index - 1]?.enabled)}
                             onClick={() => this.move(row.rowKey, index - 1)}
                         >
                             <ArrowUpwardIcon fontSize="small" />
@@ -323,7 +345,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
                     <span>
                         <IconButton
                             size="small"
-                            disabled={index === rows.length - 1}
+                            disabled={index === rows.length - 1 || (row.enabled && rows[index + 1]?.enabled === false)}
                             onClick={() => this.move(row.rowKey, index + 1)}
                         >
                             <ArrowDownwardIcon fontSize="small" />
@@ -334,7 +356,7 @@ export default class DeviceDetailsFilterDialog extends React.Component<
                     size="small"
                     checked={row.enabled}
                     disabled={row.id === ''}
-                    onChange={e => this.update(row.rowKey, { enabled: e.target.checked })}
+                    onChange={e => this.tick(row.rowKey, e.target.checked)}
                 />
                 <Tooltip title={this.rowName(row)}>
                     <Typography

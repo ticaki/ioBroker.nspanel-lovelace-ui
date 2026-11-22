@@ -20,6 +20,8 @@ import {
     deviceShortPressOf,
     isDeviceShortPressState,
     exchangeDeviceDetailRowState,
+    tickDeviceDetailRow,
+    tickedDeviceDetailRowsFirst,
     updatedDeviceDetailsLearned,
     type DeviceStateInfo,
 } from './deviceDetails';
@@ -454,6 +456,44 @@ describe('lib/types/deviceDetails', () => {
             expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: [{ key: '', id: 'x', subName: 1 }] })).to.equal(
                 undefined,
             );
+        });
+    });
+
+    describe('filter list: ticked rows on top', () => {
+        const row = (id: string, enabled: boolean): { key: string; id: string; enabled: boolean } => ({
+            key: '',
+            id,
+            enabled,
+        });
+        const ids = (rows: readonly { id: string; enabled: boolean }[]): string[] =>
+            rows.map(r => `${r.id}${r.enabled ? '+' : ''}`);
+        it('ticked first, the order within both blocks stays', () => {
+            expect(
+                ids(tickedDeviceDetailRowsFirst([row('a', false), row('b', true), row('c', false), row('d', true)])),
+            ).to.deep.equal(['b+', 'd+', 'a', 'c']);
+        });
+        it('ticking moves the row behind the last ticked one', () => {
+            const rows = [row('a', true), row('b', true), row('c', false), row('d', false), row('e', false)];
+            expect(ids(tickDeviceDetailRow(rows, 3, true))).to.deep.equal(['a+', 'b+', 'd+', 'c', 'e']);
+            expect(ids(tickDeviceDetailRow(rows, 2, true))).to.deep.equal(['a+', 'b+', 'c+', 'd', 'e']);
+        });
+        it('unticking moves the row to the first unticked place', () => {
+            const rows = [row('a', true), row('b', true), row('c', true), row('d', false)];
+            expect(ids(tickDeviceDetailRow(rows, 0, false))).to.deep.equal(['b+', 'c+', 'a', 'd']);
+            expect(ids(tickDeviceDetailRow(rows, 2, false))).to.deep.equal(['a+', 'b+', 'c', 'd']);
+        });
+        it('the saved order is the order of the ticked block', () => {
+            let rows = [row('a', true), row('b', true), row('c', false), row('d', false)];
+            rows = tickDeviceDetailRow(rows, 3, true);
+            rows = tickDeviceDetailRow(rows, 0, false);
+            // b+ d+ a c: tick a again
+            rows = tickDeviceDetailRow(rows, 2, true);
+            expect(ids(rows)).to.deep.equal(['b+', 'd+', 'a+', 'c']);
+            expect(deviceDetailEntriesOfRows(rows).map(e => e.id)).to.deep.equal(['b', 'd', 'a']);
+        });
+        it('the first ticking of an empty list', () => {
+            expect(ids(tickDeviceDetailRow([row('a', false), row('b', false)], 1, true))).to.deep.equal(['b+', 'a']);
+            expect(ids(tickDeviceDetailRow([row('a', true)], 5, false))).to.deep.equal(['a+']);
         });
     });
 });
