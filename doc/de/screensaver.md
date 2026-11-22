@@ -407,12 +407,13 @@ Im Dialog der Uhrzeit steht unter der Formatwahl das Häkchen **Timer anzeigen**
 
 ![Der Dialog der Uhrzeit mit eingeschaltetem Timer](../Pictures/screensaverAdmin/admin-22-uhrzeit-timer.png)
 
-Mit dem Häkchen erscheint das Feld **Quelle des Timers** mit zwei Möglichkeiten:
+Mit dem Häkchen erscheint das Feld **Quelle des Timers** mit drei Möglichkeiten:
 
 | Quelle | Was dahinter steckt |
 |---|---|
 | **Datenpunkte oder Slot-Muster** | Zwei Datenpunkte, die ein eigenes Skript pflegt – oder, hinter **Erweitert**, zwei Muster für Timer in wechselnden Slots. |
 | **Pageitem mit Timer-Popup** | Ein Timer-Item von einer Seite dieses Panels, siehe [Timer-Popup](popupTimer). |
+| **Alexa-Timer (alexa2)** | Die Timer eines Echo-Geräts aus dem Adapter alexa2. |
 
 **Übernehmen** bleibt gesperrt, solange der Timer unvollständig ist – der Dialog meldet *Ein Timer braucht beide Datenpunkte oder zwei gültige Muster.*
 
@@ -463,6 +464,16 @@ Das Feld **Pageitem** listet die Timer-Items auf den Seiten der Panels dieses Bi
 - Gibt es kein passendes Item, steht dort *Kein passendes Pageitem auf den Seiten der Panels dieses Screensavers.*
 
 **Kein Kreis:** Ein Bildschirmschoner kann kein Item als Quelle nehmen, das selbst den Timer dieses Bildschirmschoners verwendet. Der Dialog bietet solche Items nicht an, und im Item-Dialog ist das Häkchen gesperrt, sobald der Bildschirmschoner dieses Item als Quelle nutzt. Käme es trotzdem dazu, zeigt das Panel die Uhrzeit, das Log warnt, und das Item hat keine Tasten. Erlaubt ist die Kette: Item A nutzt den Bildschirmschoner, der Bildschirmschoner nutzt ein anderes Item B.
+
+#### Quelle: Alexa-Timer (alexa2)
+
+Zwei Auswahlfelder: **alexa2-Instanz** und **Echo-Gerät**. Angeboten werden die Geräte der Instanz, die Timer können (`Info.capabilities` enthält `TIMERS_AND_ALARMS`), mit ihrem Namen aus `Info.name`. Solange eines der beiden Felder leer ist, meldet der Dialog *Bitte alexa2-Instanz und Echo-Gerät wählen.*
+
+**Wichtig – Option in alexa2:** Ist in der gewählten alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** (`autoQueryActivityOnTrigger`) aus, warnt der Dialog. Ohne sie erscheinen per Sprache gestellte Timer nie in alexa2 und damit auch nicht am Panel. Die Option in den Einstellungen der alexa2-Instanz einschalten.
+
+- Angezeigt wird ein klingelnder Timer, sonst der laufende mit der kürzesten Restzeit. Die Restzeit rechnet der Adapter aus der Endzeit des Timers.
+- Ein per Sprache gestellter Timer erscheint etwa 10 Sekunden später am Panel – so lange braucht alexa2.
+- Pageitems mit **Timer aus dem Screensaver verwenden** starten und stoppen den Timer über das Echo-Gerät, wie im [Timer-Popup](popupTimer#7-alexa-timer-alexa2) beschrieben.
 
 #### Anzeige am Panel
 

@@ -717,6 +717,11 @@ declare namespace ScriptConfig {
         useValueConditions?: string | null | undefined;
         /** role level.timer: use the timer of the screensaver of this panel (clockTimer) instead of own states */
         useScreensaverTimer?: boolean;
+        /**
+         * timer of an Echo device of the alexa2 adapter instead of the states of a channel (src/lib/classes/alexa-timer.ts):
+         * `instance` e.g. `alexa2.0`, `serial` the serial number below `Echo-Devices`; `id` stays empty then
+         */
+        alexaTimer?: { instance: string; serial: string };
         /** id of this item, unique in the instance: the screensaver can use it as the source of its timer (clockTimer.itemId) */
         itemId?: string;
     };

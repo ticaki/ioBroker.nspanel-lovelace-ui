@@ -4659,6 +4659,32 @@ describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and col
         expect(converted[1]).to.not.have.property('itemId');
     });
 
+    it('keeps the Echo device of an Alexa timer item, no channel needed', () => {
+        const result = plan(
+            baseConfig({
+                subPages: [
+                    page({
+                        type: 'cardGrid',
+                        uniqueName: 'p',
+                        heading: 'P',
+                        items: [
+                            { id: '', name: 'Tee', alexaTimer: { instance: 'alexa2.0', serial: 'G091' } },
+                            { navigate: true, targetPage: 'x', alexaTimer: { instance: 'alexa2.0', serial: 'G091' } },
+                        ],
+                    }),
+                ],
+            }),
+        );
+        const converted = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+        expect(converted[0]).to.deep.include({
+            name: 'Tee',
+            role: 'level.timer',
+            alexaTimer: { instance: 'alexa2.0', serial: 'G091' },
+        });
+        // a navigation is never an Alexa timer: it stays a raw item
+        expect(converted[1]).to.include({ useNative: true });
+    });
+
     const items = (): Record<string, unknown>[] => [
         { id: 'alias.0.NSPanel.allgemein.shutter', secondRow: 'Zweite Zeile' },
         { id: '0_userdata.0.Einzelne_Geräte.dimmer', minValueBrightness: 10, maxValueBrightness: 80, colormode: 'rgb' },

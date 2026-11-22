@@ -30,6 +30,7 @@ import {
     timerStartValue,
     timerValueOf,
 } from './screensaver-timer';
+import { AlexaTimerRegistry, type AlexaStateLike } from '../classes/alexa-timer';
 
 type Write = { id: string; val: unknown };
 type Common = Record<string, unknown>;
@@ -108,7 +109,13 @@ function createFakes(): {
 
 async function makeItem(
     data: Record<string, unknown>,
-    options: { useScreensaverTimer?: boolean; screenSaver?: unknown; writes?: Write[] } = {},
+    options: {
+        useScreensaverTimer?: boolean;
+        screenSaver?: unknown;
+        writes?: Write[];
+        alexaTimer?: { instance: string; serial: string };
+        alexaTimers?: AlexaTimerRegistry;
+    } = {},
 ): Promise<Fixture> {
     const writes = options.writes ?? [];
     const fakes = createFakes();
@@ -123,7 +130,7 @@ async function makeItem(
         unload: false,
         log: fakes.log,
         library: { getTranslation: (k: string): string => k },
-        controller: { statesControler },
+        controller: { statesControler, alexaTimers: options.alexaTimers },
         ...fakes.timerApi,
     };
     const panel = {
@@ -161,7 +168,13 @@ async function makeItem(
     };
     const item: any = new PageItem(
         { id: 'page?0', name: 'i', adapter, panel, dpInit: '', parent } as any,
-        { type: 'timer', role: 'timer', data: {}, useScreensaverTimer: options.useScreensaverTimer } as any,
+        {
+            type: 'timer',
+            role: 'timer',
+            data: {},
+            useScreensaverTimer: options.useScreensaverTimer,
+            alexaTimer: options.alexaTimer,
+        } as any,
     );
     item.log = fakes.log;
     item.library = adapter.library;
@@ -186,6 +199,7 @@ async function makeSaver(
     clockTimer: ScreensaverClockTimer | undefined,
     initial: Record<string, unknown>,
     objects: Record<string, Common> = {},
+    alexaTimers?: AlexaTimerRegistry,
 ): Promise<{ saver: any; writes: Write[]; states: Record<string, unknown> }> {
     const fakes = createFakes();
     const writes: Write[] = [];
@@ -203,7 +217,7 @@ async function makeSaver(
         unload: false,
         log: fakes.log,
         library: {},
-        controller: { statesControler },
+        controller: { statesControler, alexaTimers },
         ...fakes.timerApi,
         setForeignStateAsync: async (id: string, val: unknown): Promise<void> => {
             writes.push({ id, val });
@@ -1591,5 +1605,115 @@ describe('lib/types/adminShareConfig - page item as timer source', () => {
             } as unknown as AdminPageItemConfig);
             expect(own).to.have.property('itemId', 'mine');
         });
+    });
+});
+
+describe('lib/pages - Alexa timer as screensaver source and page item', () => {
+    const NOW = new Date(2026, 10, 5, 12).getTime();
+    const DEVICE = 'alexa2.0.Echo-Devices.G091';
+    const alexa = { instance: 'alexa2.0', serial: 'G091' };
+    let realNow: () => number;
+    before(() => {
+        realNow = Date.now;
+    });
+    beforeEach(() => {
+        Date.now = (): number => NOW;
+    });
+    after(() => {
+        Date.now = realNow;
+    });
+
+    function registry(
+        list: { id: string; triggerTime: number }[],
+        triggered = false,
+    ): {
+        registry: AlexaTimerRegistry;
+        writes: Write[];
+        push: (suffix: string, val: unknown) => void;
+    } {
+        const writes: Write[] = [];
+        const listeners: ((id: string, state: AlexaStateLike) => void)[] = [];
+        const states: Record<string, AlexaStateLike> = {
+            [`${DEVICE}.Timer.activeTimerList`]: { val: JSON.stringify(list) },
+            [`${DEVICE}.Timer.triggered`]: { val: triggered },
+            [`${DEVICE}.Timer.nextTimerId`]: { val: list[0]?.id ?? null },
+        };
+        const reg = new AlexaTimerRegistry({
+            log: { debug: () => undefined, warn: () => undefined },
+            language: () => 'de',
+            subscribePattern: async (_p, l) => void listeners.push(l),
+            unsubscribePattern: async () => Promise.resolve(),
+            getForeignStates: async () => Promise.resolve(states),
+            setForeignState: async (id, val) => void writes.push({ id, val }),
+            setTimeout: () => undefined,
+            clearTimeout: () => undefined,
+            now: () => Date.now(),
+        });
+        return {
+            registry: reg,
+            writes,
+            push: (suffix, val) => listeners.forEach(l => l(`${DEVICE}.${suffix}`, { val })),
+        };
+    }
+
+    it('screensaver: running timer of the Echo, stop hides it at once', async () => {
+        const r = registry([{ id: 't1', triggerTime: NOW + 65_000 }]);
+        const s = await makeSaver({ enabled: true, activeState: '', dataState: '', alexa }, {}, {}, r.registry);
+        const access = await s.saver.getClockTimerAccess();
+        expect(access.selection.status).to.equal('running');
+        expect(access.selection.remainingMs).to.equal(65_000);
+        expect(access.canStop).to.equal(true);
+        expect(access.canStart).to.equal(false);
+        expect(await s.saver.stopClockTimer()).to.equal(true);
+        expect(r.writes).to.deep.equal([{ id: `${DEVICE}.Timer.stopTimerId`, val: 't1' }]);
+        expect((await s.saver.getClockTimerAccess()).selection.status).to.equal('off');
+        // alexa2 sets triggered falsely at the old time: still no alarm
+        Date.now = (): number => NOW + 66_000;
+        r.push('Timer.triggered', true);
+        expect((await s.saver.getClockTimerAccess()).selection.status).to.equal('off');
+    });
+
+    it('screensaver: a ringing timer is expired, start only while off', async () => {
+        const r = registry([{ id: 't1', triggerTime: NOW - 1000 }], true);
+        const s = await makeSaver({ enabled: true, activeState: '', dataState: '', alexa }, {}, {}, r.registry);
+        expect((await s.saver.getClockTimerAccess()).selection.status).to.equal('expired');
+        expect(await s.saver.startClockTimer(60)).to.equal(false);
+        const off = registry([]);
+        const s2 = await makeSaver({ enabled: true, activeState: '', dataState: '', alexa }, {}, {}, off.registry);
+        expect(await s2.saver.startClockTimer(300)).to.equal(true);
+        expect(off.writes).to.deep.equal([
+            { id: `${DEVICE}.Commands.textCommand`, val: 'stelle einen Timer auf 5 Minuten' },
+        ]);
+    });
+
+    it('page item: popup starts with the set time and stops the shown timer', async () => {
+        const r = registry([]);
+        const f = await makeItem({}, { alexaTimer: alexa, alexaTimers: r.registry });
+        expect(f.item.tempData.role).to.equal('alexa-timer');
+        let popup = await f.popup();
+        expect(popup.actions).to.deep.equal(['', 'begin', '']);
+        expect(popup.editable).to.equal('1');
+        await f.item.onCommand('timer-start', '00:01:30');
+        await f.item.onCommand('timer-begin', '');
+        expect(r.writes).to.deep.equal([
+            { id: `${DEVICE}.Commands.textCommand`, val: 'stelle einen Timer auf 90 Sekunden' },
+        ]);
+        r.push('Timer.activeTimerList', JSON.stringify([{ id: 'n', triggerTime: NOW + 90_000 }]));
+        expect(await f.line()).to.equal('00:01:30');
+        popup = await f.popup();
+        expect(popup.actions).to.deep.equal(['', 'clear', '']);
+        expect(f.parent.ticking.has(f.item)).to.equal(true);
+        await f.item.onCommand('timer-clear', '');
+        expect(r.writes[1]).to.deep.equal({ id: `${DEVICE}.Timer.stopTimerId`, val: 'n' });
+        expect(await f.line()).to.equal('00:00:00');
+    });
+
+    it('page item and screensaver share the stopped ids of the device', async () => {
+        const r = registry([{ id: 't1', triggerTime: NOW + 65_000 }]);
+        const s = await makeSaver({ enabled: true, activeState: '', dataState: '', alexa }, {}, {}, r.registry);
+        const f = await makeItem({}, { alexaTimer: alexa, alexaTimers: r.registry });
+        expect(await f.line()).to.equal('00:01:05');
+        await f.item.onCommand('timer-clear', '');
+        expect((await s.saver.getClockTimerAccess()).selection.status).to.equal('off');
     });
 });

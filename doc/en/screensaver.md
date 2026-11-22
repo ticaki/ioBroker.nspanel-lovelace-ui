@@ -407,12 +407,13 @@ In the dialog of the time, below the format choice, stands the checkbox **Show t
 
 ![The dialog of the time with the timer switched on](../Pictures/screensaverAdmin/admin-22-uhrzeit-timer.png)
 
-With the checkbox the field **Source of the timer** appears with two choices:
+With the checkbox the field **Source of the timer** appears with three choices:
 
 | Source | What is behind it |
 |---|---|
 | **Data points or slot patterns** | Two states a script of your own maintains – or, behind **Advanced**, two patterns for timers in changing slots. |
 | **Page item with timer popup** | A timer item from a page of this panel, see [timer popup](popupTimer). |
+| **Alexa timer (alexa2)** | The timers of an Echo device of the alexa2 adapter. |
 
 **Apply** stays disabled while the timer is incomplete – the dialog says *A timer needs both data points or two valid patterns.*
 
@@ -463,6 +464,16 @@ The field **Page item** lists the timer items on the pages of the panels of this
 - Without a fitting item it says *No suitable page item on the pages of the panels of this screensaver.*
 
 **No circle:** A screensaver cannot take an item as its source that itself uses the timer of this screensaver. The dialog does not offer such items, and in the item dialog the checkbox is locked as soon as the screensaver uses this item as its source. Should it happen all the same, the panel shows the clock, the log warns, and the item has no buttons. Allowed is the chain: item A uses the screensaver, the screensaver uses another item B.
+
+#### Source: Alexa timer (alexa2)
+
+Two select fields: **alexa2 instance** and **Echo device**. Offered are the devices of the instance that can do timers (`Info.capabilities` contains `TIMERS_AND_ALARMS`), with their name from `Info.name`. While one of the two fields is empty, the dialog says *Choose the alexa2 instance and the Echo device.*
+
+**Important – option in alexa2:** If the option **Automatically query activity on device interaction** (`autoQueryActivityOnTrigger`) is off in the chosen alexa2 instance, the dialog warns. Without it, timers set by voice never show up in alexa2 and so not on the panel either. Switch the option on in the settings of the alexa2 instance.
+
+- Shown is a ringing timer, otherwise the running one with the shortest remaining time. The adapter counts the remaining time from the end time of the timer.
+- A timer set by voice shows up on the panel about 10 seconds later – that is how long alexa2 takes.
+- Page items with **Use the timer of the screensaver** start and stop the timer through the Echo device, as described in the [timer popup](popupTimer#7-alexa-timer-alexa2).
 
 #### Display on the panel
 

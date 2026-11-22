@@ -11,6 +11,7 @@ Contents:
 - [Controlling the internal timer from outside](#4-controlling-the-internal-timer-from-outside)
 - [Use the timer of the screensaver](#5-use-the-timer-of-the-screensaver)
 - [Display and limits](#6-display-and-limits)
+- [Alexa timer (alexa2)](#7-alexa-timer-alexa2)
 - [Pitfalls](#pitfalls)
 
 ## 1. Operating modes
@@ -106,6 +107,22 @@ If the screensaver of the panel has no complete timer, the log warns once per pa
 - The two input fields of the panel go up to 59 each, so at most `59:59` can be entered.
 - While a timer runs, the list is refreshed every 2 seconds, the open popup every second. That is on purpose – faster, the traffic to the panel piles up.
 - The popup stays open while the timer runs, and the panel does not dim, because every refresh resets its sleep counter. That is intended.
+
+## 7. Alexa timer (alexa2)
+
+Instead of a channel, a timer item can show the timers of an Echo device of the alexa2 adapter. At the top of the [page item configuration](PageConfig-Dialoge#1-pageitem-configuration) there is the **Kind of item** for it: **Standard (channel, custom button, navigation)** or **Alexa timer**. The choice exists on all pages with page items (cardGrid, cardGrid2, cardGrid3, cardEntities, cardSchedule, cardThermo2, cardMedia); a navigation cannot be an Alexa timer.
+
+With **Alexa timer** you choose the **alexa2 instance** and the **Echo device** (devices with timers only), plus **Name**, icons and colours. No channel is needed. If the option **Automatically query activity on device interaction** is off in the alexa2 instance, the dialog warns: timers set by voice never show up then. Switch the option on in the settings of the alexa2 instance. Switching between the two kinds in the open dialog keeps the fields of the other kind until the dialog closes; only the chosen kind is saved.
+
+The item behaves like an item with **Use the timer of the screensaver**:
+
+- List and popup show a ringing timer of the device, otherwise the running one with the shortest remaining time.
+- While no timer is active, a time can be set in the popup; **Start** sets the timer on the Echo: the adapter sends the text *stelle einen Timer auf 5 Minuten* (whole minutes) or *stelle einen Timer auf 90 Sekunden* to the device. If the system language is not German, the text goes out in English (*set a timer for 5 minutes*). The Echo answers audibly.
+- It takes about 8 seconds until the new timer is on the panel: alexa2 only learns about it when the adapter has the activities queried again.
+- **Cancel** or **Finish** deletes the shown timer at Amazon – also while it rings. On the panel it disappears at once.
+- There is no pause.
+
+One Echo device can be the source of the [screensaver timer](screensaver#source-alexa-timer-alexa2) and of several items at the same time; all show the same state.
 
 ## Pitfalls
 

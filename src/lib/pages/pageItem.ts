@@ -18,6 +18,9 @@ import {
     alarmClockOf,
     isCountdownCommon,
     nextAlarmTs,
+    nextTimerWakeMs,
+    selectTimer,
+    stepTimerItem,
     parseTimerInput,
     timerClockText,
     timerPopupButtons,
@@ -28,6 +31,7 @@ import {
     type TimerCountdownView,
     type TimerPopupButtons,
 } from './screensaver-timer';
+import type { AlexaTimer } from '../classes/alexa-timer';
 
 /** panels that were told once that their screensaver has no timer for a page item */
 const panelsWarnedAboutClockTimer = new WeakSet<object>();
@@ -64,6 +68,8 @@ export class PageItem extends BaseTriggeredPage {
 
     /** the screensaver this item listens to (`useScreensaverTimer`) */
     private clockTimerSaver: Screensaver | undefined;
+    /** the Echo device this item shows (`alexaTimer`), see {@link getAlexaTimerAccess} */
+    private alexaTimer: AlexaTimer | undefined;
     /** index of the value a button with a value list wrote last, see {@link writeNextCycleValue} */
     private cycleLastIndex: number | undefined;
     /** the screensaver uses this item as the source of its timer */
@@ -192,6 +198,11 @@ export class PageItem extends BaseTriggeredPage {
 
             case 'timer': {
                 if (this.dataItems.role === 'timer' && this.tempData === undefined) {
+                    if (this.dataItems.alexaTimer) {
+                        // like the timer of the screensaver: the time set in the popup is kept until the start
+                        this.tempData = { role: 'alexa-timer', editSeconds: 0 };
+                        break;
+                    }
                     if (this.dataItems.useScreensaverTimer) {
                         this.tempData = { role: 'ss-timer', editSeconds: 0 };
                         break;
@@ -1401,6 +1412,9 @@ export class PageItem extends BaseTriggeredPage {
         if (this.tempData?.role === 'ss-timer') {
             const access = await this.parent.basePanel.screenSaver?.getClockTimerAccess();
             changed = access?.selection.status !== this.tempData.lastStatus;
+        } else if (this.tempData?.role === 'alexa-timer') {
+            const before: unknown = this.tempData.lastStatus;
+            changed = (await this.getAlexaTimerAccess())?.selection.status !== before;
         }
         if (this.lastPopupType) {
             await this.onStateTrigger();
@@ -1574,6 +1588,44 @@ export class PageItem extends BaseTriggeredPage {
     };
 
     /**
+     * The timer of the Echo device of this item, in the form the timer of the screensaver has; changes of the device
+     * update this item from now on.
+     *
+     * @returns undefined without a device
+     */
+    private async getAlexaTimerAccess(): Promise<ClockTimerAccess | undefined> {
+        const config = this.dataItems?.type === 'timer' ? this.dataItems.alexaTimer : undefined;
+        if (!config) {
+            return undefined;
+        }
+        if (!this.alexaTimer) {
+            this.alexaTimer = this.controller.alexaTimers.get(config);
+            this.alexaTimer.addListener(this.onClockTimerChange);
+            await this.alexaTimer.ready;
+        }
+        const view = this.alexaTimer.getView();
+        const now = Date.now();
+        const memory = new Map([['alexa', stepTimerItem(undefined, view).memory]]);
+        const selection = selectTimer(memory, now);
+        const access: ClockTimerAccess = {
+            selection,
+            ticking: nextTimerWakeMs(memory, selection, false, now) !== undefined,
+            canStart: view.status === 'off' && view.canStart,
+            canStop: view.status !== 'off' && view.canStop,
+        };
+        this.tempData.lastStatus = selection.status;
+        this.parent.setTimerTick(this, access.ticking);
+        return access;
+    }
+
+    /**
+     * @returns the timer an item of the screensaver or of an Echo device shows, undefined for other timers
+     */
+    private async getSharedTimerAccess(): Promise<ClockTimerAccess | undefined> {
+        return this.tempData?.role === 'alexa-timer' ? this.getAlexaTimerAccess() : this.getScreensaverTimer();
+    }
+
+    /**
      * Draws the popup or the line of the list again, whichever is visible.
      */
     private async refreshClockTimer(): Promise<void> {
@@ -1607,8 +1659,9 @@ export class PageItem extends BaseTriggeredPage {
         item: NSPanel.PageItemTimerDataItems['data'],
     ): Promise<{ opt: string; on: boolean }> {
         switch (this.tempData?.role) {
+            case 'alexa-timer':
             case 'ss-timer': {
-                const selection = (await this.getScreensaverTimer())?.selection;
+                const selection = (await this.getSharedTimerAccess())?.selection;
                 return {
                     opt: timerClockText(Math.ceil((selection?.remainingMs ?? 0) / 1000)),
                     on: !!selection && selection.status !== 'off',
@@ -1653,8 +1706,9 @@ export class PageItem extends BaseTriggeredPage {
         };
         const role: unknown = this.tempData?.role;
         switch (role) {
+            case 'alexa-timer':
             case 'ss-timer': {
-                const access = await this.getScreensaverTimer();
+                const access = await this.getSharedTimerAccess();
                 if (!access) {
                     return { on: false, ...timerPopupFields(0), ...none };
                 }
@@ -1714,7 +1768,7 @@ export class PageItem extends BaseTriggeredPage {
         let message: Partial<NSPanel.entityUpdateDetailMessage> = {};
         //const template = templatePageItems[mode][this.config.role];
         message.entityName = this.id;
-        if (!this.lastPopupType && this.tempData?.role === 'ss-timer') {
+        if (!this.lastPopupType && (this.tempData?.role === 'ss-timer' || this.tempData?.role === 'alexa-timer')) {
             // the time set in the popup lasts until it is opened again
             this.tempData.editSeconds = 0;
         }
@@ -2369,6 +2423,8 @@ export class PageItem extends BaseTriggeredPage {
         this.clearInternalEnd();
         this.clockTimerSaver?.removeClockTimerListener(this.onClockTimerChange);
         this.clockTimerSaver = undefined;
+        this.alexaTimer?.removeListener(this.onClockTimerChange);
+        this.alexaTimer = undefined;
         this.visibility = false;
         this.unload = true;
         await this.controller.statesControler.deactivateTrigger(this);
@@ -3106,6 +3162,12 @@ export class PageItem extends BaseTriggeredPage {
                     await this.parent.basePanel.screenSaver?.startClockTimer(this.tempData.editSeconds);
                     break;
                 }
+                if (this.tempData?.role === 'alexa-timer') {
+                    if ((await this.getAlexaTimerAccess())?.canStart) {
+                        await this.alexaTimer?.start(Number(this.tempData.editSeconds) || 0);
+                    }
+                    break;
+                }
                 if (this.tempData?.role === 'timer') {
                     await this.startInternalTimer();
                     break;
@@ -3125,6 +3187,7 @@ export class PageItem extends BaseTriggeredPage {
                 const data = this.dataItems?.type === 'timer' ? this.dataItems.data : undefined;
                 const set = data && this.getTimerWriteState(data);
                 switch (this.tempData.role) {
+                    case 'alexa-timer':
                     case 'ss-timer': {
                         this.tempData.editSeconds = seconds;
                         if (this.visibility) {
@@ -3159,6 +3222,10 @@ export class PageItem extends BaseTriggeredPage {
             case 'timer-clear': {
                 if (this.tempData?.role === 'ss-timer') {
                     await this.parent.basePanel.screenSaver?.stopClockTimer();
+                    break;
+                }
+                if (this.tempData?.role === 'alexa-timer') {
+                    await this.alexaTimer?.stop();
                     break;
                 }
                 const data = this.dataItems?.type === 'timer' ? this.dataItems.data : undefined;
@@ -3198,7 +3265,7 @@ export class PageItem extends BaseTriggeredPage {
                 break;
             }
             case 'timer-pause': {
-                if (this.tempData?.role === 'ss-timer') {
+                if (this.tempData?.role === 'ss-timer' || this.tempData?.role === 'alexa-timer') {
                     break;
                 }
                 if (this.tempData?.role === 'timer') {

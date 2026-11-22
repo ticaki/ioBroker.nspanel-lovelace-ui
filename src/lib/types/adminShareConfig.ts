@@ -1176,14 +1176,72 @@ export type ScreensaverClockTimer = {
      * item may lie on any page of the panel. Empty: chosen as source, but no item picked yet.
      */
     itemId?: string;
+    /**
+     * Source is the timer of an Echo device of the alexa2 adapter (src/lib/classes/alexa-timer.ts) instead of the
+     * states above. Set: it wins over {@link itemId} and the states, see {@link clockTimerSource}.
+     */
+    alexa?: AlexaTimerConfig;
 };
+
+/**
+ * An Echo device of an alexa2 instance whose timers are shown and set (src/lib/classes/alexa-timer.ts): its states
+ * below `<instance>.Echo-Devices.<serial>`. Empty fields: chosen as source, but nothing picked yet.
+ */
+export type AlexaTimerConfig = {
+    /** instance of the alexa2 adapter, e.g. `alexa2.0` */
+    instance: string;
+    /** serial number of the Echo device, the id part below `Echo-Devices` */
+    serial: string;
+};
+
+/**
+ * @param value anything
+ * @returns true when it has the form of an {@link AlexaTimerConfig}
+ */
+export function isAlexaTimerConfig(value: unknown): value is AlexaTimerConfig {
+    return isRawItemObject(value) && typeof value.instance === 'string' && typeof value.serial === 'string';
+}
+
+/**
+ * Instance and device are both chosen and can be part of a state id (no dots, no wildcards in the serial).
+ *
+ * @param config the configuration
+ * @returns true when the timer can be used
+ */
+export function isAlexaTimerComplete(config: AlexaTimerConfig | undefined): boolean {
+    return (
+        !!config && /^alexa2\.\d+$/.test(config.instance) && /^[^.*\s]+$/.test(config.serial) && !!config.serial.trim()
+    );
+}
+
+/** where the timer of the screensaver comes from */
+export type ClockTimerSource = 'states' | 'item' | 'alexa';
+
+/**
+ * @param timer configuration of the timer
+ * @returns the source: an Echo device, a page item or the states (also the slot patterns)
+ */
+export function clockTimerSource(timer: Pick<ScreensaverClockTimer, 'itemId' | 'alexa'>): ClockTimerSource {
+    if (timer.alexa !== undefined) {
+        return 'alexa';
+    }
+    return timer.itemId !== undefined ? 'item' : 'states';
+}
 
 /**
  * @param timer configuration of the timer
  * @returns true when a page item is the source
  */
-export function clockTimerUsesPageItem(timer: Pick<ScreensaverClockTimer, 'itemId'>): boolean {
-    return timer.itemId !== undefined;
+export function clockTimerUsesPageItem(timer: Pick<ScreensaverClockTimer, 'itemId' | 'alexa'>): boolean {
+    return clockTimerSource(timer) === 'item';
+}
+
+/**
+ * @param timer configuration of the timer
+ * @returns true when an Echo device is the source
+ */
+export function clockTimerUsesAlexa(timer: Pick<ScreensaverClockTimer, 'itemId' | 'alexa'>): boolean {
+    return clockTimerSource(timer) === 'alexa';
 }
 
 /**
@@ -1475,6 +1533,9 @@ export function clockTimerUsesSlots(timer: Pick<ScreensaverClockTimer, 'activePa
  * @returns true when it can run
  */
 export function isClockTimerComplete(timer: ScreensaverClockTimer): boolean {
+    if (timer.alexa !== undefined) {
+        return isAlexaTimerComplete(timer.alexa);
+    }
     if (timer.itemId !== undefined) {
         return !!timer.itemId;
     }
@@ -1830,6 +1891,11 @@ export type AdminPageItemConfig = {
     secondRow?: string;
     /** Role level.timer only: use the timer of the screensaver of this panel (clockTimer) instead of own states. */
     useScreensaverTimer?: boolean;
+    /**
+     * Kind "Alexa timer": the item shows and sets the timer of this Echo device (src/lib/classes/alexa-timer.ts)
+     * instead of the states of a channel - {@link channelId} stays empty, {@link role} is `level.timer`.
+     */
+    alexaTimer?: AlexaTimerConfig;
     /** internal, given by the admin ({@link assignMissingItemIds}): the screensaver finds the item by it, on any page */
     itemId?: string;
     /**
@@ -4281,6 +4347,7 @@ export type PageBaseItemSimple = {
     alwaysOnDisplay?: boolean;
     useValueConditions?: string | null;
     useScreensaverTimer?: boolean;
+    alexaTimer?: AlexaTimerConfig;
     itemId?: string;
 };
 

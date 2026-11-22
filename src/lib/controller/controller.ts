@@ -18,6 +18,7 @@ import type { VirtualPanelManager } from '../web/virtual-panel-manager';
 import { duplicatePanelIdIndexes, panelIndexForMqttClient } from '../tools/panel-setup';
 import { resolvePanelTargets, uniquePanelNames } from './panel-target';
 import { parseScreensaverNotifyDetails } from '../pages/screensaver-notify-queue';
+import { AlexaTimerRegistry } from '../classes/alexa-timer';
 
 export type ControllerOptions = {
     mqttClient: MQTT.MQTTClientClass;
@@ -55,6 +56,8 @@ export class Controller extends Library.BaseClass {
     readonly initPromise: Promise<void>;
     /** Owner of the web panels - set by the web server, removes clones with their real panel */
     virtualPanelManager: VirtualPanelManager | undefined;
+    /** timers of Echo devices (alexa2), shared by screensavers and page items */
+    alexaTimers: AlexaTimerRegistry;
 
     constructor(adapter: Library.AdapterClassDefinition, options: ControllerOptions) {
         super(adapter, options.name);
@@ -87,6 +90,19 @@ export class Controller extends Library.BaseClass {
         this.mqttClient = options.mqttClient;
         this.statesControler = new StatesControler(this.adapter);
         this.systemNotification = new SystemNotifications(this.adapter);
+        this.alexaTimers = new AlexaTimerRegistry({
+            log: this.log,
+            language: () => this.library.getLocalLanguage(),
+            subscribePattern: (pattern, listener) => this.statesControler.subscribePattern(pattern, listener),
+            unsubscribePattern: (pattern, listener) => this.statesControler.unsubscribePattern(pattern, listener),
+            getForeignStates: pattern => this.adapter.getForeignStatesAsync(pattern),
+            setForeignState: async (id, val) => {
+                await this.adapter.setForeignStateAsync(id, val, false);
+            },
+            setTimeout: (cb, ms) => this.adapter.setTimeout(cb, ms),
+            clearTimeout: timer => this.adapter.clearTimeout(timer),
+            now: () => Date.now(),
+        });
         this.options = options;
         if (this.adapter.mqttServer) {
             this.adapter.mqttServer.controller = this;
@@ -756,6 +772,7 @@ export class Controller extends Library.BaseClass {
         if (this.virtualPanelManager) {
             await this.virtualPanelManager.deleteAll();
         }
+        await this.alexaTimers?.deleteAll();
         if (this.statesControler) {
             await this.statesControler.delete();
         }

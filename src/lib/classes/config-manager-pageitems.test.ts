@@ -906,6 +906,39 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
         expect(data.setNavi).to.deep.equal({ type: 'const', constVal: '///screensaver' });
     });
 
+    describe('Alexa timer: no channel, the Echo device instead', () => {
+        const alexaTimer = { instance: 'alexa2.0', serial: 'G091' };
+
+        it('admin item: a timer item with the device, name and icons', async () => {
+            const item = adminPageItemToScriptItem({
+                channelId: { valueStateId: '', unit: '', prefix: '', suffix: '', dateFormat: '' },
+                role: 'level.timer',
+                name: 'Küche',
+                trueIcon: 'timer',
+                alexaTimer,
+            }) as unknown as Record<string, unknown>;
+            expect(item.alexaTimer).to.deep.equal(alexaTimer);
+            const result = await run('item', item, PAGES.entities);
+            expect(result.error).to.equal(undefined);
+            const config = result.itemConfig as any;
+            expect(config).to.include({ type: 'timer', role: 'timer' });
+            expect(config.alexaTimer).to.deep.equal(alexaTimer);
+            expect(config.data.headline).to.deep.equal({ type: 'const', constVal: 'Küche' });
+            expect(config.data.icon.true.value).to.deep.equal({ type: 'const', constVal: 'timer' });
+            expect(config.data.icon.false.value).to.deep.equal({ type: 'const', constVal: 'timer' });
+            expect(config.data.entity1).to.equal(undefined);
+        });
+
+        it('without a device: an error', async () => {
+            const result = await run(
+                'item',
+                { id: '', alexaTimer: { instance: 'alexa2.0', serial: '' } },
+                PAGES.entities,
+            );
+            expect(String(result.error)).to.contain('Alexa timer');
+        });
+    });
+
     describe('level.timer: name in the list and the title of the popup', () => {
         const id = DEVICES.full('level.timer');
         const headline = async (item: Record<string, unknown>): Promise<unknown> => {

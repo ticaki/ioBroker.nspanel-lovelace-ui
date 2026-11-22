@@ -28,6 +28,7 @@ import {
     isLongPressCard,
     newScreensaverNotifyId,
     screensaverAlternateItems,
+    isAlexaTimerConfig,
     normalizeScrollFields,
     screensaverWeatherItemKeys,
     thermo2SortOrders,
@@ -349,6 +350,7 @@ const itemMappedKeys = [
     'maxValue',
     'secondRow',
     'useScreensaverTimer',
+    'alexaTimer',
     'itemId',
     'minValueBrightness',
     'maxValueBrightness',
@@ -438,7 +440,12 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     if (!navigate && targetPage && custom) {
         throw new ConvertError(reason, `${where}.targetPage: only used with navigate: true`);
     }
-    if (!navigate && !id) {
+    // kind "Alexa timer": the Echo device instead of a channel
+    const alexaTimer: unknown = item.alexaTimer;
+    if (alexaTimer !== undefined && (!isAlexaTimerConfig(alexaTimer) || navigate || custom)) {
+        throw new ConvertError(reason, `${where}.alexaTimer: expected { instance, serial } on a page item`);
+    }
+    if (!navigate && !id && alexaTimer === undefined) {
         throw new ConvertError(reason, `${where}: id missing`);
     }
     if (!id && custom) {
@@ -562,6 +569,10 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     if (item.useScreensaverTimer === true) {
         admin.useScreensaverTimer = true;
     }
+    if (isAlexaTimerConfig(alexaTimer)) {
+        admin.alexaTimer = { instance: alexaTimer.instance, serial: alexaTimer.serial };
+        admin.role = 'level.timer';
+    }
     const itemId = str(item.itemId, reason, `${where}.itemId`);
     if (itemId) {
         admin.itemId = itemId;
@@ -604,7 +615,7 @@ function isEmptyAdminItem(item: AdminPageItemConfig): boolean {
  * @param item Item of the script.
  */
 function isDroppedItem(item: Dict): boolean {
-    return !item.navigate && !('native' in item) && item.type !== 'custom' && !item.id;
+    return !item.navigate && !('native' in item) && item.type !== 'custom' && !item.id && !item.alexaTimer;
 }
 
 /**

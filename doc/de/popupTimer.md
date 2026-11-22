@@ -11,6 +11,7 @@ Inhalt:
 - [Den internen Timer von außen steuern](#4-den-internen-timer-von-außen-steuern)
 - [Timer aus dem Screensaver verwenden](#5-timer-aus-dem-screensaver-verwenden)
 - [Anzeige und Grenzen](#6-anzeige-und-grenzen)
+- [Alexa-Timer (alexa2)](#7-alexa-timer-alexa2)
 - [Fallstricke](#fallstricke)
 
 ## 1. Betriebsarten
@@ -106,6 +107,22 @@ Hat der Bildschirmschoner des Panels keinen vollständigen Timer, warnt das Log 
 - Die beiden Eingabefelder des Panels gehen jeweils bis 59, eingegeben werden kann also höchstens `59:59`.
 - Bei laufendem Timer wird die Liste alle 2 Sekunden aufgefrischt, das offene Popup jede Sekunde. Das ist Absicht – schneller staut sich der Verkehr zum Panel.
 - Das Popup bleibt bei laufendem Timer offen, und das Panel dunkelt nicht ab, weil jede Auffrischung seinen Schlaf-Zähler zurücksetzt. Das ist gewollt.
+
+## 7. Alexa-Timer (alexa2)
+
+Ein Timer-Item kann statt eines Kanals die Timer eines Echo-Geräts aus dem Adapter alexa2 zeigen. Oben in der [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration) steht dafür die **Art des Items**: **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** oder **Alexa-Timer**. Die Wahl gibt es auf allen Seiten mit Pageitems (cardGrid, cardGrid2, cardGrid3, cardEntities, cardSchedule, cardThermo2, cardMedia); eine Navigation kann kein Alexa-Timer sein.
+
+Bei **Alexa-Timer** wählt man **alexa2-Instanz** und **Echo-Gerät** (nur Geräte mit Timern), dazu **Name**, Symbole und Farben. Ein Kanal wird nicht gebraucht. Ist in der alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** aus, warnt der Dialog: Per Sprache gestellte Timer erscheinen dann nie. Die Option in den Einstellungen der alexa2-Instanz einschalten. Wechselt man im offenen Dialog zwischen den beiden Arten, bleiben die Felder der anderen Art bis zum Schließen erhalten; gespeichert wird nur die gewählte Art.
+
+Das Item verhält sich wie ein Item mit **Timer aus dem Screensaver verwenden**:
+
+- Liste und Popup zeigen einen klingelnden Timer des Geräts, sonst den laufenden mit der kürzesten Restzeit.
+- Ist kein Timer aktiv, lässt sich im Popup eine Zeit einstellen; **Start** stellt den Timer am Echo, indem der Adapter den Text *stelle einen Timer auf 5 Minuten* (ganze Minuten) bzw. *stelle einen Timer auf 90 Sekunden* an das Gerät schickt. Ist die Systemsprache nicht Deutsch, geht der Text englisch hinaus (*set a timer for 5 minutes*). Das Echo antwortet hörbar.
+- Bis der neue Timer am Panel steht, vergehen etwa 8 Sekunden: alexa2 erfährt von ihm erst, wenn der Adapter die Aktivitäten neu abfragen lässt.
+- **Abbrechen** bzw. **Fertig** löscht den angezeigten Timer bei Amazon – auch während er klingelt. Am Panel verschwindet er sofort.
+- Eine Pause gibt es nicht.
+
+Ein Echo-Gerät kann gleichzeitig Quelle des [Bildschirmschoner-Timers](screensaver#quelle-alexa-timer-alexa2) und mehrerer Items sein; alle zeigen denselben Stand.
 
 ## Fallstricke
 
