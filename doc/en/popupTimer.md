@@ -53,10 +53,18 @@ If in doubt: for a simple egg timer **Internal** is enough. The exact rules are 
 ## Quick start: egg timer (internal timer)
 
 1. **Create a channel.** In the **Objects** tab of ioBroker below `0_userdata.0` (or below `alias.0`) create an object of the type **channel**, e.g. `0_userdata.0.EggTimer`, and enter the role `level.timer` in its properties. No states are needed below it. – *Result: an empty channel the adapter recognises as a timer.*
+
+   ![The Objects tab with the channel 0_userdata.0.Eieruhr (here with the German name) of the type channel and the role level.timer, without states below it](../Pictures/popupTimer/timer-08-eieruhr-kanal.png)
+
 2. **Create a page item.** In the **PageConfig** tab open a page with page items (e.g. a cardEntities or cardGrid) and click on a free place. – *Result: the Pageitem Configuration is open.*
-3. **Choose the channel.** **Kind of item** stays at **Standard**. In the field **ioBroker Channel** choose the channel `0_userdata.0.EggTimer`. – *Result: next to the title it says `(level.timer)`.*
+3. **Choose the channel.** **Kind of item** stays at **Standard**. In the field **ioBroker Channel** choose the channel `0_userdata.0.EggTimer`. – *Result: next to the title it says `(level.timer)`, below the field "ok (role=level.timer)".*
+
+   Because the channel has no states, the red warning sign also stands left of the field, the ID below it in red, and the button at the bottom reads **Details...** instead of **Apply**. For the egg timer that is normal: the admin marks every channel without any states like this (see [check marks](PageConfig-Dialoge#the-iobroker-channel-and-its-check-marks)). The item still works on the panel.
+
+   ![The Pageitem Configuration with the channel 0_userdata.0.Eieruhr: title (level.timer), ok (role=level.timer), the red warning sign at the field because the channel has no states, and the button Details...](../Pictures/popupTimer/timer-09-eieruhr-item.png)
+
 4. **Enter a name** (optional), e.g. *Egg timer*. Without a name the adapter takes the name of the channel, as a last resort *Timer*. – *Result: that is the name of the entry in the list and in the popup.*
-5. **Apply**, then **Save** in the tab. – *Result: the adapter restarts, the page shows the entry with `00:00:00`.*
+5. **Apply** (here **Details...**, see step 3 – the adapter checks the item and takes it over), then **Save** in the tab. – *Result: the adapter restarts, the page shows the entry with `00:00:00`.*
 6. **Try it on the panel:** tap the entry, set 5 minutes in the popup, **Start**. – *Result: the time runs down; at 0 `00:00:00` stays until **Finish** is pressed.*
 
 If a script should learn about the end, create `STATE` in the channel as well (`boolean`, role `button`, writable): it becomes `true` when the time runs out and when **Finish** is pressed.

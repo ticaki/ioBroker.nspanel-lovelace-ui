@@ -53,10 +53,18 @@ Wer unsicher ist: Für eine einfache Eieruhr reicht **Intern**. Die genauen Erke
 ## Schnellstart: Eieruhr (interner Timer)
 
 1. **Kanal anlegen.** Im Tab **Objekte** von ioBroker unter `0_userdata.0` (oder unter `alias.0`) ein Objekt vom Typ **Kanal** anlegen, z. B. `0_userdata.0.Eieruhr`, und in seinen Eigenschaften die Rolle `level.timer` eintragen. Datenpunkte darunter sind nicht nötig. – *Ergebnis: ein leerer Kanal, den der Adapter als Timer erkennt.*
+
+   ![Der Tab Objekte mit dem Kanal 0_userdata.0.Eieruhr vom Typ channel und der Rolle level.timer, ohne Datenpunkte darunter](../Pictures/popupTimer/timer-08-eieruhr-kanal.png)
+
 2. **Pageitem anlegen.** Im Tab **PageConfig** eine Seite mit Pageitems öffnen (z. B. eine cardEntities oder cardGrid) und auf einen freien Platz klicken. – *Ergebnis: die Pageitem-Konfiguration ist offen.*
-3. **Kanal wählen.** Bei **Art des Items** bleibt **Standard** stehen. Im Feld **ioBroker-Kanal** den Kanal `0_userdata.0.Eieruhr` wählen. – *Ergebnis: neben dem Titel steht `(level.timer)`.*
+3. **Kanal wählen.** Bei **Art des Items** bleibt **Standard** stehen. Im Feld **ioBroker-Kanal** den Kanal `0_userdata.0.Eieruhr` wählen. – *Ergebnis: neben dem Titel steht `(level.timer)`, unter dem Feld „ok (role=level.timer)“.*
+
+   Weil der Kanal keine Datenpunkte hat, steht links am Feld zusätzlich das rote Warnzeichen, die ID darunter in Rot, und der Knopf am Fuß heißt **Details...** statt **Übernehmen**. Bei der Eieruhr ist das normal: Der Admin markiert so jeden Kanal ganz ohne Datenpunkte (siehe [Prüfzeichen](PageConfig-Dialoge#der-iobroker-kanal-und-seine-prüfzeichen)). Am Panel arbeitet das Item trotzdem.
+
+   ![Die Pageitem-Konfiguration mit dem Kanal 0_userdata.0.Eieruhr: Titel (level.timer), ok (role=level.timer), rotes Warnzeichen am Feld, weil der Kanal keine Datenpunkte hat, und der Knopf Details...](../Pictures/popupTimer/timer-09-eieruhr-item.png)
+
 4. **Name eintragen** (optional), z. B. *Eieruhr*. Ohne Namen nimmt der Adapter den Namen des Kanals, zuletzt *Timer*. – *Ergebnis: so heißt der Eintrag in der Liste und im Popup.*
-5. **Übernehmen** und danach im Tab **Speichern**. – *Ergebnis: der Adapter startet neu, die Seite zeigt den Eintrag mit `00:00:00`.*
+5. **Übernehmen** (hier **Details...**, siehe Schritt 3 – der Adapter prüft das Item und übernimmt es) und danach im Tab **Speichern**. – *Ergebnis: der Adapter startet neu, die Seite zeigt den Eintrag mit `00:00:00`.*
 6. **Am Panel ausprobieren:** auf den Eintrag tippen, im Popup 5 Minuten einstellen, **Start**. – *Ergebnis: die Zeit läuft rückwärts; bei 0 bleibt `00:00:00` stehen, bis **Fertig** gedrückt wird.*
 
 Soll ein Skript vom Ablauf erfahren, legt man im Kanal zusätzlich `STATE` an (`boolean`, Rolle `button`, beschreibbar): Er wird `true`, wenn die Zeit abläuft und wenn **Fertig** gedrückt wird.
