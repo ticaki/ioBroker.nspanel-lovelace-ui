@@ -4791,6 +4791,29 @@ describe('lib/configuration - device with details: the short tap of the admin it
         expect(JSON.stringify(item.data.text)).to.include('Kitchen lamp');
         expect(item.deviceDetails).to.deep.equal(runtime);
     });
+    it('CheckPageItemConfig on cardEntities2: state, none and navigation without error or message', async () => {
+        const entitiesPage = { card: 'cardEntities2', uniqueName: 'devEntities' };
+        const items: ShareConfig.AdminPageItemConfig[] = [
+            {
+                channelId: ShareConfig.emptyChannelValueConfig(`${DEV}.Relay0.Switch`),
+                type: 'custom',
+                device: device('state'),
+            },
+            { channelId: ShareConfig.emptyChannelValueConfig(''), device: device('none') },
+            {
+                channelId: ShareConfig.emptyChannelValueConfig(''),
+                isNavigation: true,
+                targetPage: 'main',
+                device: device('navigation'),
+            },
+        ];
+        for (const item of items) {
+            const result = await convertAdminPageItem.call(fakeAdapter([]), item, entitiesPage, []);
+            expect(result.error, item.device?.shortPress).to.equal(undefined);
+            expect(result.messages, item.device?.shortPress).to.deep.equal([]);
+            expect(result.pageItem, item.device?.shortPress).to.not.equal(undefined);
+        }
+    });
     it('a name of the item wins over the name of the device', async () => {
         const result = await convertAdminPageItem.call(
             fakeAdapter([]),

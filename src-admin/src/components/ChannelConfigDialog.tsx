@@ -41,6 +41,7 @@ import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
 import DeviceDetailsSection, { isBlockingDeviceError } from './DeviceDetailsSection';
+import { pageItemSaveState } from '../pageItemSaveState';
 import {
     deviceShortPressOf,
     isDeviceDetailsConfig,
@@ -724,7 +725,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. Im Rohdaten-Modus bleiben die
      * Standardfelder erhalten (für „Zurück zum Standard“), zur Laufzeit gilt nur `native`.
      */
-    private buildSaveConfig(): AdminPageItemConfig | null {
+    private buildSaveConfig(): AdminPageItemConfig {
         const standard = this.buildStandardConfig();
         const { raw } = this.state;
         if (raw) {
@@ -855,9 +856,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleSaveAsync = async (): Promise<void> => {
         const configToSave = this.buildSaveConfig();
-        if (!configToSave) {
-            return;
-        }
 
         const socket = this.props.oContext?.socket ?? this.props.socket;
         const instance = this.props.oContext?.instance ?? '0';
@@ -1381,6 +1379,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             datapointErrors: [],
             datapointDuplicates: [],
             checkingChannel: false,
+            checkingDatapoints: false,
+            hasProblems: false,
         });
     };
 
@@ -1413,6 +1413,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             roleIsValid: null,
             datapointErrors: [],
             datapointDuplicates: [],
+            checkingDatapoints: false,
+            hasProblems: false,
         });
     };
 
@@ -1425,7 +1427,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (id === this.state.channelId.valueStateId) {
             return;
         }
-        this.setState({ channelId: { ...this.state.channelId, valueStateId: id }, channelExists: null });
+        this.setState({
+            channelId: { ...this.state.channelId, valueStateId: id },
+            channelExists: null,
+            hasProblems: false,
+        });
         if (id) {
             void this.checkChannelExists(id, true);
         }
@@ -2018,36 +2024,30 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         } = this.state;
 
         const rawMode = raw !== null;
-        const hasDatapointProblems =
-            !rawMode &&
-            !this.state.checkingDatapoints &&
-            (this.state.datapointErrors.length > 0 ||
-                this.state.datapointDuplicates.length > 0 ||
-                this.state.hasProblems);
-
         const channelIdValid = channelId.valueStateId !== '';
         const { device, deviceError } = this.state;
-        // a device item: device and state / channel chosen, the adapter did not refuse the device - no answer
-        // (adapter offline) or a device that is gone keeps a stored item savable
-        const deviceShortPress = device !== null ? deviceShortPressOf(device) : 'none';
-        const deviceCanSave =
-            device !== null &&
-            device.deviceId.trim() !== '' &&
-            !isBlockingDeviceError(deviceError) &&
-            (deviceShortPress === 'none' ||
-                (deviceShortPress === 'navigation' && targetPage !== '') ||
-                ((deviceShortPress === 'state' || deviceShortPress === 'popup') && channelIdValid));
-        const standardCanSave =
-            device !== null
-                ? deviceCanSave
-                : (isNavigation && targetPage !== '') ||
-                  (!isNavigation && channelIdValid && channelExists === true && !checkingChannel);
-        // raw mode: the item needs no channel, the raw data are complete in themselves
-        const canSave = rawMode || standardCanSave;
-
+        // a device item is checked by its short tap - the channel checks apply to the popup of an alias channel only;
+        // no answer of the adapter (offline) or a device that is gone keeps a stored item savable
+        const saveState = pageItemSaveState({
+            rawMode,
+            device: device !== null ? { deviceId: device.deviceId, shortPress: deviceShortPressOf(device) } : null,
+            deviceErrorBlocks: isBlockingDeviceError(deviceError),
+            isNavigation,
+            isCustom,
+            targetPage,
+            channelId: channelId.valueStateId,
+            channelExists,
+            checkingChannel,
+            checkingDatapoints: this.state.checkingDatapoints,
+            roleIsValid,
+            hasProblems: this.state.hasProblems,
+            datapointErrors: this.state.datapointErrors.length,
+            datapointDuplicates: this.state.datapointDuplicates.length,
+        });
+        const hasDatapointProblems = saveState.datapointProblems;
+        const { canSave, standardCanSave } = saveState;
         // raw mode: role and datapoint checks do not apply - the raw data are saved as they are
-        const errorSaveDetails =
-            !rawMode && !(isNavigation && !channelIdValid) && ((!roleIsValid && !isCustom) || this.state.hasProblems);
+        const errorSaveDetails = saveState.roleProblem;
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
