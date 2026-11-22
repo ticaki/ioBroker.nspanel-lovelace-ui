@@ -597,6 +597,7 @@
     "deviceDetailsDialog_shortPress": "Короткое касание",
     "deviceDetailsDialog_shortState": "Состояние устройства (вкл/выкл или кнопка)",
     "deviceDetailsDialog_shortStateId": "Состояние устройства (вкл/выкл)",
+    "deviceDetailsDialog_stateRequired": "Выберите состояние или короткое нажатие «Нет» – без состояния элемент нельзя применить.",
     "deviceDetailsDialog_state": "Состояние",
     "deviceDetailsDialog_status": "%s - отмечено записей: %d",
     "deviceDetailsDialog_statusOne": "%s - отмечена 1 запись",

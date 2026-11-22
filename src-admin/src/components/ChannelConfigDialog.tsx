@@ -52,11 +52,14 @@ import {
     type ItemTapFields,
     type OptionStash,
 } from '../itemOptionStash';
+import { applyDeviceAnswer } from '../deviceAnswer';
 import {
     deviceShortPressOf,
     isDeviceDetailsConfig,
     updatedDeviceDetailsLearned,
+    type DeviceDetailEntryConfig,
     type DeviceDetailsConfig,
+    type DeviceDetailsInfo,
     type DeviceDetailsLearned,
     type DeviceSelectionError,
     type DeviceShortPress,
@@ -301,6 +304,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private kindStash: OptionStash<ItemKind, ItemKindFields<ChannelValueConfig>> = {};
     /** fields of the short taps of a device item not chosen right now (itemOptionStash) */
     private shortPressStash: OptionStash<DeviceShortPress, ItemTapFields<ChannelValueConfig>> = {};
+    /** the device the entries of the device item belong to; another device gets the learned ticks (deviceAnswer) */
+    private deviceEntriesId = '';
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -487,6 +492,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.deviceBefore = isDeviceDetailsConfig(data?.device) ? structuredClone(data.device) : undefined;
         this.kindStash = {};
         this.shortPressStash = {};
+        this.deviceEntriesId = isDeviceDetailsConfig(data?.device) ? data.device.deviceId.trim() : '';
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
         } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
@@ -1456,6 +1462,66 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     /**
+     * The filter list was saved: its entries belong to the device now.
+     *
+     * @param entries the ticked rows in their order
+     */
+    private handleDeviceEntriesChange = (entries: DeviceDetailEntryConfig[]): void => {
+        const { device } = this.state;
+        if (!device) {
+            return;
+        }
+        this.deviceEntriesId = device.deviceId.trim();
+        this.setState({ device: { ...device, entries } });
+    };
+
+    /**
+     * The answer of the adapter for the device of the item. It may come after the short tap or the kind was switched:
+     * it goes into the fields of the device and of the short tap `state` wherever they are now - shown or stashed
+     * ({@link applyDeviceAnswer}).
+     *
+     * @param id the device the answer is for
+     * @param answer the answer
+     */
+    private handleDeviceAnswer = (id: string, answer: DeviceDetailsInfo): void => {
+        if (!this.state.open) {
+            return;
+        }
+        const { device, deviceError, isNavigation, targetPage, isCustom, channelId } = this.state;
+        const shown = device !== null;
+        const kind = shown
+            ? { device, deviceError, isNavigation, targetPage, isCustom, channelId }
+            : this.kindStash.device;
+        if (!kind) {
+            return;
+        }
+        const result = applyDeviceAnswer(
+            { kind, shortPressStash: this.shortPressStash, entriesDeviceId: this.deviceEntriesId },
+            id,
+            answer,
+            this.props.deviceDetailsLearned ?? {},
+        );
+        if (!result) {
+            return;
+        }
+        this.shortPressStash = result.shortPressStash;
+        this.deviceEntriesId = result.entriesDeviceId;
+        if (!shown) {
+            this.kindStash = { ...this.kindStash, device: result.kind };
+            return;
+        }
+        const tapChanged =
+            result.kind.channelId.valueStateId !== channelId.valueStateId ||
+            (result.kind.device !== null && deviceShortPressOf(result.kind.device) !== deviceShortPressOf(device));
+        if (!tapChanged) {
+            this.setState({ ...result.kind });
+            return;
+        }
+        this.setState({ ...result.kind, ...this.resetChannelChecks() });
+        this.recheckChannel(result.kind);
+    };
+
+    /**
      * Short tap of a device item: a state of the device (custom item), nothing, a navigation or the popup of an alias
      * channel. The state / channel / target page of the short tap left is kept until the dialog closes and comes back
      * with it ({@link switchOption}).
@@ -1615,13 +1681,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     themeType={themeType ?? 'light'}
                     instance={this.props.oContext?.instance ?? this.props.instance ?? 0}
                     value={device}
-                    learned={this.props.deviceDetailsLearned ?? {}}
                     stateId={deviceShortPressOf(device) === 'state' ? channelId.valueStateId : ''}
                     onStateChange={this.handleDeviceStateChange}
                     onShortPressChange={this.handleDeviceShortPressChange}
                     popupChannelSelector={popupSelector}
                     navigationTargetSelector={this.renderTargetPageSelect()}
                     onChange={this.handleDeviceDetailsChange}
+                    onAnswer={this.handleDeviceAnswer}
+                    onEntriesChange={this.handleDeviceEntriesChange}
                 />
                 <TextField
                     label={I18n.t('channelConfigDialog_name')}
