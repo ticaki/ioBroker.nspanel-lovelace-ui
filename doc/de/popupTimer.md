@@ -45,6 +45,7 @@ Alle Arten sehen am Panel gleich aus. Sie unterscheiden sich darin, **wer die Ze
 | die Restzeit zeigen, die ein eigenes Skript oder ein anderer Adapter zählt | **Extern** | das Skript | einen Kanal `level.timer` mit `ACTUAL` (Restzeit in Sekunden), dazu `STATUS` und `SET`, damit es Tasten gibt | Restzeit der Waschmaschine |
 | eine feste Weckzeit zeigen und an- und ausschalten | **Wecker** | niemand, es ist eine Uhrzeit | einen Kanal `level.timer` mit `ACTUAL` der Rolle `date`, dazu `SET` und `STATUS` | Wecker um 6:30 |
 | die Timer eines Echo-Geräts zeigen, starten und stoppen | **Alexa-Timer** | das Echo-Gerät | keinen Kanal: im Item-Dialog die Art **Alexa-Timer** und das Echo-Gerät wählen | *„Alexa, stelle einen Timer auf 10 Minuten“* und die Zeit am Panel sehen |
+| einen Wecker eines Echo-Geräts sehen und an- oder ausschalten | **Alexa-Wecker** | das Echo-Gerät | keinen Kanal: Art **Alexa-Timer**, Echo-Gerät, bei **Anzeigen** **Wecker** | der Werktagswecker um 6:30 am Panel, vor dem Urlaub ausschalten |
 | auf einer Seite denselben Timer zeigen wie der Bildschirmschoner | **Vom Screensaver** | wie beim Bildschirmschoner | einen Kanal `level.timer` und das Häkchen **Timer aus dem Screensaver verwenden** | Bildschirmschoner zeigt die Restzeit, die Seite hat Start und Stopp dazu |
 
 Wer unsicher ist: Für eine einfache Eieruhr reicht **Intern**. Die genauen Erkennungsregeln stehen unter [Betriebsarten](#1-betriebsarten).
@@ -102,6 +103,7 @@ Die Betriebsart sagt, **wer die Zeit zählt**. Man stellt sie nirgends ein – d
 | **Wecker** | `ACTUAL` mit der Rolle `date`, oder mit einer anderen Rolle ohne Zeiteinheit | niemand – eine feste Uhrzeit |
 | **Vom Screensaver** | Häkchen **Timer aus dem Screensaver verwenden** im Item-Dialog | wie der Bildschirmschoner, siehe [Abschnitt 5](#5-timer-aus-dem-screensaver-verwenden) |
 | **Alexa-Timer** | Art des Items **Alexa-Timer** im Item-Dialog, kein Kanal | das Echo-Gerät, siehe [Abschnitt 7](#7-alexa-timer-alexa2) |
+| **Alexa-Wecker** | Art **Alexa-Timer**, **Anzeigen** **Wecker** | niemand – eine feste Uhrzeit am Echo, siehe [Wecker](#wecker-eines-echo-geräts) |
 
 Ein Kanal, der nur einen `SET` hat, ist ein interner Timer – außer `SET` trägt die Rolle `date`, dann ist es ein Wecker. Ein externer Timer oder Wecker, bei dem nichts beschreibbar ist und der keinen `STATUS` hat, ist eine reine Zeitanzeige: Das Popup zeigt die Zeit, hat aber keine Tasten.
 
@@ -146,6 +148,12 @@ Welche Tasten das Popup zeigt und ob sich die Zeit bearbeiten lässt, hängt an 
 | Alexa-Timer, kein Timer | **Start** | ja |
 | Alexa-Timer, läuft | **Abbrechen** | nein |
 | Alexa-Timer, klingelt | **Fertig** | nein |
+| Alexa-Wecker (bestimmter), aus | **An** | ja |
+| Alexa-Wecker (bestimmter), an | **Aus** | nein |
+| Alexa-Wecker (bestimmter), einmalig und vorbei | keine | nein |
+| Alexa-Wecker (nächster aktiver), einer ist aktiv | **Aus** | nein |
+| Alexa-Wecker (nächster aktiver), keiner aktiv | keine, Anzeige `00:00` | nein |
+| Alexa-Wecker, gewählter Wecker gibt es nicht mehr | keine, Anzeige `00:00` | nein |
 
 Das Schließen der Zeitfelder startet nichts. Beim externen Timer und beim Wecker schreibt der Adapter die Zeit sofort in `SET` (oder `ACTUAL`); beim internen Timer merkt er sie sich und schreibt sie zusätzlich in `SET`, falls es den gibt; bei *Vom Screensaver* und beim Alexa-Timer merkt er sie sich nur. Gestartet wird erst mit **Start**.
 
@@ -195,7 +203,7 @@ Was Liste und Popup darstellen können – für alle Arten gleich:
 
 ## 7. Alexa-Timer (alexa2)
 
-Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen. Die Timer kommen aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht.
+Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen – oder einen seiner **Wecker** (siehe [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts)). Beides kommt aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht. Der Bildschirmschoner kennt nur die Timer, keine Wecker.
 
 ### Voraussetzungen
 
@@ -209,7 +217,7 @@ Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen. 
 
 Oben in der [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration) steht die **Art des Items**: **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** oder **Alexa-Timer**. Die Wahl gibt es auf allen Seiten mit Pageitems (cardGrid, cardGrid2, cardGrid3, cardEntities, cardSchedule, cardThermo2, cardMedia). Ist **Ist eine Navigation** gesetzt, ist **Alexa-Timer** gesperrt – eine Navigation kann kein Timer sein.
 
-Bei **Alexa-Timer** wählt man **alexa2-Instanz** und **Echo-Gerät**, dazu **Name**, Symbole und Farben für *Bedingung ist wahr* (ein Timer ist aktiv) und *Bedingung ist unwahr*. Ohne Namen heißt der Eintrag *Timer*. **Übernehmen** bleibt gesperrt, bis Instanz und Gerät gewählt sind.
+Bei **Alexa-Timer** wählt man **alexa2-Instanz** und **Echo-Gerät**, bei **Anzeigen** **Timer** (Vorgabe) oder **Wecker**, dazu **Name**, Symbole und Farben für *Bedingung ist wahr* (ein Timer ist aktiv) und *Bedingung ist unwahr*. Ohne Namen heißt der Eintrag *Timer*. **Übernehmen** bleibt gesperrt, bis Instanz und Gerät gewählt sind.
 
 Meldungen des Dialogs:
 
@@ -243,11 +251,39 @@ Ein Echo kann mehrere Timer gleichzeitig haben. Angezeigt wird **ein klingelnder
 
 Ein Echo-Gerät kann gleichzeitig Quelle des [Bildschirmschoner-Timers](screensaver#quelle-alexa-timer-alexa2) und mehrerer Items sein; alle zeigen denselben Stand. Wird der Timer über eines davon gestoppt, verschwindet er überall.
 
+### Wecker eines Echo-Geräts
+
+Mit **Anzeigen** **Wecker** zeigt das Item einen Wecker des Echo-Geräts so wie der [Wecker-Modus](#1-betriebsarten) eines Kanals: die Weckzeit als `HH:MM` in Ortszeit, das Symbol an, solange der Wecker eingeschaltet ist, und im Popup die Tasten **An** und **Aus**. Die Vorgabesymbole sind `alarm` und `alarm-off`.
+
+Darunter folgt die Auswahl **Welcher Wecker**:
+
+| Auswahl | Was das Item zeigt | Was man tun kann |
+|---|---|---|
+| **Nächster aktiver Wecker** (Vorgabe) | den eingeschalteten Wecker, der als nächster klingelt | **Aus** schaltet genau diesen Wecker aus. Danach zeigt das Item den nächsten eingeschalteten – ein weiterer Druck auf **Aus** würde auch diesen ausschalten. Die Uhrzeit lässt sich hier nicht ändern. Ist keiner eingeschaltet: `00:00`, Symbol aus, keine Tasten. |
+| **Bestimmter Wecker** | immer denselben Wecker, auch wenn er aus ist | **An** und **Aus**; solange er aus ist, lässt sich die Uhrzeit im Popup ändern. |
+
+Bei **Bestimmter Wecker** erscheint das Feld **Wecker des Geräts** mit allen Weckern des Echos, beschriftet mit Uhrzeit und Wiederholung, z. B. *07:30 · MO,TU,WE,TH,FR* oder *06:00 · einmalig 2026-11-13*; hat der Wecker einen Namen, steht er vorn. **Übernehmen** bleibt gesperrt, bis ein Wecker gewählt ist. Gibt es den gewählten Wecker nicht mehr, sagt der Dialog *Den gewählten Wecker gibt es nicht mehr. Am Panel bleibt das Item ohne Tasten, bis ein anderer gewählt wird.* – am Panel zeigt das Item dann `00:00` ohne Tasten, und das Log warnt einmal.
+
+Was der Adapter schreibt:
+
+| Aktion | geschriebener Datenpunkt von alexa2 |
+|---|---|
+| **An** / **Aus** | `Alarm.<id>.enabled` = `true` / `false` |
+| Uhrzeit im Popup geändert (nur bestimmter Wecker, nur wenn aus) | `Alarm.<id>.time` = `hh:mm:00` – die beiden Felder des Popups sind Stunde und Minute |
+
+- Die Anzeige folgt den Datenpunkten von alexa2: Nach **An**, **Aus** oder einer neuen Uhrzeit ändert sie sich erst, wenn alexa2 den neuen Stand meldet.
+- Neue Wecker (z. B. per Sprache gestellt) erscheinen, sobald alexa2 ihre Datenpunkte anlegt; gelöschte verschwinden, sobald alexa2 sie löscht. Beim Öffnen des Popups prüft der Adapter zusätzlich, ob es die Wecker noch gibt.
+- Ein **einmaliger Wecker, dessen Zeitpunkt vorbei ist**, lässt sich laut alexa2 nicht mehr ändern. Das Item bietet für ihn weder **An** noch eine neue Uhrzeit an.
+- Dass ein Wecker gerade klingelt, zeigt das Item nicht an, und es kann ihn nicht stoppen – wie beim Wecker-Modus eines Kanals.
+
 ### Fallstricke beim Alexa-Timer
 
 - **Der Timer erscheint nicht:** Meist ist in alexa2 die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** aus – der Dialog warnt dann. Sonst ist ein anderes Echo gewählt als das, zu dem man gesprochen hat. Findet der Adapter das Gerät gar nicht, schreibt er ins Log: *Alexa timer: … Timer.activeTimerList does not exist - is the device or the alexa2 instance correct?*
 - **Nach einem Stopp per Sprache bleibt kurz `0.0` bzw. `00:00:00` stehen:** alexa2 hat den Stopp dann nicht gemeldet und räumt den Timer erst etwa eine Minute später selbst auf. Am Panel gestoppte Timer betrifft das nicht – die blendet der Adapter sofort aus.
 - **Das Echo spricht beim Start vom Panel:** Das ist so; der Timer wird wie per Sprache gestellt.
+- **Ein Wecker lässt sich nicht einschalten:** Ein einmaliger Wecker, dessen Zeitpunkt vorbei ist, bekommt kein **An** – alexa2 kann ihn nicht mehr ändern. Einen neuen Wecker stellen.
+- **Der bestimmte Wecker ist weg:** Er wurde gelöscht, z. B. per Sprache. Im Item-Dialog einen anderen wählen oder **Nächster aktiver Wecker** nehmen.
+- **Nach An, Aus oder einer neuen Uhrzeit ändert sich die Anzeige nicht sofort:** Sie wartet auf die Meldung von alexa2.
 
 ## Fallstricke
 

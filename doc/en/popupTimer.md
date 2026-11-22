@@ -45,6 +45,7 @@ All kinds look the same on the panel. They differ in **who counts the time** and
 | show the remaining time a script of my own or another adapter counts | **External** | the script | a channel `level.timer` with `ACTUAL` (remaining time in seconds), plus `STATUS` and `SET` so that there are buttons | remaining time of the washing machine |
 | show a fixed wake-up time and switch it on and off | **Alarm clock** | nobody, it is a clock time | a channel `level.timer` with `ACTUAL` of the role `date`, plus `SET` and `STATUS` | alarm at 6:30 |
 | show, start and stop the timers of an Echo device | **Alexa timer** | the Echo device | no channel: in the item dialog choose the kind **Alexa timer** and the Echo device | *"Alexa, set a timer for 10 minutes"* and see the time on the panel |
+| see an alarm of an Echo device and switch it on or off | **Alexa alarm** | the Echo device | no channel: kind **Alexa timer**, Echo device, **Show** **Alarm** | the weekday alarm at 6:30 on the panel, switched off before the holidays |
 | show the same timer on a page as the screensaver | **From the screensaver** | like the screensaver | a channel `level.timer` and the checkbox **Use the timer of the screensaver** | the screensaver shows the remaining time, the page adds Start and Stop |
 
 If in doubt: for a simple egg timer **Internal** is enough. The exact rules are under [Operating modes](#1-operating-modes).
@@ -102,6 +103,7 @@ The operating mode says **who counts the time**. It is not set anywhere – the 
 | **Alarm clock** | `ACTUAL` with the role `date`, or with another role without a unit of time | nobody – a fixed clock time |
 | **From the screensaver** | checkbox **Use the timer of the screensaver** in the item dialog | like the screensaver, see [section 5](#5-use-the-timer-of-the-screensaver) |
 | **Alexa timer** | kind of item **Alexa timer** in the item dialog, no channel | the Echo device, see [section 7](#7-alexa-timer-alexa2) |
+| **Alexa alarm** | kind **Alexa timer**, **Show** **Alarm** | nobody – a fixed clock time on the Echo, see [Alarms](#alarms-of-an-echo-device) |
 
 A channel with a `SET` only is an internal timer – unless `SET` carries the role `date`, then it is an alarm clock. An external timer or alarm clock with nothing writable and no `STATUS` is a plain time display: the popup shows the time but has no buttons.
 
@@ -146,6 +148,12 @@ Which buttons the popup shows and whether the time can be edited depends on the 
 | Alexa timer, no timer | **Start** | yes |
 | Alexa timer, running | **Cancel** | no |
 | Alexa timer, ringing | **Finish** | no |
+| Alexa alarm (specific), off | **On** | yes |
+| Alexa alarm (specific), on | **Off** | no |
+| Alexa alarm (specific), single and past | none | no |
+| Alexa alarm (next active), one is active | **Off** | no |
+| Alexa alarm (next active), none active | none, display `00:00` | no |
+| Alexa alarm, chosen alarm no longer exists | none, display `00:00` | no |
 
 Closing the time fields starts nothing. For an external timer and an alarm clock the adapter writes the time to `SET` (or `ACTUAL`) at once; for an internal timer it remembers it and writes it to `SET` as well, if there is one; with *From the screensaver* and the Alexa timer it only remembers it. Counting begins with **Start** only.
 
@@ -195,7 +203,7 @@ What list and popup can show – the same for all kinds:
 
 ## 7. Alexa timer (alexa2)
 
-Instead of a channel, a timer item can show the timers of an **Echo device**. The timers come from the **alexa2** adapter, which maps the Echo devices into ioBroker. No channel is needed.
+Instead of a channel, a timer item can show the timers of an **Echo device** – or one of its **alarms** (see [Alarms of an Echo device](#alarms-of-an-echo-device)). Both come from the **alexa2** adapter, which maps the Echo devices into ioBroker. No channel is needed. The screensaver knows the timers only, no alarms.
 
 ### Requirements
 
@@ -209,7 +217,7 @@ Instead of a channel, a timer item can show the timers of an **Echo device**. Th
 
 At the top of the [Pageitem Configuration](PageConfig-Dialoge#1-pageitem-configuration) there is the **Kind of item**: **Standard (channel, custom button, navigation)** or **Alexa timer**. The choice exists on all pages with page items (cardGrid, cardGrid2, cardGrid3, cardEntities, cardSchedule, cardThermo2, cardMedia). With **Is a navigation** ticked, **Alexa timer** is locked – a navigation cannot be a timer.
 
-With **Alexa timer** you choose the **alexa2 instance** and the **Echo device**, plus **Name**, icons and colours for *Condition is true* (a timer is active) and *Condition is false*. Without a name the entry is called *Timer*. **Apply** stays disabled until instance and device are chosen.
+With **Alexa timer** you choose the **alexa2 instance** and the **Echo device**, at **Show** **Timer** (default) or **Alarm**, plus **Name**, icons and colours for *Condition is true* (a timer is active) and *Condition is false*. Without a name the entry is called *Timer*. **Apply** stays disabled until instance and device are chosen.
 
 Messages of the dialog:
 
@@ -243,11 +251,39 @@ An Echo can have several timers at the same time. Shown is **a ringing one**, ot
 
 One Echo device can be the source of the [screensaver timer](screensaver#source-alexa-timer-alexa2) and of several items at the same time; all show the same state. If the timer is stopped through one of them, it disappears everywhere.
 
+### Alarms of an Echo device
+
+With **Show** **Alarm** the item shows an alarm of the Echo device like the [alarm clock mode](#1-operating-modes) of a channel: the alarm time as `HH:MM` in local time, the icon on while the alarm is switched on, and in the popup the buttons **On** and **Off**. The default icons are `alarm` and `alarm-off`.
+
+Below follows the choice **Which alarm**:
+
+| Choice | What the item shows | What you can do |
+|---|---|---|
+| **Next active alarm** (default) | the switched-on alarm that rings next | **Off** switches exactly this alarm off. Afterwards the item shows the next switched-on one – another press on **Off** would switch that one off as well. The time cannot be changed here. With none switched on: `00:00`, icon off, no buttons. |
+| **A specific alarm** | always the same alarm, also while it is off | **On** and **Off**; while it is off, the time can be changed in the popup. |
+
+With **A specific alarm** the field **Alarm of the device** appears with all alarms of the Echo, labelled with time and repetition, e.g. *07:30 · MO,TU,WE,TH,FR* or *06:00 · once 2026-11-13*; an alarm with a name has it in front. **Apply** stays disabled until an alarm is chosen. If the chosen alarm no longer exists, the dialog says *The chosen alarm no longer exists. On the panel the item stays without buttons until another one is chosen.* – on the panel the item then shows `00:00` without buttons, and the log warns once.
+
+What the adapter writes:
+
+| Action | state of alexa2 written |
+|---|---|
+| **On** / **Off** | `Alarm.<id>.enabled` = `true` / `false` |
+| time changed in the popup (specific alarm only, only while off) | `Alarm.<id>.time` = `hh:mm:00` – the two fields of the popup are hour and minute |
+
+- The display follows the states of alexa2: after **On**, **Off** or a new time it only changes once alexa2 reports the new state.
+- New alarms (e.g. set by voice) appear as soon as alexa2 creates their states; deleted ones disappear as soon as alexa2 deletes them. When the popup opens, the adapter checks in addition whether the alarms still exist.
+- A **single alarm whose time has passed** cannot be changed any more according to alexa2. The item offers neither **On** nor a new time for it.
+- The item does not show that an alarm is ringing right now, and it cannot stop it – like the alarm clock mode of a channel.
+
 ### Pitfalls of the Alexa timer
 
 - **The timer does not show up:** Mostly the option **Automatically query activity on device interaction** is off in alexa2 – the dialog warns then. Otherwise another Echo is chosen than the one you spoke to. If the adapter does not find the device at all, it logs: *Alexa timer: … Timer.activeTimerList does not exist - is the device or the alexa2 instance correct?*
 - **After a stop by voice `0.0` or `00:00:00` stays for a moment:** alexa2 did not report the stop then and only clears the timer itself about a minute later. Timers stopped on the panel are not affected – the adapter hides them at once.
 - **The Echo speaks when the panel starts a timer:** That is how it is; the timer is set as if by voice.
+- **An alarm cannot be switched on:** A single alarm whose time has passed gets no **On** – alexa2 cannot change it any more. Set a new alarm.
+- **The specific alarm is gone:** It was deleted, e.g. by voice. Choose another one in the item dialog or take **Next active alarm**.
+- **After On, Off or a new time the display does not change at once:** It waits for alexa2 to report.
 
 ## Pitfalls
 
