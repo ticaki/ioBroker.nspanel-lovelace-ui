@@ -7,10 +7,7 @@ import { EntityList } from './shared/EntityList';
 export const ENTITIES_TOP = 72;
 export const ENTITIES_ROW_HEIGHT = 57;
 
-/**
- * cardEntities: a list of up to 4 (eu, us-l) or 5 (us-p) entity rows; cardEntities2 has 5 rows on eu and web-l
- * (the rows get lower so that they fit the stage, see entityListLayout)
- */
+/** cardEntities: a list of up to 4 (eu, us-l) or 5 (us-p) entity rows */
 export class CardEntities extends React.Component<CardProps<CardEntitiesModel>> {
     render(): React.JSX.Element {
         const { model, ctx, global, press, openPopup } = this.props;

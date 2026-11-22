@@ -2409,7 +2409,7 @@ export class PageItem extends BaseTriggeredPage {
     }
 
     /**
-     * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardEntities2 page
+     * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardEntities page
      * generated from the ticked states, below the page of the item (`directChildPage`, back leads here again). A
      * detail page opened before by an item of the page is replaced - after the new one is shown, never while it is
      * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
@@ -2435,7 +2435,7 @@ export class PageItem extends BaseTriggeredPage {
         // short id: the ids of the rows (<page>?<n>) must fit the id buffers of the HMI
         const id = `${DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
         const page = panel.newPage(
-            { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: 'cardEntities2' },
+            { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: 'cardEntities' },
             deviceDetailPageConfig(id, headline, parent.alwaysOn, rows),
         );
         if (!page) {
@@ -2459,7 +2459,7 @@ export class PageItem extends BaseTriggeredPage {
 
     /**
      * A tap (`button`) on a row of the detail page of a device: a button (`read: false`) is written with true; anything
-     * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities2.
+     * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities.
      */
     private async onDeviceDetailTap(): Promise<void> {
         const entry = this.dataItems;

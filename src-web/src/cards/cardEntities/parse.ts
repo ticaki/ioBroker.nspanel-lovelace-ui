@@ -3,8 +3,8 @@ import { initialMenuPage, maxMenuSlots, parseMenuEntityUpd, type MenuPageModel }
 
 export type CardEntitiesModel = MenuPageModel;
 
-/** cardEntities / cardEntities2 show at most 8 rows (web-p), the adapter never sends more */
-const MAX_ENTITIES = maxMenuSlots('cardEntities', 'cardEntities2');
+/** cardEntities shows at most 8 rows (web-p), the adapter never sends more */
+const MAX_ENTITIES = maxMenuSlots('cardEntities');
 
 export function initial(): CardEntitiesModel {
     return initialMenuPage();

@@ -85,16 +85,6 @@ function columnsOf(card: MenuEntry['card'], model: PanelModel): number {
     }
 }
 
-/**
- * Listenkarten (eine Spalte, Zeilen statt Slots).
- *
- * @param card Kartentyp
- * @returns true für cardEntities, cardEntities2 und cardSchedule
- */
-function isListCard(card: string): card is 'cardEntities' | 'cardEntities2' | 'cardSchedule' {
-    return card === 'cardEntities' || card === 'cardEntities2' || card === 'cardSchedule';
-}
-
 export interface PageMenuEditorProps {
     entry: MenuEntry;
     onEntryChange: (updated: MenuEntry) => void;
@@ -256,7 +246,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
      */
     private cardLabel(card: MenuEntry['card'], models: PanelModel[]): string {
         const { slots, mixed } = this.getCardSlotInfo(card, models);
-        const list = isListCard(card);
+        const list = card === 'cardEntities' || card === 'cardSchedule';
         const count = this.getText(list ? 'pageMenu_rows' : 'pageMenu_slots').replace(
             '%s',
             `${mixed ? '≤ ' : ''}${slots}`,
@@ -706,7 +696,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
     };
 
     private getGridConfig(card: MenuEntry['card'], columns: number): { columns: string; wide: boolean } {
-        if (isListCard(card)) {
+        if (card === 'cardEntities' || card === 'cardSchedule') {
             return { columns: '1fr', wide: true };
         }
         return { columns: `repeat(${columns}, 1fr)`, wide: false };
@@ -769,7 +759,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         const isNameFromChannel = !isNativeItem && !item.name && !!channelName;
 
         if (wide) {
-            // Listenansicht (cardEntities / cardEntities2 / cardSchedule)
+            // Listenansicht (cardEntities / cardSchedule)
             return (
                 <Tooltip
                     key={index}
@@ -1186,7 +1176,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                     {this.getText('pageMenu_group_list')}
                                 </Typography>
                                 <RadioGroup
-                                    value={isListCard(entry.card) ? entry.card : ''}
+                                    value={['cardEntities', 'cardSchedule'].includes(entry.card) ? entry.card : ''}
                                     onChange={(_e, val) => {
                                         this.handleCardTypeChange(val as MenuEntry['card']);
                                     }}
@@ -1195,11 +1185,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                         value="cardEntities"
                                         control={<Radio />}
                                         label={this.cardLabel('cardEntities', models)}
-                                    />
-                                    <FormControlLabel
-                                        value="cardEntities2"
-                                        control={<Radio />}
-                                        label={this.cardLabel('cardEntities2', models)}
                                     />
                                     <FormControlLabel
                                         value="cardSchedule"

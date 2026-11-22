@@ -630,8 +630,7 @@ export class Panel extends BaseClass {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PageChartPie(pmconfig, pageConfig);
             }
-            case 'cardEntities':
-            case 'cardEntities2': {
+            case 'cardEntities': {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PageEntities(pmconfig, pageConfig);
             }
@@ -2796,7 +2795,7 @@ export class Panel extends BaseClass {
                         ) {
                             break;
                         }
-                        // cardEntities(2): the left part of an item (icon / name) is tapped on purpose - without a long
+                        // cardEntities: the left part of an item (icon / name) is tapped on purpose - without a long
                         // press of its own nothing happens there; on the grid pages it may just have been a long
                         // touch and acts like the short press
                         if (!Panel.longPressFallsBackToShortPress(this.getActivePage().card)) {
@@ -3522,14 +3521,14 @@ export class Panel extends BaseClass {
 
     /**
      * Whether a `buttonPress3` of an item that has no long press of its own acts like the short press. On the grid
-     * pages a long press may just be a finger that lay too long; on cardEntities and cardEntities2 the left part of an
-     * item is tapped on purpose (doc/ideas/device-details/README.md) - there nothing happens.
+     * pages a long press may just be a finger that lay too long; on cardEntities the left part of an item is tapped on
+     * purpose (doc/ideas/device-details/README.md) - there nothing happens.
      *
      * @param card page type of the active page
-     * @returns false for cardEntities and cardEntities2, true otherwise
+     * @returns false for cardEntities, true otherwise
      */
     static longPressFallsBackToShortPress(card: string): boolean {
-        return card !== 'cardEntities' && card !== 'cardEntities2';
+        return card !== 'cardEntities';
     }
 
     /**

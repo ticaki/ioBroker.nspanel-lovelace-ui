@@ -1,5 +1,5 @@
 /**
- * The detail page of a device (doc/ideas/device-details/README.md): a cardEntities2 page that is generated at runtime
+ * The detail page of a device (doc/ideas/device-details/README.md): a cardEntities page that is generated at runtime
  * from the ticked states of a device item, opened by a long press of the item (like the temporary speaker page of
  * Sonos / Squeezebox in pageItem.ts). The page is not editable, its rows can switch.
  *
@@ -147,7 +147,7 @@ export function deviceDetailRowNames(
 
 /**
  * The page item of a row of the detail page (doc/ideas/device-details/README.md, section Zeilen), with the controls
- * of cardEntities2: a writable boolean = `switch` (OnOff switches), a readonly boolean = text on/off, both in the theme
+ * of cardEntities: a writable boolean = `switch` (OnOff switches), a readonly boolean = text on/off, both in the theme
  * colors activated / deactivated; `read: false` = `button` (writes true); a writable number = `number` (slider,
  * `value|min|max` with min / max of common, default 0 / 100); everything else a text with the formatted value and its
  * unit. Values take the color of the group of their entry.
@@ -251,7 +251,7 @@ export function deviceDetailRowItem(
 }
 
 /**
- * The page of the detail page: cardEntities2 (five rows; a display without the page shows cardEntities with four),
+ * The page of the detail page: cardEntities (rows per page like every cardEntities page: eu / us-l 4, us-p 5),
  * headline = name of the device, classic paging, not editable.
  *
  * @param uniqueID id of the page
@@ -272,7 +272,7 @@ export function deviceDetailPageConfig(
         dpInit: '',
         pageItems: rows,
         config: {
-            card: 'cardEntities2',
+            card: 'cardEntities',
             scrollPresentation: 'classic',
             scrollType: 'page',
             data: { headline: { type: 'const', constVal: headline } },

@@ -33,8 +33,8 @@ function makeItem(opts: { type: string; role?: string; data?: Record<string, unk
     const parent: Record<string, any> = {
         isScreensaver: false,
         sleep: false,
-        card: 'cardEntities2',
-        basePanel: { lastCard: 'cardEntities2' },
+        card: 'cardEntities',
+        basePanel: { lastCard: 'cardEntities' },
     };
     Object.assign(item, {
         id: 'dd_3?2',
@@ -252,7 +252,7 @@ describe('lib/pages/pageItem - openDeviceDetails', () => {
         };
     }
 
-    it('builds the cardEntities2 page below the page of the item and shows it', async () => {
+    it('builds the cardEntities page below the page of the item and shows it', async () => {
         const f = setup();
         expect(await f.item('0').onCommandLongPress('button', '')).to.equal(true);
         expect(f.created).to.have.length(1);
@@ -263,7 +263,7 @@ describe('lib/pages/pageItem - openDeviceDetails', () => {
         expect(f.parent.directChildPage).to.equal(page);
         expect(page.directParentPage).to.equal(f.parent);
         const config = page.config as { config: { card: string; data: unknown }; pageItems: unknown[] };
-        expect(config.config.card).to.equal('cardEntities2');
+        expect(config.config.card).to.equal('cardEntities');
         expect(config.config.data).to.deep.equal({ headline: { type: 'const', constVal: 'Lamp' } });
         expect(config.pageItems).to.have.length(1);
     });

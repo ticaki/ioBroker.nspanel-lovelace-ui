@@ -1,6 +1,6 @@
 /**
  * Device with details (doc/ideas/device-details/README.md): a page item shows any device (an object of type device or
- * channel); a long press opens a generated detail page (cardEntities2) with the chosen states of the device.
+ * channel); a long press opens a generated detail page (cardEntities) with the chosen states of the device.
  *
  * Pure module, shared by the adapter and the admin - it must not import anything that pulls adapter code into the
  * admin bundle.

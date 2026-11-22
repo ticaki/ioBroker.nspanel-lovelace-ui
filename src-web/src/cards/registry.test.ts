@@ -10,7 +10,6 @@ describe('registry', () => {
             'screensaver3',
             'screensaver5',
             'cardEntities',
-            'cardEntities2',
             'cardGrid',
             'cardGrid2',
             'cardGrid3',

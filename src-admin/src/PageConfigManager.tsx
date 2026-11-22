@@ -414,7 +414,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             cardType === 'cardGrid2' ||
             cardType === 'cardGrid3' ||
             cardType === 'cardEntities' ||
-            cardType === 'cardEntities2' ||
             cardType === 'cardSchedule'
         ) {
             const menuCard: MenuEntry['card'] = cardType === 'pageMenu' ? 'cardGrid' : cardType;
@@ -594,7 +593,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             currentEntry.card === 'cardGrid2' ||
             currentEntry.card === 'cardGrid3' ||
             currentEntry.card === 'cardEntities' ||
-            currentEntry.card === 'cardEntities2' ||
             currentEntry.card === 'cardSchedule'
         ) {
             return (

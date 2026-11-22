@@ -12,7 +12,6 @@ export type AdminCardTypes =
     | 'cardMedia'
     // Entities Cards
     | 'cardEntities'
-    | 'cardEntities2'
     | 'cardSchedule'
     // Standalone Cards
     | 'cardAlarm'
@@ -1879,7 +1878,6 @@ export const scrollCards = [
     'cardGrid2',
     'cardGrid3',
     'cardEntities',
-    'cardEntities2',
     'cardSchedule',
     'cardThermo2',
     'cardMedia',
@@ -1892,8 +1890,6 @@ export type ScrollCard = (typeof scrollCards)[number];
  */
 export const menuCardItemLimits: Record<ScrollCard, Record<PanelModel, number>> = {
     cardEntities: { eu: 4, 'us-l': 4, 'us-p': 5, 'web-l': 4, 'web-p': 8 },
-    // us-l / us-p have no cardEntities2 yet: shown as cardEntities (doc/ideas/device-details/README.md)
-    cardEntities2: { eu: 5, 'us-l': 4, 'us-p': 5, 'web-l': 5, 'web-p': 8 },
     cardSchedule: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 6, 'web-p': 11 },
     cardGrid: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 8, 'web-p': 10 },
     cardGrid2: { eu: 8, 'us-l': 8, 'us-p': 9, 'web-l': 10, 'web-p': 15 },
@@ -1928,24 +1924,18 @@ export function isScrollCard(card: string | undefined): card is ScrollCard {
 /**
  * Page types whose items take a long press (`longPress`, `targetPageLongPress`, the detail page of a device). On the
  * grid pages the items send `event,buttonPress3,<entnN>` on a long press (HMI v5.1.1 / v6.0.2); a long press that is
- * not handled there falls back to the short press. On cardEntities and cardEntities2 a tap on the left part of an item
- * without popup (icon / name, `m0`-`m3` / `m0`-`m4`) sends `buttonPress3` (HMI change of doc/ideas/device-details,
- * until then nothing comes on cardEntities); there an unhandled `buttonPress3` does nothing. cardSchedule, cardMedia and cardThermo2 send `buttonPress2` for
+ * not handled there falls back to the short press. On cardEntities a tap on the left part of an item without popup
+ * (icon / name, `m0`-`m3`) sends `buttonPress3` (HMI change of doc/ideas/device-details, until then nothing comes);
+ * there an unhandled `buttonPress3` does nothing. cardSchedule, cardMedia and cardThermo2 send `buttonPress2` for
  * their items only (there a long press exists on the navigation arrows nent1 / nent2 alone).
  */
-export const longPressCards: readonly string[] = [
-    'cardGrid',
-    'cardGrid2',
-    'cardGrid3',
-    'cardEntities',
-    'cardEntities2',
-];
+export const longPressCards: readonly string[] = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities'];
 
 /**
  * Whether the items of a page type take a long press ({@link longPressCards}).
  *
  * @param card Card of an admin page entry or page type of the script.
- * @returns True for cardGrid, cardGrid2, cardGrid3, cardEntities and cardEntities2.
+ * @returns True for cardGrid, cardGrid2, cardGrid3 and cardEntities.
  */
 export function isLongPressCard(card: string | undefined): boolean {
     return !!card && longPressCards.includes(card);
@@ -1999,10 +1989,7 @@ export function normalizeScrollFields(
 }
 
 export type MenuEntry = {
-    card: Extract<
-        AdminCardTypes,
-        'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardEntities2' | 'cardSchedule'
-    >; // Supported card types - will be extended
+    card: Extract<AdminCardTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardSchedule'>; // Supported card types - will be extended
     headline: string;
     pageItems: (AdminPageItemConfig | undefined)[];
     uniqueName: string;

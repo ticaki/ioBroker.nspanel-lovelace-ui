@@ -33,7 +33,6 @@ const CARD_TYPE_BADGES: Readonly<Partial<Record<string, CardTypeInfo>>> = {
     cardGrid2: { Icon: ViewModuleOutlinedIcon, labelKey: 'page_type_grid2' },
     cardGrid3: { Icon: ViewComfyOutlinedIcon, labelKey: 'page_type_grid3' },
     cardEntities: { Icon: ViewListOutlinedIcon, labelKey: 'page_type_entities' },
-    cardEntities2: { Icon: ViewListOutlinedIcon, labelKey: 'page_type_entities2' },
     cardSchedule: { Icon: ScheduleOutlinedIcon, labelKey: 'page_type_schedule' },
     cardThermo: { Icon: ThermostatOutlinedIcon, labelKey: 'page_type_thermo' },
     cardThermo2: { Icon: DeviceThermostatOutlinedIcon, labelKey: 'page_type_thermo2' },

@@ -398,7 +398,6 @@ describe('lib/const/tools', () => {
         it('menuMaxItems follows the table of SMARTPHONE.md (eu, us-l, us-p, web-l, web-p)', () => {
             const table: Record<Parameters<typeof menuMaxItems>[0], number[]> = {
                 cardEntities: [4, 4, 5, 4, 8],
-                cardEntities2: [5, 4, 5, 5, 8],
                 cardSchedule: [6, 6, 6, 6, 11],
                 cardGrid: [6, 6, 6, 8, 10],
                 cardGrid2: [8, 8, 9, 10, 15],

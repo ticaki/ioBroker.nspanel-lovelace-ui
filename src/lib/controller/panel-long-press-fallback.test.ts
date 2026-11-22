@@ -57,17 +57,10 @@ describe('Panel - unhandled long press', () => {
             expect(calls).to.deep.equal(['press3', 'popup', 'buttonEvent']);
         });
     }
-    for (const card of ['cardEntities', 'cardEntities2']) {
-        it(`${card}: nothing happens`, async () => {
-            const { panel, calls } = setup(card, false);
-            await panel.HandleIncomingMessage(event('buttonPress3'));
-            expect(calls).to.deep.equal(['press3']);
-        });
-    }
-    it('cardEntities2: the short press stays as it is', async () => {
-        const { panel, calls } = setup('cardEntities2', false);
-        await panel.HandleIncomingMessage(event('buttonPress2'));
-        expect(calls).to.deep.equal(['popup', 'buttonEvent']);
+    it('cardEntities: nothing happens', async () => {
+        const { panel, calls } = setup('cardEntities', false);
+        await panel.HandleIncomingMessage(event('buttonPress3'));
+        expect(calls).to.deep.equal(['press3']);
     });
     it('cardEntities: a handled long press runs, the short press stays as it is', async () => {
         const handled = setup('cardEntities', true);
@@ -80,6 +73,5 @@ describe('Panel - unhandled long press', () => {
     it('longPressFallsBackToShortPress', () => {
         expect(Panel.longPressFallsBackToShortPress('cardGrid')).to.equal(true);
         expect(Panel.longPressFallsBackToShortPress('cardEntities')).to.equal(false);
-        expect(Panel.longPressFallsBackToShortPress('cardEntities2')).to.equal(false);
     });
 });

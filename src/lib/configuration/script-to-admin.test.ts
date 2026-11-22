@@ -4791,8 +4791,8 @@ describe('lib/configuration - device with details: the short tap of the admin it
         expect(JSON.stringify(item.data.text)).to.include('Kitchen lamp');
         expect(item.deviceDetails).to.deep.equal(runtime);
     });
-    it('CheckPageItemConfig on cardEntities2: state, none and navigation without error or message', async () => {
-        const entitiesPage = { card: 'cardEntities2', uniqueName: 'devEntities' };
+    it('CheckPageItemConfig on cardEntities: state, none and navigation without error or message', async () => {
+        const entitiesPage = { card: 'cardEntities', uniqueName: 'devEntities' };
         const items: ShareConfig.AdminPageItemConfig[] = [
             {
                 channelId: ShareConfig.emptyChannelValueConfig(`${DEV}.Relay0.Switch`),

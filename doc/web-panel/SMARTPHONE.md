@@ -38,7 +38,6 @@ Browser wie bisher auf den Viewport skaliert (schmale Ränder bei 16:9 bis 20:9)
 | Karte | eu / us-l | us-p | web-l | web-p |
 | --- | --- | --- | --- | --- |
 | cardEntities | 4 | 5 | 4 | 8 |
-| cardEntities2 | 5 (eu, TFT nach 6.2.0) / 4 (us-l, ältere TFT: als cardEntities) | 5 (als cardEntities) | 5 | 8 |
 | cardSchedule | 6 | 6 | 6 | 11 |
 | cardGrid | 3×2 = 6 | 2×3 = 6 | 4×2 = 8 | 2×5 = 10 |
 | cardGrid2 | 4×2 = 8 | 3×3 = 9 | 5×2 = 10 | 3×5 = 15 |
@@ -50,8 +49,6 @@ Geometrie-Vorgaben Web (Bühnenpixel, TitleBar 62 hoch, Inhalt ab y 62/72):
 
 - cardEntities web-p: 8 Zeilen à 71 px ab y 72, kompakte Zeilen wie us-p. web-l: 4 Zeilen à 57 px wie eu,
   Namensbreite wächst mit der Inhaltsbreite.
-- cardEntities2: wie cardEntities, eu/web-l 5 Zeilen à 49 px ab y 72 (HMI: 48-px-Raster ab y 75), web-p wie
-  cardEntities.
 - cardSchedule web-p: 11 Zeilen à 49 px ab y 79. web-l: wie eu.
 - Grids: Spaltenbreite `floor(contentWidth / Spalten)`, Zeilenhöhe `floor((Höhe − 62 − 18) / Zeilen)`
   (web-p) bzw. 119 (quer). cardGrid3 behält Schrift 24 und Wertbreite 140.

@@ -77,7 +77,7 @@ describe('lib/pages/device-details', () => {
             );
             expect(item.type).to.equal('number');
             const data = dataOf(item);
-            // not scaled: the slider of cardEntities2 shows and sets the value itself
+            // not scaled: the slider of cardEntities shows and sets the value itself
             expect(data.entity1).to.deep.equal({
                 value: { type: 'triggered', dp: `${DEV}.Relay0.AutoTimerOffDelay` },
             });
@@ -93,7 +93,7 @@ describe('lib/pages/device-details', () => {
             expect(data.minValue1.constVal).to.equal(0);
             expect(data.maxValue1.constVal).to.equal(100);
         });
-        it('every kind of state gets the row type of cardEntities2', () => {
+        it('every kind of state gets the row type of cardEntities', () => {
             const kinds: [Parameters<typeof deviceDetailRowItem>[2], string][] = [
                 [{ type: 'boolean', write: true }, 'switch'],
                 [{ type: 'boolean', write: false }, 'text'],
@@ -182,10 +182,10 @@ describe('lib/pages/device-details', () => {
     });
 
     describe('detail page', () => {
-        it('cardEntities2, headline = device name, classic paging', () => {
+        it('cardEntities, headline = device name, classic paging', () => {
             const page = deviceDetailPageConfig('dd_3', 'Kitchen', 'action', []);
             expect(page.config).to.deep.equal({
-                card: 'cardEntities2',
+                card: 'cardEntities',
                 scrollPresentation: 'classic',
                 scrollType: 'page',
                 data: { headline: { type: 'const', constVal: 'Kitchen' } },

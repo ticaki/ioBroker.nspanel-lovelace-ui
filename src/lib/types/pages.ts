@@ -6,7 +6,7 @@ import type { NSPanel } from './NSPanel';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker' | 'SqueezeboxSpeaker';
 
-export type cardEntitiesTypes = Extract<AdminCardTypes, 'cardEntities' | 'cardEntities2' | 'cardSchedule'>;
+export type cardEntitiesTypes = Extract<AdminCardTypes, 'cardEntities' | 'cardSchedule'>;
 export type cardGridTypes = Extract<
     AdminCardTypes,
     'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardThermo2' | 'cardMedia'
@@ -496,13 +496,13 @@ export type cardGridDataItems = {
 };
 
 export type cardEntitiesDataItemOptions = {
-    card: cardEntitiesTypes;
+    card: Extract<cardEntitiesTypes, 'cardEntities' | 'cardSchedule'>;
     cardRole?: CardRole;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;
 
 export type cardEntitiesDataItems = {
-    card: cardEntitiesTypes;
+    card: Extract<cardEntitiesTypes, 'cardEntities' | 'cardSchedule'>;
     data: ChangeTypeOfKeys<PageEntitiesBaseConfig, dataItem.Dataitem | undefined>;
 };
 

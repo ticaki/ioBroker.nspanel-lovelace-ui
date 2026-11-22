@@ -95,7 +95,5 @@ export const CARD_DOC_PAGES: readonly string[] = [
  * @returns A whole-page topic.
  */
 export function cardDocTopic(card: string | undefined): DocTopic {
-    // cardEntities2 is cardEntities with five rows - no page of its own
-    const page = card === 'cardEntities2' ? 'cardEntities' : card;
-    return { page: page && CARD_DOC_PAGES.includes(page) ? page : 'PageConfig' };
+    return { page: card && CARD_DOC_PAGES.includes(card) ? card : 'PageConfig' };
 }
