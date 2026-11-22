@@ -598,6 +598,7 @@
     "deviceDetailsDialog_shortState": "Stan urządzenia (wł./wył. lub przycisk)",
     "deviceDetailsDialog_shortStateId": "Stan urządzenia (wł./wył.)",
     "deviceDetailsDialog_state": "Stan",
+    "deviceDetailsDialog_stateRequired": "Wybierz stan lub krótkie dotknięcie „Brak” – bez stanu nie można zastosować elementu.",
     "deviceDetailsDialog_status": "%s - zaznaczono wpisów: %d",
     "deviceDetailsDialog_statusOne": "%s - zaznaczono 1 wpis",
     "deviceDetailsDialog_subName": "2. wiersz",

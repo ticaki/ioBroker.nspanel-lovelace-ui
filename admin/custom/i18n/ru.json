@@ -598,6 +598,7 @@
     "deviceDetailsDialog_shortState": "Состояние устройства (вкл/выкл или кнопка)",
     "deviceDetailsDialog_shortStateId": "Состояние устройства (вкл/выкл)",
     "deviceDetailsDialog_state": "Состояние",
+    "deviceDetailsDialog_stateRequired": "Выберите состояние или короткое нажатие «Нет» – без состояния элемент нельзя применить.",
     "deviceDetailsDialog_status": "%s - отмечено записей: %d",
     "deviceDetailsDialog_statusOne": "%s - отмечена 1 запись",
     "deviceDetailsDialog_subName": "2-я строка",

@@ -598,6 +598,7 @@
     "deviceDetailsDialog_shortState": "A state of the device (on/off or button)",
     "deviceDetailsDialog_shortStateId": "State of the device (on/off)",
     "deviceDetailsDialog_state": "State",
+    "deviceDetailsDialog_stateRequired": "Choose a state or the short tap \"None\" - the item cannot be applied without one.",
     "deviceDetailsDialog_status": "%s - %d entries ticked",
     "deviceDetailsDialog_statusOne": "%s - 1 entry ticked",
     "deviceDetailsDialog_subName": "2nd line",

@@ -598,6 +598,7 @@
     "deviceDetailsDialog_shortState": "Un état de l'appareil (marche/arrêt ou bouton)",
     "deviceDetailsDialog_shortStateId": "État de l'appareil (marche/arrêt)",
     "deviceDetailsDialog_state": "État",
+    "deviceDetailsDialog_stateRequired": "Choisissez un état ou l'appui court « Aucune » – sans état, l'élément ne peut pas être appliqué.",
     "deviceDetailsDialog_status": "%s - %d entrées cochées",
     "deviceDetailsDialog_statusOne": "%s - 1 entrée cochée",
     "deviceDetailsDialog_subName": "2e ligne",

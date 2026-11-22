@@ -598,6 +598,7 @@
     "deviceDetailsDialog_shortState": "Een state van het apparaat (aan/uit of knop)",
     "deviceDetailsDialog_shortStateId": "State van het apparaat (aan/uit)",
     "deviceDetailsDialog_state": "State",
+    "deviceDetailsDialog_stateRequired": "Kies een state of de korte tik \"Geen\" – zonder state kan het item niet worden toegepast.",
     "deviceDetailsDialog_status": "%s - %d items aangevinkt",
     "deviceDetailsDialog_statusOne": "%s - 1 item aangevinkt",
     "deviceDetailsDialog_subName": "2e regel",

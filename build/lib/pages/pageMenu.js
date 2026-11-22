@@ -50,6 +50,12 @@ class PageMenu extends import_Page.Page {
   arrowPageItem;
   nextArrow = false;
   tempItems;
+  /**
+   * The page is on the display. Closing a popup wakes the page below it and shows it again without hiding it first
+   * (`setVisibility(true)` on a visible page) - the scroll position stays then, only a page that was hidden starts
+   * at the first items.
+   */
+  shown = false;
   constructor(config, options) {
     if (!globals.isPageMenuConfig(config)) {
       throw new Error(`PageMenu: invalid config (card=${config.card})`);
@@ -299,9 +305,13 @@ class PageMenu extends import_Page.Page {
           this.pageItemConfig = temp;
         }
       }
-      this.step = 0;
+      if (!this.shown) {
+        this.step = 0;
+      }
+      this.shown = true;
       this.autoLoop();
     } else {
+      this.shown = false;
       if (this.autoLoopTimeout) {
         this.adapter.clearTimeout(this.autoLoopTimeout);
       }

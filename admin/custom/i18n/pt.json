@@ -598,6 +598,7 @@
     "deviceDetailsDialog_shortState": "Um estado do dispositivo (lig./desl. ou botão)",
     "deviceDetailsDialog_shortStateId": "Estado do dispositivo (lig./desl.)",
     "deviceDetailsDialog_state": "Estado",
+    "deviceDetailsDialog_stateRequired": "Escolha um estado ou o toque curto \"Nenhuma\" – sem estado o item não pode ser aplicado.",
     "deviceDetailsDialog_status": "%s - %d entradas marcadas",
     "deviceDetailsDialog_statusOne": "%s - 1 entrada marcada",
     "deviceDetailsDialog_subName": "2.ª linha",

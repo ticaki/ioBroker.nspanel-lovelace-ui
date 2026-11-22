@@ -598,6 +598,7 @@
     "deviceDetailsDialog_shortState": "Стан пристрою (увімк./вимк. або кнопка)",
     "deviceDetailsDialog_shortStateId": "Стан пристрою (увімк./вимк.)",
     "deviceDetailsDialog_state": "Стан",
+    "deviceDetailsDialog_stateRequired": "Виберіть стан або коротке натискання «Немає» – без стану елемент не можна застосувати.",
     "deviceDetailsDialog_status": "%s - позначено записів: %d",
     "deviceDetailsDialog_statusOne": "%s - позначено 1 запис",
     "deviceDetailsDialog_subName": "2-й рядок",
