@@ -1707,6 +1707,7 @@
     "sendToRequestFail4": "Solicitação ao painel falhou",
     "sendToRequestFailBerry": "Nenhuma confirmação de download recebida do Tasmota após a instalação do berry",
     "sendToStepTimeout": "O adaptador não respondeu em 30 segundos, a configuração continua em segundo plano - consulte o registo do adaptador",
+    "sendToTasmotaNotReachable": "O painel não responde neste IP. A HTTP API está ativada no Tasmota? Desde o Tasmota 15.4.0.2 ela fica desativada após a gravação: marque Configuration → Configure Other → \"HTTP API enable\" ou digite SetOption128 1 no console. Caso contrário, verifique o IP e a conexão de rede.",
     "sendToTopicInUse": "Este tópico MQTT já está a ser utilizado por outro painel.",
     "short": "curto",
     "show_home_edges": "Mostrar ligações home para main",

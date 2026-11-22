@@ -49,3 +49,14 @@ Nimm den Webinstaller - geht am schnellsten - https://tasmota.github.io/install/
 5) Flash-Tasmota.
 
 Folge der Anleitung des Tasmota-Webinstallers - nach etwa 5 Minuten ist dein NSPanel bereit für den Live-Betrieb.
+
+> [!IMPORTANT]
+> **Danach unbedingt die HTTP API einschalten!**
+> Seit Tasmota **15.4.0.2** ist die HTTP API nach dem Flashen **ausgeschaltet**. Der Adapter richtet das Panel aber über genau diese Schnittstelle ein (`http://<IP>/cm?cmnd=…`) — ohne sie scheitert die Initialisierung sofort mit *Anfrage an das Panel fehlgeschlagen* bzw. im Log mit `Error in nsPanelInit step 1 … TypeError: fetch failed`.
+>
+> Einschalten in der Tasmota-Weboberfläche unter **Configuration → Configure Other → „HTTP API enable"** (Haken setzen, speichern) oder in der Tasmota-Konsole mit:
+> ```
+> SetOption128 1
+> ```
+
+Weiter geht es mit der [Adapterinstallation und Inbetriebnahme](Adapter-Installation).
