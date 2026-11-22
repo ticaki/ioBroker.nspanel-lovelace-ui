@@ -2118,7 +2118,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       details,
       (id2) => panel.statesControler.getObjectAsync(id2),
       (key) => this.library.getTranslation(key),
-      this.library.getLocalLanguage()
+      this.library.getLocalLanguage(),
+      panel.info.nspanel.model
     );
     if (!(0, import_device_details.isLatestDeviceDetailsRun)(panel, run) || panel.getActivePage() !== parent) {
       return;

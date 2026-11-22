@@ -18,9 +18,12 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var device_details_exports = {};
 __export(device_details_exports, {
+  DEVICE_DETAIL_NAME_FIELD: () => DEVICE_DETAIL_NAME_FIELD,
+  DEVICE_DETAIL_NAME_FONT: () => DEVICE_DETAIL_NAME_FONT,
   DEVICE_DETAIL_PAGE_PREFIX: () => DEVICE_DETAIL_PAGE_PREFIX,
   beginDeviceDetailsRun: () => beginDeviceDetailsRun,
   deviceDetailGroupColor: () => deviceDetailGroupColor,
+  deviceDetailNameWithSuffix: () => deviceDetailNameWithSuffix,
   deviceDetailPageConfig: () => deviceDetailPageConfig,
   deviceDetailRowItem: () => deviceDetailRowItem,
   deviceDetailRowNames: () => deviceDetailRowNames,
@@ -29,6 +32,7 @@ __export(device_details_exports, {
 });
 module.exports = __toCommonJS(device_details_exports);
 var import_Color = require("../const/Color");
+var import_text_width = require("../const/text-width");
 var import_deviceDetails = require("../types/deviceDetails");
 const DEVICE_DETAIL_PAGE_PREFIX = "dd_";
 const deviceDetailsRuns = /* @__PURE__ */ new WeakMap();
@@ -71,7 +75,56 @@ function nameOfCommon(name, language) {
   }
   return "";
 }
-function deviceDetailRowNames(deviceId, entries, commons, translate, language) {
+const DEVICE_DETAIL_NAME_FONT = 0;
+const DEVICE_DETAIL_NAME_FIELD = {
+  eu: { width: 184, lines: 1 },
+  "us-l": { width: 184, lines: 1 },
+  "us-p": { width: 115, lines: 2 },
+  "web-l": { width: 184, lines: 1 },
+  "web-p": { width: 115, lines: 1 }
+};
+function fitsNameField(text, model, field) {
+  var _a;
+  let lines = 1;
+  let width = 0;
+  for (const ch of text) {
+    const advance = (0, import_text_width.charAdvance)((_a = ch.codePointAt(0)) != null ? _a : 0, DEVICE_DETAIL_NAME_FONT, model);
+    if (width + advance > field.width) {
+      if (width === 0 || lines >= field.lines) {
+        return false;
+      }
+      lines++;
+      width = 0;
+    }
+    width += advance;
+  }
+  return true;
+}
+function deviceDetailNameWithSuffix(name, suffix, model) {
+  var _a;
+  if (!suffix) {
+    return name;
+  }
+  const field = DEVICE_DETAIL_NAME_FIELD[model];
+  const full = `${name} ${suffix}`;
+  if (fitsNameField(full, model, field)) {
+    return full;
+  }
+  const ellipsis = (0, import_text_width.hasGlyph)((_a = import_text_width.ELLIPSIS.codePointAt(0)) != null ? _a : 0, DEVICE_DETAIL_NAME_FONT, model) ? import_text_width.ELLIPSIS : import_text_width.ELLIPSIS_FALLBACK;
+  const chars = Array.from(name);
+  for (let n = chars.length - 1; n > 0; n--) {
+    const base = chars.slice(0, n).join("").trimEnd();
+    if (!base) {
+      break;
+    }
+    const text = `${base}${ellipsis} ${suffix}`;
+    if (fitsNameField(text, model, field)) {
+      return text;
+    }
+  }
+  return suffix;
+}
+function deviceDetailRowNames(deviceId, entries, commons, translate, language, model) {
   const rows = entries.map((e, index) => {
     var _a, _b;
     return {
@@ -83,8 +136,7 @@ function deviceDetailRowNames(deviceId, entries, commons, translate, language) {
   const subs = (0, import_deviceDetails.deviceDetailSubNames)(deviceId, rows);
   return rows.map((r, index) => {
     var _a, _b;
-    const text = (_b = (_a = subs[index]) == null ? void 0 : _a.text) != null ? _b : "";
-    return text ? `${r.name} ${text}` : r.name;
+    return deviceDetailNameWithSuffix(r.name, (_b = (_a = subs[index]) == null ? void 0 : _a.text) != null ? _b : "", model);
   });
 }
 function deviceDetailRowItem(deviceId, entry, common, name) {
@@ -190,7 +242,7 @@ function deviceDetailPageConfig(uniqueID, headline, alwaysOn, rows) {
     }
   };
 }
-async function deviceDetailRows(details, getObject, translate, language) {
+async function deviceDetailRows(details, getObject, translate, language, model) {
   var _a;
   const device = await getObject(details.deviceId);
   const headline = nameOfCommon((_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name, language) || details.deviceId.split(".").pop() || "";
@@ -204,7 +256,7 @@ async function deviceDetailRows(details, getObject, translate, language) {
     entries.push(entry);
     commons.push(obj.common);
   }
-  const names = deviceDetailRowNames(details.deviceId, entries, commons, translate, language);
+  const names = deviceDetailRowNames(details.deviceId, entries, commons, translate, language, model);
   const rows = entries.map(
     (entry, index) => deviceDetailRowItem(details.deviceId, entry, commons[index], names[index])
   );
@@ -212,9 +264,12 @@ async function deviceDetailRows(details, getObject, translate, language) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  DEVICE_DETAIL_NAME_FIELD,
+  DEVICE_DETAIL_NAME_FONT,
   DEVICE_DETAIL_PAGE_PREFIX,
   beginDeviceDetailsRun,
   deviceDetailGroupColor,
+  deviceDetailNameWithSuffix,
   deviceDetailPageConfig,
   deviceDetailRowItem,
   deviceDetailRowNames,
