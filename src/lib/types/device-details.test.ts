@@ -3,7 +3,7 @@ import objects from '../../../test/fixtures/device-details/objects.json';
 import { Icons } from '../const/icon_mapping';
 import {
     buildDeviceDetailRows,
-    deviceDetailAutoSubName,
+    deviceDetailSubNameTokens,
     deviceDetailEntriesOfRows,
     deviceDetailSubNames,
     deviceDetailEntryOfRow,
@@ -389,13 +389,38 @@ describe('lib/types/deviceDetails', () => {
 
     describe('second name line of rows with the same name', () => {
         const ids = ['Relay0.temperatureC', 'Ext.temperature100C', 'Ext.temperature101C', 'Ext.temperature104C'];
-        it('automatic text: sub folder + digits of the end id, else the end id', () => {
-            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Relay0.temperatureC`)).to.equal('Relay0');
-            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Ext.temperature100C`)).to.equal('Ext 100');
-            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Ext.temperature104F`)).to.equal('Ext 104');
-            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.rssi`)).to.equal('rssi');
-            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.temperature1`)).to.equal('1');
-            expect(deviceDetailAutoSubName(SHELLY, `${SHELLY}.Sensor.pm2_5`)).to.equal('Sensor 2 5');
+        const texts = (...rests: string[]): string[] =>
+            deviceDetailSubNames(
+                SHELLY,
+                rests.map(rest => ({ id: `${SHELLY}.${rest}`, name: 'Temperatur' })),
+            ).map(r => r.text);
+        it('parts of an id: every folder one part, the end id cut into letters and digits', () => {
+            expect(deviceDetailSubNameTokens('Ext.temperature100C')).to.deep.equal(['Ext', 'temperature', '100', 'C']);
+            expect(deviceDetailSubNameTokens('Relay0.temperatureC')).to.deep.equal(['Relay0', 'temperature', 'C']);
+            expect(deviceDetailSubNameTokens('a.Sensor.pm2_5')).to.deep.equal(['a', 'Sensor', 'pm', '2', '5']);
+            expect(deviceDetailSubNameTokens('rssi')).to.deep.equal(['rssi']);
+            expect(deviceDetailSubNameTokens('ABCValue1')).to.deep.equal(['ABC', 'Value', '1']);
+            expect(deviceDetailSubNameTokens('Sensor.Temperatur°C')).to.deep.equal(['Sensor', 'Temperatur', 'C']);
+        });
+        it('automatic text: only what differs within the rows of the same name', () => {
+            expect(texts('Ext.temperature100C', 'Ext.temperature101C')).to.deep.equal(['100', '101']);
+            expect(texts('Ext.temperature100C', 'Ext.temperature100F')).to.deep.equal(['C', 'F']);
+            expect(texts('Relay0.temperatureC', 'Ext.temperature100C')).to.deep.equal(['Relay0', 'Ext 100']);
+            expect(texts('Relay0.temperatureC', 'Ext.temperature100C', 'Ext.temperature101C')).to.deep.equal([
+                'Relay0',
+                'Ext 100',
+                'Ext 101',
+            ]);
+            expect(texts('Relay0.Power', 'Relay1.Power')).to.deep.equal(['Relay0', 'Relay1']);
+        });
+        it('automatic text empty or not unique: the id below the device', () => {
+            // the same tokens in another order: the differing part is empty
+            expect(texts('a.b.x', 'b.a.x')).to.deep.equal(['a.b.x', 'b.a.x']);
+            // "Ext 2 5" twice (only the separator differs): only these two fall back
+            expect(texts('Ext.pm2_5', 'Ext.pm2-5', 'Relay0.pm')).to.deep.equal(['Ext.pm2_5', 'Ext.pm2-5', 'Relay0']);
+        });
+        it('a single row: no automatic text', () => {
+            expect(texts('Ext.temperature100C')).to.deep.equal(['']);
         });
         it('the fixture: every "Temperatur" gets a second line, the other rows none', () => {
             const states = fixture[SHELLY].states;
@@ -417,17 +442,21 @@ describe('lib/types/deviceDetails', () => {
                 { duplicate: false, auto: 'rssi', text: '' },
             ]);
         });
-        it('the same automatic text twice (°C and °F of one sensor): the id below the device', () => {
+        it('°C and °F of one sensor next to another sensor: everything not in all rows, C included', () => {
+            expect(texts('Ext.temperature100C', 'Ext.temperature100F', 'Relay0.temperatureC')).to.deep.equal([
+                'Ext 100 C',
+                'Ext 100 F',
+                'Relay0 C',
+            ]);
+        });
+        it('groups of different names are compared separately', () => {
             const rows = [
                 { id: `${SHELLY}.Ext.temperature100C`, name: 'Temperatur' },
                 { id: `${SHELLY}.Ext.temperature100F`, name: 'Temperatur' },
-                { id: `${SHELLY}.Relay0.temperatureC`, name: 'Temperatur' },
+                { id: `${SHELLY}.Relay0.Power`, name: 'Leistung' },
+                { id: `${SHELLY}.Relay1.Power`, name: 'Leistung' },
             ];
-            expect(deviceDetailSubNames(SHELLY, rows).map(r => r.text)).to.deep.equal([
-                'Ext.temperature100C',
-                'Ext.temperature100F',
-                'Relay0',
-            ]);
+            expect(deviceDetailSubNames(SHELLY, rows).map(r => r.text)).to.deep.equal(['C', 'F', 'Relay0', 'Relay1']);
         });
         it('an own text wins, also without duplicate; blanks only = automatic', () => {
             const rows = [

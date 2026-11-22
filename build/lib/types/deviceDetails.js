@@ -22,7 +22,6 @@ __export(deviceDetails_exports, {
   DEVICE_DETAIL_ROW_ROLE: () => DEVICE_DETAIL_ROW_ROLE,
   SENDTO_GET_DEVICE_DETAILS_COMMAND: () => SENDTO_GET_DEVICE_DETAILS_COMMAND,
   buildDeviceDetailRows: () => buildDeviceDetailRows,
-  deviceDetailAutoSubName: () => deviceDetailAutoSubName,
   deviceDetailEntriesOfRows: () => deviceDetailEntriesOfRows,
   deviceDetailEntryByKey: () => deviceDetailEntryByKey,
   deviceDetailEntryOfRow: () => deviceDetailEntryOfRow,
@@ -34,6 +33,7 @@ __export(deviceDetails_exports, {
   deviceDetailNameKey: () => deviceDetailNameKey,
   deviceDetailRowKind: () => deviceDetailRowKind,
   deviceDetailRuleMatches: () => deviceDetailRuleMatches,
+  deviceDetailSubNameTokens: () => deviceDetailSubNameTokens,
   deviceDetailSubNames: () => deviceDetailSubNames,
   deviceDetailsAdapter: () => deviceDetailsAdapter,
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
@@ -569,30 +569,44 @@ function updatedDeviceDetailsLearned(learned, before, after) {
   }
   return { ...learned, [adapter]: now };
 }
-function deviceDetailAutoSubName(deviceId, id) {
+function restOfId(deviceId, id) {
+  return id.startsWith(`${deviceId}.`) ? id.slice(deviceId.length + 1) : id;
+}
+function deviceDetailSubNameTokens(rest) {
   var _a, _b;
-  const rest = id.startsWith(`${deviceId}.`) ? id.slice(deviceId.length + 1) : id;
   const parts = rest.split(".");
   const end = (_a = parts[parts.length - 1]) != null ? _a : "";
-  const folder = parts.slice(0, -1).join(".");
-  const digits = ((_b = end.match(/\d+/g)) != null ? _b : []).join(" ");
-  return [folder, digits].filter(Boolean).join(" ") || end;
+  const folders = parts.slice(0, -1).filter(Boolean);
+  return [...folders, ...(_b = end.match(new RegExp("\\p{Lu}+(?!\\p{Ll})|\\p{Lu}?\\p{Ll}+|\\p{L}+|\\d+", "gu"))) != null ? _b : []];
+}
+function groupSubNames(rests) {
+  const tokens = rests.map(deviceDetailSubNameTokens);
+  const sets = tokens.map((t) => new Set(t));
+  const texts = tokens.map((t) => t.filter((token) => !sets.every((s) => s.has(token))).join(" "));
+  return texts.map(
+    (text, index) => !text || texts.some((other, i) => i !== index && other === text) ? rests[index] : text
+  );
 }
 function deviceDetailSubNames(deviceId, rows) {
-  var _a;
-  const count = /* @__PURE__ */ new Map();
-  for (const r of rows) {
-    count.set(r.name, ((_a = count.get(r.name)) != null ? _a : 0) + 1);
-  }
-  const autos = rows.map((r) => deviceDetailAutoSubName(deviceId, r.id));
-  return rows.map((r, index) => {
-    var _a2, _b, _c;
-    const duplicate = ((_a2 = count.get(r.name)) != null ? _a2 : 0) > 1;
-    let auto = autos[index];
-    if (duplicate && rows.some((o, i) => i !== index && o.name === r.name && autos[i] === auto)) {
-      auto = r.id.startsWith(`${deviceId}.`) ? r.id.slice(deviceId.length + 1) : r.id;
+  const groups = /* @__PURE__ */ new Map();
+  rows.forEach((r, index) => {
+    var _a;
+    return groups.set(r.name, [...(_a = groups.get(r.name)) != null ? _a : [], index]);
+  });
+  const autos = rows.map((r) => restOfId(deviceId, r.id));
+  for (const members of groups.values()) {
+    if (members.length > 1) {
+      const texts = groupSubNames(members.map((i) => autos[i]));
+      members.forEach((rowIndex, i) => {
+        autos[rowIndex] = texts[i];
+      });
     }
-    const own = (_c = (_b = r.subName) == null ? void 0 : _b.trim()) != null ? _c : "";
+  }
+  return rows.map((r, index) => {
+    var _a, _b, _c, _d;
+    const duplicate = ((_b = (_a = groups.get(r.name)) == null ? void 0 : _a.length) != null ? _b : 0) > 1;
+    const auto = autos[index];
+    const own = (_d = (_c = r.subName) == null ? void 0 : _c.trim()) != null ? _d : "";
     return { duplicate, auto, text: own || (duplicate ? auto : "") };
   });
 }
@@ -602,7 +616,6 @@ function deviceDetailSubNames(deviceId, rows) {
   DEVICE_DETAIL_ROW_ROLE,
   SENDTO_GET_DEVICE_DETAILS_COMMAND,
   buildDeviceDetailRows,
-  deviceDetailAutoSubName,
   deviceDetailEntriesOfRows,
   deviceDetailEntryByKey,
   deviceDetailEntryOfRow,
@@ -614,6 +627,7 @@ function deviceDetailSubNames(deviceId, rows) {
   deviceDetailNameKey,
   deviceDetailRowKind,
   deviceDetailRuleMatches,
+  deviceDetailSubNameTokens,
   deviceDetailSubNames,
   deviceDetailsAdapter,
   deviceDetailsLearnedOf,

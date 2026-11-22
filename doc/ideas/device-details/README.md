@@ -67,11 +67,20 @@ Ein Tipp links (Icon/Name) sendet auf diesen Zeilen `buttonPress3` und tut nicht
 - Haben mehrere angehakte Zeilen einer Detailseite denselben angezeigten Namen (Shelly Plus 1PM: `Relay0.temperatureC`
   und `Ext.temperature100C` … `104C` heißen alle „Temperatur“), bekommt jede davon eine zweite Namenszeile. Zeilen
   ohne Dublette bekommen keine.
-- Automatischer Text (`deviceDetailAutoSubName`): Unterordner + Ziffernfolgen der End-ID, mehrere Ziffernfolgen mit
-  Leerzeichen getrennt; ohne Unterordner nur die Ziffern; ohne beides die End-ID. Beispiele: `Relay0.temperatureC` →
-  „Relay0“, `Ext.temperature100C` → „Ext 100“, `temperature1` → „1“, `rssi` → „rssi“.
-- Eindeutig (`deviceDetailSubNames`): ergeben zwei gleichnamige Zeilen denselben automatischen Text (z. B.
-  `Ext.temperature100C` und `Ext.temperature100F`), bekommen diese stattdessen die ID unterhalb des Geräts.
+- Automatischer Text (`deviceDetailSubNames`, Entscheidung 2026-11-22): innerhalb einer Gruppe gleichnamiger Zeilen
+  werden die IDs unterhalb des Geräts verglichen, und nur die Unterschiede werden der Zusatz.
+  - Zerlegung (`deviceDetailSubNameTokens`): jeder Ordner-Teil (alles vor dem letzten Punkt, an `.` getrennt) bleibt
+    ein Teil; die End-ID wird in Buchstaben- und Ziffernfolgen zerlegt, auch an CamelCase-Grenzen
+    (Groß-/Kleinschreibung bleibt, `_`, `-` usw. trennen nur). `Ext.temperature100C` → `Ext`, `temperature`, `100`,
+    `C`; `Relay0.temperatureC` → `Relay0`, `temperature`, `C`.
+  - Teile, die in allen Zeilen der Gruppe vorkommen, fallen weg; die übrigen in Originalreihenfolge mit Leerzeichen
+    verbunden sind der Zusatz.
+  - Ist ein Zusatz danach leer oder in der Gruppe nicht eindeutig, bekommen die betroffenen Zeilen die volle ID
+    unterhalb des Geräts.
+  - Beispiele: `Ext.temperature100C` / `Ext.temperature101C` → „100“ / „101“; `Ext.temperature100C` /
+    `Ext.temperature100F` → „C“ / „F“; `Relay0.temperatureC` / `Ext.temperature100C` / `Ext.temperature101C` →
+    „Relay0“ / „Ext 100“ / „Ext 101“; `Relay0.Power` / `Relay1.Power` → „Relay0“ / „Relay1“.
+  - Zeilen ohne Dublette haben als automatischen Text (nur Platzhalter, nicht angezeigt) die ID unterhalb des Geräts.
 - Admin: in der Filterliste bei jeder angehakten Dublette ein Feld „2. Zeile“ mit dem automatischen Text als Platzhalter;
   ein eigener Text wird im Eintrag gespeichert (`DeviceDetailEntryConfig.subName`) und gilt immer, auch ohne Dublette.
   Das Feld erscheint nur bei Dubletten und bei Zeilen mit eigenem Text (damit er sichtbar und löschbar bleibt) – bei

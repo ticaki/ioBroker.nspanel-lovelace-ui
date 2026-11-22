@@ -944,39 +944,72 @@ export function updatedDeviceDetailsLearned(
 }
 
 /**
- * The automatic second name line of a row (doc/ideas/device-details/README.md, section Zweite Namenszeile): the sub
- * folder of the state and the digits of its end id - `Relay0.temperatureC` -> `Relay0`, `Ext.temperature100C` ->
- * `Ext 100`, `temperature1` (no sub folder) -> `1`, `rssi` -> `rssi` (neither sub folder nor digits: the end id).
- * Several runs of digits are joined with a blank (`pm2_5` -> `2 5`).
+ * The id of a state below its device (`Ext.temperature100C`).
  *
  * @param deviceId id of the device
  * @param id full id of the state
- * @returns the text
+ * @returns the rest of the id
  */
-export function deviceDetailAutoSubName(deviceId: string, id: string): string {
-    const rest = id.startsWith(`${deviceId}.`) ? id.slice(deviceId.length + 1) : id;
+function restOfId(deviceId: string, id: string): string {
+    return id.startsWith(`${deviceId}.`) ? id.slice(deviceId.length + 1) : id;
+}
+
+/**
+ * The parts of an id below the device that the automatic second name line compares
+ * (doc/ideas/device-details/README.md, section Zweite Namenszeile): every folder stays one part, the end id is cut
+ * into runs of letters and runs of digits, a camel case word boundary separates as well - `Ext.temperature100C` ->
+ * `Ext`, `temperature`, `100`, `C`; `Relay0.temperatureC` -> `Relay0`, `temperature`, `C`. Other characters (`_`,
+ * `-`, ...) only separate.
+ *
+ * @param rest the id below the device
+ * @returns the parts in their order
+ */
+export function deviceDetailSubNameTokens(rest: string): string[] {
     const parts = rest.split('.');
     const end = parts[parts.length - 1] ?? '';
-    const folder = parts.slice(0, -1).join('.');
-    const digits = (end.match(/\d+/g) ?? []).join(' ');
-    return [folder, digits].filter(Boolean).join(' ') || end;
+    const folders = parts.slice(0, -1).filter(Boolean);
+    // words of a camel case end id separately (temperatureC -> temperature, C; ABCValue -> ABC, Value)
+    return [...folders, ...(end.match(/\p{Lu}+(?!\p{Ll})|\p{Lu}?\p{Ll}+|\p{L}+|\d+/gu) ?? [])];
+}
+
+/**
+ * The automatic second name lines of a group of rows with the same name: the parts of the id
+ * ({@link deviceDetailSubNameTokens}) that not every row of the group has, in their order, joined with a blank -
+ * `Ext.temperature100C` / `Ext.temperature100F` -> `C` / `F`, `Relay0.temperatureC` / `Ext.temperature100C` ->
+ * `Relay0` / `Ext 100`. A text that is empty or that another row of the group gets as well falls back to the id
+ * below the device.
+ *
+ * @param rests the ids below the device of the rows of the group
+ * @returns one text per row, same order
+ */
+function groupSubNames(rests: readonly string[]): string[] {
+    const tokens = rests.map(deviceDetailSubNameTokens);
+    const sets = tokens.map(t => new Set(t));
+    const texts = tokens.map(t => t.filter(token => !sets.every(s => s.has(token))).join(' '));
+    return texts.map((text, index) =>
+        !text || texts.some((other, i) => i !== index && other === text) ? rests[index] : text,
+    );
 }
 
 /** the second name line of a row ({@link deviceDetailSubNames}) */
 export type DeviceDetailSubName = {
     /** another ticked row has the same name */
     duplicate: boolean;
-    /** the automatic text ({@link deviceDetailAutoSubName}, made unique within the rows of the same name) */
+    /**
+     * the automatic text: for a duplicate what differs from the ids of the other rows of the same name (else the id
+     * below the device), without duplicate the id below the device
+     */
     auto: string;
     /** what the row shows: the own text, else the automatic one for a duplicate, else '' (no second line) */
     text: string;
 };
 
 /**
- * The second name lines of the ticked rows of a detail page: rows whose name another row has as well get the
- * automatic text ({@link deviceDetailAutoSubName}); if two of them would get the same text, these get the id below
- * the device instead (`Ext.temperature100C`), which is unique. An own text ({@link DeviceDetailEntryConfig.subName})
- * always wins, also without duplicate.
+ * The second name lines of the ticked rows of a detail page: rows whose name another row has as well get an
+ * automatic text - the ids below the device are compared within the rows of that name and only what differs is shown
+ * (`Ext.temperature100C` / `Ext.temperature101C` -> `100` / `101`); if that is empty or not unique within the group,
+ * the id below the device (`Ext.temperature100C`). An own text ({@link DeviceDetailEntryConfig.subName}) always
+ * wins, also without duplicate.
  *
  * @param deviceId id of the device
  * @param rows the ticked rows in their order: id of the state, shown name, own text
@@ -986,17 +1019,20 @@ export function deviceDetailSubNames(
     deviceId: string,
     rows: readonly { id: string; name: string; subName?: string }[],
 ): DeviceDetailSubName[] {
-    const count = new Map<string, number>();
-    for (const r of rows) {
-        count.set(r.name, (count.get(r.name) ?? 0) + 1);
-    }
-    const autos = rows.map(r => deviceDetailAutoSubName(deviceId, r.id));
-    return rows.map((r, index) => {
-        const duplicate = (count.get(r.name) ?? 0) > 1;
-        let auto = autos[index];
-        if (duplicate && rows.some((o, i) => i !== index && o.name === r.name && autos[i] === auto)) {
-            auto = r.id.startsWith(`${deviceId}.`) ? r.id.slice(deviceId.length + 1) : r.id;
+    const groups = new Map<string, number[]>();
+    rows.forEach((r, index) => groups.set(r.name, [...(groups.get(r.name) ?? []), index]));
+    const autos = rows.map(r => restOfId(deviceId, r.id));
+    for (const members of groups.values()) {
+        if (members.length > 1) {
+            const texts = groupSubNames(members.map(i => autos[i]));
+            members.forEach((rowIndex, i) => {
+                autos[rowIndex] = texts[i];
+            });
         }
+    }
+    return rows.map((r, index) => {
+        const duplicate = (groups.get(r.name)?.length ?? 0) > 1;
+        const auto = autos[index];
         const own = r.subName?.trim() ?? '';
         return { duplicate, auto, text: own || (duplicate ? auto : '') };
     });
