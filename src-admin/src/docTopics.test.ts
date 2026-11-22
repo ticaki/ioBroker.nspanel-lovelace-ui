@@ -4,6 +4,7 @@ import * as path from 'node:path';
 import MarkdownIt from 'markdown-it';
 import { headingText, replaceHeadings, slug } from './docAnchors';
 import { DOC_TOPICS, cardDocTopic, CARD_DOC_PAGES, docTopicUrl, type DocTopic } from './docTopics';
+import { pageitemsTopicsOfStandardKind } from './docTopics/pageitems';
 import { DOC_BASE, docPageUrl, resolveDocLanguage, type DocLanguage } from './docLink';
 
 const docRoot = path.join(__dirname, '..', '..', 'doc');
@@ -82,6 +83,13 @@ describe('docTopics', () => {
         expect(cardDocTopic('cardChart')).to.deep.equal({ page: 'cardChart' });
         expect(cardDocTopic('screensaver')).to.deep.equal({ page: 'PageConfig' });
         expect(cardDocTopic(undefined)).to.deep.equal({ page: 'PageConfig' });
+    });
+
+    it('help of the kind "standard": timer documentation, no alias table, nothing for other roles', () => {
+        expect(pageitemsTopicsOfStandardKind('level.timer', false)).to.deep.equal(['pageitems.popupTimer']);
+        expect(pageitemsTopicsOfStandardKind('level.timer', true)).to.deep.equal(['pageitems.screensaverTimer']);
+        expect(pageitemsTopicsOfStandardKind('light', false)).to.deep.equal([]);
+        expect(pageitemsTopicsOfStandardKind(null, false)).to.deep.equal([]);
     });
 });
 

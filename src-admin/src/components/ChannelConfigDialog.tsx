@@ -79,7 +79,7 @@ import ChannelColorDialog from './ChannelColorDialog';
 import ChannelModeListDialog from './ChannelModeListDialog';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { DocButton, DocHelp } from './DocHelp';
-import { pageitemsTopicsOfRole } from '../docTopics/pageitems';
+import { pageitemsTopicsOfRole, pageitemsTopicsOfStandardKind } from '../docTopics/pageitems';
 import { isChannelStatesProblem } from '../channelDatapointCheck';
 
 /**
@@ -877,12 +877,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             return null;
         }
         const isAlexa = this.state.alexaTimer !== null;
+        const { channelRole } = this.state;
+        // help of the standard item: the timer popup, or the timer of the screensaver if the item uses it
+        const standardTopics = pageitemsTopicsOfStandardKind(
+            channelRole,
+            this.state.useScreensaverTimer &&
+                SCREENSAVER_TIMER_ROLES.includes(channelRole ?? '') &&
+                !this.isTimerSourceOfScreensaver(),
+        );
+        // the "?" inside a label is a link: activating it does not toggle the radio, DocHelp stops the click
         return (
             <FormControl>
-                <FormLabel sx={{ fontSize: 12 }}>
-                    {I18n.t('channelConfigDialog_kind')}
-                    <DocHelp topic="pageitems.alexaTimer" />
-                </FormLabel>
+                <FormLabel sx={{ fontSize: 12 }}>{I18n.t('channelConfigDialog_kind')}</FormLabel>
                 <RadioGroup
                     row
                     value={isAlexa ? 'alexaTimer' : 'standard'}
@@ -891,13 +897,28 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     <FormControlLabel
                         value="standard"
                         control={<Radio size="small" />}
-                        label={I18n.t('channelConfigDialog_kindStandard')}
+                        label={
+                            <>
+                                {I18n.t('channelConfigDialog_kindStandard')}
+                                {standardTopics.map(topic => (
+                                    <DocHelp
+                                        key={topic}
+                                        topic={topic}
+                                    />
+                                ))}
+                            </>
+                        }
                     />
                     <FormControlLabel
                         value="alexaTimer"
                         control={<Radio size="small" />}
                         disabled={!isAlexa && this.state.isNavigation}
-                        label={I18n.t('channelConfigDialog_kindAlexaTimer')}
+                        label={
+                            <>
+                                {I18n.t('channelConfigDialog_kindAlexaTimer')}
+                                <DocHelp topic="pageitems.alexaTimer" />
+                            </>
+                        }
                     />
                 </RadioGroup>
             </FormControl>

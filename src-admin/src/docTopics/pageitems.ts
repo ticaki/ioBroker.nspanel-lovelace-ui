@@ -143,3 +143,23 @@ const roleTopicMap = new Map<string, readonly PageitemsTopicKey[]>(Object.entrie
 export function pageitemsTopicsOfRole(role: string | null): readonly PageitemsTopicKey[] {
     return role === null ? [] : (roleTopicMap.get(role) ?? []);
 }
+
+/**
+ * Help next to the option "standard" of the kind switch (standard / Alexa timer) of the page item dialog:
+ * the description of what a standard item of this role shows - for a timer the timer popup, or the
+ * section about the timer of the screensaver when the item uses it. The sections of the alias table are left
+ * out, the dialog title already links them.
+ *
+ * @param role `common.role` of the chosen channel, `null` if none is chosen yet.
+ * @param useScreensaverTimer True if the item shows the timer of the screensaver (`useScreensaverTimer` in effect).
+ * @returns The topics, empty if the documentation has nothing beyond the alias table for this role.
+ */
+export function pageitemsTopicsOfStandardKind(
+    role: string | null,
+    useScreensaverTimer: boolean,
+): readonly PageitemsTopicKey[] {
+    if (useScreensaverTimer) {
+        return ['pageitems.screensaverTimer'];
+    }
+    return pageitemsTopicsOfRole(role).filter(topic => !topic.startsWith('pageitems.role.'));
+}
