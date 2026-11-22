@@ -45,7 +45,7 @@ const fallbackIcon = {
   button: "gesture-tap-button",
   switch: "toggle-switch",
   boolean: "toggle-switch",
-  numberSet: "numeric",
+  select: "format-list-bulleted",
   number: "numeric",
   text: "information-outline"
 };
@@ -151,22 +151,20 @@ function deviceDetailRowItem(deviceId, entry, common, name) {
           text1: { true: { type: "const", constVal: "press" }, false: { type: "const", constVal: "press" } }
         }
       };
-    case "numberSet": {
-      const min = typeof common.min === "number" ? common.min : 0;
-      const max = typeof common.max === "number" ? common.max : 100;
+    case "select":
       return {
-        type: "number",
+        type: "input_sel",
         role: import_deviceDetails.DEVICE_DETAIL_ROW_ROLE,
         data: {
           icon: { true: { value: icon, color: valueColor }, false: { value: icon, color: valueColor } },
-          // the slider of the row works with the raw value: `value|min|max`
-          entity1: { value },
-          minValue1: { type: "const", constVal: min },
-          maxValue1: { type: "const", constVal: max },
-          text
+          // the list of popupInSel comes from common.states (PageItem.getListFromStates), the choice writes
+          // its key (PageItem.setListCommand)
+          entityInSel: { value },
+          headline: nameItem,
+          // the row shows the text of the current value: the input_sel row looks it up in common.states
+          text: { true: value }
         }
       };
-    }
     case "number":
     case "text":
       return {
@@ -174,7 +172,11 @@ function deviceDetailRowItem(deviceId, entry, common, name) {
         role: import_deviceDetails.DEVICE_DETAIL_ROW_ROLE,
         data: {
           icon: { true: { value: icon, color: valueColor }, false: { value: icon, color: valueColor } },
-          entity2: { value },
+          entity2: (0, import_deviceDetails.hasCommonStatesList)(common.states) ? {
+            // the text of the value in common.states (an unknown value as it is), no unit behind
+            value: { ...value, commonStates: { mode: "text", keepValue: true } },
+            unit: { type: "const", constVal: "" }
+          } : { value },
           text
         }
       };
@@ -187,7 +189,7 @@ function deviceDetailPageConfig(uniqueID, headline, alwaysOn, rows) {
     dpInit: "",
     pageItems: rows,
     config: {
-      card: "cardEntities2",
+      card: "cardEntities",
       scrollPresentation: "classic",
       scrollType: "page",
       data: { headline: { type: "const", constVal: headline } }

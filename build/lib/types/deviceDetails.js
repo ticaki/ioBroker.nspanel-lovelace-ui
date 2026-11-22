@@ -22,6 +22,7 @@ __export(deviceDetails_exports, {
   DEVICE_DETAIL_ROW_ROLE: () => DEVICE_DETAIL_ROW_ROLE,
   SENDTO_GET_DEVICE_DETAILS_COMMAND: () => SENDTO_GET_DEVICE_DETAILS_COMMAND,
   buildDeviceDetailRows: () => buildDeviceDetailRows,
+  deviceDetailAutoSubName: () => deviceDetailAutoSubName,
   deviceDetailEntriesOfRows: () => deviceDetailEntriesOfRows,
   deviceDetailEntryByKey: () => deviceDetailEntryByKey,
   deviceDetailEntryOfRow: () => deviceDetailEntryOfRow,
@@ -33,6 +34,7 @@ __export(deviceDetails_exports, {
   deviceDetailNameKey: () => deviceDetailNameKey,
   deviceDetailRowKind: () => deviceDetailRowKind,
   deviceDetailRuleMatches: () => deviceDetailRuleMatches,
+  deviceDetailSubNames: () => deviceDetailSubNames,
   deviceDetailsAdapter: () => deviceDetailsAdapter,
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf: () => deviceDetailsRuntimeOf,
@@ -40,10 +42,13 @@ __export(deviceDetails_exports, {
   deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
   generalDeviceDetailMask: () => generalDeviceDetailMask,
+  hasCommonStatesList: () => hasCommonStatesList,
   hasOwnDeviceDetailMask: () => hasOwnDeviceDetailMask,
   isDeviceDetailState: () => isDeviceDetailState,
   isDeviceDetailsConfig: () => isDeviceDetailsConfig,
   isDeviceShortPressState: () => isDeviceShortPressState,
+  tickDeviceDetailRow: () => tickDeviceDetailRow,
+  tickedDeviceDetailRowsFirst: () => tickedDeviceDetailRowsFirst,
   updatedDeviceDetailsLearned: () => updatedDeviceDetailsLearned
 });
 module.exports = __toCommonJS(deviceDetails_exports);
@@ -69,6 +74,12 @@ function deviceShortPressOf(config) {
       return "state";
   }
 }
+function hasCommonStatesList(states) {
+  if (Array.isArray(states)) {
+    return states.length > 0;
+  }
+  return !!states && typeof states === "object" && Object.keys(states).length > 0;
+}
 function deviceDetailRowKind(common) {
   const writable = common.write !== false;
   if (common.read === false) {
@@ -77,8 +88,11 @@ function deviceDetailRowKind(common) {
   if (common.type === "boolean") {
     return writable ? "switch" : "boolean";
   }
+  if (writable && (common.type === "number" || common.type === "string") && hasCommonStatesList(common.states)) {
+    return "select";
+  }
   if (common.type === "number") {
-    return writable ? "numberSet" : "number";
+    return "number";
   }
   return "text";
 }
@@ -433,7 +447,9 @@ function buildDeviceDetailRows(deviceId, states, saved, learned) {
     const first = [];
     for (const s of saved) {
       if (s.id !== "" && !first.some((f) => f.id === s.id)) {
-        first.push({ key: s.key, id: s.id, enabled: true });
+        first.push(
+          s.subName ? { key: s.key, id: s.id, enabled: true, subName: s.subName } : { key: s.key, id: s.id, enabled: true }
+        );
       }
     }
     const others = [];
@@ -463,10 +479,12 @@ function buildDeviceDetailRows(deviceId, states, saved, learned) {
   return candidates.map((c) => ({ ...c, enabled: c.key !== "" && c.id !== "" }));
 }
 function deviceDetailEntriesOfRows(rows) {
+  var _a;
   const out = [];
   for (const r of rows) {
     if (r.enabled && r.id !== "" && !out.some((o) => o.id === r.id)) {
-      out.push({ key: r.key, id: r.id });
+      const subName = (_a = r.subName) == null ? void 0 : _a.trim();
+      out.push(subName ? { key: r.key, id: r.id, subName } : { key: r.key, id: r.id });
     }
   }
   return out;
@@ -493,8 +511,20 @@ function exchangeDeviceDetailRowState(rows, index, id, change = {}) {
   });
   return out;
 }
+function tickedDeviceDetailRowsFirst(rows) {
+  return [...rows.filter((r) => r.enabled), ...rows.filter((r) => !r.enabled)];
+}
+function tickDeviceDetailRow(rows, index, enabled) {
+  const row = rows[index];
+  if (!row) {
+    return [...rows];
+  }
+  const others = tickedDeviceDetailRowsFirst(rows.filter((_r, i) => i !== index));
+  const border = others.filter((r) => r.enabled).length;
+  return [...others.slice(0, border), { ...row, enabled }, ...others.slice(border)];
+}
 function isDeviceDetailEntryConfig(value) {
-  return !!value && typeof value === "object" && "key" in value && typeof value.key === "string" && "id" in value && typeof value.id === "string";
+  return !!value && typeof value === "object" && "key" in value && typeof value.key === "string" && "id" in value && typeof value.id === "string" && (!("subName" in value) || value.subName === void 0 || typeof value.subName === "string");
 }
 function isDeviceDetailsConfig(value) {
   return !!value && typeof value === "object" && "deviceId" in value && typeof value.deviceId === "string" && value.deviceId !== "" && "entries" in value && Array.isArray(value.entries) && value.entries.every(isDeviceDetailEntryConfig);
@@ -535,12 +565,40 @@ function updatedDeviceDetailsLearned(learned, before, after) {
   }
   return { ...learned, [adapter]: now };
 }
+function deviceDetailAutoSubName(deviceId, id) {
+  var _a, _b;
+  const rest = id.startsWith(`${deviceId}.`) ? id.slice(deviceId.length + 1) : id;
+  const parts = rest.split(".");
+  const end = (_a = parts[parts.length - 1]) != null ? _a : "";
+  const folder = parts.slice(0, -1).join(".");
+  const digits = ((_b = end.match(/\d+/g)) != null ? _b : []).join(" ");
+  return [folder, digits].filter(Boolean).join(" ") || end;
+}
+function deviceDetailSubNames(deviceId, rows) {
+  var _a;
+  const count = /* @__PURE__ */ new Map();
+  for (const r of rows) {
+    count.set(r.name, ((_a = count.get(r.name)) != null ? _a : 0) + 1);
+  }
+  const autos = rows.map((r) => deviceDetailAutoSubName(deviceId, r.id));
+  return rows.map((r, index) => {
+    var _a2, _b, _c;
+    const duplicate = ((_a2 = count.get(r.name)) != null ? _a2 : 0) > 1;
+    let auto = autos[index];
+    if (duplicate && rows.some((o, i) => i !== index && o.name === r.name && autos[i] === auto)) {
+      auto = r.id.startsWith(`${deviceId}.`) ? r.id.slice(deviceId.length + 1) : r.id;
+    }
+    const own = (_c = (_b = r.subName) == null ? void 0 : _b.trim()) != null ? _c : "";
+    return { duplicate, auto, text: own || (duplicate ? auto : "") };
+  });
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE,
   SENDTO_GET_DEVICE_DETAILS_COMMAND,
   buildDeviceDetailRows,
+  deviceDetailAutoSubName,
   deviceDetailEntriesOfRows,
   deviceDetailEntryByKey,
   deviceDetailEntryOfRow,
@@ -552,6 +610,7 @@ function updatedDeviceDetailsLearned(learned, before, after) {
   deviceDetailNameKey,
   deviceDetailRowKind,
   deviceDetailRuleMatches,
+  deviceDetailSubNames,
   deviceDetailsAdapter,
   deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf,
@@ -559,10 +618,13 @@ function updatedDeviceDetailsLearned(learned, before, after) {
   deviceShortPressOf,
   exchangeDeviceDetailRowState,
   generalDeviceDetailMask,
+  hasCommonStatesList,
   hasOwnDeviceDetailMask,
   isDeviceDetailState,
   isDeviceDetailsConfig,
   isDeviceShortPressState,
+  tickDeviceDetailRow,
+  tickedDeviceDetailRowsFirst,
   updatedDeviceDetailsLearned
 });
 //# sourceMappingURL=deviceDetails.js.map

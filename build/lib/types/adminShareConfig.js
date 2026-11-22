@@ -815,15 +815,12 @@ const scrollCards = [
   "cardGrid2",
   "cardGrid3",
   "cardEntities",
-  "cardEntities2",
   "cardSchedule",
   "cardThermo2",
   "cardMedia"
 ];
 const menuCardItemLimits = {
   cardEntities: { eu: 4, "us-l": 4, "us-p": 5, "web-l": 4, "web-p": 8 },
-  // us-l / us-p have no cardEntities2 yet: shown as cardEntities (doc/ideas/device-details/README.md)
-  cardEntities2: { eu: 5, "us-l": 4, "us-p": 5, "web-l": 5, "web-p": 8 },
   cardSchedule: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 6, "web-p": 11 },
   cardGrid: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 8, "web-p": 10 },
   cardGrid2: { eu: 8, "us-l": 8, "us-p": 9, "web-l": 10, "web-p": 15 },
@@ -841,13 +838,7 @@ const scrollAutoTimingDefault = 15;
 function isScrollCard(card) {
   return !!card && scrollCards.includes(card);
 }
-const longPressCards = [
-  "cardGrid",
-  "cardGrid2",
-  "cardGrid3",
-  "cardEntities",
-  "cardEntities2"
-];
+const longPressCards = ["cardGrid", "cardGrid2", "cardGrid3", "cardEntities"];
 function isLongPressCard(card) {
   return !!card && longPressCards.includes(card);
 }

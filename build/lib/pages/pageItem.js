@@ -2103,7 +2103,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return done;
   }
   /**
-   * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardEntities2 page
+   * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardEntities page
    * generated from the ticked states, below the page of the item (`directChildPage`, back leads here again). A
    * detail page opened before by an item of the page is replaced - after the new one is shown, never while it is
    * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
@@ -2128,7 +2128,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     const id = `${import_device_details.DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
     const page = panel.newPage(
-      { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: "cardEntities2" },
+      { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: "cardEntities" },
       (0, import_device_details.deviceDetailPageConfig)(id, headline, parent.alwaysOn, rows)
     );
     if (!page) {
@@ -2150,7 +2150,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
   }
   /**
    * A tap (`button`) on a row of the detail page of a device: a button (`read: false`) is written with true; anything
-   * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities2.
+   * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities.
    */
   async onDeviceDetailTap() {
     var _a;
