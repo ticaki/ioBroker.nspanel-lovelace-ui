@@ -2085,6 +2085,7 @@ class ConfigManager extends import_library.BaseClass {
     let ups = false;
     if (db[role] && db[role].data && result[role]) {
       const data = db[role].data;
+      const warnIfNoStates = Object.values(data).some((e) => (e == null ? void 0 : e.required) === true);
       for (const d of Object.keys(data)) {
         const dp = d;
         if (!data[dp] || !this.statesController) {
@@ -2102,7 +2103,8 @@ class ConfigManager extends import_library.BaseClass {
               regexp: entry.useKey ? new RegExp(`\\.${dp}$`) : void 0,
               triggered: entry.trigger,
               writeable: entry.writeable,
-              commonType: entry.type
+              commonType: entry.type,
+              warnIfNoStates
             });
           } else {
             result[role][dp2] = void 0;
@@ -2119,7 +2121,8 @@ class ConfigManager extends import_library.BaseClass {
                 regexp: entry2.useKey ? new RegExp(`\\.${alternate}$`) : void 0,
                 triggered: entry.trigger,
                 writeable: entry2.writeable,
-                commonType: entry.type
+                commonType: entry.type,
+                warnIfNoStates
               });
             }
             if (result[role][dp2]) {

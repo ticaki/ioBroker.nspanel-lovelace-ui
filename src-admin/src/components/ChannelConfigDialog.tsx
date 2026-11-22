@@ -80,6 +80,7 @@ import ChannelModeListDialog from './ChannelModeListDialog';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import { DocButton, DocHelp } from './DocHelp';
 import { pageitemsTopicsOfRole } from '../docTopics/pageitems';
+import { isChannelStatesProblem } from '../channelDatapointCheck';
 
 /**
  * Channel roles for which the adapter evaluates `modeList` (config-manager.ts): the light roles also use
@@ -1319,11 +1320,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                       }
                   >
                 | undefined;
-            if (!dpDef || childStates.length === 0) {
+            // an empty channel is fine for a role whose datapoints are all optional (level.timer: internal timer)
+            if (!dpDef || isChannelStatesProblem(dpDef, childStates.length)) {
                 console.warn(
-                    '[ChannelConfigDialog] checkDatapoints: no dpDef found for role',
+                    '[ChannelConfigDialog] checkDatapoints: no dpDef or no required states for role',
                     role,
-                    '– skipping datapoint check',
+                    'in',
+                    channelId,
                 );
                 this.setState({
                     datapointErrors: [],

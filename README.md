@@ -157,9 +157,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
-- (ticaki) screensaver: sendTo `screensaverNotify` without `id` switches the notification off before taking a new heading/text, so the new content no longer flashes up
-- (ticaki) notification popup: `global` is only set when the notification went to more than one panel - acknowledging a popup sent to a single panel no longer removes the same id on the other panels; `panel` also accepts the MQTT topic
-- (ticaki) screensaver: sendTo `screensaverNotify` understands the fields of `setPopupNotification` - with `id` the notification goes into a queue per panel (priority, icon, colors, buzzer, backgroundBlink, acknowledge), mixed with the admin notifications; `panel` takes name, friendly name or topic (string or array), without it all panels; without `id` nothing changes (`headline` also accepted)
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)
@@ -167,6 +164,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) alexa media page: choosing another Echo in the speaker popup switches the player again (also the first Echo of the list)
 - (ticaki) Alexa timer: the screensaver can show the timers of an Echo device (alexa2) instead of the clock (new source "Alexa timer (alexa2)" in the time dialog), and page items get the kind "Alexa timer" - shows the running or ringing timer, starts a timer by text command and stops the shown one; needs the alexa2 option "Automatically query activity on device interaction"
 - (ticaki) Alexa timer page item: can show an alarm of the Echo device instead ("Show: Alarm") - the next active alarm or a specific one as HH:MM with On/Off, the time of a specific alarm can be changed while it is off
+- (ticaki) page item dialog: a channel without states whose role needs no data points (e.g. level.timer = internal timer) is no longer marked as faulty - "Apply" instead of "Details..." - and the adapter no longer logs "Dont finds states" warnings for it
 
 ### 2.5.1 (2026-11-21)
 - (ticaki) the panel's own states `cmd.power1`, `cmd.power2` and the new button `cmd.TasmotaRestart` can be selected as data points (e.g. screensaver indicator) - they show and switch the relays / restart Tasmota
