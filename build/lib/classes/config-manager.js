@@ -2184,7 +2184,7 @@ class ConfigManager extends import_library.BaseClass {
   }
   /**
    * Page item of kind "Alexa timer": a timer item without states, the Echo device is read by the item itself
-   * (src/lib/classes/alexa-timer.ts).
+   * (src/lib/classes/alexa-timer.ts, for an alarm src/lib/classes/alexa-alarm.ts).
    *
    * @param item the script item with `alexaTimer`
    * @returns the item
@@ -2192,25 +2192,27 @@ class ConfigManager extends import_library.BaseClass {
   async getAlexaTimerItemConfig(item) {
     const alexa = item.alexaTimer;
     if (!(0, import_adminShareConfig.isAlexaTimerConfig)(alexa) || !(0, import_adminShareConfig.isAlexaTimerComplete)(alexa)) {
-      throw new Error(`Alexa timer: alexa2 instance or Echo device missing!`);
+      throw new Error(
+        (alexa == null ? void 0 : alexa.show) === "alarm" && alexa.alarmId === "" ? `Alexa alarm: no alarm picked!` : `Alexa timer: alexa2 instance or Echo device missing!`
+      );
     }
+    const alarm = (0, import_adminShareConfig.alexaShowsAlarm)(alexa);
+    const iconOn = alarm ? import_page_item_defaults.pageItemDefaults.timer.iconAlarm : import_page_item_defaults.pageItemDefaults.timer.iconOn;
+    const iconOff = alarm ? import_page_item_defaults.pageItemDefaults.timer.iconAlarmOff : import_page_item_defaults.pageItemDefaults.timer.iconOff;
     return {
       role: "timer",
       type: "timer",
       dpInit: "",
-      alexaTimer: { instance: alexa.instance, serial: alexa.serial },
+      alexaTimer: (0, import_adminShareConfig.copyAlexaTimerConfig)(alexa),
       itemId: item.itemId,
       data: {
         icon: {
           true: {
-            value: await this.getFieldAsDataItemConfig(item.icon || import_page_item_defaults.pageItemDefaults.timer.iconOn, true),
+            value: await this.getFieldAsDataItemConfig(item.icon || iconOn, true),
             color: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOn])
           },
           false: {
-            value: await this.getFieldAsDataItemConfig(
-              item.icon2 || item.icon || import_page_item_defaults.pageItemDefaults.timer.iconOff,
-              true
-            ),
+            value: await this.getFieldAsDataItemConfig(item.icon2 || item.icon || iconOff, true),
             color: await this.getIconColor(item.offColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOff])
           },
           scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,

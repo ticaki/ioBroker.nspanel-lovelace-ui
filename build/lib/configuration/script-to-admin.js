@@ -341,7 +341,7 @@ function convertPageItem(item, where) {
     admin.useScreensaverTimer = true;
   }
   if ((0, import_adminShareConfig.isAlexaTimerConfig)(alexaTimer)) {
-    admin.alexaTimer = { instance: alexaTimer.instance, serial: alexaTimer.serial };
+    admin.alexaTimer = (0, import_adminShareConfig.copyAlexaTimerConfig)(alexaTimer);
     admin.role = "level.timer";
   }
   const itemId = str(item.itemId, reason, `${where}.itemId`);

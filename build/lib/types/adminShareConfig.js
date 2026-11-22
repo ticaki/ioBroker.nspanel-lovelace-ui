@@ -55,6 +55,7 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
+  alexaShowsAlarm: () => alexaShowsAlarm,
   assignMissingItemIds: () => assignMissingItemIds,
   chartDefaults: () => chartDefaults,
   checkClockTimerPatterns: () => checkClockTimerPatterns,
@@ -66,6 +67,7 @@ __export(adminShareConfig_exports, {
   clockTimerUsesSlots: () => clockTimerUsesSlots,
   conditionExpressionText: () => conditionExpressionText,
   conditionValueText: () => conditionValueText,
+  copyAlexaTimerConfig: () => copyAlexaTimerConfig,
   dropScriptNavigation: () => dropScriptNavigation,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
@@ -529,10 +531,24 @@ function migrateScreensaverNotify(entries, list) {
   return { entries: converted, list: out, changed };
 }
 function isAlexaTimerConfig(value) {
-  return isRawItemObject(value) && typeof value.instance === "string" && typeof value.serial === "string";
+  return isRawItemObject(value) && typeof value.instance === "string" && typeof value.serial === "string" && (value.show === void 0 || value.show === "timer" || value.show === "alarm") && (value.alarmId === void 0 || typeof value.alarmId === "string");
+}
+function copyAlexaTimerConfig(config) {
+  const out = { instance: config.instance, serial: config.serial };
+  if (config.show === "alarm") {
+    out.show = "alarm";
+    if (config.alarmId !== void 0) {
+      out.alarmId = config.alarmId;
+    }
+  }
+  return out;
+}
+function alexaShowsAlarm(config) {
+  return config.show === "alarm";
 }
 function isAlexaTimerComplete(config) {
-  return !!config && /^alexa2\.\d+$/.test(config.instance) && /^[^.*\s]+$/.test(config.serial) && !!config.serial.trim();
+  return !!config && /^alexa2\.\d+$/.test(config.instance) && /^[^.*\s]+$/.test(config.serial) && !!config.serial.trim() && // a fixed alarm must be picked
+  (config.show !== "alarm" || config.alarmId === void 0 || /^[^.*\s]+$/.test(config.alarmId));
 }
 function clockTimerSource(timer) {
   if (timer.alexa !== void 0) {
@@ -2263,6 +2279,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
+  alexaShowsAlarm,
   assignMissingItemIds,
   chartDefaults,
   checkClockTimerPatterns,
@@ -2274,6 +2291,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   clockTimerUsesSlots,
   conditionExpressionText,
   conditionValueText,
+  copyAlexaTimerConfig,
   dropScriptNavigation,
   emptyChannelValueConfig,
   emptyChartEntry,

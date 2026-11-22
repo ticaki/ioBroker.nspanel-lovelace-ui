@@ -30,6 +30,7 @@ __export(alexa_timer_exports, {
   selectAlexaTimer: () => selectAlexaTimer
 });
 module.exports = __toCommonJS(alexa_timer_exports);
+var import_alexa_alarm = require("./alexa-alarm");
 var import_adminShareConfig = require("../types/adminShareConfig");
 const STOPPED_KEEP_MS = 12e4;
 const START_TRIGGER_DELAY_MS = 5e3;
@@ -349,6 +350,7 @@ class AlexaTimer {
 class AlexaTimerRegistry {
   host;
   timers = /* @__PURE__ */ new Map();
+  alarms = /* @__PURE__ */ new Map();
   /**
    * @param host access to the adapter
    */
@@ -368,10 +370,25 @@ class AlexaTimerRegistry {
     }
     return timer;
   }
+  /**
+   * @param config instance and device
+   * @returns the alarms of the device, its states are read (see {@link AlexaAlarms.ready})
+   */
+  getAlarms(config) {
+    const key = `${config.instance}.Echo-Devices.${config.serial}`;
+    let alarms = this.alarms.get(key);
+    if (!alarms) {
+      alarms = new import_alexa_alarm.AlexaAlarms(config, this.host, this.host.getChannelIds);
+      this.alarms.set(key, alarms);
+    }
+    return alarms;
+  }
   async deleteAll() {
     const timers = [...this.timers.values()];
+    const alarms = [...this.alarms.values()];
     this.timers.clear();
-    await Promise.all(timers.map((t) => t.delete()));
+    this.alarms.clear();
+    await Promise.all([...timers.map((t) => t.delete()), ...alarms.map((a) => a.delete())]);
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

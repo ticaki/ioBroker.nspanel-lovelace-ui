@@ -109,7 +109,13 @@ class Controller extends Library.BaseClass {
       },
       setTimeout: (cb, ms) => this.adapter.setTimeout(cb, ms),
       clearTimeout: (timer) => this.adapter.clearTimeout(timer),
-      now: () => Date.now()
+      now: () => Date.now(),
+      getChannelIds: async (pattern) => Object.keys(await this.adapter.getForeignObjectsAsync(pattern, "channel")).map(
+        (id) => {
+          var _a;
+          return (_a = id.split(".").pop()) != null ? _a : id;
+        }
+      )
     });
     this.options = options;
     if (this.adapter.mqttServer) {
