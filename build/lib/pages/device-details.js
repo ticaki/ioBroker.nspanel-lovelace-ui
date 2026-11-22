@@ -80,8 +80,8 @@ const DEVICE_DETAIL_NAME_FIELD = {
   eu: { width: 184, lines: 1 },
   "us-l": { width: 184, lines: 1 },
   "us-p": { width: 115, lines: 2 },
-  "web-l": { width: 184, lines: 1 },
-  "web-p": { width: 115, lines: 1 }
+  "web-l": { width: 310, lines: 1 },
+  "web-p": { width: 117, lines: 1 }
 };
 function fitsNameField(text, model, field) {
   var _a;

@@ -309,10 +309,18 @@ describe('lib/pages/device-details', () => {
                 'Luftfeuchti... Ext 100',
             );
         });
-        it('web-p: one line of the us-p width (115 px)', () => {
+        it('web-p: one line of 117 px (name box 121 px in the browser)', () => {
             expect(deviceDetailNameWithSuffix('Temperatur', '100', 'web-p')).to.equal('Temper... 100');
-            expect(deviceDetailNameWithSuffix('Temperatur', 'Ext 100', 'web-p')).to.equal('Te... Ext 100');
+            expect(deviceDetailNameWithSuffix('Temperatur', 'Ext 100', 'web-p')).to.equal('Tem... Ext 100');
             expect(deviceDetailNameWithSuffix('Temperatur', 'Relay0', 'web-p')).to.equal('Tem... Relay0');
+        });
+        it('web-l: one line of 310 px (name box 321 px in the browser) - longer than the eu field', () => {
+            expect(deviceDetailNameWithSuffix('Luftfeuchtigkeit', 'Ext 100', 'web-l')).to.equal(
+                'Luftfeuchtigkeit Ext 100',
+            );
+            expect(deviceDetailNameWithSuffix('Signalstärke', 'Wohnzimmer Decke', 'web-l')).to.equal(
+                'Signalstärke Wohnzimmer Decke',
+            );
         });
         it('us-p: two lines of 115 px wrapped character by character', () => {
             // 203 px: 'Luftfeuchtigkeit E' / 'xt 100' - both lines drawn
@@ -340,7 +348,7 @@ describe('lib/pages/device-details', () => {
                 'de',
                 'web-p',
             );
-            // 'Garten Süd' fits 115 px alone, 'T... Garten Süd' does not
+            // 'Garten Süd' fits 117 px alone, 'T... Garten Süd' does not
             expect(names).to.deep.equal(['Garten Süd']);
         });
     });

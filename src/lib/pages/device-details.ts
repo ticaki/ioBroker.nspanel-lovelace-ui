@@ -127,17 +127,17 @@ export interface DeviceDetailNameField {
  * - eu / us-l: 184 px, 30 px high, `isbr=0` - one line,
  * - us-p: 115 px, 53 px high, `isbr=1` - the Nextion wraps character by character into two lines (no CR LF from the
  *   adapter, the text only has to fit into the two wrapped lines),
- * - web-l: the eu field (184 px, one line) - the web panel has more room, the name is never cut there,
- * - web-p: the us-p width in ONE line - the web panel does not wrap the name (`white-space: nowrap`, cut at the
- *   field edge), 115 px of font 0 (24 px) are about 86 px at the 18 px of the web panel, inside its name box
- *   (121 px on a text row, more on the other rows) even with a wider fallback font.
+ * - web-l / web-p: one line (`white-space: nowrap`, cut at the field edge). The 18 px Noto Sans of the web panel is
+ *   as wide as font 0 of the tables (measured in the browser: 0.93 ... 1.05 per character, about +3 % for digits and
+ *   capitals). The narrowest name box of a row (value text, button, selection) is 121 px on web-p and 321 px on
+ *   web-l - the widths leave about 3.5 % for the wider glyphs of the browser.
  */
 export const DEVICE_DETAIL_NAME_FIELD: Readonly<Record<NSpanelModel, DeviceDetailNameField>> = {
     eu: { width: 184, lines: 1 },
     'us-l': { width: 184, lines: 1 },
     'us-p': { width: 115, lines: 2 },
-    'web-l': { width: 184, lines: 1 },
-    'web-p': { width: 115, lines: 1 },
+    'web-l': { width: 310, lines: 1 },
+    'web-p': { width: 117, lines: 1 },
 };
 
 /**
