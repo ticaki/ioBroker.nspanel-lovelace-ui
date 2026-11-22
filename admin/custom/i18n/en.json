@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "Max Value",
     "channelConfigColor_valMin": "Min Value",
     "channelConfigDialog_LongPressChannelId": "State ID (long press)",
-    "channelConfigDialog_alexaAlarmHint": "The item shows an alarm of the Echo device as HH:MM, like an alarm clock: On/Off switches it, the time of a specific alarm can be changed while it is off. No channel is needed.",
+    "channelConfigDialog_alexaAlarmHint": "The item shows an alarm of the Echo device as HH:MM, like an alarm clock: On/Off switches it, the time of a specific alarm can be changed while it is off. No channel is needed. A new time switches the alarm on again at Amazon.",
     "channelConfigDialog_alexaTimerHint": "The item shows the timer of the Echo device; its popup starts a timer with the set time and stops the timer shown. No channel is needed.",
     "channelConfigDialog_brightnessRange": "Range of the brightness slider; empty or 0 = panel default",
     "channelConfigDialog_buttonTargetPage": "Target page after pressing",

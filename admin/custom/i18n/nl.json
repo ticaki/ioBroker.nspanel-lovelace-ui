@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "Maximale waarde",
     "channelConfigColor_valMin": "Minimale waarde",
     "channelConfigDialog_LongPressChannelId": "Kanaal-ID (lang indrukken)",
-    "channelConfigDialog_alexaAlarmHint": "Het item toont een wekker van het Echo-apparaat als HH:MM: Aan/Uit schakelt hem, de tijd van een bepaalde wekker kan worden gewijzigd zolang hij uit staat. Er is geen kanaal nodig.",
+    "channelConfigDialog_alexaAlarmHint": "Het item toont een wekker van het Echo-apparaat als HH:MM: Aan/Uit schakelt hem, de tijd van een bepaalde wekker kan worden gewijzigd zolang hij uit staat. Er is geen kanaal nodig. Een nieuwe tijd zet de wekker bij Amazon weer aan.",
     "channelConfigDialog_alexaTimerHint": "Het item toont de timer van het Echo-apparaat; de popup start een timer met de ingestelde tijd en stopt de getoonde timer. Er is geen kanaal nodig.",
     "channelConfigDialog_brightnessRange": "Bereik van de helderheidsschuif; leeg of 0 = paneelstandaard",
     "channelConfigDialog_buttonTargetPage": "Doelpagina na indrukken",

@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "Valor máximo",
     "channelConfigColor_valMin": "Valor mínimo",
     "channelConfigDialog_LongPressChannelId": "ID do canal (pressão longa)",
-    "channelConfigDialog_alexaAlarmHint": "O item mostra um alarme do dispositivo Echo como HH:MM: Ligar/Desligar comuta-o, a hora de um alarme específico pode ser alterada enquanto está desligado. Não é necessário um canal.",
+    "channelConfigDialog_alexaAlarmHint": "O item mostra um alarme do dispositivo Echo como HH:MM: Ligar/Desligar comuta-o, a hora de um alarme específico pode ser alterada enquanto está desligado. Não é necessário um canal. Uma nova hora volta a ligar o alarme na Amazon.",
     "channelConfigDialog_alexaTimerHint": "O item mostra o temporizador do dispositivo Echo; o seu popup inicia um temporizador com o tempo definido e para o temporizador mostrado. Não é necessário um canal.",
     "channelConfigDialog_brightnessRange": "Intervalo do controlo de brilho; vazio ou 0 = padrão do painel",
     "channelConfigDialog_buttonTargetPage": "Página de destino após pressionar",

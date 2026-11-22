@@ -235,7 +235,7 @@
     "channelConfigColor_valMax": "最大值",
     "channelConfigColor_valMin": "最小值",
     "channelConfigDialog_LongPressChannelId": "频道 ID（长按）",
-    "channelConfigDialog_alexaAlarmHint": "该项目以 HH:MM 显示 Echo 设备的闹钟：开/关切换它，指定闹钟关闭时可以修改时间。不需要通道。",
+    "channelConfigDialog_alexaAlarmHint": "该项目以 HH:MM 显示 Echo 设备的闹钟：开/关切换它，指定闹钟关闭时可以修改时间。不需要通道。新的时间会在 Amazon 重新开启该闹钟。",
     "channelConfigDialog_alexaTimerHint": "该项目显示 Echo 设备的计时器；其弹窗以设定的时间启动计时器并停止所显示的计时器。不需要通道。",
     "channelConfigDialog_brightnessRange": "亮度滑块范围；留空或 0 = 面板默认值",
     "channelConfigDialog_buttonTargetPage": "按下后的目标页面",
