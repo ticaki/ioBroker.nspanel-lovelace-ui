@@ -1499,7 +1499,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         let recheck: ItemTapFields<ChannelValueConfig> | null = null;
         // an updater, not this.state: two answers before React renders must not apply the second to the old fields
         this.setState(
-            prev => {
+            (prev): ChannelConfigDialogState | null => {
                 if (!prev.open) {
                     return null;
                 }
@@ -1523,17 +1523,22 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 this.shortPressStash = result.shortPressStash;
                 if (!shown) {
                     this.kindStash = { ...this.kindStash, device: result.kind };
-                    return { deviceEntriesId: result.entriesDeviceId };
+                    return { ...prev, deviceEntriesId: result.entriesDeviceId };
                 }
                 const tapChanged =
                     result.kind.channelId.valueStateId !== channelId.valueStateId ||
                     (result.kind.device !== null &&
                         deviceShortPressOf(result.kind.device) !== deviceShortPressOf(device));
                 if (!tapChanged) {
-                    return { ...result.kind, deviceEntriesId: result.entriesDeviceId };
+                    return { ...prev, ...result.kind, deviceEntriesId: result.entriesDeviceId };
                 }
                 recheck = result.kind;
-                return { ...result.kind, ...this.resetChannelChecks(), deviceEntriesId: result.entriesDeviceId };
+                return {
+                    ...prev,
+                    ...result.kind,
+                    ...this.resetChannelChecks(),
+                    deviceEntriesId: result.entriesDeviceId,
+                };
             },
             () => {
                 if (recheck) {
