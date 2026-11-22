@@ -42,6 +42,10 @@ Two checkboxes at the head of the dialog decide which kind of element you get:
 
 **The two checkboxes exclude each other.** Ticking one takes the other back — a page item is either a navigation or a custom button. (Up to and including 2.2.0 both could be ticked; the adapter then took the navigation.)
 
+#### Kind of item: Standard or Alexa timer
+
+On pages with page items the **Kind of item** stands at the very top. **Standard (channel, custom button, navigation)** is everything this section describes. **Alexa timer** turns the item into a timer that shows the timers of an Echo device – instead of the channel field there are **alexa2 instance** and **Echo device**, plus **Show** (**Timer** or **Alarm**, for an alarm also **Which alarm**), name, icons and colours. With **Is a navigation** ticked, **Alexa timer** is locked. Details under [timer popup](popupTimer#7-alexa-timer-alexa2).
+
 #### The target page
 
 With *Is a navigation* ticked, the field **Target page** appears. It lists the pages this panel knows about — the page itself is taken out of the list, `main` comes first, the rest alphabetically. The field also accepts a freely typed name; handy for a page that does not exist yet, and also the place where a typo goes unnoticed.

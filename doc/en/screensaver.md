@@ -403,18 +403,21 @@ Click on the time: **Adapter default**, **24 hours** or **12 hours**, with a pre
 
 ### Timer instead of the clock
 
+If a timer runs somewhere – an egg timer on a page, a script timer or a timer on the Echo –, the screensaver can show **the remaining time instead of the clock**. Once the timer is over and stopped, the clock is back. A step-by-step guide is under [Quick start: remaining time on the screensaver](popupTimer#quick-start-remaining-time-on-the-screensaver).
+
 In the dialog of the time, below the format choice, stands the checkbox **Show timer**. While a timer is active, the panel shows its remaining time in the place of the clock; without an active timer the clock stands there as usual. This holds for every version of the screensaver and for the [web panel](WebPanel) as well.
 
 ![The dialog of the time with the timer switched on](../Pictures/screensaverAdmin/admin-22-uhrzeit-timer.png)
 
-With the checkbox the field **Source of the timer** appears with two choices:
+With the checkbox the field **Source of the timer** appears with three choices:
 
-| Source | What is behind it |
-|---|---|
-| **Data points or slot patterns** | Two states a script of your own maintains – or, behind **Advanced**, two patterns for timers in changing slots. |
-| **Page item with timer popup** | A timer item from a page of this panel, see [timer popup](popupTimer). |
+| Source | What is behind it | When to take it |
+|---|---|---|
+| **Data points or slot patterns** | Two states a script of your own maintains – or, behind **Advanced**, two patterns for timers in changing slots. | A script manages the timers itself. |
+| **Page item with timer popup** | A timer item from a page of this panel, see [timer popup](popupTimer). | The timer is set on the panel, e.g. an egg timer. |
+| **Alexa timer (alexa2)** | The timers of an Echo device of the alexa2 adapter. | The timers are set by voice on the Echo. |
 
-**Apply** stays disabled while the timer is incomplete – the dialog says *A timer needs both data points or two valid patterns.*
+**Apply** stays disabled while the timer is incomplete – the dialog says *A timer needs both data points or two valid patterns.*, with the Alexa source *Choose the alexa2 instance and the Echo device.*
 
 #### Source: two states
 
@@ -464,6 +467,28 @@ The field **Page item** lists the timer items on the pages of the panels of this
 
 **No circle:** A screensaver cannot take an item as its source that itself uses the timer of this screensaver. The dialog does not offer such items, and in the item dialog the checkbox is locked as soon as the screensaver uses this item as its source. Should it happen all the same, the panel shows the clock, the log warns, and the item has no buttons. Allowed is the chain: item A uses the screensaver, the screensaver uses another item B.
 
+#### Source: Alexa timer (alexa2)
+
+![The dialog of the time with the source Alexa timer: alexa2 instance and Echo device](../Pictures/screensaverAdmin/admin-32-timer-quelle-alexa.png)
+
+| Field | Meaning |
+|---|---|
+| **alexa2 instance** | The alexa2 instance with the Echo device. All installed instances are offered. |
+| **Echo device** | The device whose timers the screensaver shows. Only devices whose `Info.capabilities` contains `TIMERS_AND_ALARMS` are offered, labelled with `Info.name` and the serial number. |
+
+While one of the two fields is empty, the dialog says *Choose the alexa2 instance and the Echo device.* The screensaver shows timers only, no alarms.
+
+**Important – option in alexa2:** If the option **Automatically query activity on device interaction** (`autoQueryActivityOnTrigger`) is off in the chosen alexa2 instance, the dialog says *In this alexa2 instance the option "Automatically query activity on device interaction" is off: timers set by voice never show up. Switch it on in the settings of the alexa2 instance.* Without the option, timers set by voice never show up in alexa2 and so not on the panel either.
+
+- Shown is a ringing timer, otherwise the running one with the shortest remaining time. The adapter counts the remaining time from the end time of the timer.
+- A timer set by voice shows up on the panel about 10 seconds later – that is how long alexa2 takes. Started through a page item it is about 6 seconds.
+- A ringing timer stands as `0.0` in red until it is stopped – on the Echo by voice or through a page item.
+- There is no pause; the info icon `timer-pause` does not occur with this source.
+- Page items with **Use the timer of the screensaver** start and stop the timer through the Echo device, as described in the [timer popup](popupTimer#7-alexa-timer-alexa2). A page item of the kind **Alexa timer** with the same device works the same way.
+- If the device cannot be found, the panel shows the clock and the log warns; further pitfalls under [Pitfalls of the Alexa timer](popupTimer#pitfalls-of-the-alexa-timer).
+
+![The web panel shows the remaining time 1.3 of an Alexa timer on the screensaver, with the hourglass as info icon](../Pictures/screensaverAdmin/admin-33-timer-alexa-restzeit.png)
+
 #### Display on the panel
 
 ![The screensaver shows the remaining time instead of the clock](../Pictures/screensaver/screensaverTimer.png)
@@ -487,7 +512,7 @@ The remaining time stands in **minutes with a point**, so it cannot be mistaken 
 - There is no AM/PM with the timer, not even in the 12-hour format.
 - In the version **Advanced** the time and the info icon keep their usual color up to the **TFT 6.0.9** – that page of the panel does not know the color command yet. From the **TFT 6.1.0** on and in the [web panel](WebPanel) they take the color of the timer.
 
-**Expired** stays until the on/off state becomes false. New data only ends the alarm when it lies in the future.
+**Expired** stays until the on/off state becomes false. New data only ends the alarm when it lies in the future. With a page item as source it ends with **Finish** on the item, with the Alexa source as soon as the timer is stopped.
 
 **Tapping:** The first tap on a shown timer switches to the clock – also without double click and before a notification is tapped away. It triggers neither a gesture nor a page change. The panel keeps counting the taps until the display dims, though: with the double click active (`cmd.screenSaver.doubleClick`) the next tap therefore leads to the main page as soon as it comes more than a second later. The timer appears again as soon as the screensaver starts anew or a new timer begins.
 

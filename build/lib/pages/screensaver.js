@@ -207,6 +207,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "clockTimerListeners", /* @__PURE__ */ new Set());
     /** a page item is the source of the timer, see {@link connectClockTimerItem} */
     __publicField(this, "timerItem");
+    /** an Echo device is the source of the timer (clockTimer.alexa), see {@link initClockTimer} */
+    __publicField(this, "alexaTimer");
     /** last timer message on the display, the time trigger of the clock must not repeat it */
     __publicField(this, "lastTimerPayload", "");
     /** timer status of the last `color~` */
@@ -329,15 +331,21 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   async initClockTimer() {
     var _a, _b, _c, _d, _e, _f;
     const timer = this.clockTimer;
-    if (!timer || this.timerSources.size > 0 || this.timerPatterns.length > 0) {
+    if (!timer || this.timerSources.size > 0 || this.timerPatterns.length > 0 || this.alexaTimer) {
       return;
     }
     const label = `Screensaver '${this.name}' of panel '${this.basePanel.friendlyName || this.basePanel.name}'`;
     if ((0, import_adminShareConfig.clockTimerUsesPageItem)(timer) && (0, import_adminShareConfig.isClockTimerComplete)(timer)) {
       return;
     }
+    if (timer.alexa && (0, import_adminShareConfig.clockTimerUsesAlexa)(timer) && (0, import_adminShareConfig.isClockTimerComplete)(timer)) {
+      this.alexaTimer = this.controller.alexaTimers.get(timer.alexa);
+      this.alexaTimer.addListener(this.onTimerItemChange);
+      await this.alexaTimer.ready;
+      return;
+    }
     if (!(0, import_adminShareConfig.isClockTimerComplete)(timer)) {
-      const reason = (0, import_adminShareConfig.clockTimerUsesPageItem)(timer) ? "no page item is chosen" : (0, import_adminShareConfig.clockTimerUsesSlots)(timer) ? `invalid slot patterns (${(0, import_adminShareConfig.checkClockTimerPatterns)((_a = timer.activePattern) != null ? _a : "", (_b = timer.dataPattern) != null ? _b : "")}): '${(_c = timer.activePattern) != null ? _c : ""}', '${(_d = timer.dataPattern) != null ? _d : ""}' - both need exactly one * after a path` : "the on/off state and the data state are both required";
+      const reason = (0, import_adminShareConfig.clockTimerUsesAlexa)(timer) ? "no alexa2 instance or Echo device is chosen" : (0, import_adminShareConfig.clockTimerUsesPageItem)(timer) ? "no page item is chosen" : (0, import_adminShareConfig.clockTimerUsesSlots)(timer) ? `invalid slot patterns (${(0, import_adminShareConfig.checkClockTimerPatterns)((_a = timer.activePattern) != null ? _a : "", (_b = timer.dataPattern) != null ? _b : "")}): '${(_c = timer.activePattern) != null ? _c : ""}', '${(_d = timer.dataPattern) != null ? _d : ""}' - both need exactly one * after a path` : "the on/off state and the data state are both required";
       this.log.warn(`${label}: timer is ignored, ${reason}.`);
       this.clockTimer = void 0;
       return;
@@ -383,8 +391,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * a circle (the item uses this screensaver): one warning and the clock stays, the states of the item are not read.
    */
   async connectClockTimerItem() {
-    var _a;
-    const itemId = (_a = this.clockTimer) == null ? void 0 : _a.itemId;
+    const itemId = this.clockTimer && (0, import_adminShareConfig.clockTimerUsesPageItem)(this.clockTimer) ? this.clockTimer.itemId : void 0;
     if (!itemId || this.timerItem) {
       return;
     }
@@ -517,9 +524,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   async evaluateTimerSlots(now) {
     const memory = /* @__PURE__ */ new Map();
     let started = false;
-    if (this.timerItem) {
+    const view = await this.timerSourceView();
+    if (view) {
       const key = "item";
-      const step = (0, import_screensaver_timer.stepTimerItem)(this.timerMemory.get(key), await this.timerItem.getCountdownView());
+      const step = (0, import_screensaver_timer.stepTimerItem)(this.timerMemory.get(key), view);
       memory.set(key, step.memory);
       return { memory, started: step.started };
     }
@@ -541,6 +549,16 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return { memory, started };
   }
   /**
+   * @returns the countdown of a page item or an Echo device as source, undefined for states as source
+   */
+  async timerSourceView() {
+    var _a;
+    if (this.timerItem) {
+      return this.timerItem.getCountdownView();
+    }
+    return (_a = this.alexaTimer) == null ? void 0 : _a.getView();
+  }
+  /**
    * What a page item of this panel can do with the timer (`useScreensaverTimer`). Only reads: the evaluation of the
    * display - and with it a tapped away timer and the sending of the display - stays with {@link refreshTimer}.
    *
@@ -554,8 +572,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     const now = Date.now();
     const { memory } = await this.evaluateTimerSlots(now);
     const selection = (0, import_screensaver_timer.selectTimer)(memory, now);
-    if (this.timerItem) {
-      const view = await this.timerItem.getCountdownView();
+    const view = await this.timerSourceView();
+    if (view) {
       return {
         selection,
         ticking: (0, import_screensaver_timer.nextTimerWakeMs)(memory, selection, false, now) !== void 0,
@@ -582,6 +600,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (this.timerItem) {
       return this.timerItem.startAsClockTimerSource(seconds);
     }
+    if (this.alexaTimer) {
+      return this.alexaTimer.getView().status === "off" && this.alexaTimer.start(seconds);
+    }
     const slot = await this.findTimerStartSlot();
     if (!slot || seconds <= 0 || slot.activeCommon.write === false || slot.dataCommon.write === false) {
       return false;
@@ -597,6 +618,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   async stopClockTimer() {
     if (this.timerItem) {
       return this.timerItem.stopAsClockTimerSource();
+    }
+    if (this.alexaTimer) {
+      return this.alexaTimer.stop();
     }
     const access = await this.getClockTimerAccess();
     const shown = (access == null ? void 0 : access.selection.key) === void 0 ? void 0 : this.timerSources.get(access.selection.key);
@@ -2018,7 +2042,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return true;
   }
   async delete() {
-    var _a;
+    var _a, _b;
     await super.delete();
     if (this.timeoutRotation) {
       this.adapter.clearTimeout(this.timeoutRotation);
@@ -2040,6 +2064,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.clockTimerListeners.clear();
     (_a = this.timerItem) == null ? void 0 : _a.removeClockTimerSource(this.onTimerItemChange);
     this.timerItem = void 0;
+    (_b = this.alexaTimer) == null ? void 0 : _b.removeListener(this.onTimerItemChange);
+    this.alexaTimer = void 0;
     await this.releaseTimerPatterns();
   }
   goLeft() {

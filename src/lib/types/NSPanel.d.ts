@@ -1119,6 +1119,8 @@ export namespace NSPanel {
         type: 'timer';
         /** the item uses the timer of the screensaver of its panel (clockTimer) instead of its own states */
         useScreensaverTimer?: boolean;
+        /** the item shows and sets the timer of this Echo device (src/lib/classes/alexa-timer.ts), no own states */
+        alexaTimer?: { instance: string; serial: string; show?: 'timer' | 'alarm'; alarmId?: string };
         /** id of the item, the screensaver finds it by this (clockTimer.itemId) */
         itemId?: string;
         data: pages.ChangeTypeOfKeys<PageItemTimer, DataItemsOptions | undefined>;
@@ -1128,6 +1130,8 @@ export namespace NSPanel {
         type: 'timer';
         /** see {@link PageItemTimerDataItemsOptions} */
         useScreensaverTimer?: boolean;
+        /** see {@link PageItemTimerDataItemsOptions} */
+        alexaTimer?: { instance: string; serial: string; show?: 'timer' | 'alarm'; alarmId?: string };
         itemId?: string;
         data: pages.ChangeTypeOfKeys<PageItemTimer, dataItem.Dataitem | undefined>;
     };
