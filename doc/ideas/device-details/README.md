@@ -76,12 +76,13 @@ Ein Tipp links (Icon/Name) sendet auf diesen Zeilen `buttonPress3` und tut nicht
   ein eigener Text wird im Eintrag gespeichert (`DeviceDetailEntryConfig.subName`) und gilt immer, auch ohne Dublette.
   Das Feld erscheint nur bei Dubletten und bei Zeilen mit eigenem Text (damit er sichtbar und löschbar bleibt) – bei
   einem Shelly mit 78 States bleibt die Liste sonst übersichtlich.
-- **Panel: noch nicht.** Das Namensfeld `tEntity1..4` von cardEntities ist auf eu und us-l nur 30 px hoch (Font 0 =
-  24 px, `isbr=0`, 184 px breit) – zwei Zeilen (CR LF) passen nicht, und zu hoher Text wird von der Nextion gar nicht
-  gezeichnet. us-p hätte Platz (`tEntity1..6` 53 px hoch, `isbr=1`, 115 px breit). Der Adapter sendet die zweite
-  Zeile deshalb nicht, `subName` geht nicht in die Laufzeit (`deviceDetailsRuntimeOf`); bis dahin hängt der Adapter
-  bei mehreren Zeilen desselben Masken-Eintrags wie bisher den Unterordner an den Namen an. Das Web-Panel zeigt sie
-  folglich auch nicht. Voraussetzung ist eine HMI mit zweizeiligem Namensfeld auf eu/us-l.
+- **Panel: einzeilig angehängt.** Das Namensfeld `tEntity1..4` von cardEntities ist auf eu und us-l nur 30 px hoch
+  (Font 0 = 24 px, `isbr=0`, 184 px breit) – zwei Zeilen (CR LF) passen nicht, und zu hoher Text wird von der Nextion
+  gar nicht gezeichnet. Entscheidung 2026-11-22: keine HMI-Änderung dafür. Der Adapter hängt den Text von
+  `deviceDetailSubNames` deshalb mit Leerzeichen an den Namen an (`deviceDetailRowNames`: „Temperatur Relay0“,
+  „Temperatur Ext 100“), gleiche Basisnamen und gleiche Dubletten-Erkennung wie die Filterliste. Ein eigener Text
+  (`subName`, geht über `deviceDetailsRuntimeOf` in die Laufzeit) wird auch ohne Dublette angehängt. Das Web-Panel
+  zeigt denselben Namen.
 
 ### Farben
 
@@ -194,5 +195,4 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
 - Detailseite mit echten Geräten am Panel prüfen (Schalter, Knopf, Auswahl-Popup, Textwerte).
 - Web-Panel: der Tipp links auf Icon/Name sendet dort noch `buttonPress2` (button/switch) statt
   `buttonPress3` wie die neue TFT.
-- Zweite Namenszeile auf dem Panel: braucht ein zweizeiliges Namensfeld in der cardEntities-HMI (eu, us-l).
 - Länge der übersetzten Zeilennamen auf dem Panel prüfen (z. B. fr, pl, ru).

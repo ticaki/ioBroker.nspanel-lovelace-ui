@@ -218,6 +218,42 @@ describe('lib/pages/device-details', () => {
                 'Unnamed',
             ]);
         });
+        it('rows with the same name get the second name line appended on the same line', () => {
+            const names = deviceDetailRowNames(
+                DEV,
+                [
+                    { key: 'temperature', id: `${DEV}.Relay0.temperatureC` },
+                    { key: 'temperature', id: `${DEV}.Ext.temperature100C` },
+                ],
+                [{}, {}],
+                () => 'Temperatur',
+                'de',
+            );
+            expect(names).to.deep.equal(['Temperatur Relay0', 'Temperatur Ext 100']);
+        });
+        it('a single row gets nothing appended', () => {
+            const names = deviceDetailRowNames(
+                DEV,
+                [{ key: 'temperature', id: `${DEV}.Ext.temperature100C` }],
+                [{}],
+                () => 'Temperatur',
+                'de',
+            );
+            expect(names).to.deep.equal(['Temperatur']);
+        });
+        it('an own second name line is appended without duplicate as well', () => {
+            const names = deviceDetailRowNames(
+                DEV,
+                [
+                    { key: 'temperature', id: `${DEV}.Ext.temperature100C`, subName: ' Garten ' },
+                    { key: 'rssi', id: `${DEV}.rssi` },
+                ],
+                [{}, {}],
+                key => (key === 'deviceDetail_temperature' ? 'Temperatur' : 'WLAN'),
+                'de',
+            );
+            expect(names).to.deep.equal(['Temperatur Garten', 'WLAN']);
+        });
     });
 
     describe('detail page', () => {

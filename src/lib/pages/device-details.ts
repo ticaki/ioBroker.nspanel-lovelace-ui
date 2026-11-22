@@ -14,6 +14,7 @@ import {
     deviceDetailEntryOfRow,
     deviceDetailNameKey,
     deviceDetailRowKind,
+    deviceDetailSubNames,
     hasCommonStatesList,
     type DeviceDetailEntryConfig,
     type DeviceDetailGroup,
@@ -111,8 +112,10 @@ function nameOfCommon(name: ioBroker.StringOrTranslated | undefined, language: i
 
 /**
  * The names of the rows: the translated name of the mask entry, a row without entry the name of its state (else the
- * last part of its id). Several rows of the same entry (Relay0.Power and Relay1.Power) get the sub folder of their
- * state behind the name.
+ * last part of its id). The second name line of the admin ({@link deviceDetailSubNames}: an own text of the row,
+ * else an automatic one for rows that share their name with another row, e.g. Relay0.temperatureC and
+ * Ext.temperature100C) is appended on the same line with a space - the name field of the panel is a single line
+ * (30 px high on eu / us-l).
  *
  * @param deviceId id of the device
  * @param entries the rows
@@ -128,23 +131,17 @@ export function deviceDetailRowNames(
     translate: (key: string) => string,
     language: ioBroker.Languages,
 ): string[] {
-    const count = new Map<string, number>();
-    for (const e of entries) {
-        if (e.key) {
-            count.set(e.key, (count.get(e.key) ?? 0) + 1);
-        }
-    }
-    return entries.map((e, index) => {
-        const rest = e.id.startsWith(`${deviceId}.`) ? e.id.slice(deviceId.length + 1) : e.id;
-        if (!e.key) {
-            return nameOfCommon(commons[index]?.name, language) || (rest.split('.').pop() ?? rest);
-        }
-        const name = translate(deviceDetailNameKey(e.key));
-        if ((count.get(e.key) ?? 0) < 2) {
-            return name;
-        }
-        const parts = rest.split('.');
-        return `${name} ${parts.length > 1 ? parts[0] : rest}`;
+    const rows = entries.map((e, index) => ({
+        id: e.id,
+        name: e.key
+            ? translate(deviceDetailNameKey(e.key))
+            : nameOfCommon(commons[index]?.name, language) || (e.id.split('.').pop() ?? e.id),
+        subName: e.subName,
+    }));
+    const subs = deviceDetailSubNames(deviceId, rows);
+    return rows.map((r, index) => {
+        const text = subs[index]?.text ?? '';
+        return text ? `${r.name} ${text}` : r.name;
     });
 }
 

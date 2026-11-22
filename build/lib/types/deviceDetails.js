@@ -535,7 +535,11 @@ function deviceDetailsRuntimeOf(config) {
   }
   return {
     deviceId: config.deviceId,
-    entries: config.entries.filter((e) => e.id !== "").map((e) => ({ key: e.key, id: e.id }))
+    entries: config.entries.filter((e) => e.id !== "").map((e) => {
+      var _a;
+      const subName = (_a = e.subName) == null ? void 0 : _a.trim();
+      return subName ? { key: e.key, id: e.id, subName } : { key: e.key, id: e.id };
+    })
   };
 }
 function deviceDetailsLearnedOf(value) {

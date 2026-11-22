@@ -449,10 +449,8 @@ describe('lib/types/deviceDetails', () => {
             const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, saved, undefined);
             expect(rows[0]).to.deep.equal({ ...saved[0], enabled: true });
             expect(rows[1]).to.deep.equal({ ...saved[1], enabled: true });
-            // the panel does not show the second line yet (the name field of cardEntities is one line high on eu / us-l)
-            expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: saved })?.entries).to.deep.equal(
-                saved.map(e => ({ key: e.key, id: e.id })),
-            );
+            // the panel appends the second line to the name (deviceDetailRowNames)
+            expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: saved })?.entries).to.deep.equal(saved);
             expect(deviceDetailsRuntimeOf({ deviceId: SHELLY, entries: [{ key: '', id: 'x', subName: 1 }] })).to.equal(
                 undefined,
             );

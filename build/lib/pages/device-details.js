@@ -72,25 +72,19 @@ function nameOfCommon(name, language) {
   return "";
 }
 function deviceDetailRowNames(deviceId, entries, commons, translate, language) {
-  var _a;
-  const count = /* @__PURE__ */ new Map();
-  for (const e of entries) {
-    if (e.key) {
-      count.set(e.key, ((_a = count.get(e.key)) != null ? _a : 0) + 1);
-    }
-  }
-  return entries.map((e, index) => {
-    var _a2, _b, _c;
-    const rest = e.id.startsWith(`${deviceId}.`) ? e.id.slice(deviceId.length + 1) : e.id;
-    if (!e.key) {
-      return nameOfCommon((_a2 = commons[index]) == null ? void 0 : _a2.name, language) || ((_b = rest.split(".").pop()) != null ? _b : rest);
-    }
-    const name = translate((0, import_deviceDetails.deviceDetailNameKey)(e.key));
-    if (((_c = count.get(e.key)) != null ? _c : 0) < 2) {
-      return name;
-    }
-    const parts = rest.split(".");
-    return `${name} ${parts.length > 1 ? parts[0] : rest}`;
+  const rows = entries.map((e, index) => {
+    var _a, _b;
+    return {
+      id: e.id,
+      name: e.key ? translate((0, import_deviceDetails.deviceDetailNameKey)(e.key)) : nameOfCommon((_a = commons[index]) == null ? void 0 : _a.name, language) || ((_b = e.id.split(".").pop()) != null ? _b : e.id),
+      subName: e.subName
+    };
+  });
+  const subs = (0, import_deviceDetails.deviceDetailSubNames)(deviceId, rows);
+  return rows.map((r, index) => {
+    var _a, _b;
+    const text = (_b = (_a = subs[index]) == null ? void 0 : _a.text) != null ? _b : "";
+    return text ? `${r.name} ${text}` : r.name;
   });
 }
 function deviceDetailRowItem(deviceId, entry, common, name) {

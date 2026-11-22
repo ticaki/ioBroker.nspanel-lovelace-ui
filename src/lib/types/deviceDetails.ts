@@ -887,7 +887,12 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
     }
     return {
         deviceId: config.deviceId,
-        entries: config.entries.filter(e => e.id !== '').map(e => ({ key: e.key, id: e.id })),
+        entries: config.entries
+            .filter(e => e.id !== '')
+            .map(e => {
+                const subName = e.subName?.trim();
+                return subName ? { key: e.key, id: e.id, subName } : { key: e.key, id: e.id };
+            }),
     };
 }
 
