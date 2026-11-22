@@ -151,6 +151,7 @@ const itemMappedKeys = [
   "maxValue",
   "secondRow",
   "useScreensaverTimer",
+  "alexaTimer",
   "itemId",
   "minValueBrightness",
   "maxValueBrightness",
@@ -220,7 +221,11 @@ function convertPageItem(item, where) {
   if (!navigate && targetPage && custom) {
     throw new ConvertError(reason, `${where}.targetPage: only used with navigate: true`);
   }
-  if (!navigate && !id) {
+  const alexaTimer = item.alexaTimer;
+  if (alexaTimer !== void 0 && (!(0, import_adminShareConfig.isAlexaTimerConfig)(alexaTimer) || navigate || custom)) {
+    throw new ConvertError(reason, `${where}.alexaTimer: expected { instance, serial } on a page item`);
+  }
+  if (!navigate && !id && alexaTimer === void 0) {
     throw new ConvertError(reason, `${where}: id missing`);
   }
   if (!id && custom) {
@@ -335,6 +340,10 @@ function convertPageItem(item, where) {
   if (item.useScreensaverTimer === true) {
     admin.useScreensaverTimer = true;
   }
+  if ((0, import_adminShareConfig.isAlexaTimerConfig)(alexaTimer)) {
+    admin.alexaTimer = { instance: alexaTimer.instance, serial: alexaTimer.serial };
+    admin.role = "level.timer";
+  }
   const itemId = str(item.itemId, reason, `${where}.itemId`);
   if (itemId) {
     admin.itemId = itemId;
@@ -359,7 +368,7 @@ function isEmptyAdminItem(item) {
   return !item.isNavigation && !item.useNative && (id === "empty" || id === "delete");
 }
 function isDroppedItem(item) {
-  return !item.navigate && !("native" in item) && item.type !== "custom" && !item.id;
+  return !item.navigate && !("native" in item) && item.type !== "custom" && !item.id && !item.alexaTimer;
 }
 function rawPageItem(item) {
   const nativeOnly = isDict(item.native) && Object.keys(item).every((key) => key === "native" || item[key] === void 0);

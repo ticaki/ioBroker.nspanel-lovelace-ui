@@ -2182,6 +2182,45 @@ class ConfigManager extends import_library.BaseClass {
       set: internal && set && setDp ? { ...set, dp: setDp, type: "triggered" } : set
     };
   }
+  /**
+   * Page item of kind "Alexa timer": a timer item without states, the Echo device is read by the item itself
+   * (src/lib/classes/alexa-timer.ts).
+   *
+   * @param item the script item with `alexaTimer`
+   * @returns the item
+   */
+  async getAlexaTimerItemConfig(item) {
+    const alexa = item.alexaTimer;
+    if (!(0, import_adminShareConfig.isAlexaTimerConfig)(alexa) || !(0, import_adminShareConfig.isAlexaTimerComplete)(alexa)) {
+      throw new Error(`Alexa timer: alexa2 instance or Echo device missing!`);
+    }
+    return {
+      role: "timer",
+      type: "timer",
+      dpInit: "",
+      alexaTimer: { instance: alexa.instance, serial: alexa.serial },
+      itemId: item.itemId,
+      data: {
+        icon: {
+          true: {
+            value: await this.getFieldAsDataItemConfig(item.icon || import_page_item_defaults.pageItemDefaults.timer.iconOn, true),
+            color: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOn])
+          },
+          false: {
+            value: await this.getFieldAsDataItemConfig(
+              item.icon2 || item.icon || import_page_item_defaults.pageItemDefaults.timer.iconOff,
+              true
+            ),
+            color: await this.getIconColor(item.offColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOff])
+          },
+          scale: globals.isIconColorScaleElement(item.colorScale) ? { type: "const", constVal: item.colorScale } : void 0,
+          maxBri: void 0,
+          minBri: void 0
+        },
+        headline: await this.getFieldAsDataItemConfig(item.name || "Timer", true)
+      }
+    };
+  }
   async getPageItemConfig(item, page, messages = []) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E;
     let itemConfig = void 0;
@@ -2198,6 +2237,9 @@ class ConfigManager extends import_library.BaseClass {
       }
       itemConfig = item.native;
       return { itemConfig, messages };
+    }
+    if ("alexaTimer" in item && item.alexaTimer !== void 0) {
+      return { itemConfig: await this.getAlexaTimerItemConfig(item), messages };
     }
     if ("id" in item && item.id) {
       if (["delete", "empty"].includes(item.id)) {

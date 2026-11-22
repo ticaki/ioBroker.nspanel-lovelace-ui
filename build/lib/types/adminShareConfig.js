@@ -60,6 +60,8 @@ __export(adminShareConfig_exports, {
   checkClockTimerPatterns: () => checkClockTimerPatterns,
   clockTimerChannels: () => clockTimerChannels,
   clockTimerItemChoice: () => clockTimerItemChoice,
+  clockTimerSource: () => clockTimerSource,
+  clockTimerUsesAlexa: () => clockTimerUsesAlexa,
   clockTimerUsesPageItem: () => clockTimerUsesPageItem,
   clockTimerUsesSlots: () => clockTimerUsesSlots,
   conditionExpressionText: () => conditionExpressionText,
@@ -79,6 +81,8 @@ __export(adminShareConfig_exports, {
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
   hardwarePanelModels: () => hardwarePanelModels,
+  isAlexaTimerComplete: () => isAlexaTimerComplete,
+  isAlexaTimerConfig: () => isAlexaTimerConfig,
   isAsciiOnlyTextSize: () => isAsciiOnlyTextSize,
   isButtonNavigationTarget: () => isButtonNavigationTarget,
   isClockTimerComplete: () => isClockTimerComplete,
@@ -524,8 +528,23 @@ function migrateScreensaverNotify(entries, list) {
   });
   return { entries: converted, list: out, changed };
 }
+function isAlexaTimerConfig(value) {
+  return isRawItemObject(value) && typeof value.instance === "string" && typeof value.serial === "string";
+}
+function isAlexaTimerComplete(config) {
+  return !!config && /^alexa2\.\d+$/.test(config.instance) && /^[^.*\s]+$/.test(config.serial) && !!config.serial.trim();
+}
+function clockTimerSource(timer) {
+  if (timer.alexa !== void 0) {
+    return "alexa";
+  }
+  return timer.itemId !== void 0 ? "item" : "states";
+}
 function clockTimerUsesPageItem(timer) {
-  return timer.itemId !== void 0;
+  return clockTimerSource(timer) === "item";
+}
+function clockTimerUsesAlexa(timer) {
+  return clockTimerSource(timer) === "alexa";
 }
 function isCountdownChannel(actual, hasStatus) {
   if (!actual) {
@@ -678,6 +697,9 @@ function clockTimerUsesSlots(timer) {
 }
 function isClockTimerComplete(timer) {
   var _a, _b;
+  if (timer.alexa !== void 0) {
+    return isAlexaTimerComplete(timer.alexa);
+  }
   if (timer.itemId !== void 0) {
     return !!timer.itemId;
   }
@@ -2246,6 +2268,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   checkClockTimerPatterns,
   clockTimerChannels,
   clockTimerItemChoice,
+  clockTimerSource,
+  clockTimerUsesAlexa,
   clockTimerUsesPageItem,
   clockTimerUsesSlots,
   conditionExpressionText,
@@ -2265,6 +2289,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   findPowerEntryForScript,
   formatEntryNumber,
   hardwarePanelModels,
+  isAlexaTimerComplete,
+  isAlexaTimerConfig,
   isAsciiOnlyTextSize,
   isButtonNavigationTarget,
   isClockTimerComplete,
