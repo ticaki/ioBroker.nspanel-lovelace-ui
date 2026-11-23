@@ -45,7 +45,7 @@ Protocol:
             the borders form frame and cross; no drawing, nothing to redraw. All four empty/delete: the block is
             hidden and the info rows 1-2 show in full width; else an empty cell keeps its border with an empty
             text, and the info rows switch to a second, narrower set of objects (vis, x/w never change at runtime).
-            displayName is kept in vaName<k> (the heading of a popup).
+            displayName is not read (the adapter sends none): a popup opened from a cell has no heading.
   info      (the last element) small icon bottom right, icon/colour from the payload, hidden for delete/empty;
             tap: event,buttonPress2,<intName>,button (no long press, it has no type).
 
@@ -100,6 +100,7 @@ NAME_LEN = 31
 VALUE_LEN = 31
 STATUS_LEN = 63
 ICON_LEN = 10
+ICON_NEED = 7  # one glyph (at most 4 bytes UTF-8) plus the font suffix '¬<digit>' (2 + 1)
 TYPE_LEN = 10
 TSEND_LEN = 63
 STR_COMMAND_MAX = 1019  # the serial buffer of the display holds 1023 bytes, a payload is at most 1017
@@ -187,6 +188,8 @@ LAYOUTS = {
     # info rows (the info rows switch to a narrower second set of objects while the block is shown)
     'cardDevice1': {
         'main': (10, 68, 110, 86, 4), 'mainName': (10, 156, 110, 26, 0, 1), 'statusXcen': 0,
+        # the tightest page: its 14 icon buffers hold exactly what an icon needs (ICON_NEED), 4 bytes less each
+        'iconLen': ICON_NEED,
         'slots': [info_row(126, 76, 314), info_row(126, 120, 314)] + [button(10 + 108 * k, 190, 104) for k in range(4)]
         + [status_cell(i) for i in range(4)],
         'narrow': {1: narrow_row(204, 76, 236), 2: narrow_row(204, 120, 236)},
@@ -226,7 +229,7 @@ BUFFER = {
     'progress': (TYPE_LEN, ID_LEN, 0, COLOR_LEN, NAME_LEN, TMP_LEN),
     'button': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, 0),
     'switch': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, TMP_LEN),
-    'status': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, 0),
+    'status': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
     'infoIcon': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
 }
 REAL = {
@@ -253,6 +256,8 @@ def message_fields(layout, real):
     the buffer it lands in (never less than the adapter sends), True: what the adapter really builds"""
     def element(kind):
         fields = REAL[kind] if real else tuple(max(b, r) for b, r in zip(BUFFER[kind], REAL[kind]))
+        if not real and kind != 'nav' and fields[2] == ICON_LEN:
+            fields = fields[:2] + (layout.get('iconLen', ICON_LEN),) + fields[3:]  # the icon buffers of the page
         if kind == 'main' and layout.get('scroll'):
             fields = fields[:5] + (SCROLL_LEN,)  # the status line may be a scrolling text
         return fields
@@ -383,12 +388,18 @@ def send_lines(entn):
 
 def cell_down(down1, typ, entn, name, icon, color=None):
     """the down code of cardGrid bEntity1 with other names; icon None: there is no icon object (the popup gets an
-    empty icon and the colour of the object color)"""
+    empty icon and the colour of the object color); name None: the element has no name (the popup gets an empty
+    heading)"""
     rename = {'type1': typ, 'entn1': entn, 'tEntity1': name, 'bEntity1': icon}
     fixed = {'pageIcons.tTmp3.txt=bEntity1.txt': 'pageIcons.tTmp3.txt=""',
              'tempIconColor=bEntity1.pco': f'tempIconColor={color}.pco'}
+    no_name = 'pageIcons.tTmp1.txt=tEntity1.txt'
+    if name is None and sum(x.strip() == no_name for x in down1) != sum('tEntity1' in x for x in down1):
+        raise SystemExit(f'{SOURCE}.bEntity1.down: unexpected use of the name')
     out = []
     for line in down1:
+        if name is None and line.strip() == no_name:
+            line = line.replace(no_name, 'pageIcons.tTmp1.txt=""')
         if icon is None and 'bEntity1' in line:
             if line.strip() not in fixed:
                 raise SystemExit(f'{SOURCE}.bEntity1.down: unexpected use of the icon: {line}')
@@ -502,11 +513,11 @@ def build_objects(page, layout, switch_template):
             cell.set('borderw', 1)
             cell.set('borderc', GRID_COLOR)
             # the cell is its own touch area; an empty one keeps its border, so the code checks the type
-            cell.set_code('down', if_shown(f'type{k}', cell_down(down1, f'type{k}', f'entn{k}', f'vaName{k}', icon)))
+            # a status icon has no name (the adapter sends none): a popup opened from the cell has no heading
+            cell.set_code('down', if_shown(f'type{k}', cell_down(down1, f'type{k}', f'entn{k}', None, icon)))
             cell.set_code('up', if_shown(f'type{k}', cell_up(up1, f'type{k}', f'entn{k}'), 1, 1))
             visible.append(cell)
-            variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN),
-                          make_var(var_t, f'vaName{k}', NAME_LEN)]
+            variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN)]
             continue
         if kind in TAPPED:
             b = make_button(button_t, icon, spec['icon'])
@@ -554,6 +565,10 @@ def build_objects(page, layout, switch_template):
     variables.append(make_var(var_t, 'entnInfo', ID_LEN))
     if 'narrow' in layout:
         visible += narrow
+    # the icon buffers of the page (the only buffers of ICON_LEN among the new objects)
+    for o in visible:
+        if o.has('txt_maxl') and o.get('txt_maxl') == ICON_LEN:
+            o.set('txt_maxl', layout.get('iconLen', ICON_LEN))
     visible += hotspots
     if status_slots(layout):
         # number variable (like vLPNavState): 1 while at least one status icon is set
@@ -636,7 +651,6 @@ def status_lines(ind, layout):
         first = FIRST + FIELDS * k
         out += [f'{ind}spstr strCommand.txt,type{k}.txt,"~",{first}',
                 f'{ind}spstr strCommand.txt,entn{k}.txt,"~",{first + 1}',
-                f'{ind}spstr strCommand.txt,vaName{k}.txt,"~",{first + 4}',
                 f'{ind}if(type{k}.txt=="delete"||type{k}.txt=="")',
                 f'{ind}{{',
                 f'{i}tStat{k}.txt=""',
