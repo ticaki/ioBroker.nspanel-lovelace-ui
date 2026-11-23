@@ -244,7 +244,7 @@ export const DEVICE_PAGE_STATUS_COMMAND = 'devStatus';
 export const DEVICE_PAGE_STATUS_MAX_PARTS = 3;
 
 /** ms a part of a split status text is shown before the next one */
-export const DEVICE_PAGE_STATUS_INTERVAL_MS = 2000;
+export const DEVICE_PAGE_STATUS_INTERVAL_MS = 3000;
 
 /**
  * bytes of the receive buffer (`strCommand`) of the HMI page of a layout: what an `entityUpd` has beyond that is cut

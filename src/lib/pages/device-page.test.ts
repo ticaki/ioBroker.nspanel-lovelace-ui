@@ -965,13 +965,13 @@ describe('lib/pages/pageDevice - payload', () => {
             }
         };
 
-        it('entityUpd carries the first part, every 2 s devStatus brings the next one, round and round', async () => {
+        it('entityUpd carries the first part, every 3 s devStatus brings the next one, round and round', async () => {
             const { page, sent, intervals } = fakeDevicePage(n, payloadsOf(LONG), 2);
             await page.update();
             expect(sent).to.have.length(1);
             expect(statusOf(sent[0])).to.equal(PARTS[0]);
             expect([...intervals.values()].map(i => i.ms)).to.deep.equal([DEVICE_PAGE_STATUS_INTERVAL_MS]);
-            expect(DEVICE_PAGE_STATUS_INTERVAL_MS).to.equal(2000);
+            expect(DEVICE_PAGE_STATUS_INTERVAL_MS).to.equal(3000);
             for (let i = 0; i < 4; i++) {
                 tick(intervals);
             }

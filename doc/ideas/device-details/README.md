@@ -440,7 +440,7 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
 ### Statuszeile: Teilen und Wechsel
 
 Ein Statustext, der nicht in die Zeile passt, wird in Abschnitte geteilt; die Statuszeile zeigt sie nacheinander,
-Wechsel alle 2 Sekunden, endlos im Kreis. Die Zeile ist nie leer. (Der Lauftext der HMI ist verworfen: das
+Wechsel alle 3 Sekunden, endlos im Kreis. Die Zeile ist nie leer. (Der Lauftext der HMI ist verworfen: das
 Nextion-Objekt beginnt leer rechts außerhalb, läuft ganz hinaus und ruckelt.)
 
 **Teilen** – `splitDevicePageStatus` (Zeilenumbrüche werden Leerzeichen, `~` entfällt):
@@ -467,7 +467,7 @@ Nextion-Objekt beginnt leer rechts außerhalb, läuft ganz hinaus und ruckelt.)
 - Das `entityUpd` trägt in Feld 6 von main immer den **gerade gezeigten** Abschnitt (beim Öffnen der Seite und nach
   einer Textänderung den ersten).
 - Bei mehr als einem Abschnitt läuft ein Adapter-Intervall (`adapter.setInterval`, `DEVICE_PAGE_STATUS_INTERVAL_MS`
-  = 2000 ms) und schickt jeweils den nächsten Abschnitt mit der Kurz-Nachricht **`devStatus~<text>`**
+  = 3000 ms) und schickt jeweils den nächsten Abschnitt mit der Kurz-Nachricht **`devStatus~<text>`**
   (`DEVICE_PAGE_STATUS_COMMAND`, `devicePageStatusMessage`). Die HMI setzt damit nur `tStatus`, nichts sonst.
 - **Start:** mit dem ersten `entityUpd` eines Texts, der mehr als einen Abschnitt hat.
 - **Neustart:** ein **anderer** Statustext wird neu geteilt, beginnt mit Abschnitt 1 (das `entityUpd` geht sofort

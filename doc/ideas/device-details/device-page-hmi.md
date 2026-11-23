@@ -104,7 +104,7 @@ devStatus~<text>
 
 - **Zweck:** Ein Statustext, der nicht in die Zeile passt, wird vom **Adapter** in höchstens drei Abschnitte geteilt
   (jeder ≤ 390 px in Font 0 und ≤ 63 Byte, Trennung an Wortgrenzen). Das `entityUpd` trägt den gerade gezeigten
-  Abschnitt in Feld 6 von main; alle 2 Sekunden schickt der Adapter den nächsten mit `devStatus`, endlos im Kreis.
+  Abschnitt in Feld 6 von main; alle 3 Sekunden schickt der Adapter den nächsten mit `devStatus`, endlos im Kreis.
   Die kurze Nachricht geht schnell: kein ganzes `entityUpd`, kein Neuzeichnen der Elemente.
 - **HMI:** eigener Zweig im tmSerial der drei Seiten, hinter dem `entityUpd`-Block und vor `pageType`:
 
@@ -459,13 +459,13 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
      Genau eine Quittung `event,ack,<crc>`.
    - `devStatus~` (leer): die Zeile ist leer. Danach `devStatus~Text`: er steht wieder.
    - Ein Text mit 63 Byte und einer mit 80 Byte: der zweite ist bei 63 Byte abgeschnitten, kein Müll daneben.
-   - `devStatus` im Wechsel alle 2 s über eine Minute, dazwischen `entityUpd` und `time~…`: alles wird verarbeitet
+   - `devStatus` im Wechsel alle 3 s über eine Minute, dazwischen `entityUpd` und `time~…`: alles wird verarbeitet
      und quittiert, die Uhr im Kopf läuft weiter, kein hängender Empfang.
    - Während ein Platz gehalten wird (Long-Press, 500 ms) ein `devStatus`: der Long-Press funktioniert weiter (der
      Zweig benutzt `tTmp` nicht – anders als ein `entityUpd`).
    - `devStatus~x` auf einer anderen Seite (z. B. cardGrid, Screensaver): keine Wirkung, nur die Quittung.
    - Popup öffnen und zurück: die Statuszeile zeigt, was das nächste `entityUpd` bringt.
-   - Mit dem Adapter (Geräteseite mit langem Statustext): Abschnitt 1 beim Öffnen, Wechsel alle 2 s, im Kreis;
+   - Mit dem Adapter (Geräteseite mit langem Statustext): Abschnitt 1 beim Öffnen, Wechsel alle 3 s, im Kreis;
      ändert sich ein Slot-Wert, springt die Zeile nicht auf Abschnitt 1 zurück; ändert sich der Statustext, beginnt
      er bei Abschnitt 1.
    - cardDevice1: Icons mit Schrift-Zusatz (`<Icon>¬3`) in main, info, Knopf, Status-Zelle und info-Icon – die
