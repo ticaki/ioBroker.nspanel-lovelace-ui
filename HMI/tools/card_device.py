@@ -10,7 +10,8 @@ of each built page with example content (robot vacuum, washing machine, car) and
 
 Each page is a fresh copy of cardGrid: header, arrows, swipe strips, tmSerial (receive, ack/CRC, pageType switch),
 sleep timer, the long press of the arrows and the long press of the cells (tmLP, LPState) stay as they are; the six
-cells of cardGrid are removed.
+cells of cardGrid are removed. A long press feedback of cardGrid (grid_long_press_feedback.py) is taken out of the
+copy first and added again for the elements of the built page, so the input may or may not have it.
 An existing cardDevice<n> is rebuilt from cardGrid in its own section, so running the script on its own output gives
 the same pages again (idempotent). New pages are appended behind the last page of main.HMI (no page id moves). The
 pageType switch of every page with tmSerial gets 'if(tId.txt=="cardDevice<n>") page cardDevice<n>' behind the
@@ -51,7 +52,10 @@ Protocol:
 Touch: main and every slot behave like a cell of cardGrid (its down/up code and tmLP/LPState, unchanged):
   touch     shutter/shutter2/input_sel/timer open their popup at once (no event)
   hold      after 500 ms (tmLP) light/light2/fan/number open their popup (no event); every other type arms the
-            long press (LPState=1)
+            long press (LPState=1) and the background of the element blinks green/grey, 200 ms per phase, until
+            the release (grid_long_press_feedback.add): main/info/button the icon button, status the cell, value/
+            progress/switch (hotspot) the name field tEntity<k> - the bar of progress lies below it and is not
+            redrawn. Type text without an intName does not blink (it sends nothing).
   release   event,buttonPress2,<intName>,button - or event,buttonPress3,<intName>,button when the long press was
             armed. Type text without an intName sends nothing (kinds other than button).
   The popups get name, id, icon and icon colour in pageIcons.tTmp1/2/3 and tempIconColor; they do not know the
@@ -81,6 +85,7 @@ import sys
 import zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import grid_long_press_feedback as feedback  # noqa: E402
 from hmi import Hmi  # noqa: E402
 from pagefile import Page, block, find  # noqa: E402
 from screensaver5 import SEND, insert_entry, text_cost  # noqa: E402
@@ -798,6 +803,7 @@ def check_names(page):
 
 def build_page(source_bytes, name, switch_template):
     page = Page(source_bytes)
+    feedback.remove(page)  # the cells are built from the plain long press code of cardGrid
     page.objs[0].set('objname', name)
     page.head[0x18:0x28] = name.encode('latin1').ljust(16, b'\0')
     layout = LAYOUTS[name]
@@ -806,8 +812,12 @@ def build_page(source_bytes, name, switch_template):
     patch_parser(page, layout)
     clamp_receive(page, str_command_maxl(layout))
     patch_load(page, name, layout)
+    # long press feedback: buttons and status cells blink themselves, a hotspot has no background - the name
+    # field of its element blinks for it
+    blink = feedback.add(page, {f'mSlot{k}': [f'tEntity{k}'] for k, s in enumerate(layout['slots'], 1)
+                                if s['kind'] in HOTSPOT})
     check_names(page)
-    return page, layout
+    return page, layout, blink
 
 
 # ---------------------------------------------------------------- pageType switch
@@ -880,7 +890,7 @@ def main(source, target, preview=None):
     main_hmi = hmi.files['main.HMI']
     numbers = [int(s[:-3]) for s in sections.values()]
     for name in PAGES:
-        page, layout = build_page(source_bytes, name, switch_template)
+        page, layout, blink = build_page(source_bytes, name, switch_template)
         if name in sections:
             print(f'{name}: rebuilt in {sections[name]}')
         else:
@@ -894,6 +904,7 @@ def main(source, target, preview=None):
         kinds = ', '.join(s['kind'] for s in LAYOUTS[name]['slots'])
         print(f'{name}: N={len(LAYOUTS[name]["slots"])} ({kinds}), {len(page.objs)} objects, '
               f'RAM (estimate) page {r}, with global {RAM_GLOBAL + r} of {RAM_LIMIT}')
+        print(f'{name}: long press feedback (blinking background): {", ".join(blink)}')
         hard, real = message_len(layout, False), message_len(layout, True)
         maxl = page.obj('strCommand').get('txt_maxl')
         print(f'{name}: entityUpd at most {hard} bytes with every buffer full, {real} as the adapter builds it; '

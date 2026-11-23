@@ -9,8 +9,16 @@ Nur EU; us-l und us-p sind nicht angepasst.
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device9.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py /tmp/swipe.HMI /tmp/feedback.HMI [<ref.tft>]
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/feedback.HMI nspanel-v6.2.0.device10.HMI --preview doc/Pictures/device-page
 ```
+
+Reihenfolge: `swipe_release_fix.py` → `grid_long_press_feedback.py` (Long-Press-Blinken auf cardGrid, cardGrid2,
+cardGrid3) → `card_device.py` (baut die Geräteseiten und gibt ihnen dasselbe Blinken). `card_device.py` nimmt das
+Blinken aus seiner cardGrid-Kopie heraus und setzt es für die Elemente der Geräteseite neu; die beiden letzten
+Schritte liefern deshalb in beiden Reihenfolgen dieselbe Datei, und jeder Schritt ist auf seiner eigenen Ausgabe
+wirkungslos (geprüft). Mit `<ref.tft>` (eine TFT, die aus einer Datei mit gleichen Grid-Seiten kompiliert ist)
+nennt der zweite Schritt den echten RAM-Stand der Grid-Seiten.
 
 `--fields` gibt zusätzlich die Rechnung der längsten Nachricht je Seite aus (siehe „Puffer und RAM“).
 
@@ -20,8 +28,9 @@ auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main un
 (`strCommand` je Seite bemessen, Empfang auf die Puffergröße begrenzt, Lauftext-Statuszeile auf cardDevice2 und 3),
 `device7` (Lauftext auch auf cardDevice1, dafür Status-Icons ohne Popup-Überschrift und kürzere Icon-Puffer),
 `device8` (Lauftext wieder entfernt, neue Kurz-Nachricht `devStatus` für die Statuszeile), `device9` (Statuszeile
-auf allen drei Seiten mittig: `tStatus.xcen` 0 → 1 auf cardDevice1 und 3, sonst wie `device8` – aktuell; alle in
-`/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
+auf allen drei Seiten mittig: `tStatus.xcen` 0 → 1 auf cardDevice1 und 3, sonst wie `device8`), `device10`
+(Long-Press-Blinken auf cardGrid, cardGrid2, cardGrid3 und den drei Geräteseiten, sonst wie `device9` – aktuell; alle
+in `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
 cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
@@ -30,8 +39,8 @@ cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
 - Jede Seite ist eine frische Kopie von cardGrid: Kopfzeile, Pfeile samt Long-Press/Blinken, Swipe-Streifen,
   tmSerial (Empfang, Quittung/CRC, pageType-Umschalter), Sleep-Timer und renderCurrentPage bleiben unverändert –
   bis auf die eine Zeile, die die Nachricht nach `strCommand` kopiert (siehe „Puffer und RAM“).
-  Entfernt sind die sechs Zellen (`bEntity1–6`, `tEntity1–6`); `tmLP` und `LPState` (Long-Press der Zellen) bleiben
-  unverändert.
+  Entfernt sind die sechs Zellen (`bEntity1–6`, `tEntity1–6`); `tmLP` und `LPState` (Long-Press der Zellen) bleiben,
+  dazu kommt das Long-Press-Blinken (siehe „Rückmeldung beim Long-Press“).
 - Die Seiten werden **hinten** an die Seitenliste von main.HMI angehängt (Abschnitte 37/38/39.pa). Keine bestehende
   Seiten-ID verschiebt sich.
 - Jede Seite mit tmSerial bekommt `if(tId.txt=="cardDevice<n>") page cardDevice<n>` hinter dem cardGrid3-Zweig
@@ -142,10 +151,11 @@ Der Code ist der der cardGrid-Zelle (`bEntity1` der Basis-HMI 6.2.0: `down`, `up
 1. **Berühren** (`down`): `tmLP` startet; Name, ID, Icon und Icon-Farbe gehen nach `pageIcons.tTmp1/2/3` und
    `tempIconColor`. Typ `shutter`, `shutter2`, `input_sel`, `timer`: das Popup öffnet **sofort**.
 2. **Halten** (`tmLP`, nach 500 ms): Typ `light`, `light2`, `fan`, `number`: das Popup öffnet. Jeder andere Typ:
-   `LPState=1` (Long-Press scharf).
-3. **Loslassen** (`up`): `LPState` 0 → `event,buttonPress2,<intName>,button`, sonst
-   `event,buttonPress3,<intName>,button`; `LPState` zurück auf 0. Der Long-Press wird also **beim Loslassen**
-   gesendet, ohne sichtbare Rückmeldung während des Haltens (wie cardGrid).
+   `LPState=1` (Long-Press scharf), und der Hintergrund des gehaltenen Elements **blinkt grün/grau** im
+   200-ms-Takt (seit `device10`, siehe „Rückmeldung beim Long-Press“).
+3. **Loslassen** (`up`): das Blinken endet, die Farben sind wieder die normalen. `LPState` 0 →
+   `event,buttonPress2,<intName>,button`, sonst `event,buttonPress3,<intName>,button`; `LPState` zurück auf 0. Der
+   Long-Press wird also **beim Loslassen** gesendet (wie cardGrid).
 
 Was der Adapter je Typ bekommt (gilt für **jede** Slot-Art und main):
 
@@ -182,6 +192,94 @@ Je Slot-Art:
 - Wie bei cardGrid entscheidet `tmLP` anhand von `tTmp.txt` (Typ des berührten Platzes). Der tmSerial-Parser benutzt
   `tTmp` ebenfalls: kommt während des Haltens ein `entityUpd`, öffnet ein light/fan/number-Popup nicht, es gibt dann
   beim Loslassen `buttonPress3`. Verhalten der Vorlage, nicht geändert.
+
+### Rückmeldung beim Long-Press
+
+Werkzeug `HMI/tools/grid_long_press_feedback.py` (cardGrid, cardGrid2, cardGrid3; `card_device.py` ruft dessen
+`remove()`/`add()` für die Geräteseiten auf). Vorgabe (Tim, 2026-11-23): Wo ein gehaltener Druck einen Long-Press
+auslöst, zeigt die HMI, sobald er erkannt ist – auf den Grid-Seiten blinkt der Hintergrund des angetippten Icons.
+
+- **Welche Zelle:** neue Zahlvariable `vaLPCell` je Seite (Kopie von `LPState`, letztes Objekt). Jedes Objekt, das
+  `tmLP` startet, schreibt in `down` direkt hinter `tmLP.en=1` seine Nummer hinein (`vaLPCell.val=<k>`, 1 … n in
+  Objektreihenfolge). `tmLP` und der Restore suchen die Zelle über eine Kette `if(vaLPCell.val==<k>)` mit
+  Objektnamen – keine Objekt-IDs, ein Umsortieren im Editor schadet nicht, und ein Tipp, der per `click <Knopf>,1`
+  vom Namen/Wert kommt, wird gleich behandelt.
+- **Was blinkt:**
+
+  | Element | Objekt, das blinkt | Attribut |
+  |---|---|---|
+  | Grid-Zelle, main, info, button (Knopf, auch die schmalen `bEntityS1/2`) | der Icon-Knopf selbst | `bco` **und** `bco2` |
+  | status (cardDevice1) | die Zelle `tStat7–10` (Textfeld, Rahmen bleibt) | `bco` |
+  | value, progress (cardDevice2), Icon+Name eines Schalters (cardDevice3) – Hotspot `mSlot<k>` | das Namensfeld `tEntity<k>` unter dem Hotspot | `bco` |
+
+  Das Namensfeld gibt es bei allen drei Hotspot-Arten, es ist breit (190, 429 bzw. 125 px) und liegt bei progress
+  **über** dem gezeichneten Balken (y 179–204, Balken ab 207): der Balken wird nicht übermalt und muss nicht neu
+  gezeichnet werden. Ein Knopf bekommt beide Attribute, weil nicht belegt ist, mit welchem der beiden die Nextion
+  einen **gehaltenen** Knopf neu zeichnet (die Pfeile schreiben aus demselben Grund `pco` und `pco2`).
+- **Farben und Takt:** Grün 2016 (das Grün des Uhr- und Pfeil-Blinkens) ↔ Grau 14823 (`bco2`, der normale
+  Press-Hintergrund), zuerst Grün, 200 ms je Phase. Kein Gelb: das Icon eines gedrückten Knopfs ist weiß (`pco2`),
+  auf Gelb wäre es kaum zu sehen. `tmLP` läuft weiter und wird auf 200 ms umgestellt – kein neuer Timer.
+- **Code** (cardGrid3 mit vier Zellen, je Zelle ein Zweig):
+
+  ```
+  // bEntity2 down, hinter tmLP.en=1
+  vaLPCell.val=2
+  // tmLP, hinter LPState.val=1 (die Popup-Typen haben die Seite vorher verlassen)
+  if(vaLPCell.val>0)
+  {
+    tmLP.tim=200
+  }
+  if(vaLPCell.val==2)
+  {
+    if(bEntity2.bco==2016)
+    {
+      bEntity2.bco=14823
+    }else
+    {
+      bEntity2.bco=2016
+    }
+    bEntity2.bco2=bEntity2.bco
+  }
+  // Restore: in jedem up hinter tmLP.en=0 (vor dem Senden) und am Ende von tc0 up (dort mit tmLP.en=0)
+  if(tmLP.tim!=500)
+  {
+    tmLP.tim=500
+    if(vaLPCell.val==2)
+    {
+      bEntity2.bco=defaultBcoColor
+      bEntity2.bco2=14823
+    }
+  }
+  ```
+
+  Die erzeugten Zeilen stehen zwischen `// >> long press feedback (grid_long_press_feedback.py)` und
+  `// << long press feedback`; daran erkennt das Werkzeug sie wieder (idempotent).
+- **Kein Blinken:** Popup-Typen (das Popup öffnet beim Berühren bzw. nach 500 ms); auf den Geräteseiten Typ `text`
+  ohne intName (sendet nichts – `down` setzt dafür `vaLPCell.val=0`; button sendet immer und blinkt immer); leere
+  Elemente (der Code läuft nicht); `bInfo` und der Schalter `btOnOff<k>` (kein Long-Press).
+- **Nie hängen bleiben:**
+  - Loslassen: `up` des Elements stellt zurück; zusätzlich `tc0` `up` (bekommt jedes Loslassen), dort auch
+    `tmLP.en=0`. Das Zurückstellen ist wiederholbar, die Reihenfolge der beiden Ereignisse ist egal.
+  - Seitenwechsel (Popup, `pageType` des Adapters nach `sleepReached` oder Navigation): die Seite wird neu
+    geladen; `bco2`, `tmLP.tim` und die Variablen sind lokal und haben wieder ihre Entwurfswerte, `bco` setzt die
+    Lade-Schleife.
+  - `entityUpd` während des Haltens: schreibt kein `bco`/`bco2` (das Werkzeug prüft, dass nur die Lade-Schleife
+    Hintergründe schreibt und jedes blinkende Objekt in ihr liegt – daher ist `defaultBcoColor` der richtige
+    Rückgabewert). Das Blinken läuft weiter, das Loslassen stellt zurück.
+- **RAM:** eine Zahlvariable je Seite, in der Seitentabelle kompilierter TFTs 8 Byte (Schätzformel: 7).
+
+**Alle Long-Press-Stellen der EU-HMI** (jede Stelle, an der ein gehaltener Druck `buttonPress3` sendet):
+
+| Stelle | Seiten | Rückmeldung |
+|---|---|---|
+| Screensaver-Indikatoren | screensaver2, screensaver5 | hat sie schon: Uhrzeit blinkt gelb/grün (`indicator_long_press_release.py`) |
+| Pfeile `bPrev`/`bNext` | alle Kartenseiten mit `tmLPNav` (cardEntities, cardEntities2, cardSchedule, cardGrid, cardGrid2, cardGrid3, cardMedia, cardThermo, cardThermo2, cardAlarm, cardQR, cardPower, cardChart, cardLChart, cardPChart, cardDevice1–3) | hat sie schon: Überschrift und Pfeile blinken gelb/grün (`nav_long_press_blink.py`) |
+| Zellen `bEntity<k>` | cardGrid, cardGrid2, cardGrid3 | neu: Zellhintergrund blinkt |
+| main, Slots | cardDevice1–3 | neu: siehe Tabelle oben |
+| Zeilen `m0…` (linke Fläche) | cardEntities, cardEntities2 | bewusst ohne: eigener Tipp-Bereich, sendet sofort beim Berühren, keine Haltezeit |
+| Zellen `bEntity<k>`, `bPopup` mit `tmLP` | cardMedia, cardThermo2 | bewusst ohne: der Timer öffnet nur Popups, `up` sendet immer `buttonPress2` – es gibt dort keinen Long-Press |
+
+Andere Seiten senden kein `buttonPress3`.
 
 ## Feldbreiten für den Adapter (Kürzen)
 
@@ -319,9 +417,23 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 
 | Seite | Objekte | `strCommand` | Seite | mit global | frei bis 3584 | frei in `device7` (mit Lauftext) |
 |---|---|---|---|---|---|---|
-| cardDevice1 (N=10, zweiter Zeilensatz, Status-Block) | 76 | 943 | 2758 | 3194 | **390** | 171 |
-| cardDevice2 | 60 | 875 | 2342 | 2778 | **806** | 591 |
-| cardDevice3 | 73 | 1019 | 2821 | 3257 | **327** | 180 |
+| cardDevice1 (N=10, zweiter Zeilensatz, Status-Block) | 77 | 943 | 2765 | 3201 | **383** | 171 |
+| cardDevice2 | 61 | 875 | 2349 | 2785 | **799** | 591 |
+| cardDevice3 | 74 | 1019 | 2828 | 3264 | **320** | 180 |
+
+Das ist die Schätzung für `device10` (mit `vaLPCell`, +7 je Seite gegenüber `device9`). **Gemessen** ist `device9`:
+die Seitentabelle von `/mnt/projekte/nspanel-v6.2.0.device9.tft` (Tims Kompilat, gelesen mit
+`nav_long_press_blink.tft_ram`, global 436) – die Schätzung liegt 130 (cardDevice1), 38 (cardDevice2) und 91
+(cardDevice3) Byte darunter. `device10` = gemessener Stand + 8 für die neue Variable:
+
+| Seite | `device9` gemessen (global + Seite) | frei | `device10` (+8) | frei |
+|---|---|---|---|---|
+| cardGrid | 2720 | 864 | 2728 | 856 |
+| cardGrid2 | 3064 | 520 | 3072 | 512 |
+| cardGrid3 | 2588 | 996 | 2596 | 988 |
+| cardDevice1 | 3324 | 260 | 3332 | **252** |
+| cardDevice2 | 2816 | 768 | 2824 | 760 |
+| cardDevice3 | 3348 | 236 | 3356 | **228** |
 
 Der Zweig für `devStatus` ist nur Code und kostet kein RAM. Gegenüber `device7` fehlt je Seite `gStatus` (−147
 geschätzt); auf cardDevice1 und 2 ist außerdem `strCommand` wieder kleiner (1015 → 943 bzw. 943 → 875, je −72 bzw.
@@ -414,7 +526,7 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
 
 ## Im Nextion-Editor prüfen
 
-1. `nspanel-v6.2.0.device9.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
+1. `nspanel-v6.2.0.device10.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
 2. Kompilieren: keine Fehler in den Seiten cardDevice1–3 (Code ist nur Klartext, nicht kompiliert getestet).
    Besonders: `fill`/`draw` mit `defaultBcoColor`/`defaultFontColor`/`sys2` im tmSerial von cardDevice2,
@@ -427,7 +539,11 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
    und 2; `pageIcons.tTmp1.txt=""` in `tStat7–10`. Neu in `device8`: der Zweig `if(tInstruction.txt=="devStatus")`
    im tmSerial aller drei Seiten (zwischen dem `entityUpd`-Block und `pageType`); kein `gStatus` mehr, kein
    „Component overlap“ an der Statuszeile. Neu in `device9`: `tStatus` auf cardDevice1 und 3 mit `xcen` 1 (mittig).
-3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: 390 Byte Luft, cardDevice3: 327).
+   Neu in `device10`: `vaLPCell` (letztes Objekt) auf cardGrid, cardGrid2, cardGrid3 und cardDevice1–3; die Blöcke
+   zwischen `// >> long press feedback` und `// << long press feedback` in `tmLP`, `tc0` `up` und in `down`/`up`
+   jedes Elements – darin `if(tmLP.tim!=500)`, `bEntity1.bco2=bEntity1.bco` und `tEntity<k>.bco=…` (Textfelder).
+3. RAM-Anzeige des Editors je Seite mit der Tabelle „gemessen“ oben vergleichen (`device10`: cardDevice1 252 Byte
+   frei, cardDevice3 228, cardGrid2 512).
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
    ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach Rückkehr aus einem Popup (der Adapter schickt nach
    renderCurrentPage neu). cardDevice1: Wechsel mit/ohne Status-Icons in beiden Richtungen (Zeilen springen um,
@@ -472,7 +588,40 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
    - cardDevice1: Icons mit Schrift-Zusatz (`<Icon>¬3`) in main, info, Knopf, Status-Zelle und info-Icon – die
      Icon-Puffer haben dort nur 7 Byte.
 
+9. Long-Press-Blinken (Simulator oder Panel; Elemente mit Typ `text` und einer ID bzw. `button`/`switch` belegen):
+   - **cardGrid, cardGrid2, cardGrid3:** eine Zelle halten – nach 0,5 s blinkt ihr Icon-Hintergrund grün/grau
+     (200 ms je Phase), die Namenszeile darunter nicht. Loslassen: Hintergrund sofort normal, genau ein
+     `event,buttonPress3,<intName>,button`. Kurzer Tipp: nur der graue Press-Hintergrund, `buttonPress2`.
+     Jede Zelle einzeln (es blinkt die gehaltene, keine andere).
+   - Sichtbarkeit: Wechselt der gehaltene Knopf wirklich sichtbar die Farbe? Ist das Icon in beiden Phasen zu sehen?
+     Bleibt nach dem Loslassen kein grüner Rest (auch bei hellem Thema bzw. schwarzem Hintergrund)?
+   - Finger halten und **von der Zelle herunterziehen**, dann loslassen: das Blinken endet, die Zelle ist normal;
+     der nächste kurze Tipp auf eine andere Zelle sendet `buttonPress2`.
+   - Während des Blinkens ein `entityUpd` (anderer Wert, anderes Icon; einmal auch die gehaltene Zelle per `delete`
+     ausblenden): Blinken läuft weiter bzw. die ausgeblendete Zelle erscheint nicht wieder; nach dem Loslassen
+     nichts Grünes.
+   - Blinken bis zum Sleep-Timeout halten bzw. `pageType~screensaver` schicken und zurück: Seite normal.
+   - Typ `light`/`fan`/`number`: Popup nach 0,5 s, kein Blinken; `shutter`/`input_sel`/`timer`: Popup sofort.
+     Nach der Rückkehr aus dem Popup eine andere Zelle halten: sie blinkt, nicht die vorherige.
+   - Pfeil lange halten: Überschrift/Pfeile blinken gelb/grün wie bisher, keine Zelle blinkt.
+   - **cardDevice1–3:** main, info (Icon, Name und Wert antippen – es blinkt der Icon-Knopf), button, auf
+     cardDevice1 die schmalen Zeilen und jede Status-Zelle (Rahmen bleibt, Nachbarrahmen unbeschädigt); cardDevice2
+     value und progress (es blinkt das Namensfeld; der Balken bleibt stehen); cardDevice3 Icon/Name eines Schalters
+     (Namensfeld blinkt, der Schalter daneben nicht). Jeweils Loslassen → normal und `buttonPress3`.
+   - Gegenprobe: Typ `text` **ohne** intName (nicht button) blinkt nicht und sendet nichts; `bInfo` blinkt nicht.
+
 ## Bekannte Unsicherheiten / Abweichungen
+
+- **Long-Press-Blinken (`device10`):** nur Klartext, nicht kompiliert, nicht im Simulator gesehen. Offen ist vor
+  allem, ob die Nextion einen **gehaltenen** Knopf beim Schreiben von `bco`/`bco2` sichtbar neu zeichnet (deshalb
+  beide Attribute; Vorbild sind `pco`/`pco2` der Pfeile), ob das Schreiben von `bco` eines per `vis …,0`
+  ausgeblendeten Objekts es wieder zeichnet (nur wenn ein `entityUpd` die gehaltene Zelle ausblendet), und ob ein
+  Textfeld unter einem Hotspot nach dem Neuzeichnen den Hotspot weiter durchlässt (Loslassen muss beim Hotspot
+  ankommen; `tc0` fängt es sonst ab). `if(tmLP.tim!=500)` liest ein Timer-Attribut in einer Bedingung – in der
+  Basis-HMI wird `tim` sonst nur geschrieben.
+- main blinkt und sendet `buttonPress3`; der Adapter hat für main derzeit keine Long-Press-Aktion.
+- Kommt das Loslassen nicht beim Element an (nur `tc0`), bleibt `LPState` wie schon bisher auf 1 stehen: der
+  nächste kurze Tipp wird dann als lang gemeldet. Verhalten der Vorlage, nicht geändert.
 
 - **`devStatus`:** der Zweig ist nur Klartext, nicht kompiliert und nicht im Simulator gesehen. Abgeleitet, nicht
   beobachtet ist auch, dass eine Zuweisung an `tStatus.txt` nur dieses Objekt neu zeichnet (so verhalten sich die
@@ -493,13 +642,14 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
   der Adapter ohnehin neu). Soll es ein echtes Objekt sein: im Editor eine Progress Bar auf eine Seite legen, dann kann
   das Werkzeug sie als Vorlage nehmen.
 - Langes Halten: die Popups von light/light2/fan/number öffnen wie auf cardGrid nach 500 ms; alle anderen Typen
-  senden beim Loslassen `buttonPress3`. Es gibt dabei keine sichtbare Rückmeldung, dass der Long-Press scharf ist.
+  senden beim Loslassen `buttonPress3`; solange blinkt der Hintergrund des Elements (seit `device10`).
 - Ein Tipp auf Name/Wert läuft über `click <Knopf>,1/0`; dass dabei genau ein Ereignis entsteht (und nicht zwei), ist
   vom Aufbau her so, aber nicht im Simulator gesehen.
 - Touch-Code in Textfeldern (`tStat7–10`) und Hotspots über Textfeldern gibt es in der Basis-HMI sonst nicht (die
   Swipe-Streifen liegen neben dem Inhalt). Ob ein Hotspot über einem Text, der neu gezeichnet wird, zuverlässig oben
   bleibt und ob der gezeichnete Balken unter `mSlot2` unberührt bleibt, ist nicht am Gerät gesehen.
-- value, progress, status und Schalter-Icon/-Name zeigen beim Antippen keinen Press-Effekt.
+- value, progress, status und Schalter-Icon/-Name zeigen beim Antippen keinen Press-Effekt (nur das Blinken nach
+  0,5 s).
 - Die Statuszeile hat nur eine Zeile (für zwei war kein Platz).
 - Status-Raster: ob die Nextion bei `style` 1 und `borderw` 1 genau 1 px zeichnet und die überlappenden Rahmen sauber
   aufeinanderliegen, ist nur aus der Vorlage cardPower (2 px) abgeleitet, nicht am Gerät gesehen. Beim Umschalten
