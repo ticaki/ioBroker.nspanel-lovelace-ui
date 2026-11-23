@@ -32,6 +32,7 @@ import {
 import {
     cardDeviceOf,
     DEVICE_PAGE_PREFIX,
+    reportMissingDevicePageTarget,
     devicePageElements,
     devicePagePageConfig,
     supportsCardDevice,
@@ -2730,6 +2731,27 @@ export class PageItem extends BaseTriggeredPage {
     }
 
     /**
+     * The tap on an element of a device page that navigates (`devicePageTarget`): the normal way of a navigation item
+     * (`setNavi`) - the navigation of the panel opens the page and takes its position, so the arrows of the target
+     * page are those of its node. A target that is no node of this panel does nothing and is reported once per panel
+     * and target.
+     *
+     * @param target name of the target page
+     */
+    private async navigateFromDevicePage(target: string): Promise<void> {
+        const panel = this.parent.basePanel;
+        if (!panel.navigation.hasTarget(target)) {
+            if (reportMissingDevicePageTarget(panel, target)) {
+                this.log.warn(
+                    `Device page ${this.parent.name}: the target page "${target}" of element ${this.id} is not assigned to panel ${panel.name} - the tap does nothing!`,
+                );
+            }
+            return;
+        }
+        await panel.navigation.setTargetPageByName(target);
+    }
+
+    /**
      * A tap (`button`) on a row of the detail page of a device: a button (`read: false`) is written with true; anything
      * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities.
      */
@@ -2802,6 +2824,11 @@ export class PageItem extends BaseTriggeredPage {
                 break;
 
             case 'button': {
+                // an element of a device page whose tap navigates: nothing else happens
+                if (this.config?.devicePageTarget) {
+                    await this.navigateFromDevicePage(this.config.devicePageTarget);
+                    break;
+                }
                 if (entry.role === DEVICE_DETAIL_ROW_ROLE) {
                     await this.onDeviceDetailTap();
                     break;

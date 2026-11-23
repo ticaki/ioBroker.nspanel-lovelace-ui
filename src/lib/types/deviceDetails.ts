@@ -523,6 +523,13 @@ export type DevicePageSlotLook = {
      * {@link devicePageSlotTakesLongPress} - elsewhere it is kept but does nothing.
      */
     longPress?: string;
+    /**
+     * the short tap of the slot navigates to {@link targetPage} instead of what the element does on its own (same
+     * fields as a standard page item) - only where {@link devicePageSlotTakesNavigation}
+     */
+    isNavigation?: boolean;
+    /** name of the page the short tap opens, only with {@link isNavigation} */
+    targetPage?: string;
 };
 
 /** the text fields of {@link DevicePageSlotLook} */
@@ -536,12 +543,82 @@ export const DEVICE_PAGE_SLOT_LOOK_FIELDS = ['trueIcon', 'falseIcon', 'trueColor
  * - `custom: 'channel'` an alias channel (`id` = the channel): the page item the channel is on a normal page, built by
  *   the config manager; which roles fit a slot says {@link devicePageSlotAcceptsChannel}.
  *
- * With `custom` the `id` may be '' (chosen in the admin, nothing entered yet): the slot stays empty.
+ * - `custom: 'navigation'` no state at all (`id` is ''): icon and name, a tap opens `targetPage`
+ *   ({@link devicePageSlotAcceptsNavigation} says in which slots). `name` is its text ('' = the name of the target
+ *   page), `trueIcon` / `trueColor` its icon and color.
+ *
+ * With `custom` the `id` may be '' (chosen in the admin, nothing entered yet): the slot stays empty - a navigation
+ * slot stays empty without target page.
  */
 export type DevicePageSlotRef = DevicePageStateRef &
     DevicePageSlotLook & {
-        custom?: 'state' | 'channel';
+        custom?: 'state' | 'channel' | 'navigation';
+        /** text of a navigation slot (`custom: 'navigation'`), missing = the name of the target page */
+        name?: string;
     };
+
+/** icon of a navigation slot without own icon */
+export const DEVICE_PAGE_NAVIGATION_ICON = 'gesture-tap-button';
+
+/**
+ * @param kind the kind of a slot
+ * @returns true when a navigation slot (`custom: 'navigation'`: icon and name, no value) fits it: `info`, `button`
+ * and `status` - `value`, `progress` and `switch` need a value
+ */
+export function devicePageSlotAcceptsNavigation(kind: DevicePageSlotKind): boolean {
+    return kind === 'info' || kind === 'button' || kind === 'status';
+}
+
+/**
+ * channel roles whose element opens its popup in the HMI as soon as it is touched (item types `shutter`, `input_sel`,
+ * `timer`, doc/ideas/device-details/device-page-hmi.md): no tap reaches the adapter
+ */
+const CHANNEL_POPUP_ON_TAP_ROLES: readonly string[] = ['blind', 'gate', 'lock', 'select', 'level.timer'];
+
+/**
+ * @param role common.role of an alias channel
+ * @returns true when a short tap on its element reaches the adapter (`buttonPress2`): every role a slot takes except
+ * those whose element opens its popup in the HMI at once (shutter, gate, lock, selection, timer) - there the popup
+ * comes first, a navigation is not possible. A light, a fan or a slider opens its popup only when held.
+ */
+export function devicePageChannelTakesNavigation(role: string | null | undefined): boolean {
+    return (
+        typeof role === 'string' &&
+        DEVICE_PAGE_CHANNEL_ROLES.info.includes(role) &&
+        !CHANNEL_POPUP_ON_TAP_ROLES.includes(role)
+    );
+}
+
+/**
+ * Whether the short tap of a slot can navigate ({@link DevicePageSlotLook.isNavigation}): a state of the device and
+ * an own data point in every slot (a switch slot by its icon and name, not by the switch), an alias channel by its
+ * role ({@link devicePageChannelTakesNavigation}); a navigation slot always navigates.
+ *
+ * @param ref the slot
+ * @param channelRole common.role of the channel of a channel slot
+ * @returns true when the navigation works there
+ */
+export function devicePageSlotTakesNavigation(
+    ref: DevicePageSlotRef | null | undefined,
+    channelRole?: string | null,
+): boolean {
+    if (!ref) {
+        return false;
+    }
+    return ref.custom === 'channel' ? devicePageChannelTakesNavigation(channelRole) : true;
+}
+
+/**
+ * @param ref a slot
+ * @returns the page its short tap opens: the target of a navigation slot, of another slot the target with
+ * `isNavigation`; '' = the tap does what the element does on its own
+ */
+export function devicePageSlotTargetOf(ref: DevicePageSlotRef | null | undefined): string {
+    if (!ref) {
+        return '';
+    }
+    return ref.custom === 'navigation' || ref.isNavigation ? (ref.targetPage ?? '') : '';
+}
 
 /**
  * @param ref a slot
@@ -570,6 +647,12 @@ export function devicePageSlotLookOf(ref: DevicePageSlotRef, withOlderIcon = tru
     }
     if (ref.longPress) {
         look.longPress = ref.longPress;
+    }
+    if (ref.isNavigation && ref.custom !== 'navigation') {
+        look.isNavigation = true;
+        if (ref.targetPage) {
+            look.targetPage = ref.targetPage;
+        }
     }
     return look;
 }
@@ -742,7 +825,18 @@ function devicePageSlotRefOf(value: unknown, kind: DevicePageSlotKind): DevicePa
     }
     let ref: DevicePageSlotRef | null;
     const custom = 'custom' in value ? value.custom : undefined;
-    if (custom === 'state' || custom === 'channel') {
+    const targetPage = trimmedField(value, 'targetPage');
+    if (custom === 'navigation') {
+        // no state: only the target, the text and the look
+        ref = { key: '', id: '', custom };
+        const name = trimmedField(value, 'name');
+        if (name) {
+            ref.name = name;
+        }
+        if (targetPage) {
+            ref.targetPage = targetPage;
+        }
+    } else if (custom === 'state' || custom === 'channel') {
         ref = { key: '', id: value.id.trim(), custom };
     } else {
         ref = devicePageStateRefOf(value, kind === 'status');
@@ -763,6 +857,13 @@ function devicePageSlotRefOf(value: unknown, kind: DevicePageSlotKind): DevicePa
     const scale: unknown = 'scale' in value ? value.scale : undefined;
     if (isIconColorScaleElement(scale)) {
         ref.scale = { ...scale };
+    }
+    if (ref.custom !== 'navigation' && 'isNavigation' in value && value.isNavigation === true) {
+        // the choice stays also without target page (nothing chosen yet)
+        ref.isNavigation = true;
+        if (targetPage) {
+            ref.targetPage = targetPage;
+        }
     }
     return ref;
 }
@@ -1562,8 +1663,18 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
     if (page) {
         const devicePage: DevicePageRuntime = {
             layout: page.layout,
-            // an own data point or channel that is not entered yet: an empty slot
-            slots: page.slots.map(slot => (slot && slot.id !== '' ? slot : null)),
+            // an own data point or channel that is not entered yet, a navigation slot without target page or in a
+            // slot that needs a value: an empty slot
+            slots: page.slots.map((slot, i) => {
+                if (!slot) {
+                    return null;
+                }
+                if (slot.custom === 'navigation') {
+                    const kind = DEVICE_PAGE_LAYOUTS[page.layout][i];
+                    return slot.targetPage && kind && devicePageSlotAcceptsNavigation(kind) ? slot : null;
+                }
+                return slot.id !== '' ? slot : null;
+            }),
             // without rows the detail page would be empty: no info icon
             showInfo: page.showInfo && runtime.entries.length > 0,
             shortPress: deviceShortPressOf(config),

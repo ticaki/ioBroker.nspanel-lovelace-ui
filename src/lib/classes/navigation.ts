@@ -384,6 +384,14 @@ export class Navigation extends BaseClass {
         await this.panel.setActivePage(errorItem.page);
     }
 
+    /**
+     * @param n name of a navigation target
+     * @returns true when {@link setTargetPageByName} finds it: a node of this panel or the screensaver
+     */
+    hasTarget(n: string): boolean {
+        return n === screensaverTargetPage || this.navigationConfig.some(a => a && a.name === n);
+    }
+
     async setTargetPageByName(n: string): Promise<void> {
         if (n === screensaverTargetPage) {
             await this.panel.activateScreensaver();

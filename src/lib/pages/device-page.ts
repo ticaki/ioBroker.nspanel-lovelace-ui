@@ -26,7 +26,11 @@ import {
     DEVICE_PAGE_STATUS_MAX_PARTS,
     DEVICE_PAGE_TEXT_FONT,
     DEVICE_PAGE_TEXT_MAX_BYTES,
+    DEVICE_PAGE_NAVIGATION_ICON,
     DEVICE_PAGE_PROGRESS_ROLE,
+    devicePageChannelTakesNavigation,
+    devicePageSlotAcceptsNavigation,
+    devicePageSlotTargetOf,
     devicePageProgressPercent,
     devicePageSlotAccepts,
     devicePageChannelTakesLongPress,
@@ -459,7 +463,14 @@ export type DevicePageChannelItems = Record<number, DevicePageChannelItem>;
  * @returns the admin page item
  */
 export function devicePageChannelAdminItem(ref: DevicePageSlotRef, role: string): AdminPageItemConfig {
-    const { longPress, ...look } = devicePageSlotLookOf(ref, false);
+    // the navigation of the tap is not handed to the channel item: it stays the item of its role (value, switch),
+    // the tap is caught on the device page (devicePageElements)
+    const {
+        longPress,
+        isNavigation: _isNavigation,
+        targetPage: _targetPage,
+        ...look
+    } = devicePageSlotLookOf(ref, false);
     const item: AdminPageItemConfig = { channelId: emptyChannelValueConfig(ref.id), ...look };
     if (longPress && devicePageChannelTakesLongPress(role)) {
         item.longPress = longPress;
@@ -694,8 +705,9 @@ export function withDevicePageSlotLook(
     ref: DevicePageSlotRef,
     common: DeviceDetailStateCommon,
 ): NSPanel.PageItemDataItemsOptions {
-    // the older icon of a status slot is already in the item (devicePageStatusIconItem)
-    const look = devicePageSlotLookOf(ref, false);
+    // the older icon of a status slot is already in the item (devicePageStatusIconItem); the navigation of the tap
+    // is no look (devicePageSlotItem)
+    const { isNavigation: _isNavigation, targetPage: _targetPage, ...look } = devicePageSlotLookOf(ref, false);
     if (Object.keys(look).length === 0) {
         return item;
     }
@@ -734,8 +746,50 @@ export function devicePageSlotItem(
     common: DeviceDetailStateCommon,
     name: string,
 ): NSPanel.PageItemDataItemsOptions | undefined {
-    const item = devicePageStateSlotItem(deviceId, kind, entry, common, name);
-    return item ? withDevicePageSlotLook(item, entry, common) : undefined;
+    const target = devicePageSlotTargetOf(entry);
+    const item = devicePageStateSlotItem(deviceId, kind, entry, common, name, target !== '');
+    if (!item) {
+        return undefined;
+    }
+    const withLook = withDevicePageSlotLook(item, entry, common);
+    return target ? { ...withLook, devicePageTarget: target } : withLook;
+}
+
+/**
+ * The page item of a navigation slot (`custom: 'navigation'`): a text with icon and name only - no state, field 6
+ * stays empty. The tap opens the target page (`devicePageTarget`, PageItem.onCommand). Icon and color are the own
+ * ones of the slot (`trueIcon`, `trueColor`), else {@link DEVICE_PAGE_NAVIGATION_ICON} in the color of the group
+ * info; the name is the own text, else the name of the target page.
+ *
+ * @param kind the kind of the slot
+ * @param ref the slot
+ * @returns the page item, undefined without target page or in a slot that needs a value
+ * (devicePageSlotAcceptsNavigation)
+ */
+export function devicePageNavigationSlotItem(
+    kind: DevicePageSlotKind,
+    ref: DevicePageSlotRef,
+): NSPanel.PageItemDataItemsOptions | undefined {
+    const target = ref.custom === 'navigation' ? devicePageSlotTargetOf(ref) : '';
+    if (!target || !devicePageSlotAcceptsNavigation(kind)) {
+        return undefined;
+    }
+    const icon: NSPanel.DataItemsOptions = { type: 'const', constVal: ref.trueIcon || DEVICE_PAGE_NAVIGATION_ICON };
+    const color: NSPanel.DataItemsOptions = (ref.trueColor ? colorItem(ref.trueColor) : undefined) ?? {
+        type: 'const',
+        constVal: Color.deviceInfo,
+    };
+    const name: NSPanel.DataItemsOptions = { type: 'const', constVal: ref.name || target };
+    return {
+        type: 'text',
+        role: DEVICE_DETAIL_ROW_ROLE,
+        dpInit: '',
+        devicePageTarget: target,
+        data: {
+            icon: { true: { value: icon, color }, false: { value: icon, color } },
+            text: { true: name, false: name },
+        },
+    };
 }
 
 /**
@@ -757,6 +811,8 @@ export function devicePageSlotItem(
  * @param entry the state of the slot
  * @param common common of the state
  * @param name name of the slot
+ * @param navigates the tap of the slot navigates: an `info` slot shows a selection as text (its popup would come
+ * before the tap)
  * @returns the page item, undefined when the state does not fit the kind (devicePageSlotAccepts)
  */
 function devicePageStateSlotItem(
@@ -765,6 +821,7 @@ function devicePageStateSlotItem(
     entry: DevicePageStateRef,
     common: DeviceDetailStateCommon,
     name: string,
+    navigates = false,
 ): NSPanel.PageItemDataItemsOptions | undefined {
     if (!devicePageSlotAccepts(kind, common)) {
         return undefined;
@@ -773,7 +830,10 @@ function devicePageStateSlotItem(
     const value: NSPanel.DataItemsOptions = { type: 'triggered', dp: entry.id };
     switch (kind) {
         case 'info':
-            return { ...deviceDetailRowItem(deviceId, entry, common, name, 'keepSelect'), dpInit: '' };
+            return {
+                ...deviceDetailRowItem(deviceId, entry, common, name, navigates ? 'all' : 'keepSelect'),
+                dpInit: '',
+            };
         case 'value':
             return { ...deviceDetailRowItem(deviceId, entry, common, name, 'all'), dpInit: '' };
         case 'switch':
@@ -863,6 +923,26 @@ export function devicePageStatusItem(
     return { ...deviceDetailRowItem(deviceId, entry, common, '', 'all'), dpInit: '' };
 }
 
+/** the target pages already reported as missing, per panel */
+const missingDevicePageTargets = new WeakMap<object, Set<string>>();
+
+/**
+ * A target page of a slot is no node of the panel: it is reported once per panel and target.
+ *
+ * @param panel the panel
+ * @param target name of the target page
+ * @returns true when it was not reported before
+ */
+export function reportMissingDevicePageTarget(panel: object, target: string): boolean {
+    const reported = missingDevicePageTargets.get(panel) ?? new Set<string>();
+    missingDevicePageTargets.set(panel, reported);
+    if (reported.has(target)) {
+        return false;
+    }
+    reported.add(target);
+    return true;
+}
+
 /** the elements of the device page in the order of its page items */
 export interface DevicePageElements {
     headline: string;
@@ -920,11 +1000,21 @@ export async function devicePageElements(
     const channelSlots: number[] = [];
     for (let i = 0; i < kinds.length; i++) {
         const ref = page.slots[i] ?? null;
+        if (ref?.custom === 'navigation') {
+            // no state: icon and name, the tap opens the target page
+            slots[i] = devicePageNavigationSlotItem(kinds[i], ref);
+            continue;
+        }
         if (ref?.custom === 'channel') {
             // an alias channel: its page item was built when the item was configured, it brings its own name
             const channel = source.devicePageChannels?.[i];
             const item = channel ? devicePageChannelSlotItem(kinds[i], channel) : undefined;
             if (item) {
+                // the tap navigates where it reaches the adapter - elsewhere the popup of the HMI comes first
+                const target = devicePageChannelTakesNavigation(channel?.role) ? devicePageSlotTargetOf(ref) : '';
+                if (target) {
+                    item.devicePageTarget = target;
+                }
                 slots[i] = item;
                 channelSlots.push(i);
             } else {

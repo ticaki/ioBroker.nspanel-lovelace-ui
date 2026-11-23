@@ -1548,6 +1548,11 @@ export namespace NSPanel {
          * their slot - built when the item is configured (device-page.ts devicePageChannels)
          */
         devicePageChannels?: DevicePageChannelItems;
+        /**
+         * an element of a device page whose short tap navigates: name of the target page (device-page.ts) - the tap
+         * does nothing else
+         */
+        devicePageTarget?: string;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

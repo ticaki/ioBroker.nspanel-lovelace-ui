@@ -7,7 +7,9 @@ import {
     devicePageConfigOf,
     devicePageSlotAccepts,
     devicePageSlotAcceptsChannel,
+    devicePageSlotAcceptsNavigation,
     devicePageSlotLookOf,
+    devicePageSlotTargetOf,
     deviceShortPressOf,
     fitDevicePageSlots,
     type DeviceDetailsConfig,
@@ -21,6 +23,7 @@ import {
     type DeviceShortPress,
     type DeviceStateInfo,
 } from '../../src/lib/types/deviceDetails';
+import { screensaverTargetPage } from '../../src/lib/types/adminShareConfig';
 import { switchOption, type OptionStash } from './itemOptionStash';
 
 /**
@@ -117,10 +120,17 @@ export function shortPressToSave(device: Pick<DeviceDetailsConfig, 'shortPress' 
 
 /**
  * @param from a slot
- * @returns its own settings as they are stored (own look, color scale, long press, the older status icon)
+ * @returns its own settings as they are stored (own look, color scale, long press, the navigation of the short tap,
+ * the older status icon)
  */
 function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
     const out: Partial<DevicePageSlotRef> = {};
+    if (from.isNavigation && from.custom !== 'navigation') {
+        out.isNavigation = true;
+    }
+    if (from.targetPage) {
+        out.targetPage = from.targetPage;
+    }
     for (const field of DEVICE_PAGE_SLOT_LOOK_FIELDS) {
         if (from[field]) {
             out[field] = from[field];
@@ -152,7 +162,12 @@ export function withDevicePageSlot(
         return config;
     }
     const before = slots[index];
-    slots[index] = ref ? { ...(before ? slotSettingsOf(before) : {}), ...ref } : null;
+    const next: DevicePageSlotRef | null = ref ? { ...(before ? slotSettingsOf(before) : {}), ...ref } : null;
+    if (next?.custom === 'navigation') {
+        // a navigation slot always navigates: no choice of the short tap
+        delete next.isNavigation;
+    }
+    slots[index] = next;
     // the older own icon only on a status slot
     return { ...config, slots: fitDevicePageSlots(slots, config.layout) };
 }
@@ -181,6 +196,22 @@ export function withDevicePageSlotLook(
     }
     if (slot.custom) {
         next.custom = slot.custom;
+    }
+    if (slot.custom === 'navigation') {
+        // target and text of a navigation slot are edited at the slot, not in the dialog
+        if (slot.name) {
+            next.name = slot.name;
+        }
+        if (slot.targetPage) {
+            next.targetPage = slot.targetPage;
+        }
+    } else if (look.isNavigation) {
+        // the choice stays also without target page (nothing chosen yet)
+        next.isNavigation = true;
+        const targetPage = look.targetPage?.trim();
+        if (targetPage) {
+            next.targetPage = targetPage;
+        }
     }
     for (const field of DEVICE_PAGE_SLOT_LOOK_FIELDS) {
         const text = look[field]?.trim();
@@ -211,15 +242,111 @@ export function devicePageSlotSelectValue(slot: DevicePageSlotRef | null | undef
     return slot.custom ? DEVICE_PAGE_CUSTOM : slot.id;
 }
 
+/** what a user defined slot shows: an own data point, an alias channel or nothing but a navigation */
+export type DevicePageCustomSource = 'state' | 'channel' | 'navigation';
+
 /**
- * A user defined slot: an own data point or an alias channel. The id may be '' (nothing entered yet).
+ * @param value a value of the radio group of a user defined slot
+ * @returns true for a source of a user defined slot
+ */
+export function isDevicePageCustomSource(value: string): value is DevicePageCustomSource {
+    return value === 'state' || value === 'channel' || value === 'navigation';
+}
+
+/**
+ * @param kind the kind of a slot
+ * @param current what the slot shows now
+ * @returns the sources a user defined slot of this kind offers: data point and channel always, the navigation where
+ * icon and name are enough ({@link devicePageSlotAcceptsNavigation}) - a saved navigation stays offered (marked)
+ */
+export function devicePageCustomSources(
+    kind: DevicePageSlotKind,
+    current: DevicePageSlotRef | null | undefined,
+): DevicePageCustomSource[] {
+    const sources: DevicePageCustomSource[] = ['state', 'channel'];
+    if (devicePageSlotAcceptsNavigation(kind) || current?.custom === 'navigation') {
+        sources.push('navigation');
+    }
+    return sources;
+}
+
+/**
+ * A user defined slot: an own data point, an alias channel or a navigation (no state, its id is always ''). The id
+ * may be '' (nothing entered yet).
  *
- * @param source data point or alias channel
+ * @param source data point, alias channel or navigation
  * @param id the id
  * @returns the slot
  */
-export function customDevicePageSlot(source: 'state' | 'channel', id: string): DevicePageSlotRef {
-    return { key: '', id, custom: source };
+export function customDevicePageSlot(source: DevicePageCustomSource, id: string): DevicePageSlotRef {
+    return { key: '', id: source === 'navigation' ? '' : id, custom: source };
+}
+
+/**
+ * Target page and text of a navigation slot (`custom: 'navigation'`); another slot stays as it is.
+ *
+ * @param config the device page
+ * @param index index of the slot (0 = slot 1)
+ * @param change the new target page and / or text, '' = none
+ * @param change.targetPage name of the target page
+ * @param change.name text of the element
+ * @returns the device page with the change
+ */
+export function withDevicePageSlotNavigation(
+    config: DevicePageConfig,
+    index: number,
+    change: { targetPage?: string; name?: string },
+): DevicePageConfig {
+    const slot = config.slots[index];
+    if (slot?.custom !== 'navigation') {
+        return config;
+    }
+    if (
+        (change.targetPage === undefined || change.targetPage === (slot.targetPage ?? '')) &&
+        (change.name === undefined || change.name === (slot.name ?? ''))
+    ) {
+        // nothing new (the selection reports its value again when it is shown)
+        return config;
+    }
+    const next: DevicePageSlotRef = { ...slot };
+    if (change.targetPage !== undefined) {
+        if (change.targetPage) {
+            next.targetPage = change.targetPage;
+        } else {
+            delete next.targetPage;
+        }
+    }
+    if (change.name !== undefined) {
+        if (change.name) {
+            next.name = change.name;
+        } else {
+            delete next.name;
+        }
+    }
+    const slots = [...config.slots];
+    slots[index] = next;
+    return { ...config, slots };
+}
+
+/**
+ * Whether the target page of a slot is to be marked: a page that is not among the pages that can be chosen. Nothing
+ * is marked without target, for the screensaver, for the page the item lies on or while the pages are not known.
+ *
+ * @param slot the slot
+ * @param pages the pages that can be chosen, null = not known (being read)
+ * @param currentPage the page the item lies on (not among the pages offered)
+ * @returns true when the target page is unknown
+ */
+export function devicePageTargetProblem(
+    slot: DevicePageSlotRef | null | undefined,
+    pages: readonly string[] | null,
+    currentPage?: string,
+): boolean {
+    const target = devicePageSlotTargetOf(slot);
+    if (!target || target === screensaverTargetPage || target === currentPage || !pages || pages.length === 0) {
+        return false;
+    }
+    return !pages.includes(target);
 }
 
 /**
@@ -240,6 +367,10 @@ export function devicePageSlotOf(
     current: DevicePageSlotRef | null | undefined,
 ): DevicePageSlotRef | null {
     if (value === DEVICE_PAGE_CUSTOM) {
+        if (current?.custom === 'navigation') {
+            // target and text belong to the navigation slot
+            return { ...current };
+        }
         return current?.custom ? customDevicePageSlot(current.custom, current.id) : customDevicePageSlot('state', '');
     }
     return devicePageRefOf(value, options, entries, current?.custom ? null : current);
@@ -272,6 +403,10 @@ export function devicePageCustomProblem(
     slot: DevicePageSlotRef | null | undefined,
     object: DevicePageCustomObject | null | undefined,
 ): DevicePageStateProblem | undefined {
+    if (slot?.custom === 'navigation') {
+        // no object: it only has to fit the kind of the slot
+        return devicePageSlotAcceptsNavigation(kind) ? undefined : 'unfit';
+    }
     if (!slot?.custom || slot.id === '' || object === undefined) {
         return undefined;
     }

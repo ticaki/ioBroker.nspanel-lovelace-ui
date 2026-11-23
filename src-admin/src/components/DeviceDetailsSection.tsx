@@ -39,6 +39,7 @@ import {
     type DeviceDetailsConfig,
     type DeviceDetailsInfo,
     type DevicePageConfig,
+    type DevicePageSlotRef,
     type DeviceSelectionError,
     type DeviceShortPress,
 } from '../../../src/lib/types/deviceDetails';
@@ -112,6 +113,18 @@ export interface DeviceDetailsSectionProps {
      * @param onChange the picked icon
      */
     devicePageIconSelect: (label: string, value: string, onChange: (icon: string) => void) => React.ReactNode;
+    /**
+     * the selector of the target page of a slot of the device page, rendered by the page item dialog
+     *
+     * @param slot the slot
+     * @param onChange the chosen page, '' = none
+     */
+    devicePageTargetSelect: (slot: DevicePageSlotRef, onChange: (page: string) => void) => React.ReactNode;
+    /**
+     * @param slot a slot of the device page
+     * @returns true when its target page is not among the pages that can be chosen
+     */
+    devicePageTargetProblem: (slot: DevicePageSlotRef | null) => boolean;
     /** for the color theme in the color dialog of a slot of the device page */
     adapterName?: string;
 }
@@ -426,6 +439,8 @@ export default class DeviceDetailsSection extends React.Component<
                         themeType={themeType}
                         iconSelector={this.props.devicePageIconSelector}
                         iconSelect={this.props.devicePageIconSelect}
+                        targetSelect={this.props.devicePageTargetSelect}
+                        targetProblem={this.props.devicePageTargetProblem}
                         adapterName={this.props.adapterName}
                         instance={Number(this.props.instance) || 0}
                     />

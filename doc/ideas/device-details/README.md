@@ -357,6 +357,8 @@ Jeder Slot kann statt eines States des Geräts etwas Eigenes zeigen (`custom`); 
   `devicePageChannels` (Slot-Index → `{ role, item }`); die Geräteseite selbst entsteht weiter erst beim Öffnen. Ein
   Kanal, den es nicht gibt, dessen Rolle nicht zum Slot passt oder den der ConfigManager ablehnt (fehlende
   Datenpunkte), lässt den Slot leer und steht in den Meldungen der Konvertierung; das Item bleibt gültig.
+- **Navigation** (`custom: 'navigation'`): kein State, nur Icon, Name und Zielseite – siehe „Navigation aus einem
+  Slot“.
 
 Welche Rolle in welche Slot-Art darf (`DEVICE_PAGE_CHANNEL_ROLES` / `devicePageSlotAcceptsChannel`): Alle Slots lassen
 sich wie eine cardGrid-Zelle antippen (HMI ab `device5`), die Art begrenzt nur, was Feld 6 zeigen kann.
@@ -407,8 +409,59 @@ Standard-Page-Item und nutzen dessen Bausteine.
 - Status-Slots: das ältere Feld `icon` gilt weiter als Icon für beide Zustände, bis im Dialog Icons gesetzt werden.
 - Andocken weiterer Einstellungen: ein Feld in `DevicePageSlotLook` (+ `DEVICE_PAGE_SLOT_LOOK_FIELDS` für Texte), ein
   Abschnitt in `DevicePageSlotDialog` (`renderLook` / `renderActions`), Anwenden in `withDevicePageSlotLook` (States)
-  bzw. `devicePageChannelAdminItem` (Kanäle). Nicht gebaut: eine eigene Aktion für den Kurz-Tipp (z. B. Navigation
-  aus einem Slot) – ein State-Slot ist kein Navigations-Item, das wäre ein Nachbau.
+  bzw. `devicePageChannelAdminItem` (Kanäle).
+- **Kurzer Tipp** (`isNavigation`, `targetPage`): siehe „Navigation aus einem Slot“.
+
+### Navigation aus einem Slot
+
+Von der Geräteseite kommt man auf eine andere Seite (z. B. die Raumauswahl des Saugroboters) auf zwei Wegen. Die
+Felder heißen wie beim Standard-Page-Item (`isNavigation`, `targetPage`), die Seitenauswahl ist dieselbe
+(`TargetPageSelect`, aus `ChannelConfigDialog` ausgelagert).
+
+1. **Kurzer Tipp eines Slots** – im „…“-Dialog der Abschnitt „Kurzer Tipp“: „Standard“ (wie bisher) oder
+   „Navigation“ mit Zielseite. Gespeichert am Slot: `isNavigation: true`, `targetPage: '<Seite>'` (die Wahl bleibt
+   auch ohne Zielseite stehen, dann gilt Standard). Der Tipp öffnet dann nur noch die Seite – ein Knopf drückt
+   nicht mehr, ein An/Aus-Wert schaltet nicht mehr. Icon, Farbe, Name und Wert des Slots bleiben.
+   - Geht für States des Geräts und eigene Datenpunkte in jeder Slot-Art; beim switch-Slot navigiert der Tipp auf
+     Icon/Name, der Schalter selbst (`OnOff`) schaltet weiter.
+   - Ein info-Slot mit Auswahl (`input_sel`) wird mit Navigation als Text gezeigt (`readOnly: 'all'`), sonst käme
+     sein Popup dem Tipp zuvor.
+   - **Alias-Kanäle:** nur wo der kurze Tipp den Adapter erreicht (`devicePageChannelTakesNavigation`). Rollladen,
+     Tor, Schloss, Auswahl und Timer (Typen `shutter`, `input_sel`, `timer`) öffnen ihr Popup in der HMI sofort beim
+     Berühren – dort hat das Popup Vorrang, der Admin bietet „Kurzer Tipp“ nicht an, ein trotzdem gespeichertes Ziel
+     wird ignoriert. Licht, Ventilator und Regler öffnen ihr Popup erst beim Halten: der kurze Tipp navigiert, das
+     Halten öffnet weiter das Popup.
+   - Der Kanal bleibt dabei das Page-Item seiner Rolle (Wert, Schalter, Popup): `isNavigation` wird **nicht** in die
+     Kette `devicePageChannelAdminItem` → `adminPageItemToScriptItem` gegeben (ein `navigate`-Item wäre ein reiner
+     Knopf ohne Wert und ohne `OnOff`). Stattdessen trägt das Element das Ziel (`devicePageTarget`).
+2. **Navigations-Platz ohne State** – „Benutzerdefiniert“ → dritte Wahl **Navigation** (neben Datenpunkt und Kanal):
+   `{ key: '', id: '', custom: 'navigation', targetPage, name?, trueIcon?, trueColor? }`. Zeigt Icon und Name, der
+   Tipp springt zur Zielseite. `name` leer = Name der Zielseite; Icon/Farbe über „…“ (nur eine Spalte, kein
+   Farbverlauf), sonst `gesture-tap-button` in der Farbe der Gruppe Info. Angeboten in info-, button- und
+   status-Slots (`devicePageSlotAcceptsNavigation`); value, progress und switch brauchen einen Wert – der Admin
+   blendet die Wahl dort aus, ein dort gespeicherter Platz ist rot markiert und bleibt am Panel leer. Ohne Zielseite
+   bleibt der Slot leer.
+
+**Adapter:** `devicePageSlotItem` / `devicePageNavigationSlotItem` / `devicePageElements` setzen am Page-Item
+`devicePageTarget` (Name der Zielseite). Für die HMI ändert sich nichts: ein Navigations-Platz ist ein `text`-Element
+mit Icon und Name (Feld 6 leer), das wie jeder Slot `buttonPress2,<id>,button` sendet. `PageItem.onCommand('button')`
+prüft `devicePageTarget` zuerst und ruft `navigation.setTargetPageByName(target)` – derselbe Weg wie `setNavi` eines
+Navigations-Items auf cardGrid (versteckte Seite → „Seite gesperrt“, `///screensaver` → Screensaver).
+
+**Zielseite fehlt:** Ist das Ziel kein Navigationsknoten dieses Panels (`Navigation.hasTarget`, Seite dem Panel nicht
+zugeordnet oder gelöscht), passiert beim Tipp nichts; das Log bekommt einmal je Panel und Ziel eine Warnung
+(`reportMissingDevicePageTarget`). Der Admin markiert eine Zielseite rot („Zielseite nicht gefunden“), die nicht in
+der Seitenliste des Dialogs steht (`devicePageTargetProblem`; Screensaver und die Seite des Items selbst gelten als
+bekannt). Die Seitenliste des Dialogs ist nicht nach Panel getrennt – ob die Seite dem Panel zugeordnet ist, zeigt
+erst die Warnung zur Laufzeit.
+
+**Rückweg:** Es gibt keinen Mechanismus „zurück zur aufrufenden Seite“ für beliebige Ziele. Detailseite und
+Geräteseite hängen als erzeugte Unterseiten (`directParentPage`) an der Seite des Items, deshalb führt ihr Pfeil dorthin
+zurück; eine Zielseite ist dagegen eine normale Seite der Navigation. Nach dem Sprung steht die Navigation auf dem
+Knoten der Zielseite, ihre Pfeile sind die dort eingerichteten (prev / parent / home / next). Zur Geräteseite kommt
+man nur wieder über das Item (Long-Press bzw. kurzer Tipp). Wer von der Zielseite zurück zur Seite mit dem Geräte-Item
+will, trägt diese als parent der Zielseite ein. Die verlassene Geräteseite bleibt bis zum nächsten Öffnen als
+Unterseite der Item-Seite bestehen (wie bisher beim Verlassen über den Screensaver).
 
 ### Long-Press auf der Geräteseite
 

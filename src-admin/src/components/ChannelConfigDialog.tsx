@@ -42,6 +42,7 @@ import { channelIdOf, channelRolesOf, isInChannels } from '../channelSelection';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
 import DeviceDetailsSection, { isBlockingDeviceError } from './DeviceDetailsSection';
+import TargetPageSelect from './TargetPageSelect';
 import { pageItemSaveState } from '../pageItemSaveState';
 import {
     freshKindFields,
@@ -55,6 +56,7 @@ import {
 } from '../itemOptionStash';
 import { applyDeviceAnswer } from '../deviceAnswer';
 import {
+    devicePageTargetProblem,
     devicePageToSave,
     shortPressToSave,
     switchLongPressTarget,
@@ -64,6 +66,7 @@ import {
 } from '../devicePageConfig';
 import {
     devicePageConfigOf,
+    devicePageSlotTargetOf,
     deviceShortPressOf,
     isDeviceDetailsConfig,
     updatedDeviceDetailsLearned,
@@ -72,6 +75,7 @@ import {
     type DeviceDetailsInfo,
     type DeviceDetailsLearned,
     type DevicePageConfig,
+    type DevicePageSlotRef,
     type DeviceSelectionError,
     type DeviceShortPress,
 } from '../../../src/lib/types/deviceDetails';
@@ -1770,44 +1774,48 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private renderTargetPageSelect(): React.JSX.Element {
         const { loadingPages, availablePages, targetPage } = this.state;
         return (
-            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                <Autocomplete
-                    sx={{ flex: 1 }}
-                    options={loadingPages ? [] : this.targetPageOptions(availablePages)}
-                    getOptionLabel={this.targetPageLabel}
-                    value={targetPage || null}
-                    onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
-                    onInputChange={(_e, val) => this.handleTargetPageChange(val)}
-                    disabled={loadingPages}
-                    freeSolo
-                    forcePopupIcon
-                    renderInput={params => (
-                        <TextField
-                            {...params}
-                            variant="standard"
-                            label={I18n.t('channelConfigDialog_targetPage')}
-                            slotProps={{
-                                ...params.slotProps,
-                                input: {
-                                    ...params.slotProps.input,
-                                    endAdornment: (
-                                        <>
-                                            {loadingPages && <CircularProgress size={16} />}
-                                            {params.slotProps.input.endAdornment}
-                                        </>
-                                    ),
-                                },
-                            }}
-                        />
-                    )}
-                />
-                <DocHelp
-                    topic="pageitems.targetPage"
-                    sx={{ flexShrink: 0, mb: 0.5 }}
-                />
-            </Box>
+            <TargetPageSelect
+                pages={availablePages}
+                loading={loadingPages}
+                value={targetPage}
+                onChange={(value: string): void => this.setState({ targetPage: value })}
+                docTopic="pageitems.targetPage"
+            />
         );
     }
+
+    /**
+     * The target page of a slot of the device page (short tap "navigation", navigation slot): the same selection, a
+     * page that cannot be chosen is marked.
+     *
+     * @param slot the slot
+     * @param onPick the chosen page
+     */
+    private renderSlotTargetSelect = (slot: DevicePageSlotRef, onPick: (page: string) => void): React.JSX.Element => {
+        const { loadingPages, availablePages } = this.state;
+        const problem = this.isSlotTargetProblem(slot);
+        return (
+            <TargetPageSelect
+                pages={availablePages}
+                loading={loadingPages}
+                value={devicePageSlotTargetOf(slot)}
+                onChange={onPick}
+                error={problem}
+                helperText={problem ? I18n.t('deviceDetailsDialog_slotTargetMissing') : undefined}
+            />
+        );
+    };
+
+    /**
+     * @param slot a slot of the device page
+     * @returns true when its target page is not among the pages that can be chosen
+     */
+    private isSlotTargetProblem = (slot: DevicePageSlotRef | null): boolean =>
+        devicePageTargetProblem(
+            slot,
+            this.state.loadingPages ? null : this.state.availablePages,
+            this.props.currentPageName,
+        );
 
     /**
      * the kind of the item at the top of the dialog: standard, device with details (grid pages, cardEntities) or
@@ -1916,6 +1924,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     onDevicePageChange={this.handleDevicePageChange}
                     devicePageIconSelector={device.devicePage ? this.renderDevicePageIcon(device.devicePage) : null}
                     devicePageIconSelect={this.renderSlotIconSelect}
+                    devicePageTargetSelect={this.renderSlotTargetSelect}
+                    devicePageTargetProblem={this.isSlotTargetProblem}
                     adapterName={this.props.adapterName}
                 />
                 <TextField

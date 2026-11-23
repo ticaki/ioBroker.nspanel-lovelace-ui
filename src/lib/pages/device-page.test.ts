@@ -13,6 +13,7 @@ import {
     devicePageMainElement,
     devicePageMainItem,
     devicePageMaxPayloadBytes,
+    devicePageNavigationSlotItem,
     devicePagePageConfig,
     devicePagePayload,
     devicePageSlotItem,
@@ -20,6 +21,7 @@ import {
     devicePageStatusIconItem,
     devicePageStatusItem,
     devicePageStatusMessage,
+    reportMissingDevicePageTarget,
     splitDevicePageStatus,
     supportsCardDevice,
 } from './device-page';
@@ -43,6 +45,11 @@ import {
     DEVICE_PAGE_CHANNEL_ROLES,
     devicePageSlotAccepts,
     devicePageSlotAcceptsChannel,
+    devicePageSlotAcceptsNavigation,
+    devicePageChannelTakesNavigation,
+    devicePageSlotTakesNavigation,
+    devicePageSlotTargetOf,
+    DEVICE_PAGE_NAVIGATION_ICON,
     devicePageSlotFields,
     devicePageSlotHasLook,
     devicePageSlotLookOf,
@@ -1341,6 +1348,376 @@ describe('lib/pages/device-page - settings of a slot on a state', () => {
         ) as any;
         expect(own.data.icon.true.value.constVal).to.equal('door-open');
         expect(own.data.icon.false.value.constVal).to.equal('door-closed');
+    });
+});
+
+describe('lib/pages/device-page - navigation from the slots', () => {
+    const c = (id: string): any => objects[`${DEV}.${id}`].common;
+    const first = (kind: string): number => DEVICE_PAGE_LAYOUTS[1].findIndex(k => k === kind);
+
+    it('configuration: the short tap navigation of a slot is kept, also without target page; old slots unchanged', () => {
+        const slots: unknown[] = [
+            { ...ref('power'), isNavigation: true, targetPage: ' rooms ' },
+            { ...ref('program'), isNavigation: true },
+            { ...ref('on'), targetPage: 'rooms' },
+            { ...ref('on'), isNavigation: 'yes', targetPage: 'rooms' },
+        ];
+        const page = devicePageConfigOf({ layout: 1, slots });
+        expect(page?.slots[0]).to.deep.equal({ ...ref('power'), isNavigation: true, targetPage: 'rooms' });
+        expect(page?.slots[1]).to.deep.equal({ ...ref('program'), isNavigation: true });
+        // a target without the choice "navigation" is no navigation
+        expect(page?.slots[2]).to.deep.equal(ref('on'));
+        expect(page?.slots[3]).to.deep.equal(ref('on'));
+        expect(devicePageSlotTargetOf(page?.slots[0])).to.equal('rooms');
+        expect(devicePageSlotTargetOf(page?.slots[1])).to.equal('');
+        expect(devicePageSlotTargetOf(page?.slots[2])).to.equal('');
+        expect(devicePageSlotTargetOf(null)).to.equal('');
+        expect(devicePageSlotLookOf({ ...ref('power'), isNavigation: true, targetPage: 'rooms' })).to.deep.equal({
+            isNavigation: true,
+            targetPage: 'rooms',
+        });
+        expect(devicePageSlotHasLook({ ...ref('power'), isNavigation: true })).to.equal(true);
+    });
+    it('configuration: a navigation slot has no state - target, text and look', () => {
+        const stored = {
+            key: 'x',
+            id: ' some.id ',
+            custom: 'navigation',
+            targetPage: ' rooms ',
+            name: ' Räume ',
+            trueIcon: 'floor-plan',
+            trueColor: '#00ff00',
+            isNavigation: true,
+        };
+        const page = devicePageConfigOf({ layout: 1, slots: [stored, { key: '', id: '', custom: 'navigation' }] });
+        expect(page?.slots[0]).to.deep.equal({
+            key: '',
+            id: '',
+            custom: 'navigation',
+            targetPage: 'rooms',
+            name: 'Räume',
+            trueIcon: 'floor-plan',
+            trueColor: '#00ff00',
+        });
+        // nothing chosen yet: the choice stays in the admin
+        expect(page?.slots[1]).to.deep.equal({ key: '', id: '', custom: 'navigation' });
+        expect(devicePageSlotTargetOf(page?.slots[0])).to.equal('rooms');
+        // the navigation of a navigation slot is no setting of the dialog
+        expect(devicePageSlotLookOf({ key: '', id: '', custom: 'navigation', targetPage: 'rooms' })).to.deep.equal({});
+    });
+    it('where a navigation slot fits and where the tap of a channel can navigate', () => {
+        expect(['info', 'button', 'status'].every(k => devicePageSlotAcceptsNavigation(k as never))).to.equal(true);
+        expect(['value', 'progress', 'switch'].some(k => devicePageSlotAcceptsNavigation(k as never))).to.equal(false);
+        // a light, a fan or a slider opens its popup only when held: the short tap reaches the adapter
+        for (const role of ['button', 'socket', 'light', 'dimmer', 'hue', 'ct', 'slider', 'level.mode.fan', 'door']) {
+            expect(devicePageChannelTakesNavigation(role), role).to.equal(true);
+        }
+        // these open their popup in the HMI as soon as they are touched; unknown roles never
+        for (const role of ['blind', 'gate', 'lock', 'select', 'level.timer', 'media', '']) {
+            expect(devicePageChannelTakesNavigation(role), role).to.equal(false);
+        }
+        expect(devicePageChannelTakesNavigation(undefined)).to.equal(false);
+        expect(devicePageSlotTakesNavigation(ref('power'))).to.equal(true);
+        expect(devicePageSlotTakesNavigation({ key: '', id: 'x', custom: 'state' })).to.equal(true);
+        expect(devicePageSlotTakesNavigation({ key: '', id: 'alias.0.l', custom: 'channel' }, 'blind')).to.equal(false);
+        expect(devicePageSlotTakesNavigation({ key: '', id: 'alias.0.l', custom: 'channel' }, 'socket')).to.equal(true);
+        expect(devicePageSlotTakesNavigation(null)).to.equal(false);
+    });
+    it('runtime: a navigation slot without target page or in a slot that needs a value is empty', () => {
+        const nav = { key: '', id: '', custom: 'navigation', targetPage: 'rooms' };
+        const slots: unknown[] = DEVICE_PAGE_LAYOUTS[2].map(() => nav);
+        slots[0] = { key: '', id: '', custom: 'navigation' };
+        const runtime = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [], devicePage: { layout: 2, slots } });
+        const kept = runtime?.devicePage?.slots.map(s => !!s);
+        expect(kept).to.deep.equal(
+            DEVICE_PAGE_LAYOUTS[2].map((kind, i) => i !== 0 && devicePageSlotAcceptsNavigation(kind)),
+        );
+    });
+    it('state slot with navigation: the item carries the target, look and value stay', () => {
+        for (const kind of ['info', 'value', 'status', 'progress'] as const) {
+            const id = kind === 'progress' ? 'progress' : 'power';
+            const plain = devicePageSlotItem(DEV, kind, ref(id), c(id), 'P') as any;
+            const nav = devicePageSlotItem(
+                DEV,
+                kind,
+                { ...ref(id), isNavigation: true, targetPage: 'rooms' },
+                c(id),
+                'P',
+            ) as any;
+            expect(nav.devicePageTarget, kind).to.equal('rooms');
+            expect(plain.devicePageTarget, kind).to.equal(undefined);
+            expect({ ...nav, devicePageTarget: undefined }, kind).to.deep.equal({
+                ...plain,
+                devicePageTarget: undefined,
+            });
+        }
+        const button = devicePageSlotItem(
+            DEV,
+            'button',
+            { ...ref('on'), isNavigation: true, targetPage: 'rooms', trueIcon: 'play' },
+            c('on'),
+            'An',
+        ) as any;
+        expect(button.devicePageTarget).to.equal('rooms');
+        expect(button.data.icon.true.value.constVal).to.equal('play');
+        const toggle = devicePageSlotItem(
+            DEV,
+            'switch',
+            { ...ref('on'), isNavigation: true, targetPage: 'rooms' },
+            c('on'),
+            'An',
+        ) as any;
+        expect(toggle.type).to.equal('switch');
+        expect(toggle.devicePageTarget).to.equal('rooms');
+        // navigation chosen, no page yet: nothing changes
+        const pending = devicePageSlotItem(DEV, 'info', { ...ref('power'), isNavigation: true }, c('power'), 'P');
+        expect(pending).to.deep.equal(devicePageSlotItem(DEV, 'info', ref('power'), c('power'), 'P'));
+    });
+    it('info slot with a selection and navigation: shown as text, its popup would come before the tap', () => {
+        const plain = devicePageSlotItem(DEV, 'info', ref('program'), c('program'), 'Programm') as any;
+        expect(plain.type).to.equal('input_sel');
+        const nav = devicePageSlotItem(
+            DEV,
+            'info',
+            { ...ref('program'), isNavigation: true, targetPage: 'rooms' },
+            c('program'),
+            'Programm',
+        ) as any;
+        expect(nav.type).to.equal('text');
+        expect(nav.devicePageTarget).to.equal('rooms');
+    });
+    it('navigation slot: a text with icon and name only, own icon / color / text', () => {
+        const nav = { key: '', id: '', custom: 'navigation' as const, targetPage: 'rooms' };
+        const item = devicePageNavigationSlotItem('button', nav) as any;
+        expect(item.type).to.equal('text');
+        expect(item.role).to.equal(DEVICE_DETAIL_ROW_ROLE);
+        expect(item.devicePageTarget).to.equal('rooms');
+        expect(item.data.icon.true.value.constVal).to.equal(DEVICE_PAGE_NAVIGATION_ICON);
+        expect(item.data.icon.true.color.constVal).to.deep.equal(Color.deviceInfo);
+        expect(item.data.icon.false).to.deep.equal(item.data.icon.true);
+        expect(item.data.text.true.constVal).to.equal('rooms');
+        expect(item.data.entity1).to.equal(undefined);
+        expect(item.data.entity2).to.equal(undefined);
+        const own = devicePageNavigationSlotItem('info', {
+            ...nav,
+            name: 'Räume',
+            trueIcon: 'floor-plan',
+            trueColor: '#00ff00',
+        }) as any;
+        expect(own.data.icon.true.value.constVal).to.equal('floor-plan');
+        expect(own.data.icon.true.color.constVal).to.deep.equal(Color.ConvertHexToRgb('#00ff00'));
+        expect(own.data.text.true.constVal).to.equal('Räume');
+        expect(devicePageNavigationSlotItem('value', nav)).to.equal(undefined);
+        expect(devicePageNavigationSlotItem('switch', nav)).to.equal(undefined);
+        expect(devicePageNavigationSlotItem('button', { key: '', id: '', custom: 'navigation' })).to.equal(undefined);
+        // a state slot is no navigation slot
+        expect(
+            devicePageNavigationSlotItem('button', { ...ref('on'), isNavigation: true, targetPage: 'rooms' }),
+        ).to.equal(undefined);
+    });
+    it('elements: navigation slots are built without a state and are not reported as missing', async () => {
+        const slots: (Record<string, unknown> | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
+        slots[first('info')] = { ...ref('power'), isNavigation: true, targetPage: 'rooms' };
+        slots[first('button')] = { key: '', id: '', custom: 'navigation', targetPage: 'rooms', name: 'Räume' };
+        slots[first('status')] = { key: '', id: '', custom: 'navigation', targetPage: 'map', trueIcon: 'map' };
+        const details = deviceDetailsRuntimeOf({
+            deviceId: DEV,
+            entries: [ref('power')],
+            devicePage: { layout: 1, slots },
+        }) as DeviceDetailsRuntime;
+        const content = await devicePageElements(
+            { type: 'switch', data: {} } as never,
+            details,
+            details.devicePage as DevicePageRuntime,
+            getObject,
+            k => k,
+            'de',
+        );
+        expect(content.skipped).to.deep.equal([]);
+        const info: any = content.elements[1 + first('info')];
+        const button: any = content.elements[1 + first('button')];
+        const status: any = content.elements[1 + first('status')];
+        expect(info.devicePageTarget).to.equal('rooms');
+        expect(button.devicePageTarget).to.equal('rooms');
+        expect(button.data.text.true.constVal).to.equal('Räume');
+        expect(status.devicePageTarget).to.equal('map');
+        expect(status.data.icon.true.value.constVal).to.equal('map');
+        expect(content.channelSlots).to.deep.equal([]);
+    });
+    it('elements: a channel slot navigates only where its tap reaches the adapter', async () => {
+        const slots: (Record<string, unknown> | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
+        const a = first('info');
+        const b = first('button');
+        slots[a] = { key: '', id: 'alias.0.socket', custom: 'channel', isNavigation: true, targetPage: 'rooms' };
+        slots[b] = { key: '', id: 'alias.0.blind', custom: 'channel', isNavigation: true, targetPage: 'rooms' };
+        const details = deviceDetailsRuntimeOf({
+            deviceId: DEV,
+            entries: [],
+            devicePage: { layout: 1, slots },
+        }) as DeviceDetailsRuntime;
+        const channelItem = (type: string): any => ({ type, role: '', dpInit: '', data: { icon: {} } });
+        const source: any = {
+            type: 'switch',
+            data: {},
+            devicePageChannels: {
+                [a]: { role: 'socket', item: channelItem('switch') },
+                [b]: { role: 'blind', item: channelItem('shutter') },
+            },
+        };
+        const content = await devicePageElements(
+            source,
+            details,
+            details.devicePage as DevicePageRuntime,
+            getObject,
+            k => k,
+            'de',
+        );
+        const socket: any = content.elements[1 + a];
+        const blind: any = content.elements[1 + b];
+        expect(socket.type).to.equal('switch');
+        expect(socket.devicePageTarget).to.equal('rooms');
+        // the popup of the HMI comes first
+        expect(blind.type).to.equal('shutter');
+        expect(blind.devicePageTarget).to.equal(undefined);
+        // the item built once is not changed
+        expect(source.devicePageChannels[a].item.devicePageTarget).to.equal(undefined);
+    });
+    it('channel slot: the navigation is not handed to the page item of the channel', () => {
+        const item = devicePageChannelAdminItem(
+            {
+                key: '',
+                id: 'alias.0.socket',
+                custom: 'channel',
+                isNavigation: true,
+                targetPage: 'rooms',
+                trueIcon: 'x',
+            },
+            'socket',
+        );
+        expect(item.isNavigation).to.equal(undefined);
+        expect(item.targetPage).to.equal(undefined);
+        expect(item.trueIcon).to.equal('x');
+    });
+    it('a missing target page is reported once per panel and target', () => {
+        const panelA = {};
+        const panelB = {};
+        expect(reportMissingDevicePageTarget(panelA, 'rooms')).to.equal(true);
+        expect(reportMissingDevicePageTarget(panelA, 'rooms')).to.equal(false);
+        expect(reportMissingDevicePageTarget(panelA, 'map')).to.equal(true);
+        expect(reportMissingDevicePageTarget(panelB, 'rooms')).to.equal(true);
+    });
+
+    describe('the tap', () => {
+        const noop = (): void => undefined;
+        /**
+         * @param known the navigation targets of the panel
+         * @param config the item
+         * @param dataItems its data items
+         * @returns the item and what happened
+         */
+        function tapItem(
+            known: string[],
+            config: Record<string, unknown>,
+            dataItems: Record<string, unknown>,
+        ): { item: PageItem; opened: string[]; warnings: string[] } {
+            const opened: string[] = [];
+            const warnings: string[] = [];
+            const panel = {
+                name: 'Flur',
+                navigation: {
+                    hasTarget: (n: string): boolean => known.includes(n),
+                    setTargetPageByName: async (n: string): Promise<void> => {
+                        opened.push(n);
+                        return Promise.resolve();
+                    },
+                },
+            };
+            const item = Object.create(PageItem.prototype) as PageItem;
+            Object.assign(item, {
+                id: 'dp_3?2',
+                log: { debug: noop, warn: (t: string) => warnings.push(t), error: noop, info: noop, silly: noop },
+                adapter: { unload: false },
+                parent: {
+                    id: 'dp_3',
+                    name: 'main-device',
+                    card: 'cardDevice1',
+                    isScreensaver: false,
+                    basePanel: panel,
+                },
+                config,
+                dataItems,
+            });
+            return { item, opened, warnings };
+        }
+        it('opens the target page by the navigation of the panel and does nothing else', async () => {
+            let written = 0;
+            const set = {
+                writeable: true,
+                common: { read: false },
+                setStateTrue: async (): Promise<void> => {
+                    written++;
+                    return Promise.resolve();
+                },
+                setStateFlip: async (): Promise<void> => {
+                    written++;
+                    return Promise.resolve();
+                },
+            };
+            const f = tapItem(
+                ['rooms'],
+                { type: 'button', devicePageTarget: 'rooms' },
+                { type: 'button', role: DEVICE_DETAIL_ROW_ROLE, data: { entity1: { set, value: set } } },
+            );
+            expect(await f.item.onCommand('button', '')).to.not.equal(undefined);
+            expect(f.opened).to.deep.equal(['rooms']);
+            expect(written).to.equal(0);
+            expect(f.warnings).to.deep.equal([]);
+        });
+        it('a navigation slot (text) opens its page', async () => {
+            const nav = devicePageNavigationSlotItem('info', {
+                key: '',
+                id: '',
+                custom: 'navigation',
+                targetPage: 'rooms',
+            });
+            const f = tapItem(['rooms'], { ...nav }, { type: 'text', role: DEVICE_DETAIL_ROW_ROLE, data: {} });
+            await f.item.onCommand('button', '');
+            expect(f.opened).to.deep.equal(['rooms']);
+        });
+        it('a target that is no page of the panel: nothing happens, one warning', async () => {
+            const f = tapItem(
+                ['rooms'],
+                { type: 'text', devicePageTarget: 'gone' },
+                { type: 'text', role: DEVICE_DETAIL_ROW_ROLE, data: {} },
+            );
+            await f.item.onCommand('button', '');
+            await f.item.onCommand('button', '');
+            expect(f.opened).to.deep.equal([]);
+            expect(f.warnings.length).to.equal(1);
+            expect(f.warnings[0]).to.contain('"gone"');
+            expect(f.warnings[0]).to.contain('Flur');
+        });
+        it('the switch of a switch slot still switches', async () => {
+            const written: unknown[] = [];
+            const value = {
+                writeable: true,
+                type: 'boolean',
+                trueType: (): string => 'boolean',
+                common: { read: true },
+                setState: async (v: unknown): Promise<void> => {
+                    written.push(v);
+                    return Promise.resolve();
+                },
+            };
+            const f = tapItem(
+                ['rooms'],
+                { type: 'switch', devicePageTarget: 'rooms' },
+                { type: 'switch', role: DEVICE_DETAIL_ROW_ROLE, data: { entity1: { value } } },
+            );
+            await f.item.onCommand('OnOff', '1');
+            expect(written).to.deep.equal([true]);
+            expect(f.opened).to.deep.equal([]);
+        });
     });
 });
 

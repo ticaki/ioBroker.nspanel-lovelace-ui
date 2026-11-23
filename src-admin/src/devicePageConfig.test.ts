@@ -27,8 +27,13 @@ import {
     devicePageSlotOf,
     devicePageSlotSelectValue,
     shortPressToSave,
+    devicePageCustomSources,
+    devicePageTargetProblem,
+    isDevicePageCustomSource,
+    withDevicePageSlotNavigation,
     type LongPressStash,
 } from './devicePageConfig';
+import { screensaverTargetPage } from '../../src/lib/types/adminShareConfig';
 import {
     DEVICE_PAGE_LAYOUTS,
     type DeviceDetailsConfig,
@@ -297,6 +302,140 @@ describe('devicePageConfig - device page of the page item dialog', () => {
             id: `${DEV}.Relay0.Power`,
         });
         expect(devicePageSlotOf('', offered, [], channel)).to.equal(null);
+    });
+
+    it('short tap navigation of a slot: set and removed by the dialog, kept when another state is chosen', () => {
+        const s = 0;
+        const page: DevicePageConfig = { layout: 3, slots: [{ key: 'power', id: 'x.p' }], showInfo: true };
+        const nav = withDevicePageSlotLook(page, s, { isNavigation: true, targetPage: ' rooms ', trueIcon: 'map' });
+        expect(nav.slots[s]).to.deep.equal({
+            key: 'power',
+            id: 'x.p',
+            isNavigation: true,
+            targetPage: 'rooms',
+            trueIcon: 'map',
+        });
+        // the dialog starts with what is saved
+        expect(devicePageSlotDialogValue(nav.slots[s] ?? { key: '', id: '' })).to.deep.equal({
+            isNavigation: true,
+            targetPage: 'rooms',
+            trueIcon: 'map',
+        });
+        // navigation chosen, no page yet: the choice stays
+        expect(withDevicePageSlotLook(page, s, { isNavigation: true }).slots[s]).to.deep.equal({
+            key: 'power',
+            id: 'x.p',
+            isNavigation: true,
+        });
+        // a target without the choice is dropped, "standard" removes both
+        expect(withDevicePageSlotLook(nav, s, { targetPage: 'rooms' }).slots[s]).to.deep.equal({
+            key: 'power',
+            id: 'x.p',
+        });
+        expect(withDevicePageSlotLook(nav, s, {}).slots[s]).to.deep.equal({ key: 'power', id: 'x.p' });
+        // another state: the settings of the slot stay
+        expect(withDevicePageSlot(nav, s, { key: '', id: 'x.q' }).slots[s]).to.deep.equal({
+            key: '',
+            id: 'x.q',
+            isNavigation: true,
+            targetPage: 'rooms',
+            trueIcon: 'map',
+        });
+        expect(devicePageToSave({ devicePage: nav })?.slots[s]).to.deep.equal(nav.slots[s]);
+    });
+
+    it('navigation slot: offered where icon and name are enough, target and text at the slot', () => {
+        expect(devicePageCustomSources('button', null)).to.deep.equal(['state', 'channel', 'navigation']);
+        expect(devicePageCustomSources('info', null)).to.deep.equal(['state', 'channel', 'navigation']);
+        expect(devicePageCustomSources('status', null)).to.deep.equal(['state', 'channel', 'navigation']);
+        for (const kind of ['value', 'progress', 'switch'] as const) {
+            expect(devicePageCustomSources(kind, null), kind).to.deep.equal(['state', 'channel']);
+        }
+        expect(isDevicePageCustomSource('navigation')).to.equal(true);
+        expect(isDevicePageCustomSource('other')).to.equal(false);
+        // never an id
+        const fresh = customDevicePageSlot('navigation', 'ignored');
+        expect(fresh).to.deep.equal({ key: '', id: '', custom: 'navigation' });
+        expect(devicePageSlotSelectValue(fresh)).to.equal(DEVICE_PAGE_CUSTOM);
+
+        const b = DEVICE_PAGE_LAYOUTS[1].indexOf('button');
+        let page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
+        page = withDevicePageSlot(page, b, fresh);
+        page = withDevicePageSlotNavigation(page, b, { targetPage: 'rooms' });
+        page = withDevicePageSlotNavigation(page, b, { name: 'Räume' });
+        expect(page.slots[b]).to.deep.equal({
+            key: '',
+            id: '',
+            custom: 'navigation',
+            targetPage: 'rooms',
+            name: 'Räume',
+        });
+        // icon and color come from the dialog - target and text stay
+        const look = withDevicePageSlotLook(page, b, { trueIcon: 'floor-plan', trueColor: '#00ff00' });
+        expect(look.slots[b]).to.deep.equal({
+            key: '',
+            id: '',
+            custom: 'navigation',
+            targetPage: 'rooms',
+            name: 'Räume',
+            trueIcon: 'floor-plan',
+            trueColor: '#00ff00',
+        });
+        expect(devicePageToSave({ devicePage: look })?.slots[b]).to.deep.equal(look.slots[b]);
+        // "user defined" chosen again: nothing is lost
+        expect(devicePageSlotOf(DEVICE_PAGE_CUSTOM, [], [], look.slots[b])).to.deep.equal(look.slots[b]);
+        // emptied text and target
+        const cleared = withDevicePageSlotNavigation(look, b, { targetPage: '', name: '' });
+        expect(cleared.slots[b]).to.deep.equal({
+            key: '',
+            id: '',
+            custom: 'navigation',
+            trueIcon: 'floor-plan',
+            trueColor: '#00ff00',
+        });
+        // another slot is not touched
+        const other = withDevicePageSlot(page, 0, { key: '', id: 'x.p' });
+        expect(withDevicePageSlotNavigation(other, 0, { targetPage: 'rooms' })).to.equal(other);
+        // a state slot with the short tap navigation that becomes a navigation slot keeps its target, not the choice
+        const state: DevicePageConfig = {
+            layout: 1,
+            slots: [{ key: '', id: 'x.p', isNavigation: true, targetPage: 'rooms' }],
+            showInfo: true,
+        };
+        expect(withDevicePageSlot(state, 0, customDevicePageSlot('navigation', '')).slots[0]).to.deep.equal({
+            key: '',
+            id: '',
+            custom: 'navigation',
+            targetPage: 'rooms',
+        });
+        // a saved navigation slot in a slot that needs a value stays offered and is marked
+        const nav = { key: '', id: '', custom: 'navigation' as const, targetPage: 'rooms' };
+        expect(devicePageCustomSources('switch', nav)).to.include('navigation');
+        expect(devicePageCustomProblem('switch', nav, undefined)).to.equal('unfit');
+        expect(devicePageCustomProblem('button', nav, undefined)).to.equal(undefined);
+    });
+
+    it('target page of a slot: marked when it cannot be chosen', () => {
+        const pages = ['main', 'rooms'];
+        const tap = (targetPage: string): { key: string; id: string; isNavigation: true; targetPage: string } => ({
+            key: '',
+            id: 'x.p',
+            isNavigation: true,
+            targetPage,
+        });
+        expect(devicePageTargetProblem(tap('rooms'), pages)).to.equal(false);
+        expect(devicePageTargetProblem(tap('gone'), pages)).to.equal(true);
+        expect(devicePageTargetProblem({ key: '', id: '', custom: 'navigation', targetPage: 'gone' }, pages)).to.equal(
+            true,
+        );
+        // the screensaver, the page of the item, no target, no navigation, pages unknown
+        expect(devicePageTargetProblem(tap(screensaverTargetPage), pages)).to.equal(false);
+        expect(devicePageTargetProblem(tap('here'), pages, 'here')).to.equal(false);
+        expect(devicePageTargetProblem({ key: '', id: 'x.p', isNavigation: true }, pages)).to.equal(false);
+        expect(devicePageTargetProblem({ key: '', id: 'x.p', targetPage: 'gone' }, pages)).to.equal(false);
+        expect(devicePageTargetProblem(tap('gone'), null)).to.equal(false);
+        expect(devicePageTargetProblem(tap('gone'), [])).to.equal(false);
+        expect(devicePageTargetProblem(null, pages)).to.equal(false);
     });
 
     it('user defined slot: marked when the object is missing or does not fit the kind of the slot', () => {

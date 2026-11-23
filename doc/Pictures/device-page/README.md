@@ -47,6 +47,21 @@ Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Rasenmähe
 
      ![Einstellungen des Elements](admin-slot-dialog.png)
 
+   - **Von der Geräteseite auf eine andere Seite springen** – zwei Wege:
+     - **Ein belegter Slot navigiert:** **…** der Zeile öffnen, bei **Kurzer Tipp** statt „Standard“ **Navigation**
+       wählen und die **Zielseite** aussuchen. Der Slot sieht aus wie vorher (Icon, Name, Wert), aber der Tipp öffnet
+       jetzt die Seite und tut sonst nichts – ein Knopf drückt nicht mehr, ein An/Aus-Wert schaltet nicht mehr. Beim
+       Schalter-Slot navigiert der Tipp auf Icon und Name, der Schalter selbst schaltet weiter. Bei Kanälen, die ihr
+       Popup sofort öffnen (Rollladen, Tor, Schloss, Auswahl, Timer), fehlt „Kurzer Tipp“ – dort kommt immer das Popup.
+     - **Ein Platz nur zum Springen:** in der Auswahl des Slots **Benutzerdefiniert** und darunter **Navigation**
+       wählen (gibt es bei Info-Zeile, Knopf und Status-Icon). Dann **Zielseite** aussuchen und, wenn du willst, eine
+       **Beschriftung** eintragen (leer = Name der Zielseite). Icon und Farbe stellst du über **…** ein.
+     - Steht unter der Zeile rot **Zielseite nicht gefunden**, gibt es die Seite nicht (mehr). Am Panel passiert beim
+       Tipp dann nichts, im Log steht einmal eine Warnung – das gilt auch, wenn die Seite dem Panel nicht zugeordnet
+       ist.
+     - **Zurück:** Die Pfeile der Zielseite führen dorthin, wo du es für diese Seite eingerichtet hast – nicht
+       automatisch zurück zur Geräteseite. Soll „hoch“ wieder zur Seite mit dem Gerät führen, trage diese Seite bei
+       der Zielseite als übergeordnete Seite ein; die Geräteseite öffnest du von dort wieder über das Item.
    - **Status-Icon** (nur Layout 1, Slots 7–10): zeigt nur ein kleines Icon in seiner Farbe, ohne Name und Wert.
      Das Icon kommt automatisch (wie bei der Info-Zeile desselben Werts); ein eigenes wählst du über **…**, z. B.
      „delete-empty“ für „Behälter leeren“ oder „air-filter“ für den Filter. Die Farbe kommt automatisch: An/Aus-Werte
@@ -157,3 +172,16 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 35 | Kurzer Tipp: **Geräteseite öffnen** bei „Long-Press öffnet: Detailseite“ | ausgegraut; mit Geräteseite wählbar. Wählen, dann auf Detailseite schalten → Kurzer Tipp springt auf „Keine“ | ✓ |
 | 36 | Am Panel: Item mit „Geräteseite öffnen“ kurz antippen (Grid und cardEntities) | Geräteseite erscheint; langer Druck ebenso; Zurück führt zur Seite des Items. Auf der Geräteseite tut ein Tipp auf das große Icon nichts. US-Panel/alte TFT: Detailseite | |
 | 37 | Am Panel: langer Druck auf einen Slot ohne Long-Press-Einstellung, auf das große Icon und auf „i“ | nichts passiert (kein Schalten, keine Detailseite) | |
+| 38 | „…“ eines Info-, Wert-, Knopf-, Schalter- oder Status-Slots mit einem Wert des Geräts | Abschnitt **Kurzer Tipp** mit „Standard“ und „Navigation“; bei „Navigation“ erscheint die Zielseiten-Auswahl (dieselbe Liste wie beim Standard-Item, mit Screensaver) | |
+| 39 | „Navigation“ wählen, Zielseite aussuchen, übernehmen, Item speichern, neu öffnen | „…“ grün; Rohdaten zeigen am Slot `isNavigation: true` und `targetPage`; zurück auf „Standard“ → beide Felder weg | |
+| 40 | Zielseite eintippen, die es nicht gibt | Feld rot „Zielseite nicht gefunden“, nach Übernehmen steht dasselbe rot unter der Slot-Zeile; speichern geht trotzdem | |
+| 41 | Slot-Auswahl **Benutzerdefiniert** bei Info-Zeile, Knopf, Status-Icon | dritte Wahl **Navigation** neben Datenpunkt und Kanal; bei großem Wert, Fortschrittsbalken und Schalter fehlt sie | |
+| 42 | **Navigation** wählen: Zielseite, Beschriftung, über „…“ Icon und Farbe | „…“ ist ohne ID aktiv und zeigt nur eine Spalte (Icon/Farbe), keinen Farbverlauf, keinen „Kurzen Tipp“, keinen Long-Press; neu öffnen: alles da | |
+| 43 | „…“ eines Kanal-Slots mit Steckdose/Licht/Sensor und eines mit Rollladen/Auswahl/Timer | Steckdose/Licht/Sensor: „Kurzer Tipp“ vorhanden; Rollladen/Tor/Schloss/Auswahl/Timer: fehlt | |
+| 44 | Am Panel und im Web-Panel: Navigations-Platz im Knopf-Slot, in der Info-Zeile und als Status-Icon antippen | Zielseite erscheint; Knopf/Info zeigen Icon und Beschriftung (leer = Seitenname), kein Wert; Status-Icon nur das Icon | |
+| 45 | Am Panel: Slot mit Wert und „Navigation“ (Info-Zeile mit Zahl, Knopf mit An/Aus-Wert) antippen | Zielseite erscheint, der Wert wird **nicht** geschaltet/gedrückt; Icon, Farbe und Wert des Slots wie vorher | |
+| 46 | Am Panel: Schalter-Slot mit „Navigation“ | Tipp auf Icon/Name öffnet die Zielseite, der Schalter rechts schaltet weiter | |
+| 47 | Am Panel: Info-Zeile mit einer Auswahl (schreibbar, mit Werteliste) und „Navigation“ | Zeile zeigt den Text des Werts, der Tipp öffnet die Zielseite statt des Auswahl-Popups | |
+| 48 | Am Panel: dimmbares Licht (Kanal) mit „Navigation“ | kurzer Tipp öffnet die Zielseite, Halten öffnet weiter popupLight | |
+| 49 | Auf der Zielseite die Pfeile benutzen | sie führen, wie für die Zielseite eingerichtet (nicht automatisch zur Geräteseite); über das Item kommt man wieder auf die Geräteseite | |
+| 50 | Zielseite wählen, die dem Panel nicht zugeordnet ist (oder Seite löschen), am Panel antippen | nichts passiert; im Log **eine** Warnung „target page … is not assigned to panel …“, auch bei mehrfachem Tippen | |

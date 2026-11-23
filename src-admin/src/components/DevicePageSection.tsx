@@ -2,8 +2,8 @@
  * The device page of a device item (doc/ideas/device-details/README.md, section Geräteseite): layout with a schematic
  * preview, big icon, status line, the slots of the layout and the "i" icon. The states come from the answer of the
  * adapter (`getDeviceDetails`); without it the saved states stay as they are. A slot shows a state of the device or,
- * user defined, any data point or an alias channel; its "…" button opens the settings of the element
- * (DevicePageSlotDialog).
+ * user defined, any data point, an alias channel or a navigation (icon and name, a tap opens a page); its "…" button
+ * opens the settings of the element (DevicePageSlotDialog).
  */
 import React from 'react';
 import {
@@ -19,6 +19,7 @@ import {
     Radio,
     RadioGroup,
     Select,
+    TextField,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -34,6 +35,7 @@ import {
     devicePageSlotAcceptsChannel,
     devicePageSlotHasLook,
     devicePageSlotTakesLongPress,
+    devicePageSlotTakesNavigation,
     isDevicePageLayout,
     type DeviceDetailEntryConfig,
     type DevicePageConfig,
@@ -50,6 +52,9 @@ import {
     PREVIEW_MAIN,
     customDevicePageSlot,
     devicePageCustomProblem,
+    devicePageCustomSources,
+    isDevicePageCustomSource,
+    withDevicePageSlotNavigation,
     devicePagePreviewAreas,
     devicePageSlotDialogValue,
     devicePageSlotOf,
@@ -93,6 +98,18 @@ export interface DevicePageSectionProps {
      * @param onChange the picked icon
      */
     iconSelect: (label: string, value: string, onChange: (icon: string) => void) => React.ReactNode;
+    /**
+     * the selector of the target page of a slot, rendered by the page item dialog
+     *
+     * @param slot the slot
+     * @param onChange the chosen page, '' = none
+     */
+    targetSelect: (slot: DevicePageSlotRef, onChange: (page: string) => void) => React.ReactNode;
+    /**
+     * @param slot a slot
+     * @returns true when its target page is not among the pages that can be chosen
+     */
+    targetProblem: (slot: DevicePageSlotRef | null) => boolean;
 }
 
 interface DevicePageSectionState {
@@ -422,17 +439,24 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      */
     private openSlotSettings(kind: DevicePageSlotKind, index: number, slot: DevicePageSlotRef): void {
         const role = slot.custom === 'channel' ? this.state.objects[slot.id]?.role : undefined;
+        const navigationSlot = slot.custom === 'navigation';
         this.slotDialogRef.current?.openWith(
             index,
             `${index + 1} ${DevicePageSection.kindLabel(kind)}`,
             devicePageSlotDialogValue(slot),
-            devicePageSlotTakesLongPress(kind, slot, role),
+            {
+                // a navigation slot has no state: one icon and color, its tap is fixed
+                longPress: !navigationSlot && devicePageSlotTakesLongPress(kind, slot, role),
+                tap: !navigationSlot && devicePageSlotTakesNavigation(slot, role),
+                single: navigationSlot,
+            },
         );
     }
 
     /**
-     * The fields of a user defined slot: an own data point (any state) or an alias channel (the channels with a role
-     * that fits the kind of the slot, picked like in the page item dialog).
+     * The fields of a user defined slot: an own data point (any state), an alias channel (the channels with a role
+     * that fits the kind of the slot, picked like in the page item dialog) or a navigation (target page and text; icon
+     * and color in the settings of the element) - the navigation only where icon and name are enough.
      *
      * @param kind the kind of the slot
      * @param index index of the slot (0 = slot 1)
@@ -447,7 +471,8 @@ export default class DevicePageSection extends React.Component<DevicePageSection
         problem: DevicePageStateProblem | undefined,
     ): React.JSX.Element {
         const { socket, theme, themeType } = this.props;
-        const source = slot.custom === 'channel' ? 'channel' : 'state';
+        const source = slot.custom ?? 'state';
+        const sources = devicePageCustomSources(kind, slot);
         const roles = this.state.channelRoles ?? {};
         const channelIds = Object.keys(roles).filter(id => devicePageSlotAcceptsChannel(kind, roles[id]));
         return (
@@ -458,12 +483,11 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                 <RadioGroup
                     row
                     value={source}
-                    onChange={e =>
-                        this.setSlot(
-                            index,
-                            customDevicePageSlot(e.target.value === 'channel' ? 'channel' : 'state', ''),
-                        )
-                    }
+                    onChange={e => {
+                        if (isDevicePageCustomSource(e.target.value)) {
+                            this.setSlot(index, customDevicePageSlot(e.target.value, ''));
+                        }
+                    }}
                 >
                     <FormControlLabel
                         value="state"
@@ -477,8 +501,38 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         label={I18n.t('deviceDetailsDialog_slotCustomChannel')}
                         slotProps={{ typography: { variant: 'body2' } }}
                     />
+                    {sources.includes('navigation') ? (
+                        <FormControlLabel
+                            value="navigation"
+                            control={<Radio size="small" />}
+                            label={I18n.t('deviceDetailsDialog_slotCustomNavigation')}
+                            slotProps={{ typography: { variant: 'body2' } }}
+                        />
+                    ) : null}
                 </RadioGroup>
-                {source === 'channel' ? (
+                {source === 'navigation' ? (
+                    <Box
+                        sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                        data-dd="device-page-slot-navigation"
+                    >
+                        {this.props.targetSelect(slot, page =>
+                            this.props.onChange(
+                                withDevicePageSlotNavigation(this.props.value, index, { targetPage: page }),
+                            ),
+                        )}
+                        <TextField
+                            variant="standard"
+                            label={I18n.t('deviceDetailsDialog_slotNavigationName')}
+                            value={slot.name ?? ''}
+                            onChange={e =>
+                                this.props.onChange(
+                                    withDevicePageSlotNavigation(this.props.value, index, { name: e.target.value }),
+                                )
+                            }
+                            slotProps={{ inputLabel: { shrink: true } }}
+                        />
+                    </Box>
+                ) : source === 'channel' ? (
                     <EntitySelector
                         key="channel"
                         label={I18n.t('deviceDetailsDialog_slotCustomChannelId')}
@@ -538,6 +592,8 @@ export default class DevicePageSection extends React.Component<DevicePageSection
         const problem = custom
             ? devicePageCustomProblem(kind, slot, slot ? this.state.objects[slot.id] : undefined)
             : options.find(o => o.id === selected)?.problem;
+        // the short tap navigates to a page that cannot be chosen (a navigation slot marks it at its own field)
+        const targetProblem = !!slot && slot.custom !== 'navigation' && this.props.targetProblem(slot);
         return (
             <Box
                 key={`${value.layout}-${index}`}
@@ -571,7 +627,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         variant="standard"
                         size="small"
                         sx={{ flex: 1, minWidth: 0 }}
-                        error={problem !== undefined}
+                        error={problem !== undefined || targetProblem}
                         data-dd="device-page-slot"
                     >
                         {/* no label per row: number and kind stand in front of the selection */}
@@ -602,7 +658,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         <span>
                             <IconButton
                                 size="small"
-                                disabled={!slot || slot.id === ''}
+                                disabled={!slot || (slot.id === '' && slot.custom !== 'navigation')}
                                 color={devicePageSlotHasLook(slot) ? 'success' : 'default'}
                                 onClick={() => slot && this.openSlotSettings(kind, index, slot)}
                                 data-dd="device-page-slot-settings"
@@ -614,12 +670,22 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                     </Tooltip>
                 </Box>
                 {slot && custom ? this.renderCustomSlot(kind, index, slot, problem) : null}
+                {targetProblem ? (
+                    <FormHelperText
+                        error
+                        sx={{ pl: 4, mt: 0 }}
+                        data-dd="device-page-slot-target-missing"
+                    >
+                        {I18n.t('deviceDetailsDialog_slotTargetMissing')}
+                    </FormHelperText>
+                ) : null}
             </Box>
         );
     }
 
     private renderSlots(): React.JSX.Element {
-        const { value, onChange, socket, theme, themeType, iconSelect, adapterName, instance } = this.props;
+        const { value, onChange, socket, theme, themeType, iconSelect, targetSelect, adapterName, instance } =
+            this.props;
         const kinds = DEVICE_PAGE_LAYOUTS[value.layout];
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -636,6 +702,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                     adapterName={adapterName}
                     instance={instance}
                     iconSelect={iconSelect}
+                    targetSelect={targetSelect}
                     onApply={(index, look) => onChange(withDevicePageSlotLook(this.props.value, index, look))}
                 />
             </Box>
