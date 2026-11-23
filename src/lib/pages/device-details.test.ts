@@ -1,13 +1,17 @@
 import { expect } from 'chai';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
+import { getIconEntryValue } from '../const/tools';
+import { BATTERY_ICON_READ } from '../templates/text';
 import type { NSPanel } from '../types/NSPanel';
 import { DEVICE_DETAIL_ROW_ROLE } from '../types/deviceDetails';
 import {
     DEVICE_DETAIL_PAGE_PREFIX,
     deviceDetailGroupColor,
     deviceDetailPageConfig,
+    deviceDetailRowIcon,
     deviceDetailRowItem,
+    deviceDetailRowLook,
     deviceDetailNameWithSuffix,
     deviceDetailRowNames,
     deviceDetailRows,
@@ -196,6 +200,110 @@ describe('lib/pages/device-details', () => {
         });
     });
 
+    describe('charge level of a battery: the icon follows the value', () => {
+        const BAT = `${DEV}.battery`;
+        const common = { type: 'number', read: true, write: false, role: 'value.battery', unit: '%' };
+        const levelIcon = { type: 'triggered', dp: BAT, read: BATTERY_ICON_READ };
+        /**
+         * @param val value of the state
+         * @returns the icon the read script of the battery template gives
+         */
+        const iconOf = (val: unknown): string => String(new Function('val', BATTERY_ICON_READ)(val));
+
+        it('the steps of the battery template, every icon is in the icon table of the HMI', () => {
+            const steps: [number, string][] = [
+                [0, 'battery-outline'],
+                [4, 'battery-outline'],
+                [5, 'battery-10'],
+                [14, 'battery-10'],
+                [15, 'battery-20'],
+                [25, 'battery-30'],
+                [35, 'battery-40'],
+                [45, 'battery-50'],
+                [50, 'battery-50'],
+                [55, 'battery-60'],
+                [65, 'battery-70'],
+                [75, 'battery-80'],
+                [85, 'battery-90'],
+                [94, 'battery-90'],
+                [95, 'battery'],
+                [100, 'battery'],
+                [120, 'battery'],
+            ];
+            for (const [val, icon] of steps) {
+                expect(iconOf(val), String(val)).to.equal(icon);
+                expect(Icons.GetIcon(icon), icon).to.not.equal('');
+            }
+        });
+        it('entry battery: the icon is the state with the read script of the template, the color stays the group', () => {
+            const item = deviceDetailRowItem(DEV, { key: 'battery', id: BAT }, common, 'Batterie');
+            expect(item.type).to.equal('text');
+            const data = dataOf(item);
+            expect(data.icon.true.value).to.deep.equal(levelIcon);
+            expect(data.icon.false.value).to.deep.equal(levelIcon);
+            const color = { type: 'const', constVal: JSON.parse(JSON.stringify(deviceDetailGroupColor('energy'))) };
+            expect(data.icon.true.color).to.deep.equal(color);
+            expect(data.icon.false.color).to.deep.equal(color);
+            expect(data.entity2).to.deep.equal({ value: { type: 'triggered', dp: BAT } });
+        });
+        it('a state without key with the role value.battery (own data point): the same', () => {
+            const own = '0_userdata.0.akku';
+            const item = deviceDetailRowItem(DEV, { key: '', id: own }, common, 'Akku', 'all');
+            expect(dataOf(item).icon.true.value).to.deep.equal({ ...levelIcon, dp: own });
+        });
+        it('an icon handed in (status icon of the device page) wins', () => {
+            const item = deviceDetailRowItem(DEV, { key: 'battery', id: BAT }, common, '', 'all', 'heart');
+            expect(dataOf(item).icon.true.value).to.deep.equal({ type: 'const', constVal: 'heart' });
+        });
+        it('other entries keep their fixed icon: battery voltage, low battery, a battery entry that is no number', () => {
+            const voltage = deviceDetailRowItem(
+                DEV,
+                { key: 'batteryVoltage', id: `${DEV}.voltage` },
+                { type: 'number', write: false, role: 'battery.voltage', unit: 'V' },
+                'V',
+            );
+            expect(dataOf(voltage).icon.true.value).to.deep.equal({ type: 'const', constVal: 'battery-charging' });
+            const low = deviceDetailRowItem(
+                DEV,
+                { key: 'lowBattery', id: `${DEV}.lowbat` },
+                { type: 'boolean', write: false, role: 'indicator.lowbat' },
+                'Low',
+            );
+            expect(dataOf(low).icon.true.value).to.deep.equal({ type: 'const', constVal: 'battery-alert' });
+            const text = deviceDetailRowItem(
+                DEV,
+                { key: 'battery', id: BAT },
+                { type: 'string', write: false, role: 'value.battery' },
+                'B',
+            );
+            expect(dataOf(text).icon.true.value).to.deep.equal({ type: 'const', constVal: 'battery' });
+        });
+        it('look and icon item', () => {
+            const look = deviceDetailRowLook(DEV, { key: 'battery', id: BAT }, common, 'number');
+            expect(look.batteryLevel).to.equal(true);
+            expect(look.icon).to.equal('battery');
+            expect(deviceDetailRowIcon(look, BAT)).to.deep.equal(levelIcon);
+            const power = deviceDetailRowLook(
+                DEV,
+                { key: 'power', id: `${DEV}.power` },
+                { type: 'number', role: 'value.power' },
+                'number',
+            );
+            expect(power.batteryLevel).to.equal(false);
+            expect(deviceDetailRowIcon(power, `${DEV}.power`)).to.deep.equal({ type: 'const', constVal: power.icon });
+        });
+        it('the icon sent: by the value, also when a color scale hands the number to the icon', async () => {
+            let val = 37;
+            const value = { getString: async (): Promise<string> => Promise.resolve(iconOf(val)) };
+            const icon: any = { true: { value }, false: { value } };
+            expect(await getIconEntryValue(icon, true, '')).to.equal(Icons.GetIcon('battery-40'));
+            expect(await getIconEntryValue(icon, 37, '')).to.equal(Icons.GetIcon('battery-40'));
+            val = 0;
+            expect(await getIconEntryValue(icon, 0, '')).to.equal(Icons.GetIcon('battery-outline'));
+            val = 100;
+            expect(await getIconEntryValue(icon, 100, '')).to.equal(Icons.GetIcon('battery'));
+        });
+    });
     describe('names of the rows', () => {
         it('entry name translated, a plain state by its name, several rows of an entry with their folder', () => {
             const names = deviceDetailRowNames(

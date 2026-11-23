@@ -43,6 +43,7 @@ import {
     type DevicePageStateRef,
 } from '../types/deviceDetails';
 import {
+    deviceDetailRowIcon,
     deviceDetailRowItem,
     deviceDetailRowLook,
     deviceDetailRowNames,
@@ -801,7 +802,7 @@ function devicePageStateSlotItem(
         }
         case 'progress': {
             const look = deviceDetailRowLook(deviceId, entry, common, 'number');
-            const icon: NSPanel.DataItemsOptions = { type: 'const', constVal: look.icon };
+            const icon = deviceDetailRowIcon(look, entry.id);
             const color: NSPanel.DataItemsOptions = { type: 'const', constVal: look.color };
             return {
                 type: 'text',
@@ -820,7 +821,8 @@ function devicePageStateSlotItem(
 /**
  * The page item of a `status` slot: a small icon only - the read only text row of the state (icon of the mask entry /
  * the kind, color of its group; a boolean in the colors activated / deactivated) without name and value, so fields 5
- * and 6 stay empty. An own icon of the slot (`entry.icon`) replaces the icon, the colors stay. No tap: a stray
+ * and 6 stay empty. An own icon of the slot (`entry.icon`) replaces the icon - also the level icon of a battery -,
+ * the colors stay. No tap: a stray
  * `button` event of a text row of the device page does nothing.
  *
  * @param deviceId id of the device

@@ -7,6 +7,7 @@
  * detail page is shown (Page.onVisibilityChange), a device may have far more than 100 states.
  */
 import { Color, type RGB } from '../const/Color';
+import { BATTERY_ICON_READ } from '../templates/text';
 import { charAdvance, ELLIPSIS, ELLIPSIS_FALLBACK, hasGlyph } from '../const/text-width';
 import type { NSPanel } from '../types/NSPanel';
 import type { PageBase } from '../types/pages';
@@ -67,6 +68,9 @@ export type DeviceDetailStateCommon = {
     /** a list (array or object) makes a writable number / string a selection, a read only one shows its text */
     states?: ioBroker.StateCommon['states'];
 };
+
+/** key of the mask entry of the charge level of a battery (role `value.battery`): its icon follows the value */
+export const DEVICE_DETAIL_BATTERY_KEY = 'battery';
 
 /** icon of a row without mask entry, by its kind */
 export const fallbackIcon: Readonly<Record<ReturnType<typeof deviceDetailRowKind>, string>> = {
@@ -254,14 +258,15 @@ export function deviceDetailRowNames(
  * @param entry the row
  * @param common common of its state
  * @param kind the kind the row is shown as (icon without mask entry)
- * @returns MDI name of the icon and the theme color of the value
+ * @returns MDI name of the icon, the theme color of the value and `batteryLevel`: the row is the charge level of a
+ * battery (entry `battery` with a number) - its icon follows the value ({@link deviceDetailRowIcon})
  */
 export function deviceDetailRowLook(
     deviceId: string,
     entry: DeviceDetailEntryConfig,
     common: DeviceDetailStateCommon,
     kind: ReturnType<typeof deviceDetailRowKind>,
-): { icon: string; color: RGB | string } {
+): { icon: string; color: RGB | string; batteryLevel: boolean } {
     const maskEntry = deviceDetailEntryOfRow(deviceId, entry.key, {
         id: entry.id,
         role: common.role ?? '',
@@ -270,7 +275,28 @@ export function deviceDetailRowLook(
     return {
         icon: maskEntry?.icon ?? fallbackIcon[kind],
         color: deviceDetailGroupColor(maskEntry?.group ?? 'info'),
+        batteryLevel: maskEntry?.key === DEVICE_DETAIL_BATTERY_KEY && common.type === 'number',
     };
+}
+
+/**
+ * The icon of a row as data item: the icon of its look. The charge level of a battery (`batteryLevel`) gets the icon
+ * of its level instead - the read script of the battery template (`BATTERY_ICON_READ`: `battery-outline`,
+ * `battery-10` ... `battery-90`, `battery`) on the state of the row, sent again when the value changes.
+ *
+ * @param look the look of the row ({@link deviceDetailRowLook})
+ * @param look.icon MDI name of the icon
+ * @param look.batteryLevel the row is the charge level of a battery
+ * @param id id of the state of the row
+ * @returns the data item of the icon
+ */
+export function deviceDetailRowIcon(
+    look: { icon: string; batteryLevel: boolean },
+    id: string,
+): NSPanel.DataItemsOptions {
+    return look.batteryLevel
+        ? { type: 'triggered', dp: id, read: BATTERY_ICON_READ }
+        : { type: 'const', constVal: look.icon };
 }
 
 /**
@@ -279,7 +305,8 @@ export function deviceDetailRowLook(
  * colors activated / deactivated; `read: false` = `button` (writes true); a writable number or string with
  * `common.states` = `input_sel` (the selection popup popupInSel writes the key of the chosen entry, the row shows the
  * text of the current value); everything else a read only text with the formatted value and its unit - a value of
- * `common.states` shows its text. Values take the color of the group of their entry.
+ * `common.states` shows its text. Values take the color of the group of their entry. The icon of the charge level
+ * of a battery follows the value ({@link deviceDetailRowIcon}).
  *
  * The device page uses the same rows read only (`readOnly`): a switch shows on/off, a button its value as text, a
  * selection the text of its value - `keepSelect` keeps the selection (info slot).
@@ -303,7 +330,9 @@ export function deviceDetailRowItem(
 ): NSPanel.PageItemDataItemsOptions {
     const kind = readOnlyRowKind(deviceDetailRowKind(common), readOnly);
     const look = deviceDetailRowLook(deviceId, entry, common, kind);
-    const icon: NSPanel.DataItemsOptions = { type: 'const', constVal: iconName || look.icon };
+    const icon: NSPanel.DataItemsOptions = iconName
+        ? { type: 'const', constVal: iconName }
+        : deviceDetailRowIcon(look, entry.id);
     const valueColor: NSPanel.DataItemsOptions = { type: 'const', constVal: look.color };
     const nameItem: NSPanel.DataItemsOptions = { type: 'const', constVal: name };
     const text = { true: nameItem, false: nameItem };
