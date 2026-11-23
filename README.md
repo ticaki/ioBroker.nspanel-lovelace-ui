@@ -162,6 +162,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) panel setup, berry/TFT install, restart and reset of tasmota: the log shows the cause of network errors (e.g. `ECONNREFUSED`, `EHOSTUNREACH`) instead of only "fetch failed"
 - (ticaki) panel setup: clear hint in the admin if the panel does not answer (Tasmota HTTP API off since 15.4.0.2, enable with SetOption128 1)
 - (ticaki) dependencies updated
+- (ticaki) Admin: media page headline can show only the active device
 
 ### 2.6.0 (2026-11-22)
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)

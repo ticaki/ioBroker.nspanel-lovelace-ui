@@ -45,6 +45,7 @@ var import_getMpd = require("./tools/getMpd");
 var import_getSonos = require("./tools/getSonos");
 var import_getSqueezebox = require("./tools/getSqueezebox");
 var import_pageItem = require("./pageItem");
+var import_media_headline = require("./media-headline");
 function isMediaServiceName(name) {
   return name === "alexa2" || name === "spotify-premium" || name === "mpd" || name === "sonos" || name === "squeezeboxrpc" || name === "";
 }
@@ -290,7 +291,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     await this.update();
   }
   async update() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
     if (!this.visibility || this.sleep) {
       return;
     }
@@ -332,34 +333,15 @@ class PageMedia extends import_pageMenu.PageMenu {
       const v = item.data.headline && await item.data.headline.getString();
       let headline = v != null ? v : "";
       if (!headline) {
-        let suffix = title;
-        if (!suffix && this.currentItem.ident) {
-          const first = this.currentItem.ident.split(".")[0];
-          switch (first) {
-            case "alexa2":
-              suffix = "Alexa";
-              break;
-            case "spotify-premium":
-              suffix = "Spotify";
-              break;
-            case "mpd":
-              suffix = "MPD";
-              break;
-            case "sonos":
-              suffix = "Sonos";
-              break;
-            case "squeezeboxrpc":
-              suffix = "Squeezebox";
-              break;
-            default:
-              suffix = first;
-              break;
-          }
-          if (!this.playerName && this.originalName) {
-            suffix += `: ${this.originalName}`;
-          }
-        }
-        headline = this.playerName ? `${this.playerName}: ${suffix}` : suffix;
+        const ident = (_a = item.ident) != null ? _a : "";
+        headline = (0, import_media_headline.mediaHeadline)({
+          mode: this.config.headlineMode,
+          title,
+          ident,
+          playerName: this.playerName,
+          originalName: this.originalName,
+          deviceName: index === 0 ? this.originalName : (_b = this.playerNameList[ident]) != null ? _b : ""
+        });
       }
       message.headline = headline;
     }
@@ -370,7 +352,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       }
     }
     {
-      const v = await ((_a = item.data.station) == null ? void 0 : _a.getString());
+      const v = await ((_c = item.data.station) == null ? void 0 : _c.getString());
       if (v != null && isPlaying) {
         station = v;
       }
@@ -429,7 +411,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.artistPos = nextPos;
     }
     message.shuffle_icon = "";
-    if ((_c = (_b = item.data.shuffle) == null ? void 0 : _b.value) == null ? void 0 : _c.type) {
+    if ((_e = (_d = item.data.shuffle) == null ? void 0 : _d.value) == null ? void 0 : _e.type) {
       let value = null;
       if (!station && (!item.data.shuffle.enabled || await item.data.shuffle.enabled.getBoolean() === true)) {
         switch (item.data.shuffle.value.type) {
@@ -463,7 +445,7 @@ class PageMedia extends import_pageMenu.PageMenu {
         message.shuffle_icon = value ? "shuffle-variant" : "shuffle-disabled";
       }
     }
-    if (await ((_d = item.data.useGroupVolume) == null ? void 0 : _d.getBoolean()) && item.data.volumeGroup) {
+    if (await ((_f = item.data.useGroupVolume) == null ? void 0 : _f.getBoolean()) && item.data.volumeGroup) {
       const v = await tools.getScaledNumber(item.data.volumeGroup);
       if (v !== null) {
         this.config.filterType = "volumeGroup";
@@ -778,6 +760,9 @@ class PageMedia extends import_pageMenu.PageMenu {
       return { gridItem, messages };
     }
     gridItem.config.card = "cardMedia";
+    if (page.media.headlineMode === "device") {
+      gridItem.config.headlineMode = "device";
+    }
     if (page.media.id.startsWith("spotify-premium.")) {
       return await (0, import_getSpotify.getPageSpotify)(configManager, page, gridItem, messages, justCheck);
     }

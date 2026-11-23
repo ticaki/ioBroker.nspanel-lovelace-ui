@@ -450,6 +450,12 @@ declare namespace ScriptConfig {
          */
         id: string;
         name?: string;
+        /**
+         * Automatic headline while `name` is empty.
+         * - `"title"`: song title, without title service and device (default)
+         * - `"device"`: always the name of the active device
+         */
+        headlineMode?: 'title' | 'device';
         mediaDevice?: string; //???
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;

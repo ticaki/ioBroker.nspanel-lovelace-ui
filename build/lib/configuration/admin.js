@@ -1177,6 +1177,7 @@ function buildMediaScriptPage(entry) {
   const media = {
     id: (_b = thermo2Text(entry.mediaId)) != null ? _b : "",
     name: thermo2Text(entry.name),
+    headlineMode: entry.headlineMode === "device" ? "device" : void 0,
     minValue,
     maxValue,
     colorMediaIcon: thermo2Rgb(entry.colorMediaIcon),

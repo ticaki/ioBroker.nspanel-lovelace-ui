@@ -3039,6 +3039,19 @@ export function emptyThermoEntry(uniqueName: string): ThermoEntry {
 // ---------------------------------------------------------------------------------------------
 
 /** adapters cardMedia works with - the first segment of the player id */
+/** automatic headline of the media page: 'title' = song title or service and device (default), 'device' = active device */
+export type MediaHeadlineMode = 'title' | 'device';
+
+/**
+ * Whether a value is a {@link MediaHeadlineMode}.
+ *
+ * @param value Value to check.
+ * @returns true for 'title' and 'device'.
+ */
+export function isMediaHeadlineMode(value: unknown): value is MediaHeadlineMode {
+    return value === 'title' || value === 'device';
+}
+
 export const mediaBackends = ['alexa2', 'sonos', 'spotify-premium', 'mpd', 'squeezeboxrpc'] as const;
 export type MediaBackend = (typeof mediaBackends)[number];
 
@@ -3291,6 +3304,8 @@ export type MediaEntry = {
     mediaId: string;
     /** name of the player, empty = read from the adapter */
     name?: string;
+    /** automatic headline while `name` is empty: song title (default) or only the active device */
+    headlineMode?: MediaHeadlineMode;
     /** volume range of the panel slider */
     minValue?: number;
     maxValue?: number;

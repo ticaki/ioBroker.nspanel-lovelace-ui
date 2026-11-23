@@ -101,6 +101,11 @@ As soon as an ID is entered, the editor asks the adapter. It checks the ID on th
 
 **Headline** (placeholder *empty = title of the song*) is the header line of the card on the panel. If it stays empty, the adapter builds the line itself: from the name of the player and the title of the running song, and if there is none, from the name of the service (`Alexa`, `Sonos`, `Spotify`, `MPD`, `Squeezebox`).
 
+**Automatic headline** decides what the adapter shows while **Headline** is empty; once **Headline** is filled in, the select is greyed out and has no effect:
+
+- **Title / active device** (default): as described above, song title or service and device.
+- **Active device**: always only the name of the currently active device, regardless of the title – first the configured player, after switching via the speaker list the chosen device. With Sonos and Squeezebox it is the device that controls the group (coordinator or SyncMaster). If the device has no name, the name of the service is shown.
+
 ## 4. Colors
 
 <img alt="Colors dialog with title line, artist line and power button" src="../Pictures/cardMedia/media-04-farben.png" width="100%"/>

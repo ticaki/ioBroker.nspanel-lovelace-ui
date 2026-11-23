@@ -46,6 +46,7 @@ import {
     type ConvertGlobalDecision,
     type IconColorElement,
     type MediaEntry,
+    isMediaHeadlineMode,
     type MediaToolbarConfig,
     type MediaToolbarItem,
     type MediaVolumePreset,
@@ -1236,6 +1237,7 @@ function convertThermoPage(page: Dict, common: PageCommon, topic: string): Therm
 const mediaMappedKeys = [
     'id',
     'name',
+    'headlineMode',
     'colorMediaIcon',
     'colorMediaArtist',
     'colorMediaTitle',
@@ -1331,6 +1333,14 @@ function convertMediaPage(
     const name = trimmedText(media.name, reason, 'media.name');
     if (name !== undefined) {
         entry.name = name;
+    }
+    if (media.headlineMode !== undefined && media.headlineMode !== null) {
+        if (!isMediaHeadlineMode(media.headlineMode)) {
+            throw new ConvertError(reason, `media.headlineMode: expected 'title' or 'device'`);
+        }
+        if (media.headlineMode === 'device') {
+            entry.headlineMode = 'device';
+        }
     }
     const minValue = num(media.minValue, reason, 'media.minValue');
     const maxValue = num(media.maxValue, reason, 'media.maxValue');
