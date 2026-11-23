@@ -18,6 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var admin_media_exports = {};
 __export(admin_media_exports, {
+  mediaListOptions: () => mediaListOptions,
   mediaPlayerInfo: () => mediaPlayerInfo
 });
 module.exports = __toCommonJS(admin_media_exports);
@@ -33,6 +34,19 @@ async function childNames(adapter, type, prefix) {
     endkey: `${prefix}.\u9999`
   });
   const names = ((_a = view == null ? void 0 : view.rows) != null ? _a : []).filter((row) => (row == null ? void 0 : row.id) && row.id.split(".").length === depth && row.value).map((row) => (0, import_tools.getStringFromStringOrTranslated)(adapter, row.value.common.name, row.id.split(".").pop()));
+  return [...new Set(names.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+async function childStateNames(adapter, prefix) {
+  var _a;
+  const depth = prefix.split(".").length + 1;
+  const view = await adapter.getObjectViewAsync("system", "state", {
+    startkey: `${prefix}.`,
+    endkey: `${prefix}.\u9999`
+  });
+  const names = ((_a = view == null ? void 0 : view.rows) != null ? _a : []).filter((row) => (row == null ? void 0 : row.id) && row.id.split(".").length === depth).map((row) => {
+    var _a2;
+    return (_a2 = row.id.split(".").pop()) != null ? _a2 : "";
+  });
   return [...new Set(names.filter(Boolean))].sort((a, b) => a.localeCompare(b));
 }
 async function stateTexts(adapter, id) {
@@ -96,6 +110,7 @@ async function mediaListOptions(adapter, id) {
   switch ((0, import_adminShareConfig.mediaBackendOf)(id)) {
     case "alexa2":
       options.speakerList = await childNames(adapter, "device", `${inst}.Echo-Devices`);
+      options.playList = await childStateNames(adapter, `${parts.slice(0, 4).join(".")}.Music-Provider`);
       break;
     case "sonos": {
       options.speakerList = await childNames(adapter, "channel", `${inst}.root`);
@@ -158,6 +173,7 @@ async function mediaPlayerInfo(adapter, rawId) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  mediaListOptions,
   mediaPlayerInfo
 });
 //# sourceMappingURL=admin-media.js.map

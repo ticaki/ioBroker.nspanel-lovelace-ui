@@ -40,6 +40,7 @@ var import_screensaver_cycle = require("../const/screensaver-cycle");
 var import_data_item = require("../controller/data-item");
 var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_screensaver_timer = require("./screensaver-timer");
 var import_alexa_alarm = require("../classes/alexa-alarm");
 const panelsWarnedAboutClockTimer = /* @__PURE__ */ new WeakSet();
@@ -3308,7 +3309,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               }
               const stateToken = entry.slice(0, sep).trim();
               const label = entry.slice(sep + 1).trim();
-              const matchedState = source.find((s) => s.includes(stateToken));
+              const matchedState = (0, import_adminShareConfig.findAlexaPlaylistState)(source, stateToken);
               if (!matchedState) {
                 this.log.warn(
                   `Alexa playlist: no matching state for token "${stateToken}" source "${source.join(", ")}".`

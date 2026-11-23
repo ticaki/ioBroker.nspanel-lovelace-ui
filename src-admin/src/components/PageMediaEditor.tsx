@@ -63,6 +63,7 @@ import {
     mediaVisibleToolbarItems,
     mediaVolumeDefaults,
     normalizeChannelId,
+    parseAlexaPlaylistEntry,
 } from '../../../src/lib/types/adminShareConfig';
 import { CardTypeBadge } from './CardTypeBadge';
 
@@ -218,6 +219,7 @@ function coloredIcon(name: string, color: string, size: number): React.JSX.Eleme
 
 export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMediaEditorProps, PageMediaEditorState> {
     private dialogRef = React.createRef<ChannelConfigDialog>();
+    private listInputRef = React.createRef<HTMLInputElement>();
 
     constructor(props: ConfigGenericProps & PageMediaEditorProps) {
         super(props);
@@ -767,8 +769,22 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
             list === 'playList' && (backend === 'sonos' || backend === 'alexa2')
                 ? `media_listHint_playList_${backend}`
                 : `media_listHint_${list}`;
+        // alexa2 playlist entries need the form <State>.<name>; offered are only the states
+        const alexaPlaylist = list === 'playList' && backend === 'alexa2';
+        const isInvalid = (entry: string): boolean => alexaPlaylist && !parseAlexaPlaylistEntry(entry);
+        const inputInvalid = !!this.state.listInput.trim() && isInvalid(this.state.listInput);
+        const pickOffered = (n: string): void => {
+            if (alexaPlaylist) {
+                this.setState({ listInput: `${n}.` }, () => this.listInputRef.current?.focus());
+            } else {
+                this.setDraftList(list, [...names, n]);
+            }
+        };
         const add = (): void => {
             const name = this.state.listInput.trim();
+            if (inputInvalid) {
+                return;
+            }
             if (name && !names.includes(name)) {
                 this.setDraftList(list, [...names, name]);
             }
@@ -800,6 +816,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                             key={n}
                             label={n}
                             size="small"
+                            color={isInvalid(n) ? 'error' : 'default'}
                             onDelete={() =>
                                 this.setDraftList(
                                     list,
@@ -815,6 +832,9 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         autoComplete="off"
                         label={this.getText('media_listAdd')}
                         value={this.state.listInput}
+                        inputRef={this.listInputRef}
+                        error={inputInvalid}
+                        helperText={inputInvalid ? this.getText('media_listInvalid_playList_alexa2') : undefined}
                         onChange={e => this.setState({ listInput: e.target.value })}
                         onKeyDown={e => {
                             if (e.key === 'Enter') {
@@ -827,7 +847,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     />
                     <Button
                         size="small"
-                        disabled={!this.state.listInput.trim()}
+                        disabled={!this.state.listInput.trim() || inputInvalid}
                         onClick={add}
                     >
                         {this.getText('media_listAddButton')}
@@ -851,16 +871,18 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                                     size="small"
                                     variant="outlined"
                                     icon={<AddIcon />}
-                                    onClick={() => this.setDraftList(list, [...names, n])}
+                                    onClick={() => pickOffered(n)}
                                 />
                             ))}
                         </Box>
-                        <Button
-                            size="small"
-                            onClick={() => this.setDraftList(list, [...names, ...offered])}
-                        >
-                            {this.getText('media_listTakeAll')}
-                        </Button>
+                        {!alexaPlaylist && (
+                            <Button
+                                size="small"
+                                onClick={() => this.setDraftList(list, [...names, ...offered])}
+                            >
+                                {this.getText('media_listTakeAll')}
+                            </Button>
+                        )}
                     </>
                 )}
             </Box>

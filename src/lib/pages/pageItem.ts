@@ -13,6 +13,7 @@ import { isCardEntitiesType, isCardGridType } from '../types/function-and-const'
 import type { Screensaver } from './screensaver';
 import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
+import { findAlexaPlaylistState } from '../types/adminShareConfig';
 import type { NSPanel } from '../types/NSPanel';
 import {
     alarmClockOf,
@@ -3772,7 +3773,7 @@ export class PageItem extends BaseTriggeredPage {
                             const stateToken = entry.slice(0, sep).trim();
                             const label = entry.slice(sep + 1).trim();
 
-                            const matchedState = source.find(s => s.includes(stateToken));
+                            const matchedState = findAlexaPlaylistState(source, stateToken);
                             if (!matchedState) {
                                 this.log.warn(
                                     `Alexa playlist: no matching state for token "${stateToken}" source "${source.join(', ')}".`,
