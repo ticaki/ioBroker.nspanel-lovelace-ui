@@ -40,8 +40,9 @@ __export(device_page_exports, {
   devicePageStatusIconElement: () => devicePageStatusIconElement,
   devicePageStatusIconItem: () => devicePageStatusIconItem,
   devicePageStatusItem: () => devicePageStatusItem,
-  fitDevicePageStatus: () => fitDevicePageStatus,
+  devicePageStatusMessage: () => devicePageStatusMessage,
   optionalValueOf: () => optionalValueOf,
+  splitDevicePageStatus: () => splitDevicePageStatus,
   supportsCardDevice: () => supportsCardDevice,
   withDevicePageSlotLook: () => withDevicePageSlotLook
 });
@@ -101,32 +102,60 @@ function cutToBytesWithEllipsis(text, maxBytes, ellipsis) {
   const head = cutToBytes(text, maxBytes - byteLength(ellipsis)).trimEnd();
   return head ? `${head}${ellipsis}` : "";
 }
-function fitDevicePageStatus(text, layout, model, maxBytes = Number.POSITIVE_INFINITY) {
+function statusEllipsis(model) {
   var _a;
-  const flat = text.replace(/[\r\n]+/g, " ").replaceAll("~", "").replaceAll(import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_CHAR, "");
+  return (0, import_text_width.hasGlyph)((_a = import_text_width.ELLIPSIS.codePointAt(0)) != null ? _a : 0, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model) ? import_text_width.ELLIPSIS : import_text_width.ELLIPSIS_FALLBACK;
+}
+const STATUS_BREAK_AFTER = /* @__PURE__ */ new Set([",", ".", ";", "\u2013", "\u2014"]);
+function isStatusBreak(chars, at) {
+  return STATUS_BREAK_AFTER.has(chars[at - 1]) && !/\d/.test(chars[at]);
+}
+function splitDevicePageStatus(text, layout, model) {
+  const flat = text.replace(/[\r\n]+/g, " ").replaceAll("~", "");
   const width = import_deviceDetails.DEVICE_PAGE_FIELDS[layout].status;
-  const standBytes = Math.max(0, Math.min(import_deviceDetails.DEVICE_PAGE_STATUS_MAX_BYTES, maxBytes));
-  if ((0, import_text_width.textWidth)(flat, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(flat) <= standBytes) {
-    return flat;
+  const fits = (part) => (0, import_text_width.textWidth)(part, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(part) <= import_deviceDetails.DEVICE_PAGE_STATUS_MAX_BYTES;
+  if (fits(flat)) {
+    return [flat];
   }
-  const ellipsis = (0, import_text_width.hasGlyph)((_a = import_text_width.ELLIPSIS.codePointAt(0)) != null ? _a : 0, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model) ? import_text_width.ELLIPSIS : import_text_width.ELLIPSIS_FALLBACK;
-  const standing = cutToBytesWithEllipsis(
-    (0, import_text_width.fitText)(flat, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model, width, { ellipsis }),
-    standBytes,
-    ellipsis
-  );
-  if (!import_deviceDetails.DEVICE_PAGE_STATUS_SCROLLS[layout]) {
-    return standing;
+  const chars = Array.from(flat.trim());
+  const parts = [];
+  let start = 0;
+  while (start < chars.length) {
+    if (parts.length === import_deviceDetails.DEVICE_PAGE_STATUS_MAX_PARTS - 1) {
+      const rest = chars.slice(start).join("");
+      const ellipsis = statusEllipsis(model);
+      parts.push(
+        cutToBytesWithEllipsis(
+          (0, import_text_width.fitText)(rest, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model, width, { ellipsis }),
+          import_deviceDetails.DEVICE_PAGE_STATUS_MAX_BYTES,
+          ellipsis
+        )
+      );
+      break;
+    }
+    let end = start;
+    let part = "";
+    while (end < chars.length && fits(part + chars[end])) {
+      part += chars[end];
+      end++;
+    }
+    if (end < chars.length && chars[end] !== " ") {
+      let at = end;
+      while (at > start && chars[at] !== " " && !isStatusBreak(chars, at)) {
+        at--;
+      }
+      end = at > start ? at : Math.max(end, start + 1);
+    }
+    parts.push(chars.slice(start, end).join("").trimEnd());
+    start = end;
+    while (chars[start] === " ") {
+      start++;
+    }
   }
-  const scrollBytes = Math.min(
-    import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
-    maxBytes - byteLength(import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_MARK)
-  );
-  const scrolling = cutToBytesWithEllipsis(flat, scrollBytes, ellipsis);
-  if (byteLength(scrolling) <= byteLength(standing)) {
-    return standing;
-  }
-  return `${scrolling}${import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_MARK}`;
+  return parts;
+}
+function devicePageStatusMessage(part) {
+  return `${import_deviceDetails.DEVICE_PAGE_STATUS_COMMAND}~${part.replaceAll("~", "")}`;
 }
 function devicePageMainElement(mainPayload, status) {
   const fields = mainPayload ? mainPayload.split("~") : [];
@@ -147,14 +176,13 @@ function devicePageMaxPayloadBytes(layout) {
   return Math.min(import_deviceDetails.DEVICE_PAGE_RECEIVE_BYTES[layout], import_definition.MAX_PANEL_PAYLOAD_BYTES);
 }
 function devicePagePayload(head, mainPayload, elements, status, layout, model) {
-  const build = (field2) => [head, devicePageMainElement(mainPayload, field2), ...elements].join("~");
-  const field = fitDevicePageStatus(status, layout, model);
-  const payload = build(field);
+  const build = (field) => [head, devicePageMainElement(mainPayload, field), ...elements].join("~");
+  const payload = build(status);
   const over = byteLength(payload) - devicePageMaxPayloadBytes(layout);
   if (over <= 0) {
     return payload;
   }
-  return build(fitDevicePageStatus(status, layout, model, Math.max(0, byteLength(field) - over)));
+  return build(cutToBytesWithEllipsis(status, Math.max(0, byteLength(status) - over), statusEllipsis(model)));
 }
 function devicePageStatusIconElement(payload) {
   const fields = payload ? payload.split("~") : [];
@@ -562,8 +590,9 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   devicePageStatusIconElement,
   devicePageStatusIconItem,
   devicePageStatusItem,
-  fitDevicePageStatus,
+  devicePageStatusMessage,
   optionalValueOf,
+  splitDevicePageStatus,
   supportsCardDevice,
   withDevicePageSlotLook
 });

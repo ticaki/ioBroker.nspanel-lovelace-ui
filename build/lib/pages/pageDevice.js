@@ -34,6 +34,14 @@ class PageDevice extends import_Page.Page {
   layout;
   /** index of the slots (0 = slot 1) that show an alias channel */
   channelSlots;
+  /** the status text the parts were made of; undefined until the page has sent one since it became visible */
+  statusText = void 0;
+  /** the parts of the status text, shown one after the other */
+  statusParts = [""];
+  /** the part that is shown */
+  statusIndex = 0;
+  /** the interval that shows the next part; only while there is more than one */
+  statusTimer = void 0;
   constructor(config, options) {
     var _a;
     super(config, options);
@@ -61,6 +69,67 @@ class PageDevice extends import_Page.Page {
       return import_device_page.DEVICE_PAGE_EMPTY_ELEMENT;
     }
     return await item.getPageItemPayload() || import_device_page.DEVICE_PAGE_EMPTY_ELEMENT;
+  }
+  /** Stops the rotation of the parts of the status text. */
+  stopStatusRotation() {
+    if (this.statusTimer) {
+      this.adapter.clearInterval(this.statusTimer);
+      this.statusTimer = void 0;
+    }
+  }
+  /**
+   * Takes the status text of an update: another text than before is split anew, starts with its first part and
+   * restarts the rotation (stopped when one part is enough); the same text changes nothing.
+   *
+   * @param status the status text
+   * @returns the part to show
+   */
+  statusPartOf(status) {
+    var _a;
+    if (status !== this.statusText) {
+      this.statusText = status;
+      this.statusParts = (0, import_device_page.splitDevicePageStatus)(status, this.layout, this.basePanel.info.nspanel.model);
+      this.statusIndex = 0;
+      this.stopStatusRotation();
+      if (this.statusParts.length > 1 && !this.unload && !this.adapter.unload) {
+        this.statusTimer = this.adapter.setInterval(
+          () => this.showNextStatusPart(),
+          import_deviceDetails.DEVICE_PAGE_STATUS_INTERVAL_MS
+        );
+      }
+    }
+    return (_a = this.statusParts[this.statusIndex]) != null ? _a : "";
+  }
+  /**
+   * The next part of the status text, sent as the short message that only replaces the status line. Nothing is sent
+   * (and the part stays) while the page is not shown: hidden, or a popup is open on it (sleep).
+   */
+  showNextStatusPart() {
+    if (this.unload || this.adapter.unload) {
+      this.stopStatusRotation();
+      return;
+    }
+    if (!this.visibility || this.sleep || this.statusParts.length < 2) {
+      return;
+    }
+    this.statusIndex = (this.statusIndex + 1) % this.statusParts.length;
+    this.sendToPanelClass((0, import_device_page.devicePageStatusMessage)(this.statusParts[this.statusIndex]), false);
+  }
+  /**
+   * A hidden page stops the rotation; shown again it starts with the first part of the status text.
+   *
+   * @param val true: the page becomes visible
+   */
+  async onVisibilityChange(val) {
+    if (!val) {
+      this.stopStatusRotation();
+    }
+    this.statusText = void 0;
+    await super.onVisibilityChange(val);
+  }
+  async delete() {
+    this.stopStatusRotation();
+    await super.delete();
   }
   async update() {
     var _a, _b;
@@ -90,7 +159,7 @@ class PageDevice extends import_Page.Page {
         ),
         mainItem ? await mainItem.getPageItemPayload() : "",
         elements,
-        status,
+        this.statusPartOf(status),
         this.layout,
         this.basePanel.info.nspanel.model
       ),
