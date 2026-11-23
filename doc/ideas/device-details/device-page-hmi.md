@@ -9,7 +9,7 @@ Nur EU; us-l und us-p sind nicht angepasst.
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device8.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device9.HMI --preview doc/Pictures/device-page
 ```
 
 `--fields` gibt zusätzlich die Rechnung der längsten Nachricht je Seite aus (siehe „Puffer und RAM“).
@@ -19,7 +19,8 @@ Teststände: `device1` (cardDevice1 mit N=6, ohne Status-Icons), `device2` (N=10
 auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main und allen Slots), `device6`
 (`strCommand` je Seite bemessen, Empfang auf die Puffergröße begrenzt, Lauftext-Statuszeile auf cardDevice2 und 3),
 `device7` (Lauftext auch auf cardDevice1, dafür Status-Icons ohne Popup-Überschrift und kürzere Icon-Puffer),
-`device8` (Lauftext wieder entfernt, neue Kurz-Nachricht `devStatus` für die Statuszeile – aktuell; alle in
+`device8` (Lauftext wieder entfernt, neue Kurz-Nachricht `devStatus` für die Statuszeile), `device9` (Statuszeile
+auf allen drei Seiten mittig: `tStatus.xcen` 0 → 1 auf cardDevice1 und 3, sonst wie `device8` – aktuell; alle in
 `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
 cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
 
@@ -91,7 +92,7 @@ devStatus~<text>              (nur die Statuszeile, siehe „Kurz-Nachricht devS
   Umkehrung gilt nicht mehr: value, progress, status und Schalter-Icon/-Name senden, zeigen aber **keinen**
   Press-Effekt (Texte bzw. Hotspot, keine Knöpfe).
 - **Statuszeile** `tStatus`: Feld 6 von main, immer (auch wenn main ausgeblendet ist), einzeilig, Font 0, normale
-  Textfarbe. Leeres Feld = leere Zeile. Höchstens **63 Byte**. Zwischen zwei `entityUpd` ersetzt `devStatus~<text>`
+  Textfarbe, auf allen drei Seiten horizontal zentriert. Leeres Feld = leere Zeile. Höchstens **63 Byte**. Zwischen zwei `entityUpd` ersetzt `devStatus~<text>`
   nur diesen Text.
 - **value-Schrift:** Font 4 (NotoSans Bold 80) enthält Ziffern, `:`, `%`, `°`, `,`, `.`, `-`, `/`, Leerzeichen,
   Buchstaben inkl. ä/ö/ü – aber **kein `€`**. Vorschub: Ziffer 33 px, `:` 17 px, `%` 53 px, `°` 25 px, Leerzeichen 15 px.
@@ -115,8 +116,8 @@ devStatus~<text>
   }
   ```
 
-  Er setzt nur `tStatus.txt`. Leerer Text leert die Zeile. Ausrichtung und Farbe sind die des Objekts (cardDevice2
-  mittig, sonst links). Länger als 63 Byte schneidet die Nextion beim Zuweisen ab (der Adapter schickt nie mehr).
+  Er setzt nur `tStatus.txt`. Leerer Text leert die Zeile. Ausrichtung und Farbe sind die des Objekts (auf allen
+  drei Seiten mittig). Länger als 63 Byte schneidet die Nextion beim Zuweisen ab (der Adapter schickt nie mehr).
 - **Quittung:** unverändert der gemeinsame Weg hinter allen Zweigen – `udelete payloadLength+1`, dann
   `event,ack,<recvCrc>`. Der neue Zweig fasst `u[]`, `payloadLength`, `recvCrc` und `bufferPos` nicht an.
 - **Name:** `statusUpdate` ist beim Screensaver vergeben; `devStatus` kommt sonst in keiner Seite vor. Andere Seiten
@@ -231,7 +232,7 @@ Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den S
 | tStat10 (unten rechts) | 161 | 115 | 38 | 45 | 1 | mittig | 7 |
 | bEntity3–6 (button) | 10 / 118 / 226 / 334 | 190 | 104 | 52 | 3 | mittig | 7 |
 | tEntity3–6 | 10 / 118 / 226 / 334 | 244 | 104 | 26 | 0 | mittig | 31 |
-| tStatus | 10 | 289 | 390 | 30 | 0 | links | 63 |
+| tStatus | 10 | 289 | 390 | 30 | 0 | mittig | 63 |
 | bInfo | 404 | 288 | 36 | 32 | 1 | mittig | 7 |
 
 **Status-Block (Slots 7–10):**
@@ -301,7 +302,7 @@ passten unter Icon, Wert und Balken nicht mehr über die Statuszeile.
 | tIcon7 / tIcon8 (switch) | 10 / 226 | 236 | 34 | 34 | 1 | mittig | 10 |
 | tEntity7 / tEntity8 | 46 / 262 | 240 | 125 | 26 | 0 | links | 31 |
 | btOnOff7 / btOnOff8 | 173 / 389 | 228 | 50 | 50 | Bild 1/2 | – | 3 |
-| tStatus | 10 | 289 | 390 | 30 | 0 | links | 63 |
+| tStatus | 10 | 289 | 390 | 30 | 0 | mittig | 63 |
 | bInfo | 404 | 288 | 36 | 32 | 1 | mittig | 10 |
 
 Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts oben, Slot 3 links Mitte …
@@ -413,7 +414,7 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
 
 ## Im Nextion-Editor prüfen
 
-1. `nspanel-v6.2.0.device8.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
+1. `nspanel-v6.2.0.device9.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
 2. Kompilieren: keine Fehler in den Seiten cardDevice1–3 (Code ist nur Klartext, nicht kompiliert getestet).
    Besonders: `fill`/`draw` mit `defaultBcoColor`/`defaultFontColor`/`sys2` im tmSerial von cardDevice2,
@@ -425,7 +426,7 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
    Neu seit `device6`/`device7`: die fünf Zeilen vor `ucopy strCommand.txt,4,sys0,0` im tmSerial von cardDevice1
    und 2; `pageIcons.tTmp1.txt=""` in `tStat7–10`. Neu in `device8`: der Zweig `if(tInstruction.txt=="devStatus")`
    im tmSerial aller drei Seiten (zwischen dem `entityUpd`-Block und `pageType`); kein `gStatus` mehr, kein
-   „Component overlap“ an der Statuszeile.
+   „Component overlap“ an der Statuszeile. Neu in `device9`: `tStatus` auf cardDevice1 und 3 mit `xcen` 1 (mittig).
 3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: 390 Byte Luft, cardDevice3: 327).
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
    ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach Rückkehr aus einem Popup (der Adapter schickt nach

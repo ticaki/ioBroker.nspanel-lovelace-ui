@@ -177,7 +177,7 @@ LAYOUTS = {
     # control: icon top left, two info rows right of it, four buttons, optional 2 x 2 status icons between icon and
     # info rows (the info rows switch to a narrower second set of objects while the block is shown)
     'cardDevice1': {
-        'main': (10, 68, 110, 86, 4), 'mainName': (10, 156, 110, 26, 0, 1), 'statusXcen': 0,
+        'main': (10, 68, 110, 86, 4), 'mainName': (10, 156, 110, 26, 0, 1), 'statusXcen': 1,
         # the tightest page: its 14 icon buffers hold exactly what an icon needs (ICON_NEED), 4 bytes less each
         'iconLen': ICON_NEED,
         'slots': [info_row(126, 76, 314), info_row(126, 120, 314)] + [button(10 + 108 * k, 190, 104) for k in range(4)]
@@ -197,7 +197,7 @@ LAYOUTS = {
     },
     # values: icon left, 2 x 3 info tiles, two switches
     'cardDevice3': {
-        'main': (10, 67, 100, 82, 4), 'mainName': (10, 151, 100, 26, 0, 1), 'statusXcen': 0,
+        'main': (10, 67, 100, 82, 4), 'mainName': (10, 151, 100, 26, 0, 1), 'statusXcen': 1,
         'slots': [info_tile(114 + 163 * (k % 2), 67 + 52 * (k // 2), 161) for k in range(6)]
         + [switch_row(10, 228, 213), switch_row(226, 228, 213)],
     },
