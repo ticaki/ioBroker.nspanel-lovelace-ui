@@ -9,7 +9,7 @@ Nur EU; us-l und us-p sind nicht angepasst.
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device6.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device7.HMI --preview doc/Pictures/device-page
 ```
 
 `--fields` gibt zusätzlich die Rechnung der längsten Nachricht je Seite aus (siehe „Puffer und RAM“).
@@ -17,10 +17,10 @@ PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspane
 Teststände: `device1` (cardDevice1 mit N=6, ohne Status-Icons), `device2` (N=10, erstes Raster 42 px hoch),
 `device3` (N=10, Raster auf die info-Zeilen ausgerichtet), `device4` (wie device3, zusätzlich senden main und info
 auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main und allen Slots), `device6`
-(`strCommand` je Seite bemessen, Empfang auf die Puffergröße begrenzt, Lauftext-Statuszeile auf cardDevice2 und 3 –
+(`strCommand` je Seite bemessen, Empfang auf die Puffergröße begrenzt, Lauftext-Statuszeile auf cardDevice2 und 3),
+`device7` (Lauftext auch auf cardDevice1, dafür Status-Icons ohne Popup-Überschrift und kürzere Icon-Puffer –
 aktuell; alle in `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein
-Lauftext-Objekt `g0` auf cardDevice1 gelegt und gespeichert (Muster für `gStatus`, siehe „Lauftext“); die vom
-Werkzeug gebaute `device5` liegt unter `/home/tim/device-page-hmi/`.
+Lauftext-Objekt `g0` auf cardDevice1 gelegt und gespeichert (Muster für `gStatus`, siehe „Lauftext“).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
   cardEntities2 und die pageType-Einträge unterscheiden sich). Dort fehlte `swipe_release_fix.py` (#934, keine HMI
@@ -75,7 +75,7 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
 | progress | Name Font 0 darüber, Balken über die volle Breite; Feld 6 = ganze Zahl 0–100 (wird begrenzt), Füllung in iconColor, Rahmen in der Textfarbe | Name und Balken |
 | button | Icon Font 3 in iconColor, Name Font 0 darunter | Icon und Name |
 | switch | Icon Font 1, Name Font 0, Schalter `btOnOff` (Kopie von cardEntities, Bilder 1/2 bzw. 10/11 bei schwarzem Hintergrund); Zustand aus Feld 6 `0`/`1` | Icon und Name wie die anderen Plätze; der Schalter selbst sendet `OnOff` |
-| status | nur Icon (Feld 3) Font 1 in iconColor, in einem 2×2-Block mit Raster (nur cardDevice1, siehe unten); der Name (Feld 5) wird nicht gezeigt, aber als Überschrift eines Popups gemerkt; Wert ungenutzt | die Zelle |
+| status | nur Icon (Feld 3) Font 1 in iconColor, in einem 2×2-Block mit Raster (nur cardDevice1, siehe unten); Name (Feld 5) und Wert werden nicht gelesen | die Zelle |
 | info-Icon | Icon Font 1 in iconColor unten rechts; Name/Wert werden nicht genutzt | Icon; nur `buttonPress2`, kein Long-Press (das Element hat keinen Typ) |
 
 - **Jeder Platz verhält sich wie eine cardGrid-Zelle** (main und alle Slot-Arten, Code der Zelle der Basis-HMI 6.2.0
@@ -90,7 +90,7 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
   Press-Effekt (Texte bzw. Hotspot, keine Knöpfe).
 - **Statuszeile** `tStatus`: Feld 6 von main, immer (auch wenn main ausgeblendet ist), einzeilig, Font 0, normale
   Textfarbe. Leeres Feld = leere Zeile. Höchstens **63 Byte**.
-- **Lauftext** (nur cardDevice2 und cardDevice3): endet Feld 6 von main auf `¬1`, zeigt die Seite den Text davor als
+- **Lauftext** (alle drei Seiten): endet Feld 6 von main auf `¬1`, zeigt die Seite den Text davor als
   Lauftext (siehe „Lauftext der Statuszeile“). Höchstens **127 Byte einschließlich `¬1`**, also 124 Byte Text.
 - **value-Schrift:** Font 4 (NotoSans Bold 80) enthält Ziffern, `:`, `%`, `°`, `,`, `.`, `-`, `/`, Leerzeichen,
   Buchstaben inkl. ä/ö/ü – aber **kein `€`**. Vorschub: Ziffer 33 px, `:` 17 px, `%` 53 px, `°` 25 px, Leerzeichen 15 px.
@@ -117,9 +117,10 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
   `dir`, `dis`, `tim`, `en` hinter `ycen` und `vvs0–3` hinter `spay`. Das Werkzeug baut `gStatus` aus der
   Textvorlage genau so um (`make_scroll`); verglichen mit `g0`: gleiche Attribute, Reihenfolge und Feldgrößen.
 - **Nur wo es passt:** Das Werkzeug baut den Lauftext nur auf Seiten, auf denen danach noch 150 Byte RAM frei sind.
-  cardDevice1 fällt heraus (es fehlen 191 Byte: `gStatus` 147, dazu der größere `strCommand`). Dort bleibt die
-  Statuszeile wie bisher (63 Byte, der Adapter kürzt mit `...`). Der Lauftext käme auf cardDevice1 automatisch dazu,
-  wenn `vaName7–10` entfielen (−156) und ein weiterer Posten von ~35 Byte.
+  Seit `device7` passt er auf allen drei Seiten (cardDevice1 nur, weil dort die Popup-Überschrift der Status-Icons
+  entfallen ist und die Icon-Puffer kürzer sind, siehe „Puffer und RAM“). Passt er nach einer späteren Änderung
+  auf einer Seite nicht mehr, baut das Werkzeug sie ohne Lauftext und meldet das – der Adapter dürfte dort dann
+  kein `¬1` mehr schicken.
 - **Zeichenweise per Timer** (Alternative, verworfen): Timer + Positionsvariable + zweiter Puffer wäre nicht
   günstiger als das Objekt und liefe nicht pixelweise.
 
@@ -156,7 +157,7 @@ Je Slot-Art:
 | progress | Hotspot `mSlot2` (10/179, 429×42) über `tEntity2` und dem Balken (cardDevice2) | nein | wie Tabelle oben | wie value; das Popup bekommt kein Icon (leer), Farbe = Textfarbe des Namens |
 | switch: Icon und Name | Hotspot `mSlot7`/`mSlot8` (10 bzw. 226/236, 161×34) über `tIcon<k>`, `tEntity<k>` (cardDevice3) | nein | wie Tabelle oben | wie value |
 | switch: Schalter | `btOnOff<k>` | Bildwechsel | `event,buttonPress2,<intName>,OnOff,<0\|1>` beim Berühren, kein Long-Press (unverändert) | – |
-| status | `tStat7–10` (cardDevice1), Code in der Zelle | nein | wie Tabelle oben | wie main; leere Zelle (Rahmen sichtbar) sendet nichts; Popup-Überschrift = Feld 5 (`vaName<k>`) |
+| status | `tStat7–10` (cardDevice1), Code in der Zelle | nein | wie Tabelle oben | wie main; leere Zelle (Rahmen sichtbar) sendet nichts; ein Popup aus der Zelle hat **keine Überschrift** (`pageIcons.tTmp1` leer) |
 | info-Icon | `bInfo` | ja | immer `event,buttonPress2,<intName>,button` | kein Long-Press, kein Popup (unverändert) |
 | Statuszeile | `tStatus` | nein | – | kein Touch |
 
@@ -188,9 +189,7 @@ Statuszeile für den Adapter in Zahlen:
 
 | Seite | steht (ohne Kennzeichen) | läuft (`<Text>¬1`) |
 |---|---|---|
-| cardDevice1 | ≤ 390 px, ≤ 63 Byte; breiter: kürzen mit `...` | – (kein Lauftext) |
-| cardDevice2 | ≤ 390 px und ≤ 63 Byte | breiter als 390 px oder > 63 Byte: Text ≤ **124 Byte** + `¬1` (= 127) |
-| cardDevice3 | ≤ 390 px und ≤ 63 Byte | wie cardDevice2 |
+| cardDevice1, 2 und 3 | ≤ 390 px und ≤ 63 Byte | breiter als 390 px oder > 63 Byte: Text ≤ **124 Byte** + `¬1` (= 127) |
 
 ## Geometrie
 
@@ -207,28 +206,29 @@ Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den S
 
 | Objekt | x | y | w | h | Font | Ausrichtung | txt_maxl |
 |---|---|---|---|---|---|---|---|
-| bMain | 10 | 68 | 110 | 86 | 4 | mittig | 10 |
+| bMain | 10 | 68 | 110 | 86 | 4 | mittig | 7 |
 | tMainName | 10 | 156 | 110 | 26 | 0 | mittig | 31 |
-| bEntity1 (info, breit) | 126 | 76 | 36 | 34 | 1 | mittig | 10 |
+| bEntity1 (info, breit) | 126 | 76 | 36 | 34 | 1 | mittig | 7 |
 | tEntity1 | 164 | 80 | 164 | 26 | 0 | links | 31 |
 | tValue1 | 330 | 80 | 110 | 26 | 0 | rechts | 31 |
-| bEntity2 (info, breit) | 126 | 120 | 36 | 34 | 1 | mittig | 10 |
+| bEntity2 (info, breit) | 126 | 120 | 36 | 34 | 1 | mittig | 7 |
 | tEntity2 | 164 | 124 | 164 | 26 | 0 | links | 31 |
 | tValue2 | 330 | 124 | 110 | 26 | 0 | rechts | 31 |
-| bEntityS1 (info, schmal) | 204 | 76 | 36 | 34 | 1 | mittig | 10 |
+| bEntityS1 (info, schmal) | 204 | 76 | 36 | 34 | 1 | mittig | 7 |
 | tEntityS1 | 242 | 80 | 86 | 26 | 0 | links | 31 |
 | tValueS1 | 330 | 81 | 110 | 26 | 0 | rechts | 31 |
-| bEntityS2 (info, schmal) | 204 | 120 | 36 | 34 | 1 | mittig | 10 |
+| bEntityS2 (info, schmal) | 204 | 120 | 36 | 34 | 1 | mittig | 7 |
 | tEntityS2 | 242 | 124 | 86 | 26 | 0 | links | 31 |
 | tValueS2 | 330 | 125 | 110 | 26 | 0 | rechts | 31 |
-| tStat7 (status, oben links) | 124 | 71 | 38 | 45 | 1 | mittig | 10 |
-| tStat8 (oben rechts) | 161 | 71 | 38 | 45 | 1 | mittig | 10 |
-| tStat9 (unten links) | 124 | 115 | 38 | 45 | 1 | mittig | 10 |
-| tStat10 (unten rechts) | 161 | 115 | 38 | 45 | 1 | mittig | 10 |
-| bEntity3–6 (button) | 10 / 118 / 226 / 334 | 190 | 104 | 52 | 3 | mittig | 10 |
+| tStat7 (status, oben links) | 124 | 71 | 38 | 45 | 1 | mittig | 7 |
+| tStat8 (oben rechts) | 161 | 71 | 38 | 45 | 1 | mittig | 7 |
+| tStat9 (unten links) | 124 | 115 | 38 | 45 | 1 | mittig | 7 |
+| tStat10 (unten rechts) | 161 | 115 | 38 | 45 | 1 | mittig | 7 |
+| bEntity3–6 (button) | 10 / 118 / 226 / 334 | 190 | 104 | 52 | 3 | mittig | 7 |
 | tEntity3–6 | 10 / 118 / 226 / 334 | 244 | 104 | 26 | 0 | mittig | 31 |
 | tStatus | 10 | 289 | 390 | 30 | 0 | links | 63 |
-| bInfo | 404 | 288 | 36 | 32 | 1 | mittig | 10 |
+| gStatus (Lauftext) | 10 | 290 | 390 | 30 | 0 | – | 127 |
+| bInfo | 404 | 288 | 36 | 32 | 1 | mittig | 7 |
 
 **Status-Block (Slots 7–10):**
 
@@ -248,8 +248,8 @@ Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den S
   sind die Icons auf cardPower (`style` 1, Rahmen 2 px). Nachbarzellen überlappen um 1 px, ihre Rahmen liegen also
   aufeinander und ergeben Außenrahmen plus Kreuz. Die Nextion zeichnet die Rahmen mit dem Objekt, es muss nichts
   nachgezeichnet werden. Die Rahmenfarbe ist fest im Objekt (die Lade-Schleife setzt nur `bco`/`pco`).
-- Auswertung im tmSerial **vor** den info-Zeilen: Typ, ID und Name jedes Status-Slots gehen nach `type<k>`,
-  `entn<k>`, `vaName<k>` (für Tipp und Popup). Leerer oder `delete`-Slot → Zelle bleibt mit leerem Text (Rahmen
+- Auswertung im tmSerial **vor** den info-Zeilen: Typ und ID jedes Status-Slots gehen nach `type<k>` und
+  `entn<k>` (für Tipp und Popup). Leerer oder `delete`-Slot → Zelle bleibt mit leerem Text (Rahmen
   bleibt stehen, das Icon ist unsichtbar, kein Tipp); belegter Slot → Icon/Farbe und Merker `vStatus` = 1. Danach: `vStatus` 0 →
   alle vier Zellen `vis 0`, sonst `vis 1`.
 - Die info-Zeilen 1–2 gibt es zweimal: breit (`bEntity/tEntity/tValue1–2`) und schmal (`bEntityS/tEntityS/tValueS1–2`).
@@ -307,7 +307,7 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 ## Puffer und RAM
 
 - IDs (`entn*`, `entnMain`, `entnInfo`) 23 wie cardEntities2 (Adapter-IDs `<Seitenindex>?<n>`), Namen 31, Werte 31,
-  Status 63, Lauftext 127 (cardDevice2/3), Icons 10, Typen 10, `tSend` 63 (längstes Ereignis
+  Status 63, Lauftext 127, Icons 10 (cardDevice1: 7), Typen 10, `tSend` 63 (längstes Ereignis
   `event,buttonPress2,` + ID + `,OnOff,1` = 50).
 - `strCommand` wird **je Seite** aus ihren Slots berechnet (siehe unten), höchstens 1019 (das Display nimmt
   höchstens 1017 Byte Nutzlast an).
@@ -317,11 +317,22 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 
 | Seite | Objekte | `strCommand` | Seite | mit global | frei bis 3584 | frei in `device5` |
 |---|---|---|---|---|---|---|
-| cardDevice1 (N=10, zweiter Zeilensatz, Status-Block; kein Lauftext) | 80 | 943 | 2970 | 3406 | **178** | 102 |
+| cardDevice1 (N=10, zweiter Zeilensatz, Status-Block, Lauftext) | 77 | 1015 | 2977 | 3413 | **171** | 102 |
 | cardDevice2 (mit Lauftext) | 61 | 943 | 2557 | 2993 | **591** | 662 |
 | cardDevice3 (mit Lauftext) | 74 | 1019 | 2968 | 3404 | **180** | 327 |
 
-Ohne Lauftext wären es 178 / 806 (`strCommand` 875) / 327 Byte frei.
+Ohne Lauftext wären es 178 (`device6`) / 806 (`strCommand` 875) / 327 Byte frei.
+
+Damit der Lauftext auch auf cardDevice1 passt (`device7`), sind dort gegenüber `device6`:
+
+- `vaName7–10` entfernt (4 × 39 = −156): der Name der Status-Icons wird nicht mehr gelesen, ein Popup aus einer
+  Status-Zelle hat keine Überschrift (`pageIcons.tTmp1.txt=""`). Der Adapter schickt den Namen ohnehin leer.
+- die 14 Icon-Puffer (`bMain`, `bEntity1–6`, `bEntityS1–2`, `tStat7–10`, `bInfo`) von 10 auf 7 gekürzt (je −4 = −56):
+  ein Icon ist ein Zeichen (höchstens 4 Byte UTF-8) plus Schrift-Zusatz `¬<Ziffer>` (2 + 1). Die Pfeile `bPrev`/
+  `bNext` und die Icon-Puffer von cardDevice2/3 bleiben bei 10.
+- `gStatus` dazu (+147), `strCommand` 943 → 1015 (+72, die Nachricht ist mit dem Lauftext 64 Byte länger).
+
+Summe −156 − 56 + 147 + 72 = +7 → 171 Byte frei.
 
 ### Größe von `strCommand`
 
@@ -356,7 +367,8 @@ Zwei Rechnungen in Byte, je Element die sechs Felder `Typ+ID+Icon+Farbe+Name+Wer
 
 | Seite | Felder / Trenner `~` | (a) Summe + Trenner | (b) Summe + Trenner | (b) + 10 % | `txt_maxl` (4k−1, ≤ 1019) |
 |---|---|---|---|---|---|
-| cardDevice1 (2 info, 4 button, 4 status) | 86 / 85 | 1191 + 85 = **1276** | 771 + 85 = **856** | 942 | **943** |
+| cardDevice1 (2 info, 4 button, 4 status), Status 63 (`device6`) | 86 / 85 | 1191 + 85 = **1276** | 771 + 85 = **856** | 942 | 943 |
+| cardDevice1 mit Lauftext (Status 127, Icons 7, Status-Icons ohne Namen) | 86 / 85 | 1095 + 85 = **1180** | 835 + 85 = **920** | 1012 | **1015** |
 | cardDevice2 (value, progress, 3 info, button), Status 63 | 62 / 61 | 938 + 61 = **999** | 732 + 61 = **793** | 873 | 875 |
 | cardDevice2 mit Lauftext (Status 127) | 62 / 61 | 1002 + 61 = **1063** | 796 + 61 = **857** | 943 | **943** |
 | cardDevice3 (6 info, 2 switch), Status 63 | 74 / 73 | 1173 + 73 = **1246** | 921 + 73 = **994** | 1094 | 1019 |
@@ -399,15 +411,14 @@ dahinter sind leer (Element ausgeblendet). Ein Mehrbyte-Zeichen an der Schnittst
 cardDevice3 (1019) behält die Zeile von cardGrid.
 
 Gegenüber `device4` kamen dazu: `LPState` (7, alle Seiten), je Hotspot 7 (cardDevice2 und 3 je zwei), auf cardDevice1
-je Status-Slot `type<k>` (7 + 12), `entn<k>` (7 + 24) und `vaName<k>` (7 + 32) = 89, viermal 356 (Seite gesamt +363). Code kostet kein
+je Status-Slot `type<k>` (7 + 12) und `entn<k>` (7 + 24) = 50, viermal 200. Code kostet kein
 RAM. cardDevice1 bleibt die engste Seite (das Werkzeug meldet Stände über 3400 und bricht über 3584 ab).
-Sparmöglichkeiten, falls der Editor mehr anzeigt: `vaName7–10` weglassen (−156; der Adapter schickt den Namen der
-Status-Icons heute ohnehin leer, Popups aus Status-Zellen haben dann nie eine Überschrift) oder auf `txt_maxl` 15
-kürzen (−64); `tStatus` 63 → 47 (−16).
+Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevice2/3 auf 7 (je −4), `tStatus`
+63 → 47 (−16), Lauftext 127 → 95 (−32 und ein kleinerer `strCommand`).
 
 ## Im Nextion-Editor prüfen
 
-1. `nspanel-v6.2.0.device6.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
+1. `nspanel-v6.2.0.device7.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
 2. Kompilieren: keine Fehler in den Seiten cardDevice1–3 (Code ist nur Klartext, nicht kompiliert getestet).
    Besonders: `fill`/`draw` mit `defaultBcoColor`/`defaultFontColor`/`sys2` im tmSerial von cardDevice2,
@@ -416,12 +427,12 @@ kürzen (−64); `tStatus` 63 → 47 (−16).
    Hotspots `mSlot1/2` (cardDevice2) und `mSlot7/8` (cardDevice3) – meldet der Editor „Component overlap“ für einen
    Hotspot über Texten? –, die Zeilen `if(type7.txt!="delete"&&type7.txt!="")` und das darin verschachtelte
    `if(type7.txt!="text"||entn7.txt!="")`, `pageIcons.tTmp3.txt=""` in `mSlot2`.
-   Neu in `device6`: die fünf Zeilen vor `ucopy strCommand.txt,4,sys0,0` im tmSerial von cardDevice1 und 2; das
-   Lauftext-Objekt `gStatus` auf cardDevice2 und 3 (öffnet der Editor es wie ein selbst angelegtes? Attribute
+   Neu seit `device6`/`device7`: die fünf Zeilen vor `ucopy strCommand.txt,4,sys0,0` im tmSerial von cardDevice1
+   und 2; `pageIcons.tTmp1.txt=""` in `tStat7–10`; das Lauftext-Objekt `gStatus` auf allen drei Seiten (öffnet der Editor es wie ein selbst angelegtes? Attribute
    `dir`/`dis`/`tim`/`en` im Attributfenster sichtbar? „Component overlap“ mit `tStatus`?), im tmSerial
    `gStatus.en=1`/`=0`, `vis gStatus,…` und `substr gStatus.txt,gStatus.txt,0,sys0-2`, im `load` `gStatus.bco`/`.pco`.
-3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: 178 Byte Luft, cardDevice3: 180).
-   Wichtig ist der Wert von cardDevice3 und 2: daraus ergibt sich, was ein Lauftext wirklich kostet (angenommen
+3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: 171 Byte Luft, cardDevice3: 180).
+   Wichtig ist die Abweichung zur Schätzung: daraus ergibt sich, was ein Lauftext wirklich kostet (angenommen
    147 Byte).
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
    ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach Rückkehr aus einem Popup (der Adapter schickt nach
@@ -439,7 +450,7 @@ kürzen (−64); `tStatus` 63 → 47 (−16).
    leeres value/progress/switch-Element und die Statuszeile senden nichts.
 6. Popups aus jedem Platz: Typ `input_sel` (sofort), `shutter`, `timer`; Typ `light`, `fan`, `number` (nach 500 ms
    Halten; kurzer Tipp → `buttonPress2`). Jeweils prüfen: `event,pageOpenDetail,<popup>,<intName>` mit der richtigen
-   ID, Überschrift = Name des Platzes (Status-Zelle: Feld 5), Schließen → `event,buttonPress2,<popup>,bExit` und nach
+   ID, Überschrift = Name des Platzes (Status-Zelle: keine Überschrift), Schließen → `event,buttonPress2,<popup>,bExit` und nach
    dem `pageType` des Adapters wieder die Geräteseite. progress: Popup ohne Icon.
 7. Überlange Nachricht (Panel oder Simulator, am einfachsten auf cardDevice2, Puffer 875): ein `entityUpd` mit
    etwa 950–1000 Byte schicken, z. B. die Überschrift oder die Namen mit Füllzeichen verlängern (über
@@ -448,7 +459,7 @@ kürzen (−64); `tStatus` 63 → 47 (−16).
    ausgeblendet; kein Müll in anderen Feldern. Direkt danach ein normales `entityUpd` und `time~…`: beide werden
    verarbeitet und quittiert (kein hängender Empfang, keine verschobene Folgenachricht). Gegenprobe auf
    cardDevice1 (Puffer 943) mit 1017 Byte.
-8. Lauftext (cardDevice2 und 3; `entityUpd` von Hand, der Adapter schickt das Kennzeichen noch nicht):
+8. Lauftext (alle drei Seiten; `entityUpd` von Hand, der Adapter schickt das Kennzeichen noch nicht):
    - Feld 19 kurz ohne Kennzeichen: Text steht wie bisher (cardDevice2 mittig), nichts läuft.
    - Feld 19 = langer Text + `¬1` (z. B. 120 Zeichen): der Text läuft pixelweise nach links, `¬1` ist nicht zu
      sehen, Farben wie die übrigen Texte, nichts ragt über die Zeile hinaus (info-Icon rechts bleibt frei).
@@ -460,7 +471,8 @@ kürzen (−64); `tStatus` 63 → 47 (−16).
    - Lauftext genau 124 Byte + `¬1` und einer mit 140 Byte + `¬1` (abgeschnitten bei 127 Byte, dann ohne
      erkanntes Kennzeichen: was zeigt die Zeile?).
    - Popup öffnen und zurück, Seitenwechsel und zurück: der Lauftext erscheint erst mit dem nächsten `entityUpd`.
-   - cardDevice1: `…¬1` wird dort **nicht** ausgewertet (kein Lauftext), der Adapter darf es dort nicht schicken.
+   - cardDevice1: Icons mit Schrift-Zusatz (`<Icon>¬3`) in main, info, Knopf, Status-Zelle und info-Icon – die
+     Icon-Puffer haben dort nur noch 7 Byte.
 
 ## Bekannte Unsicherheiten / Abweichungen
 
