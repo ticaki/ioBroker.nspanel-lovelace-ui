@@ -19,7 +19,7 @@ Protocol:
   entityUpd~<heading>~<prev: 6 fields>~<next: 6 fields>~<main>~<slot 1>~..~<slot N>~<info>
   every element has the 6 fields of a cardGrid cell: type~intName~icon~iconColor~displayName~optionalValue
   element e (main 0, slot k = k, info N+1) starts at field 14 + 6e. N and the kind of every slot are fixed per page:
-    cardDevice1  N=6  info, info, button, button, button, button
+    cardDevice1  N=10 info, info, button x 4, status x 4 (info icon from field 80)
     cardDevice2  N=6  value, progress, info, info, info, button
     cardDevice3  N=8  info x 6, switch, switch
   type 'delete' or empty hides an element completely (main: icon and name; the status line shows field 6 of main
@@ -36,6 +36,11 @@ Protocol:
   button    icon (font 3) with the name below. Tap: exactly a cardGrid cell (popups, event,buttonPress2,<id>,button).
   switch    row: icon (font 1), name, switch btOnOff (copy of cardEntities, state = optionalValue 0/1).
             Tap on the switch: event,buttonPress2,<id>,OnOff,<0|1> like cardEntities.
+  status    (cardDevice1 slots 7..10) icon only (font 1, iconColor) in a 2 x 2 block right of the main icon, no
+            tap. The cells are text objects with a 1 px border (style 1, colour 14823), neighbours overlap by 1 px so
+            the borders form frame and cross; no drawing, nothing to redraw. All four empty/delete: the block is
+            hidden and the info rows 1-2 show in full width; else an empty cell keeps its border with an empty
+            text, and the info rows switch to a second, narrower set of objects (vis, x/w never change at runtime).
   info      (the last element) small icon bottom right, icon/colour from the payload, hidden for delete/empty;
             tap: event,buttonPress2,<intName>,button.
   Tap code of a cardGrid cell: shutter/shutter2/input_sel/timer open their popup on touch, light/light2/fan/number
@@ -110,11 +115,38 @@ def switch_row(x, y, w):
             'switch': (x + w - 50, y, 50, 50)}
 
 
+def narrow_row(x, y, w):
+    """second set of an info row when the status block is shown: value width kept at 110, the name gets shorter;
+    the value lies 1 px lower than the wide one (exactly congruent objects make the editor warn 'Component overlap')"""
+    return {'icon': (x, y, 36, 34, 1), 'name': (x + 38, y + 4, w - 38 - 112, 26, 0, 0),
+            'value': (x + w - 110, y + 5, 110, 26, 0, 2)}
+
+
+# status block of cardDevice1: 2 x 2 cells with a 1 px border (text style 1); neighbours share their border line
+# (1 px overlap), so the borders form the outer frame plus the cross in the middle
+# Measured on the zi table: the font 1 icons have their ink in rows 6..28 of the 32 px glyph (median of all 7459
+# icons), so the info row icons (box y 76/120, h 34, ycen) show their ink at y 83..105 and 127..149, pitch 44.
+# A cell of 45 px (1 px overlap -> pitch 44) at y 71/115 puts the status icons on exactly the same lines as the
+# info icons (ink 83..105 / 127..149): one grid row per info row.
+STATUS_CELL_W, STATUS_CELL_H = 38, 45
+STATUS_X, STATUS_Y0 = 124, 71
+GRID_COLOR = 14823  # the grey of the pie lines of cardPChart and of the pressed buttons (bco2)
+
+
+def status_cell(i):
+    x = STATUS_X + (STATUS_CELL_W - 1) * (i % 2)
+    y = STATUS_Y0 + (STATUS_CELL_H - 1) * (i // 2)
+    return {'kind': 'status', 'icon': (x, y, STATUS_CELL_W, STATUS_CELL_H, 1)}
+
+
 LAYOUTS = {
-    # control: icon top left, two info rows right of it, four buttons
+    # control: icon top left, two info rows right of it, four buttons, optional 2 x 2 status icons between icon and
+    # info rows (the info rows switch to a narrower second set of objects while the block is shown)
     'cardDevice1': {
         'main': (10, 68, 110, 86, 4), 'mainName': (10, 156, 110, 26, 0, 1), 'statusXcen': 0,
-        'slots': [info_row(126, 76, 314), info_row(126, 120, 314)] + [button(10 + 108 * k, 190, 104) for k in range(4)],
+        'slots': [info_row(126, 76, 314), info_row(126, 120, 314)] + [button(10 + 108 * k, 190, 104) for k in range(4)]
+        + [status_cell(i) for i in range(4)],
+        'narrow': {1: narrow_row(204, 76, 236), 2: narrow_row(204, 120, 236)},
     },
     # progress: icon top left, large value beside it, button top right, bar over the full width, three info tiles
     'cardDevice2': {
@@ -209,11 +241,35 @@ def up_unless_text(typ, entn):
 
 def slot_names(k, kind):
     """display objects of slot k (the ones hidden for delete) and the icon object"""
+    if kind == 'status':
+        return f'tStat{k}', [f'tStat{k}']
     icon = f'bEntity{k}' if kind in TAPPED else f'tIcon{k}'
     names = {'info': [icon, f'tEntity{k}', f'tValue{k}'], 'value': [icon, f'tEntity{k}', f'tValue{k}'],
              'progress': [f'tEntity{k}'], 'button': [icon, f'tEntity{k}'],
              'switch': [icon, f'tEntity{k}', f'btOnOff{k}']}[kind]
     return icon, names
+
+
+def narrow_names(k):
+    """the second, narrower set of info row k (status block shown)"""
+    return [f'bEntityS{k}', f'tEntityS{k}', f'tValueS{k}']
+
+
+def status_slots(layout):
+    return [k for k, s in enumerate(layout['slots'], 1) if s['kind'] == 'status']
+
+
+def tapped_row(button_t, text_t, down1, k, names, spec):
+    """icon button, name and value of a tappable info row; the type/id are those of slot k"""
+    icon, name_n, value_n = names
+    b = make_button(button_t, icon, spec['icon'])
+    b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', name_n, icon))
+    b.set_code('up', up_unless_text(f'type{k}', f'entn{k}'))
+    name = make_text(text_t, name_n, spec['name'], NAME_LEN)
+    value = make_text(text_t, value_n, spec['value'], VALUE_LEN)
+    forward(name, icon)
+    forward(value, icon)
+    return [b, name, value]
 
 
 def build_objects(page, layout, switch_template):
@@ -222,6 +278,12 @@ def build_objects(page, layout, switch_template):
     if down1[0] != 'tmLP.en=1' or not any('page popupShutter' in x for x in down1):
         raise SystemExit(f'{SOURCE}.bEntity1: unexpected down code')
     text_t, button_t, var_t = src['tEntity1'], src['bEntity1'], src['type1']
+    if 'narrow' in layout:
+        narrow = []
+        for k, spec in layout['narrow'].items():
+            if layout['slots'][k - 1]['kind'] != 'info':
+                raise SystemExit(f'narrow set for slot {k}, which is no info row')
+            narrow += tapped_row(button_t, text_t, down1, k, narrow_names(k), spec)
 
     main = make_button(button_t, 'bMain', layout['main'])
     main.set_code('down', cell_down(down1, 'typeMain', 'entnMain', 'tMainName', 'bMain'))
@@ -233,6 +295,14 @@ def build_objects(page, layout, switch_template):
     for k, spec in enumerate(layout['slots'], 1):
         kind = spec['kind']
         icon, _ = slot_names(k, kind)
+        if kind == 'status':
+            x, y, w, h, font = spec['icon']
+            cell = make_text(text_t, icon, (x, y, w, h, font, 1), ICON_LEN)
+            cell.set('style', 1)  # border, as the icons of cardPower
+            cell.set('borderw', 1)
+            cell.set('borderc', GRID_COLOR)
+            visible.append(cell)
+            continue
         if kind in TAPPED:
             b = make_button(button_t, icon, spec['icon'])
             b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', f'tEntity{k}', icon))
@@ -266,6 +336,13 @@ def build_objects(page, layout, switch_template):
     info.set_code('up', send_lines('entnInfo'))
     visible.append(info)
     variables.append(make_var(var_t, 'entnInfo', ID_LEN))
+    if 'narrow' in layout:
+        visible += narrow
+    if status_slots(layout):
+        # number variable (like vLPNavState): 1 while at least one status icon is set
+        flag = src['vLPNavState'].copy()
+        flag.set('objname', 'vStatus')
+        variables.append(flag)
 
     keep = [o for o in page.objs if not REMOVE.fullmatch(o.name)]
     at = keep.index(src['tc0']) + 1  # the cells of cardGrid start behind tc0, the swipe strips stay on top
@@ -332,7 +409,40 @@ def bar_lines(ind, field, bar, hidden):
     ]
 
 
-def element_lines(ind, first, typ, entn, hide, body, hidden_extra=()):
+def status_lines(ind, layout):
+    """status icons first (their fields lie behind the info rows): an empty slot keeps its cell (and border) with
+    an empty text, vStatus=1 when at least one is set; the block is shown only then"""
+    i = ind + '  '
+    cells = status_slots(layout)
+    out = [f'{ind}// status icons (slots {cells[0]}..{cells[-1]}): vStatus=1 when one is set', f'{ind}vStatus.val=0']
+    for k in cells:
+        first = FIRST + FIELDS * k
+        out += [f'{ind}spstr strCommand.txt,tTmp.txt,"~",{first}',
+                f'{ind}if(tTmp.txt=="delete"||tTmp.txt=="")',
+                f'{ind}{{',
+                f'{i}tStat{k}.txt=""',
+                f'{ind}}}else',
+                f'{ind}{{']
+        out += icon_lines(i, first + 2, f'tStat{k}', layout['slots'][k - 1]['icon'][4])
+        out += [f'{i}vStatus.val=1', f'{ind}}}']
+    out += [f'{ind}if(vStatus.val==0)', f'{ind}{{'] + [f'{i}vis tStat{k},0' for k in cells]
+    out += [f'{ind}}}else', f'{ind}{{'] + [f'{i}vis tStat{k},1' for k in cells] + [f'{ind}}}']
+    return out
+
+
+def narrow_show(k):
+    """info row k with a narrow twin: copy the texts, then show the set that fits the status block"""
+    wide = [f'bEntity{k}', f'tEntity{k}', f'tValue{k}']
+    narrow = narrow_names(k)
+    out = [f'{narrow[0]}.font={wide[0]}.font', f'{narrow[0]}.pco={wide[0]}.pco']
+    out += [f'{n}.txt={w}.txt' for n, w in zip(narrow, wide)]
+    out += ['if(vStatus.val==0)', '{'] + [f'  vis {n},0' for n in narrow] + [f'  vis {w},1' for w in wide]
+    out += ['}else', '{'] + [f'  vis {w},0' for w in wide] + [f'  vis {n},1' for n in narrow] + ['}']
+    return out
+
+
+def element_lines(ind, first, typ, entn, hide, body, hidden_extra=(), show=None):
+    """show: the lines that make the element visible (default: vis 1 for everything in hide)"""
     i = ind + '  '
     out = [f'{ind}spstr strCommand.txt,{typ}.txt,"~",{first}',
            f'{ind}spstr strCommand.txt,{entn}.txt,"~",{first + 1}',
@@ -341,7 +451,7 @@ def element_lines(ind, first, typ, entn, hide, body, hidden_extra=()):
     out += [f'{i}vis {n},0' for n in hide] + [i + x for x in hidden_extra]
     out += [f'{ind}}}else', f'{ind}{{']
     out += [i + x for x in body]
-    out += [f'{i}vis {n},1' for n in hide]
+    out += [i + x for x in show] if show is not None else [f'{i}vis {n},1' for n in hide]
     return out + [f'{ind}}}']
 
 
@@ -369,15 +479,23 @@ def parser_lines(ind, layout):
            f'starts at field {FIRST}+6e; slots: {kinds}',
            f'{ind}// status line = optionalValue of main, also when main is hidden',
            f'{ind}spstr strCommand.txt,tStatus.txt,"~",{FIRST + 5}']
+    if status_slots(layout):
+        out += status_lines(ind, layout)
     body = icon_lines('', FIRST + 2, 'bMain', layout['main'][4])
     body.append(f'spstr strCommand.txt,tMainName.txt,"~",{FIRST + 4}')
     out += element_lines(ind, FIRST, 'typeMain', 'entnMain', ['bMain', 'tMainName'], body)
+    narrow = layout.get('narrow', {})
     for k, spec in enumerate(slots, 1):
+        if spec['kind'] == 'status':
+            continue
         first = FIRST + FIELDS * k
         _, hide = slot_names(k, spec['kind'])
         extra = bar_lines('', first, spec['bar'], True) if spec['kind'] == 'progress' else ()
-        out.append(f'{ind}// slot {k}: {spec["kind"]}')
-        out += element_lines(ind, first, f'type{k}', f'entn{k}', hide, slot_body(k, spec, first), extra)
+        show = narrow_show(k) if k in narrow else None
+        if k in narrow:
+            hide = hide + narrow_names(k)
+        out.append(f'{ind}// slot {k}: {spec["kind"]}' + (' (wide and narrow set)' if k in narrow else ''))
+        out += element_lines(ind, first, f'type{k}', f'entn{k}', hide, slot_body(k, spec, first), extra, show)
     i = ind + '  '
     out += [f'{ind}// info icon',
             f'{ind}spstr strCommand.txt,tTmp.txt,"~",{info_first}',
@@ -419,6 +537,8 @@ def patch_load(page, name, layout):
     hide = ['bMain', 'tMainName', 'bInfo']
     for k, spec in enumerate(layout['slots'], 1):
         hide += slot_names(k, spec['kind'])[1]
+    for k in layout.get('narrow', {}):
+        hide += narrow_names(k)
     load[j:i + 1] = [f'vis {n},0' for n in hide]
     loops = [n for n, x in enumerate(load) if re.fullmatch(r'for\(sys0=0;sys0<\d+;sys0\+\+\)', x.strip())]
     if len(loops) != 1:
@@ -620,7 +740,9 @@ EXAMPLES = {
         'slots': [('battery-80', color565(0, 220, 0), 'Akku', '80 %'),
                   ('map-marker', FG, 'Fläche', '34 m²'),
                   ('play', color565(0, 220, 0), 'Start', ''), ('pause', FG, 'Pause', ''),
-                  ('home-import-outline', FG, 'Dock', ''), ('map-marker', FG, 'Suchen', '')],
+                  ('home-import-outline', FG, 'Dock', ''), ('map-marker', FG, 'Suchen', ''),
+                  ('wifi', color565(0, 220, 0), '', ''), ('trash-can', color565(255, 160, 0), '', ''),
+                  ('air-filter', FG, '', ''), ('alert', color565(255, 40, 40), '', '')],
     },
     'cardDevice2': {
         'heading': 'Waschküche', 'main': ('washing-machine', color565(0, 160, 255), 'Waschm.'),
@@ -691,9 +813,14 @@ class Canvas:
         open(path, 'wb').write(data)
 
 
-def render_page(page, name, fonts, icons):
+def render_page(page, name, fonts, icons, plain=False):
+    """plain: the status slots empty (the page without status block)"""
     ex = EXAMPLES[name]
     layout = LAYOUTS[name]
+    if plain:
+        ex = dict(ex, slots=[(None, FG, '', '') if s['kind'] == 'status' else e
+                             for s, e in zip(layout['slots'], ex['slots'])])
+    status_on = any(e[0] for s, e in zip(layout['slots'], ex['slots']) if s['kind'] == 'status')
     bg, fg = rgb565(BG), rgb565(FG)
     cv = Canvas(480, 320, bg)
     objs = {o.name: o for o in page.objs}
@@ -717,11 +844,25 @@ def render_page(page, name, fonts, icons):
     for k, (spec, (icon, color, label, value)) in enumerate(zip(layout['slots'], ex['slots']), 1):
         kind = spec['kind']
         icon_obj, _ = slot_names(k, kind)
-        if icon and icon_obj in objs:
-            put(icon_obj, icons[icon], rgb565(color))
-        put(f'tEntity{k}', label)
-        if f'tValue{k}' in objs:
-            put(f'tValue{k}', value)
+        if kind == 'status':
+            if status_on:
+                x, y, w, h = rect(icon_obj)
+                grid = rgb565(GRID_COLOR)
+                cv.fill(x, y, w, 1, grid)
+                cv.fill(x, y + h - 1, w, 1, grid)
+                cv.fill(x, y, 1, h, grid)
+                cv.fill(x + w - 1, y, 1, h, grid)
+                if icon:
+                    put(icon_obj, icons[icon], rgb565(color))
+            continue
+        names = (icon_obj, f'tEntity{k}', f'tValue{k}')
+        if status_on and k in layout.get('narrow', {}):
+            names = narrow_names(k)
+        if icon and names[0] in objs:
+            put(names[0], icons[icon], rgb565(color))
+        put(names[1], label)
+        if names[2] in objs:
+            put(names[2], value)
         if kind == 'progress':
             x, y, w, h = spec['bar']
             cv.fill(x, y, w, h, fg)
@@ -749,6 +890,10 @@ def render_all(hmi, out_dir):
         path = os.path.join(out_dir, f'hmi-{name}.png')
         render_page(pages[name], name, fonts, icons).png(path)
         print(f'preview {path}')
+        if status_slots(LAYOUTS[name]):
+            path = os.path.join(out_dir, f'hmi-{name}-plain.png')
+            render_page(pages[name], name, fonts, icons, plain=True).png(path)
+            print(f'preview {path}')
 
 
 if __name__ == '__main__':
