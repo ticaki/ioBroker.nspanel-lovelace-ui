@@ -9,19 +9,21 @@ Nur EU; us-l und us-p sind nicht angepasst.
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device4.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device5.HMI --preview doc/Pictures/device-page
 ```
 
 Teststände: `device1` (cardDevice1 mit N=6, ohne Status-Icons), `device2` (N=10, erstes Raster 42 px hoch),
 `device3` (N=10, Raster auf die info-Zeilen ausgerichtet), `device4` (wie device3, zusätzlich senden main und info
-auch bei Typ `text` – aktuell; alle in `/mnt/projekte/nspanel emu/`).
+auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main und allen Slots – aktuell; alle in
+`/mnt/projekte/nspanel emu/`).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
   cardEntities2 und die pageType-Einträge unterscheiden sich). Dort fehlte `swipe_release_fix.py` (#934, keine HMI
   hatte ihn bisher). Er läuft deshalb vorher, die neuen Seiten erben ihn von cardGrid.
 - Jede Seite ist eine frische Kopie von cardGrid: Kopfzeile, Pfeile samt Long-Press/Blinken, Swipe-Streifen,
   tmSerial (Empfang, Quittung/CRC, pageType-Umschalter), Sleep-Timer und renderCurrentPage bleiben unverändert.
-  Entfernt sind die sechs Zellen (`bEntity1–6`, `tEntity1–6`) und `LPState`.
+  Entfernt sind die sechs Zellen (`bEntity1–6`, `tEntity1–6`); `tmLP` und `LPState` (Long-Press der Zellen) bleiben
+  unverändert.
 - Die Seiten werden **hinten** an die Seitenliste von main.HMI angehängt (Abschnitte 37/38/39.pa). Keine bestehende
   Seiten-ID verschiebt sich.
 - Jede Seite mit tmSerial bekommt `if(tId.txt=="cardDevice<n>") page cardDevice<n>` hinter dem cardGrid3-Zweig
@@ -59,24 +61,27 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
 
 ### Elementarten
 
-| Art | Darstellung | Tipp |
+| Art | Darstellung | Tippfläche |
 |---|---|---|
-| main | Icon Font 4 (Bold 80, Icon 66 px) in iconColor, Name (Feld 5) darunter. **Feld 6 → Statuszeile** | wie eine cardGrid-Zelle des Typs, auch `text` sendet `buttonPress2` |
-| info | Icon Font 1 in iconColor, Name Font 0, Wert (Feld 6) Font 0 rechtsbündig | wie eine cardGrid-Zelle des Typs, auch `text` sendet `buttonPress2` |
-| value | Feld 6 in Font 4, Name Font 0 darunter, kleines Icon Font 1 daneben (leeres Icon-Feld = kein Icon) | keiner |
-| progress | Name Font 0 darüber, Balken über die volle Breite; Feld 6 = ganze Zahl 0–100 (wird begrenzt), Füllung in iconColor, Rahmen in der Textfarbe | keiner |
-| button | Icon Font 3 in iconColor, Name Font 0 darunter | genau wie eine cardGrid-Zelle (auch `text` sendet) |
-| switch | Icon Font 1, Name Font 0, Schalter `btOnOff` (Kopie von cardEntities, Bilder 1/2 bzw. 10/11 bei schwarzem Hintergrund); Zustand aus Feld 6 `0`/`1` | `event,buttonPress2,<intName>,OnOff,<0\|1>` wie cardEntities |
-| status | nur Icon (Feld 3) Font 1 in iconColor, in einem 2×2-Block mit Raster (nur cardDevice1, siehe unten); Name/Wert ungenutzt | keiner |
-| info-Icon | Icon Font 1 in iconColor unten rechts; Name/Wert werden nicht genutzt | `event,buttonPress2,<intName>,button` |
+| main | Icon Font 4 (Bold 80, Icon 66 px) in iconColor, Name (Feld 5) darunter. **Feld 6 → Statuszeile** | Icon und Name |
+| info | Icon Font 1 in iconColor, Name Font 0, Wert (Feld 6) Font 0 rechtsbündig | Icon, Name und Wert |
+| value | Feld 6 in Font 4, Name Font 0 darunter, kleines Icon Font 1 daneben (leeres Icon-Feld = kein Icon) | Rechteck um Icon, Wert und Name |
+| progress | Name Font 0 darüber, Balken über die volle Breite; Feld 6 = ganze Zahl 0–100 (wird begrenzt), Füllung in iconColor, Rahmen in der Textfarbe | Name und Balken |
+| button | Icon Font 3 in iconColor, Name Font 0 darunter | Icon und Name |
+| switch | Icon Font 1, Name Font 0, Schalter `btOnOff` (Kopie von cardEntities, Bilder 1/2 bzw. 10/11 bei schwarzem Hintergrund); Zustand aus Feld 6 `0`/`1` | Icon und Name wie die anderen Plätze; der Schalter selbst sendet `OnOff` |
+| status | nur Icon (Feld 3) Font 1 in iconColor, in einem 2×2-Block mit Raster (nur cardDevice1, siehe unten); der Name (Feld 5) wird nicht gezeigt, aber als Überschrift eines Popups gemerkt; Wert ungenutzt | die Zelle |
+| info-Icon | Icon Font 1 in iconColor unten rechts; Name/Wert werden nicht genutzt | Icon; nur `buttonPress2`, kein Long-Press (das Element hat keinen Typ) |
 
-- „Wie eine cardGrid-Zelle“: `shutter`, `shutter2`, `input_sel`, `timer` öffnen ihr Popup sofort beim Berühren,
-  `light`, `light2`, `fan`, `number` nach 500 ms Halten (tmLP wie cardGrid); beim Loslassen kommt
-  `event,buttonPress2,<intName>,button`. Es gibt **kein `buttonPress3`** auf diesen Seiten.
+- **Jeder Platz verhält sich wie eine cardGrid-Zelle** (main und alle Slot-Arten, Code der Zelle der Basis-HMI 6.2.0
+  unverändert übernommen, siehe „Ereignisse beim Antippen“): kurzer Tipp `buttonPress2`, langer Druck `buttonPress3`
+  bzw. Popup je Typ.
 - Bei info, button und main leiten Name und Wert ihren Tipp an das Icon weiter (`click <Icon>,1/0`), die ganze
-  Zeile/Kachel ist also bedienbar.
-- **Regel:** Jedes Objekt, das beim Antippen den Press-Effekt zeigt, sendet beim Loslassen auch ein Ereignis (siehe
-  „Ereignisse beim Antippen“). Bis `device3` sendeten main und info bei Typ `text` nichts, obwohl der Knopf aufleuchtete.
+  Zeile/Kachel ist also bedienbar. value, progress und Icon+Name eines Schalters haben keinen Knopf; über ihnen liegt
+  je ein unsichtbarer Hotspot `mSlot<k>` (Kopie eines Swipe-Streifens, kostet 7 Byte RAM). Die Status-Zellen tragen
+  den Code selbst.
+- **Regel:** Jedes Objekt, das beim Antippen den Press-Effekt zeigt, sendet beim Loslassen auch ein Ereignis. Die
+  Umkehrung gilt nicht mehr: value, progress, status und Schalter-Icon/-Name senden, zeigen aber **keinen**
+  Press-Effekt (Texte bzw. Hotspot, keine Knöpfe).
 - **Statuszeile** `tStatus`: Feld 6 von main, immer (auch wenn main ausgeblendet ist), einzeilig, Font 0, normale
   Textfarbe. Leeres Feld = leere Zeile.
 - **value-Schrift:** Font 4 (NotoSans Bold 80) enthält Ziffern, `:`, `%`, `°`, `,`, `.`, `-`, `/`, Leerzeichen,
@@ -84,24 +89,52 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
 
 ### Ereignisse beim Antippen
 
-Alle Ereignisse gehen beim **Loslassen** raus (Schalter: beim Berühren, wie cardEntities) und haben das Format der
-cardGrid-Zellen. Ausgeblendete Elemente (`vis 0`) nehmen keinen Tipp an.
+Der Code ist der der cardGrid-Zelle (`bEntity1` der Basis-HMI 6.2.0: `down`, `up`, Timer `tmLP` 500 ms, Merker
+`LPState`), nur mit den Namen des jeweiligen Platzes. Ablauf:
 
-| Element | Objekte (Tipp) | Press-Effekt | Ereignis |
-|---|---|---|---|
-| main | `bMain`, `tMainName` → `bMain` | ja (Knopf, `bco2` 14823) | `event,buttonPress2,<intName>,button` – bei jedem Typ; Typ `text` mit leerem intName sendet nichts |
-| info | `bEntity<k>`, `tEntity<k>`/`tValue<k>` → `bEntity<k>` (cardDevice1 Slot 1–2 auch `bEntityS<k>`, `tEntityS<k>`, `tValueS<k>`) | ja | wie main |
-| button | `bEntity<k>`, `tEntity<k>` → `bEntity<k>` | ja | `event,buttonPress2,<intName>,button`, immer (unverändert) |
-| info-Icon | `bInfo` | ja | `event,buttonPress2,<intName>,button`, immer (unverändert) |
-| switch | `btOnOff<k>` | Bildwechsel | `event,buttonPress2,<intName>,OnOff,<0\|1>` (unverändert) |
-| switch: Icon und Name | `tIcon<k>`, `tEntity<k>` (cardDevice3) | nein, reiner Text ohne Code | – |
-| value | `tIcon1`, `tValue1`, `tEntity1` (cardDevice2) | nein, reiner Text ohne Code | – |
-| progress | `tEntity2`, gezeichneter Balken (cardDevice2) | nein | – |
-| status | `tStat7–10` (cardDevice1) | nein, Textfelder mit Rahmen ohne Code | – |
-| Statuszeile | `tStatus` | nein | – |
+1. **Berühren** (`down`): `tmLP` startet; Name, ID, Icon und Icon-Farbe gehen nach `pageIcons.tTmp1/2/3` und
+   `tempIconColor`. Typ `shutter`, `shutter2`, `input_sel`, `timer`: das Popup öffnet **sofort**.
+2. **Halten** (`tmLP`, nach 500 ms): Typ `light`, `light2`, `fan`, `number`: das Popup öffnet. Jeder andere Typ:
+   `LPState=1` (Long-Press scharf).
+3. **Loslassen** (`up`): `LPState` 0 → `event,buttonPress2,<intName>,button`, sonst
+   `event,buttonPress3,<intName>,button`; `LPState` zurück auf 0. Der Long-Press wird also **beim Loslassen**
+   gesendet, ohne sichtbare Rückmeldung während des Haltens (wie cardGrid).
 
-Die Popups der Typen bleiben wie bisher (siehe oben); die Bedingung im Loslassen-Code von main/info lautet
-`if(type<k>.txt!="text"||entn<k>.txt!="")`, alle anderen Typen senden also unverändert.
+Was der Adapter je Typ bekommt (gilt für **jede** Slot-Art und main):
+
+| Typ | kurzer Tipp (< 500 ms) | langer Druck (≥ 500 ms) |
+|---|---|---|
+| `shutter`, `shutter2`, `input_sel`, `timer` | Popup sofort beim Berühren, **kein** `buttonPress2`/`3`; das Popup meldet `event,pageOpenDetail,<popup>,<intName>` | dasselbe (das Popup ist schon offen) |
+| `light`, `light2`, `fan`, `number` | `event,buttonPress2,<intName>,button` | Popup nach 500 ms (popupLight, popupLight2, popupFan, popupSlider), kein `buttonPress3` |
+| `text` | `event,buttonPress2,<intName>,button` | `event,buttonPress3,<intName>,button` |
+| alle übrigen (`button`, `switch`, …) | `event,buttonPress2,<intName>,button` | `event,buttonPress3,<intName>,button` |
+
+Je Slot-Art:
+
+| Element | Objekte mit Tipp | Press-Effekt | kurz / lang | Besonderheit |
+|---|---|---|---|---|
+| main | `bMain`, `tMainName` → `bMain` | ja (Knopf, `bco2` 14823) | wie Tabelle oben | Typ `text` mit leerem intName sendet nichts |
+| info | `bEntity<k>`, `tEntity<k>`/`tValue<k>` → `bEntity<k>` (cardDevice1 Slot 1–2 auch `bEntityS<k>`, `tEntityS<k>`, `tValueS<k>`) | ja | wie Tabelle oben | wie main |
+| button | `bEntity<k>`, `tEntity<k>` → `bEntity<k>` | ja | wie Tabelle oben | sendet immer (auch `text` ohne intName), exakt der cardGrid-Code |
+| value | Hotspot `mSlot1` (110/67, 226×110) über `tIcon1`, `tValue1`, `tEntity1` (cardDevice2) | nein | wie Tabelle oben | wie main; leeres Element sendet nichts |
+| progress | Hotspot `mSlot2` (10/179, 429×42) über `tEntity2` und dem Balken (cardDevice2) | nein | wie Tabelle oben | wie value; das Popup bekommt kein Icon (leer), Farbe = Textfarbe des Namens |
+| switch: Icon und Name | Hotspot `mSlot7`/`mSlot8` (10 bzw. 226/236, 161×34) über `tIcon<k>`, `tEntity<k>` (cardDevice3) | nein | wie Tabelle oben | wie value |
+| switch: Schalter | `btOnOff<k>` | Bildwechsel | `event,buttonPress2,<intName>,OnOff,<0\|1>` beim Berühren, kein Long-Press (unverändert) | – |
+| status | `tStat7–10` (cardDevice1), Code in der Zelle | nein | wie Tabelle oben | wie main; leere Zelle (Rahmen sichtbar) sendet nichts; Popup-Überschrift = Feld 5 (`vaName<k>`) |
+| info-Icon | `bInfo` | ja | immer `event,buttonPress2,<intName>,button` | kein Long-Press, kein Popup (unverändert) |
+| Statuszeile | `tStatus` | nein | – | kein Touch |
+
+- Ausgeblendete Elemente (`vis 0`) nehmen keinen Tipp an. Hotspots und Status-Zellen bleiben dagegen berührbar, wenn
+  ihr Element leer ist; ihr Code beginnt deshalb mit `if(type<k>.txt!="delete"&&type<k>.txt!="")`.
+- Die Bedingung im Loslassen-Code (alle außer button) lautet `if(type<k>.txt!="text"||entn<k>.txt!="")`.
+- **Popups und Rückkehr:** Die Popup-Seiten kennen die aufrufende Seite nicht. Sie lesen beim Laden nur
+  `pageIcons.tTmp1` (Überschrift), `tTmp2` (ID → `entn`), `tTmp3` (Icon) und `tempIconColor` (popupSlider) und melden
+  `event,pageOpenDetail,<popup>,<intName>`. Schließen (`b0` oder Sleep-Timeout) sendet
+  `event,buttonPress2,<popup>,bExit`; zurück führt das `pageType~cardDevice<n>` des **Adapters** (der Zweig dafür steht
+  im tmSerial jedes Popups). In der HMI ist für die Rückkehr nichts weiter zu setzen – derselbe Weg wie bei cardGrid.
+- Wie bei cardGrid entscheidet `tmLP` anhand von `tTmp.txt` (Typ des berührten Platzes). Der tmSerial-Parser benutzt
+  `tTmp` ebenfalls: kommt während des Haltens ein `entityUpd`, öffnet ein light/fan/number-Popup nicht, es gibt dann
+  beim Loslassen `buttonPress3`. Verhalten der Vorlage, nicht geändert.
 
 ## Feldbreiten für den Adapter (Kürzen)
 
@@ -171,8 +204,9 @@ Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den S
   sind die Icons auf cardPower (`style` 1, Rahmen 2 px). Nachbarzellen überlappen um 1 px, ihre Rahmen liegen also
   aufeinander und ergeben Außenrahmen plus Kreuz. Die Nextion zeichnet die Rahmen mit dem Objekt, es muss nichts
   nachgezeichnet werden. Die Rahmenfarbe ist fest im Objekt (die Lade-Schleife setzt nur `bco`/`pco`).
-- Auswertung im tmSerial **vor** den info-Zeilen: leerer oder `delete`-Slot → Zelle bleibt mit leerem Text (Rahmen
-  bleibt stehen, das Icon ist unsichtbar); belegter Slot → Icon/Farbe und Merker `vStatus` = 1. Danach: `vStatus` 0 →
+- Auswertung im tmSerial **vor** den info-Zeilen: Typ, ID und Name jedes Status-Slots gehen nach `type<k>`,
+  `entn<k>`, `vaName<k>` (für Tipp und Popup). Leerer oder `delete`-Slot → Zelle bleibt mit leerem Text (Rahmen
+  bleibt stehen, das Icon ist unsichtbar, kein Tipp); belegter Slot → Icon/Farbe und Merker `vStatus` = 1. Danach: `vStatus` 0 →
   alle vier Zellen `vis 0`, sonst `vis 1`.
 - Die info-Zeilen 1–2 gibt es zweimal: breit (`bEntity/tEntity/tValue1–2`) und schmal (`bEntityS/tEntityS/tValueS1–2`).
   Der Parser schreibt in den breiten Satz, kopiert Text, Icon-Schrift und Farbe in den schmalen und schaltet per `vis`
@@ -234,30 +268,46 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 
 | Seite | Objekte | Seite | mit global | Grenze 3584 |
 |---|---|---|---|---|
-| cardDevice1 (N=10, mit zweitem Zeilensatz und Status-Block) | 67 | 2683 | 3119 | 465 frei |
-| cardDevice2 | 57 | 2465 | 2901 | 683 frei |
-| cardDevice3 | 70 | 2800 | 3236 | 348 frei |
+| cardDevice1 (N=10, mit zweitem Zeilensatz und Status-Block) | 80 | 3046 | 3482 | 102 frei |
+| cardDevice2 | 60 | 2486 | 2922 | 662 frei |
+| cardDevice3 | 73 | 2821 | 3257 | 327 frei |
+
+Gegenüber `device4` kamen dazu: `LPState` (7, alle Seiten), je Hotspot 7 (cardDevice2 und 3 je zwei), auf cardDevice1
+je Status-Slot `type<k>` (7 + 12), `entn<k>` (7 + 24) und `vaName<k>` (7 + 32) = 89, viermal 356 (Seite gesamt +363). Code kostet kein
+RAM. cardDevice1 ist damit eng (das Werkzeug meldet Stände über 3400 und bricht über 3584 ab). Sparmöglichkeiten,
+falls der Editor mehr anzeigt: `vaName7–10` weglassen (−156, Popups aus Status-Zellen dann ohne Überschrift) oder auf
+`txt_maxl` 15 kürzen (−64); `tStatus` 63 → 47 (−16).
 
 ## Im Nextion-Editor prüfen
 
-1. `nspanel-v6.2.0.device4.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
+1. `nspanel-v6.2.0.device5.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
 2. Kompilieren: keine Fehler in den Seiten cardDevice1–3 (Code ist nur Klartext, nicht kompiliert getestet).
    Besonders: `fill`/`draw` mit `defaultBcoColor`/`defaultFontColor`/`sys2` im tmSerial von cardDevice2,
    `click`-Weiterleitung der Texte, `btOnOff7/8` auf cardDevice3, `vStatus` und die Rahmen der Status-Zellen auf
-   cardDevice1 (1 px breit, aneinanderliegend).
-3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen.
+   cardDevice1 (1 px breit, aneinanderliegend). Neu in `device5`: Touch-Code in den Textfeldern `tStat7–10`, die
+   Hotspots `mSlot1/2` (cardDevice2) und `mSlot7/8` (cardDevice3) – meldet der Editor „Component overlap“ für einen
+   Hotspot über Texten? –, die Zeilen `if(type7.txt!="delete"&&type7.txt!="")` und das darin verschachtelte
+   `if(type7.txt!="text"||entn7.txt!="")`, `pageIcons.tTmp3.txt=""` in `mSlot2`.
+3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: nur 102 Byte Luft).
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
-   Popups (input_sel sofort, light nach Halten), ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach
-   Rückkehr aus einem Popup (der Adapter schickt nach renderCurrentPage neu). cardDevice1: Wechsel mit/ohne
-   Status-Icons in beiden Richtungen (Zeilen springen um, Raster erscheint/verschwindet), Tipp auf die schmalen Zeilen.
+   ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach Rückkehr aus einem Popup (der Adapter schickt nach
+   renderCurrentPage neu). cardDevice1: Wechsel mit/ohne Status-Icons in beiden Richtungen (Zeilen springen um,
+   Raster erscheint/verschwindet), Tipp auf die schmalen Zeilen.
 5. Ereignisse (Simulator, Ausgabe „Simulator Return“ bzw. am Panel im Adapter-Log): alle Elemente mit Typ `text` und
-   einer ID belegen, dann auf jeder der drei Seiten antippen – Haupt-Icon und sein Name, jede info-Zeile/-Kachel auf
-   Icon, Name und Wert (cardDevice1: breite **und** schmale Zeilen), Knöpfe, info-Icon. Jeder Tipp mit Press-Effekt
-   muss genau ein `event,buttonPress2,<intName>,button` liefern. Gegenprobe: Typ `text` mit leerem intName sendet
-   nichts; Status-Icons, value, Balken, Schalter-Icon/-Name und Statuszeile zeigen keinen Effekt und senden nichts.
-   Kompiliert die Zeile `if(typeMain.txt!="text"||entnMain.txt!="")` (Zeichenkettenvergleiche mit `||`, wie schon
-   `tTmp.txt=="delete"||tTmp.txt==""` im tmSerial)?
+   einer ID belegen, dann auf jeder der drei Seiten **jeden Platz** antippen – Haupt-Icon und sein Name, jede
+   info-Zeile/-Kachel auf Icon, Name und Wert (cardDevice1: breite **und** schmale Zeilen), Knöpfe, value (Icon, Wert,
+   Name), progress (Name und Balken), jede Status-Zelle, Schalter-Icon und -Name, info-Icon.
+   - kurz: genau ein `event,buttonPress2,<intName>,button`;
+   - länger als 500 ms halten, dann loslassen: genau ein `event,buttonPress3,<intName>,button` (erst beim Loslassen,
+     kein `buttonPress2` dazu); info-Icon: weiter `buttonPress2`;
+   - Schalter selbst: nur `…,OnOff,<0|1>`, kein zusätzliches Ereignis vom Hotspot daneben.
+   Gegenprobe: Typ `text` mit leerem intName sendet nichts (außer button); leere Status-Zelle neben einer belegten,
+   leeres value/progress/switch-Element und die Statuszeile senden nichts.
+6. Popups aus jedem Platz: Typ `input_sel` (sofort), `shutter`, `timer`; Typ `light`, `fan`, `number` (nach 500 ms
+   Halten; kurzer Tipp → `buttonPress2`). Jeweils prüfen: `event,pageOpenDetail,<popup>,<intName>` mit der richtigen
+   ID, Überschrift = Name des Platzes (Status-Zelle: Feld 5), Schließen → `event,buttonPress2,<popup>,bExit` und nach
+   dem `pageType` des Adapters wieder die Geräteseite. progress: Popup ohne Icon.
 
 ## Bekannte Unsicherheiten / Abweichungen
 
@@ -267,10 +317,14 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
   Er verschwindet bei einem Neuzeichnen der Seite, bis das nächste `entityUpd` kommt (nach `renderCurrentPage` schickt
   der Adapter ohnehin neu). Soll es ein echtes Objekt sein: im Editor eine Progress Bar auf eine Seite legen, dann kann
   das Werkzeug sie als Vorlage nehmen.
-- Langes Halten auf info/button/main: die Popups von light/light2/fan/number öffnen wie auf cardGrid nach 500 ms;
-  ohne Popup sendet auch langes Halten nur `buttonPress2`.
+- Langes Halten: die Popups von light/light2/fan/number öffnen wie auf cardGrid nach 500 ms; alle anderen Typen
+  senden beim Loslassen `buttonPress3`. Es gibt dabei keine sichtbare Rückmeldung, dass der Long-Press scharf ist.
 - Ein Tipp auf Name/Wert läuft über `click <Knopf>,1/0`; dass dabei genau ein Ereignis entsteht (und nicht zwei), ist
   vom Aufbau her so, aber nicht im Simulator gesehen.
+- Touch-Code in Textfeldern (`tStat7–10`) und Hotspots über Textfeldern gibt es in der Basis-HMI sonst nicht (die
+  Swipe-Streifen liegen neben dem Inhalt). Ob ein Hotspot über einem Text, der neu gezeichnet wird, zuverlässig oben
+  bleibt und ob der gezeichnete Balken unter `mSlot2` unberührt bleibt, ist nicht am Gerät gesehen.
+- value, progress, status und Schalter-Icon/-Name zeigen beim Antippen keinen Press-Effekt.
 - Die Statuszeile hat nur eine Zeile (für zwei war kein Platz).
 - Status-Raster: ob die Nextion bei `style` 1 und `borderw` 1 genau 1 px zeichnet und die überlappenden Rahmen sauber
   aufeinanderliegen, ist nur aus der Vorlage cardPower (2 px) abgeleitet, nicht am Gerät gesehen. Beim Umschalten

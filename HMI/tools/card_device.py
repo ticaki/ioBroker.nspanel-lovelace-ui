@@ -8,7 +8,8 @@ of each built page with example content (robot vacuum, washing machine, car) and
 (zilib.py); the area under the frame (x >= 450) is hatched.
 
 Each page is a fresh copy of cardGrid: header, arrows, swipe strips, tmSerial (receive, ack/CRC, pageType switch),
-sleep timer and the long press of the arrows stay as they are; the six cells of cardGrid and LPState are removed.
+sleep timer, the long press of the arrows and the long press of the cells (tmLP, LPState) stay as they are; the six
+cells of cardGrid are removed.
 An existing cardDevice<n> is rebuilt from cardGrid in its own section, so running the script on its own output gives
 the same pages again (idempotent). New pages are appended behind the last page of main.HMI (no page id moves). The
 pageType switch of every page with tmSerial gets 'if(tId.txt=="cardDevice<n>") page cardDevice<n>' behind the
@@ -25,33 +26,41 @@ Protocol:
   type 'delete' or empty hides an element completely (main: icon and name; the status line shows field 6 of main
   in any case, empty = empty line).
   main      icon font 4 ('¬<font>' suffix like cardGrid) in iconColor, name below it; optionalValue -> status
-            line tStatus at the bottom (font 0, one line, normal text colour). Tap: like a cardGrid cell of its type
-            (also type text sends buttonPress2, unless intName is empty).
-  info      row: icon (font 1, iconColor), name (font 0), value (font 0, right aligned). Tap on icon, name or value:
-            like a cardGrid cell of its type; also type text sends buttonPress2, unless intName is empty.
+            line tStatus at the bottom (font 0, one line, normal text colour).
+  info      row: icon (font 1, iconColor), name (font 0), value (font 0, right aligned).
   value     optionalValue in font 4 (Bold 80: digits, ':', '%', '°', ',', '.', letters incl. umlauts; no
-            '€'), name below in font 0, optional small icon (font 1) beside it. No tap.
+            '€'), name below in font 0, optional small icon (font 1) beside it.
   progress  bar drawn with fill/draw (the project has no progress bar component to copy): outline in the text
-            colour, filled part optionalValue (integer 0..100, clamped) percent in iconColor, name above it. No tap.
-  button    icon (font 3) with the name below. Tap: exactly a cardGrid cell (popups, event,buttonPress2,<id>,button).
+            colour, filled part optionalValue (integer 0..100, clamped) percent in iconColor, name above it.
+  button    icon (font 3) with the name below.
   switch    row: icon (font 1), name, switch btOnOff (copy of cardEntities, state = optionalValue 0/1).
             Tap on the switch: event,buttonPress2,<id>,OnOff,<0|1> like cardEntities.
-  status    (cardDevice1 slots 7..10) icon only (font 1, iconColor) in a 2 x 2 block right of the main icon, no
-            tap. The cells are text objects with a 1 px border (style 1, colour 14823), neighbours overlap by 1 px so
+  status    (cardDevice1 slots 7..10) icon only (font 1, iconColor) in a 2 x 2 block right of the main icon. The
+            cells are text objects with a 1 px border (style 1, colour 14823), neighbours overlap by 1 px so
             the borders form frame and cross; no drawing, nothing to redraw. All four empty/delete: the block is
             hidden and the info rows 1-2 show in full width; else an empty cell keeps its border with an empty
             text, and the info rows switch to a second, narrower set of objects (vis, x/w never change at runtime).
+            displayName is kept in vaName<k> (the heading of a popup).
   info      (the last element) small icon bottom right, icon/colour from the payload, hidden for delete/empty;
-            tap: event,buttonPress2,<intName>,button.
-  Tap code of a cardGrid cell: shutter/shutter2/input_sel/timer open their popup on touch, light/light2/fan/number
-  after holding 500 ms (tmLP), the release sends buttonPress2. There is no buttonPress3 on these pages.
-  Name and value texts of a tappable element forward their touch to its icon button (click <button>,1 / ,0).
-  Every object with a press effect (the icon buttons of main, info, button and the info icon) sends on release;
-  value, progress, status, the icon/name of a switch and the status line are plain texts without touch code.
+            tap: event,buttonPress2,<intName>,button (no long press, it has no type).
+
+Touch: main and every slot behave like a cell of cardGrid (its down/up code and tmLP/LPState, unchanged):
+  touch     shutter/shutter2/input_sel/timer open their popup at once (no event)
+  hold      after 500 ms (tmLP) light/light2/fan/number open their popup (no event); every other type arms the
+            long press (LPState=1)
+  release   event,buttonPress2,<intName>,button - or event,buttonPress3,<intName>,button when the long press was
+            armed. Type text without an intName sends nothing (kinds other than button).
+  The popups get name, id, icon and icon colour in pageIcons.tTmp1/2/3 and tempIconColor; they do not know the
+  calling page, their bExit goes to the adapter, which answers with the pageType of the page.
+  Where the code lives: main/info/button in the icon button (name and value forward with click <button>,1 / ,0);
+  status in the cell text itself; value, progress and the icon+name of a switch under a hotspot mSlot<k> (copy of
+  a swipe strip, no picture) over the union of their objects (progress: name + bar). A hotspot or a status cell
+  stays touchable while its element is empty, so their code checks the type first (delete/empty: nothing).
+  The switch btOnOff itself and the status line are not touched.
 
 Buffers: ids (entn*) 23 like cardEntities2, names 31, values 31, status 63, icons 10, tSend 63 (longest event
 'event,buttonPress2,' + id + ',OnOff,1'), strCommand 1019 (the receive buffer of the display, a longer entityUpd
-cannot arrive anyway). RAM per page (9 + 7 per object + text buffers) is printed and must stay <= 3400 with global.
+cannot arrive anyway). RAM per page (9 + 7 per object + text buffers) is printed and must stay <= 3584 with global.
 """
 import os
 import re
@@ -85,7 +94,7 @@ RAM_GLOBAL = 436
 RAM_LIMIT = 3584
 RAM_TARGET = 3400
 
-REMOVE = re.compile(r'(bEntity|tEntity)[1-6]|LPState')
+REMOVE = re.compile(r'(bEntity|tEntity)[1-6]')
 
 # ---------------------------------------------------------------- layouts
 # EU: visible x 0..449, touch of the content x 10..439 (swipe strips), content y 67..287 under the header of cardGrid.
@@ -170,6 +179,7 @@ LAYOUTS = {
 }
 
 TAPPED = ('info', 'button')
+HOTSPOT = ('value', 'progress', 'switch')  # elements without a button: a hotspot carries the cell code
 
 
 def ram(page):
@@ -229,18 +239,52 @@ def send_lines(entn):
     return [f'tSend.txt="event,buttonPress2,"+{entn}.txt+",button"'] + SEND
 
 
-def cell_down(down1, typ, entn, name, button_name):
-    """the down code of cardGrid bEntity1 with other names"""
-    rename = {'type1': typ, 'entn1': entn, 'tEntity1': name, 'bEntity1': button_name}
-    pattern = re.compile(r'\b(type1|entn1|tEntity1|bEntity1)\b')
-    return [pattern.sub(lambda m: rename[m.group(1)], x) for x in down1]
+def cell_down(down1, typ, entn, name, icon, color=None):
+    """the down code of cardGrid bEntity1 with other names; icon None: there is no icon object (the popup gets an
+    empty icon and the colour of the object color)"""
+    rename = {'type1': typ, 'entn1': entn, 'tEntity1': name, 'bEntity1': icon}
+    fixed = {'pageIcons.tTmp3.txt=bEntity1.txt': 'pageIcons.tTmp3.txt=""',
+             'tempIconColor=bEntity1.pco': f'tempIconColor={color}.pco'}
+    out = []
+    for line in down1:
+        if icon is None and 'bEntity1' in line:
+            if line.strip() not in fixed:
+                raise SystemExit(f'{SOURCE}.bEntity1.down: unexpected use of the icon: {line}')
+            line = line.replace(line.strip(), fixed[line.strip()])
+        out.append(re.sub(r'\b(type1|entn1|tEntity1|bEntity1)\b', lambda m: rename[m.group(1)], line))
+    return out
 
 
-def up_code(typ, entn):
-    """release of main / an info row: every type sends buttonPress2 (the button shows its press effect for every
-    type, so the tap must arrive); only type text without an intName has nothing to report"""
-    return ['tmLP.en=0', '// every type sends, type text only with an intName (card_device.py)',
-            f'if({typ}.txt!="text"||{entn}.txt!="")', '{'] + ['  ' + x for x in send_lines(entn)] + ['}']
+def cell_up(up1, typ, entn, text_guard=True):
+    """the up code of cardGrid bEntity1 (buttonPress2, or buttonPress3 after a long press) with other names;
+    text_guard: type text without an intName has nothing to report and sends nothing"""
+    lines = [re.sub(r'\bentn1\b', entn, x) for x in up1]
+    if not text_guard:
+        return lines
+    body = [x for x in lines[1:] if x.strip() != 'LPState.val=0']
+    return ([lines[0], '// every type sends, type text only with an intName (card_device.py)',
+             f'if({typ}.txt!="text"||{entn}.txt!="")', '{'] + ['  ' + x for x in body] + ['}', 'LPState.val=0'])
+
+
+def if_shown(typ, lines, keep_first=0, keep_last=0):
+    """lines inside 'the element is not empty' - for objects that stay touchable while their element is empty"""
+    end = len(lines) - keep_last
+    return (lines[:keep_first] + ['// an empty element does nothing (card_device.py)',
+                                  f'if({typ}.txt!="delete"&&{typ}.txt!="")', '{']
+            + ['  ' + x for x in lines[keep_first:end]] + ['}'] + lines[end:])
+
+
+def union(rects):
+    x0 = min(r[0] for r in rects)
+    y0 = min(r[1] for r in rects)
+    x1 = max(r[0] + r[2] for r in rects)
+    y1 = max(r[1] + r[3] for r in rects)
+    return x0, y0, x1 - x0, y1 - y0
+
+
+def hotspot_rect(spec):
+    """the touch area of an element without a button: its icon, name, value and bar (not the switch)"""
+    return union([spec[n][:4] for n in ('icon', 'name', 'value', 'bar') if n in spec])
 
 
 def slot_names(k, kind):
@@ -263,12 +307,12 @@ def status_slots(layout):
     return [k for k, s in enumerate(layout['slots'], 1) if s['kind'] == 'status']
 
 
-def tapped_row(button_t, text_t, down1, k, names, spec):
+def tapped_row(button_t, text_t, down1, up1, k, names, spec):
     """icon button, name and value of a tappable info row; the type/id are those of slot k"""
     icon, name_n, value_n = names
     b = make_button(button_t, icon, spec['icon'])
     b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', name_n, icon))
-    b.set_code('up', up_code(f'type{k}', f'entn{k}'))
+    b.set_code('up', cell_up(up1, f'type{k}', f'entn{k}'))
     name = make_text(text_t, name_n, spec['name'], NAME_LEN)
     value = make_text(text_t, value_n, spec['value'], VALUE_LEN)
     forward(name, icon)
@@ -281,17 +325,27 @@ def build_objects(page, layout, switch_template):
     down1 = src['bEntity1'].code('down')
     if down1[0] != 'tmLP.en=1' or not any('page popupShutter' in x for x in down1):
         raise SystemExit(f'{SOURCE}.bEntity1: unexpected down code')
-    text_t, button_t, var_t = src['tEntity1'], src['bEntity1'], src['type1']
+    up1 = src['bEntity1'].code('up')
+    if (up1[0] != 'tmLP.en=0' or up1[1] != 'if(LPState.val==0)' or sum('buttonPress3' in x for x in up1) != 1
+            or sum(x.strip() == 'LPState.val=0' for x in up1) != 1):
+        raise SystemExit(f'{SOURCE}.bEntity1: unexpected up code')
+    lp = src['tmLP'].code('timer')
+    if lp[-1].strip() != 'LPState.val=1' or not any('page popupLight' in x for x in lp):
+        raise SystemExit('tmLP: unexpected timer code')
+    text_t, button_t, var_t, spot_t = src['tEntity1'], src['bEntity1'], src['type1'], src['mSwipeNext']
+    if spot_t.get('type') != 109:
+        raise SystemExit('mSwipeNext is not a hotspot')
+    hotspots = []
     if 'narrow' in layout:
         narrow = []
         for k, spec in layout['narrow'].items():
             if layout['slots'][k - 1]['kind'] != 'info':
                 raise SystemExit(f'narrow set for slot {k}, which is no info row')
-            narrow += tapped_row(button_t, text_t, down1, k, narrow_names(k), spec)
+            narrow += tapped_row(button_t, text_t, down1, up1, k, narrow_names(k), spec)
 
     main = make_button(button_t, 'bMain', layout['main'])
     main.set_code('down', cell_down(down1, 'typeMain', 'entnMain', 'tMainName', 'bMain'))
-    main.set_code('up', up_code('typeMain', 'entnMain'))
+    main.set_code('up', cell_up(up1, 'typeMain', 'entnMain'))
     main_name = make_text(text_t, 'tMainName', layout['mainName'], NAME_LEN)
     forward(main_name, 'bMain')
     visible = [main, main_name]
@@ -305,13 +359,17 @@ def build_objects(page, layout, switch_template):
             cell.set('style', 1)  # border, as the icons of cardPower
             cell.set('borderw', 1)
             cell.set('borderc', GRID_COLOR)
+            # the cell is its own touch area; an empty one keeps its border, so the code checks the type
+            cell.set_code('down', if_shown(f'type{k}', cell_down(down1, f'type{k}', f'entn{k}', f'vaName{k}', icon)))
+            cell.set_code('up', if_shown(f'type{k}', cell_up(up1, f'type{k}', f'entn{k}'), 1, 1))
             visible.append(cell)
+            variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN),
+                          make_var(var_t, f'vaName{k}', NAME_LEN)]
             continue
         if kind in TAPPED:
             b = make_button(button_t, icon, spec['icon'])
             b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', f'tEntity{k}', icon))
-            b.set_code('up', up_code(f'type{k}', f'entn{k}') if kind == 'info'
-                       else ['tmLP.en=0'] + send_lines(f'entn{k}'))
+            b.set_code('up', cell_up(up1, f'type{k}', f'entn{k}', kind == 'info'))
             visible.append(b)
         elif kind in ('value', 'switch'):
             x, y, w, h, font = spec['icon']
@@ -332,6 +390,15 @@ def build_objects(page, layout, switch_template):
             sw.set_code('down', [x.replace('btOnOff1', f'btOnOff{k}').replace('entn1', f'entn{k}')
                                  for x in switch_template.code('down')])
             visible.append(sw)
+        if kind in HOTSPOT:
+            # one hotspot over the texts (and the bar) of the element, above them in the z order
+            spot = spot_t.copy()
+            spot.set('objname', f'mSlot{k}')
+            spot.geometry(*hotspot_rect(spec))
+            spot.set_code('down', if_shown(f'type{k}', cell_down(
+                down1, f'type{k}', f'entn{k}', f'tEntity{k}', icon if 'icon' in spec else None, f'tEntity{k}')))
+            spot.set_code('up', if_shown(f'type{k}', cell_up(up1, f'type{k}', f'entn{k}'), 1, 1))
+            hotspots.append(spot)
         if f'type{k}' not in src:
             variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN)]
     visible.append(make_text(text_t, 'tStatus', (10, STATUS_Y, 390, STATUS_H, 0, layout['statusXcen']), STATUS_LEN))
@@ -342,6 +409,7 @@ def build_objects(page, layout, switch_template):
     variables.append(make_var(var_t, 'entnInfo', ID_LEN))
     if 'narrow' in layout:
         visible += narrow
+    visible += hotspots
     if status_slots(layout):
         # number variable (like vLPNavState): 1 while at least one status icon is set
         flag = src['vLPNavState'].copy()
@@ -421,8 +489,10 @@ def status_lines(ind, layout):
     out = [f'{ind}// status icons (slots {cells[0]}..{cells[-1]}): vStatus=1 when one is set', f'{ind}vStatus.val=0']
     for k in cells:
         first = FIRST + FIELDS * k
-        out += [f'{ind}spstr strCommand.txt,tTmp.txt,"~",{first}',
-                f'{ind}if(tTmp.txt=="delete"||tTmp.txt=="")',
+        out += [f'{ind}spstr strCommand.txt,type{k}.txt,"~",{first}',
+                f'{ind}spstr strCommand.txt,entn{k}.txt,"~",{first + 1}',
+                f'{ind}spstr strCommand.txt,vaName{k}.txt,"~",{first + 4}',
+                f'{ind}if(type{k}.txt=="delete"||type{k}.txt=="")',
                 f'{ind}{{',
                 f'{i}tStat{k}.txt=""',
                 f'{ind}}}else',
@@ -560,15 +630,6 @@ def patch_load(page, name, layout):
     page.obj(name).set_code('load', load)
 
 
-def patch_long_press(page):
-    """tmLP: the popups of light/light2/fan/number stay, the switch to buttonPress3 goes"""
-    tm = page.obj('tmLP')
-    lines = tm.code('timer')
-    if lines[-1].strip() != 'LPState.val=1':
-        raise SystemExit('tmLP: unexpected timer code')
-    tm.set_code('timer', lines[:-1])
-
-
 def fix_page_name(page, name):
     old = re.compile(rf'\b{SOURCE}\b')
     for o in page.objs:
@@ -609,7 +670,6 @@ def build_page(source_bytes, name, switch_template):
     build_objects(page, layout, switch_template)
     patch_parser(page, layout)
     patch_load(page, name, layout)
-    patch_long_press(page)
     check_names(page)
     return page
 
@@ -698,8 +758,10 @@ def main(source, target, preview=None):
         kinds = ', '.join(s['kind'] for s in LAYOUTS[name]['slots'])
         print(f'{name}: N={len(LAYOUTS[name]["slots"])} ({kinds}), {len(page.objs)} objects, '
               f'RAM (estimate) page {r}, with global {RAM_GLOBAL + r} of {RAM_LIMIT}')
+        if RAM_GLOBAL + r > RAM_LIMIT:
+            raise SystemExit(f'{name}: RAM {RAM_GLOBAL + r} > {RAM_LIMIT}')
         if RAM_GLOBAL + r > RAM_TARGET:
-            raise SystemExit(f'{name}: RAM {RAM_GLOBAL + r} > {RAM_TARGET}')
+            print(f'{name}: note - less than {RAM_LIMIT - RAM_TARGET} bytes of RAM left')
     if main_hmi != hmi.files['main.HMI']:
         changes['main.HMI'] = main_hmi
 
