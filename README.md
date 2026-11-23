@@ -167,6 +167,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: device with details - the page item dialog chooses what the long press opens (detail page or device page) and sets up the device page: layout with preview, main icon, status line (a state of the device or a custom data point), every slot (a fitting state of the device or "user defined": any data point or an alias channel; "…" opens the settings of the element with icons and colors for true/false, color scale and long press), the info icon and the short tap "open the device page"
 - (ticaki) cardGrid, cardGrid2, cardGrid3 and device pages: reaching the long press of a cell (0.5 s) lets its background blink green/grey until the finger is lifted (needs a new TFT, eu)
 - (ticaki) cardEntities, cardGrid, cardGrid2, cardGrid3, cardSchedule, cardThermo2, cardMedia: closing a popup no longer jumps back to the first items, the page stays where it was scrolled to
+- (ticaki) panel setup, berry/TFT install, restart and reset of tasmota: the log shows the cause of network errors (e.g. `ECONNREFUSED`, `EHOSTUNREACH`) instead of only "fetch failed"
+- (ticaki) panel setup: clear hint in the admin if the panel does not answer (Tasmota HTTP API off since 15.4.0.2, enable with SetOption128 1)
+- (ticaki) dependencies updated
 
 ### 2.6.0 (2026-11-22)
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)

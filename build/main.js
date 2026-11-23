@@ -39,6 +39,7 @@ var import_admin_media = require("./lib/configuration/admin-media");
 var import_readme = require("./lib/tools/readme");
 var import_tft_server = require("./lib/tools/tft-server");
 var import_redact = require("./lib/tools/redact");
+var import_error_format = require("./lib/tools/error-format");
 var import_berry_install = require("./lib/tools/berry-install");
 var import_test_states = require("./lib/tools/test-states");
 var import_credentials = require("./lib/credentials");
@@ -868,7 +869,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
       } catch (e) {
         this.log.warn(
-          `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! Error: ${e ? e.message : ""}`
+          `Error: This usually means that the NSpanel with ip ${tasmota.ip} is not online or has not been set up properly in the configuration! Error: ${(0, import_error_format.formatErrorForLog)(e)}`
         );
       }
     };
@@ -899,9 +900,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       );
       return (0, import_berry_install.isBerryFlashing)(result);
     } catch (e) {
-      this.log.debug(
-        `Panel with ip ${tasmotaIP}: flash mode query failed: ${e instanceof Error ? e.message : String(e)}`
-      );
+      this.log.debug(`Panel with ip ${tasmotaIP}: flash mode query failed: ${(0, import_error_format.formatErrorForLog)(e)}`);
       return false;
     }
   }
@@ -1700,7 +1699,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
               } catch (e) {
-                this.log.error(`Error: while installing berry - ${e}`);
+                this.log.error(`Error: while installing berry - ${(0, import_error_format.formatErrorForLog)(e)}`);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, { error: "sendToRequestFail6" }, obj.callback);
                 }
@@ -1744,7 +1743,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
               } catch (e) {
-                this.log.error(`Error: ${e}`);
+                this.log.error(`Error: ${(0, import_error_format.formatErrorForLog)(e)}`);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, { error: "sendToRequestFail8" }, obj.callback);
                 }
@@ -1857,7 +1856,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
               } catch (e) {
-                this.log.error(`Error: ${e}`);
+                this.log.error(`Error: ${(0, import_error_format.formatErrorForLog)(e)}`);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, { error: "sendToRequestFail11" }, obj.callback);
                 }
@@ -1881,7 +1880,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
               } catch (e) {
-                this.log.error(`Error: ${e}`);
+                this.log.error(`Error: ${(0, import_error_format.formatErrorForLog)(e)}`);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, { error: "sendToRequestFail12" }, obj.callback);
                 }
@@ -2657,7 +2656,13 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       let u = new import_node_url.URL(this.getTasmotaCommandUrl(msg.tasmotaIP, `status 5`));
       this.log.debug(`Requesting tasmota status 5 with url: ${(0, import_redact.redactSecretsInText)(u.href)}`);
-      const r = await this.fetch(u.href);
+      let r;
+      try {
+        r = await this.fetch(u.href);
+      } catch (e) {
+        this.failNsPanelInitStep1(obj, topic, panel, msg.tasmotaIP, e, "sendToTasmotaNotReachable");
+        return;
+      }
       this.log.debug(`Response from tasmota status 5: ${JSON.stringify(r)}`);
       if (!(0, import_function_and_const.isTasmotaStatusNet)(r) || !r || !r.StatusNET || !r.StatusNET.Mac) {
         this.log.warn(`Device with topic ${topic} not found!`);
@@ -2712,13 +2717,27 @@ class NspanelLovelaceUi extends utils.Adapter {
       });
       this.answerMessage(obj, { result: "sendToNSPanelInitStep1Done", step: 1 });
     } catch (e) {
-      this.nsPanelInitSessions.delete(topic);
-      this.logNsPanelInitError(1, msg.tasmotaIP, e);
-      if (panel) {
-        void panel.setStatus("error");
-      }
-      this.answerMessage(obj, { error: "sendToRequestFail4" });
+      this.failNsPanelInitStep1(obj, topic, panel, msg.tasmotaIP, e, "sendToRequestFail4");
     }
+  }
+  /**
+   * Beendet Schritt 1 der Panel-Einrichtung nach einem Fehler: Session verwerfen, Fehler loggen,
+   * Panel-Status auf 'error' setzen und dem Admin den Fehlerkey antworten.
+   *
+   * @param obj - die sendTo-Nachricht aus dem Admin
+   * @param topic - Topic der Einrichtung
+   * @param panel - laufende Panel-Instanz, falls vorhanden
+   * @param tasmotaIP - IP-Adresse des Tasmota-Geräts, falls bekannt
+   * @param e - der aufgetretene Fehler
+   * @param errorKey - Übersetzungskey für den Admin
+   */
+  failNsPanelInitStep1(obj, topic, panel, tasmotaIP, e, errorKey) {
+    this.nsPanelInitSessions.delete(topic);
+    this.logNsPanelInitError(1, tasmotaIP, e);
+    if (panel) {
+      void panel.setStatus("error");
+    }
+    this.answerMessage(obj, { error: errorKey });
   }
   /**
    * Schritt 2 von 3 der Panel-Einrichtung: Template, Zeitzone und Messbereich übertragen,
@@ -2838,7 +2857,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 2e4);
           await this.delay(1e3);
         } catch (e) {
-          this.log.error(`Error: while installing berry - ${String(e)}`);
+          this.log.error(`Error: while installing berry - ${(0, import_error_format.formatErrorForLog)(e)}`);
           if (panel) {
             void panel.setStatus("error");
           }
@@ -2935,8 +2954,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param e - der aufgetretene Fehler
    */
   logNsPanelInitError(step, tasmotaIP, e) {
-    var _a;
-    const stack = (0, import_redact.redactSecretsInText)(e instanceof Error ? (_a = e.stack) != null ? _a : e.message : String(e));
+    const stack = (0, import_error_format.formatErrorForLog)(e, true);
     this.log.error(
       `Error in nsPanelInit step ${step} while sending config to tasmota (${tasmotaIP != null ? tasmotaIP : "unknown IP"}): ${stack}`
     );
@@ -3234,7 +3252,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       );
     } catch (e) {
       this.log.error(
-        `Berry driver download on tasmota ${tasmotaIP} failed and restoring autoexec.bak to autoexec.be failed too: ${String(e)}`
+        `Berry driver download on tasmota ${tasmotaIP} failed and restoring autoexec.bak to autoexec.be failed too: ${(0, import_error_format.formatErrorForLog)(e)}`
       );
     }
   }
@@ -3250,8 +3268,9 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.debug(`Tasmota device at ${tasmotaIP} has internet access.`);
       return true;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      this.log.error(`Error checking internet access for Tasmota device at ${tasmotaIP}: ${errorMessage}`);
+      this.log.error(
+        `Error checking internet access for Tasmota device at ${tasmotaIP}: ${(0, import_error_format.formatErrorForLog)(error)}`
+      );
       return false;
     }
   }

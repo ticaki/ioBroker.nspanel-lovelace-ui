@@ -1815,6 +1815,7 @@
     "sendToRequestFail4": "向面板的请求失败",
     "sendToRequestFailBerry": "Berry安装后未收到来自Tasmota的下载确认",
     "sendToStepTimeout": "适配器在 30 秒内没有响应，设置仍在后台继续 — 请查看适配器日志",
+    "sendToTasmotaNotReachable": "该 IP 上的面板没有响应。Tasmota 中是否已启用 HTTP API？自 Tasmota 15.4.0.2 起，刷机后它默认关闭：勾选 Configuration → Configure Other → \"HTTP API enable\"，或在控制台输入 SetOption128 1。否则请检查 IP 和网络连接。",
     "sendToTopicInUse": "此 MQTT 主题已被另一个面板使用。",
     "short": "短的",
     "show_home_edges": "显示指向 main 的 home 连接",

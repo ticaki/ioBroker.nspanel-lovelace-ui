@@ -1815,6 +1815,7 @@
     "sendToRequestFail4": "Запит до панелі не вдався",
     "sendToRequestFailBerry": "Підтвердження завантаження від Tasmota після встановлення berry не отримано",
     "sendToStepTimeout": "Адаптер не відповів протягом 30 секунд, налаштування триває у фоновому режимі — див. журнал адаптера",
+    "sendToTasmotaNotReachable": "Панель за цією IP не відповідає. Чи увімкнено в Tasmota HTTP API? Починаючи з Tasmota 15.4.0.2 він вимкнений після прошивки: позначте Configuration → Configure Other → \"HTTP API enable\" або введіть у консолі SetOption128 1. Інакше перевірте IP та мережеве з'єднання.",
     "sendToTopicInUse": "Цей MQTT-топік уже використовується іншою панеллю.",
     "short": "короткий",
     "show_home_edges": "Показати зв'язки home до main",
