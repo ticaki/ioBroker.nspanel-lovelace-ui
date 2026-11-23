@@ -22,6 +22,9 @@ export interface CardDeviceModel {
     status: string;
 }
 
+/** slots of cardDevice1 before the status icons */
+const LEGACY_SLOTS_1 = 6;
+
 export function initial(): CardDeviceModel {
     const menu = initialMenuPage();
     return {
@@ -37,7 +40,10 @@ export function initial(): CardDeviceModel {
 
 /**
  * Parses the `entityUpd` of a device page; the number of slots follows from the pageType
- * (cardDevice1/2: 6, cardDevice3: 8), missing fields are empty.
+ * (cardDevice1: 10, cardDevice2: 6, cardDevice3: 8), missing fields are empty.
+ *
+ * An older cardDevice1 payload with only 6 slots (before the status icons, at most main + 6 slots + info)
+ * is read as such: the info icon is element 7, the status slots stay empty.
  *
  * @param args the fields after `entityUpd` (`args[0]` is the heading)
  * @param _prev the model before
@@ -47,10 +53,12 @@ export function parseEntityUpd(args: string[], _prev: CardDeviceModel, ctx: Pars
     const layout = deviceLayout(ctx.pageType);
     const count = DEVICE_GEOMETRY[layout].slots.length;
     const header = parseEntityUpdHeader(args);
+    const legacy = layout === 1 && header.rest.length <= (LEGACY_SLOTS_1 + 2) * ENTITY_FIELDS;
+    const sent = legacy ? LEGACY_SLOTS_1 : count;
     const main = parseEntity6(header.rest, 0);
     const slots: Entity6[] = [];
     for (let k = 1; k <= count; k++) {
-        slots.push(parseEntity6(header.rest, k * ENTITY_FIELDS));
+        slots.push(k <= sent ? parseEntity6(header.rest, k * ENTITY_FIELDS) : emptyEntity());
     }
     return {
         layout,
@@ -58,7 +66,7 @@ export function parseEntityUpd(args: string[], _prev: CardDeviceModel, ctx: Pars
         navigation: header.navigation,
         main,
         slots,
-        info: parseEntity6(header.rest, (count + 1) * ENTITY_FIELDS),
+        info: parseEntity6(header.rest, (sent + 1) * ENTITY_FIELDS),
         status: main.optionalValue,
     };
 }

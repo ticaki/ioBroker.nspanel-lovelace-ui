@@ -9,7 +9,15 @@ import { isOn, popupForType } from '../cardEntities/shared/entityTypes';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import { Pressable } from '../cardEntities/shared/Pressable';
 import { HmiTextBox, Toggle, type NextionAlign } from '../cardEntities/shared/widgets';
-import { DEVICE_GEOMETRY, progressPercent, type Box, type SlotGeometry } from './layout';
+import {
+    STATUS_FRAME_COLOR,
+    deviceGeometry,
+    progressPercent,
+    statusBlockVisible,
+    type Box,
+    type SlotGeometry,
+    type StatusSlotGeometry,
+} from './layout';
 import type { CardDeviceModel } from './parse';
 
 /** Hold time of the `tmLP` timer the device pages copied from cardGrid */
@@ -176,7 +184,62 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         );
     }
 
-    private renderSlot(entity: Entity6, slot: SlotGeometry, index: number): React.JSX.Element | null {
+    /**
+     * A cell of the status block (cardDevice1 slots 7-10): the icon only, centred in a 1 px grey frame; an
+     * empty slot of a visible block keeps its frame. No touch.
+     *
+     * @param entity the slot
+     * @param slot its cell
+     * @param index index of the slot
+     * @param visible the block is shown (at least one status slot is filled)
+     */
+    private renderStatusCell(
+        entity: Entity6,
+        slot: StatusSlotGeometry,
+        index: number,
+        visible: boolean,
+    ): React.JSX.Element | null {
+        if (!visible) {
+            return null;
+        }
+        const { cell } = slot;
+        return (
+            <div
+                key={`slot-${index + 1}`}
+                data-role={`slot-${index + 1}`}
+                data-kind="status"
+                style={{
+                    position: 'absolute',
+                    left: cell.x,
+                    top: cell.y,
+                    width: cell.w,
+                    height: cell.h,
+                    border: `1px solid ${color565ToCss(STATUS_FRAME_COLOR)}`,
+                    boxSizing: 'border-box',
+                }}
+            >
+                {isEmptySlot(entity)
+                    ? null
+                    : this.text('icon', entity.icon, cell, 1, 1, color565ToCss(entity.iconColor), {
+                          // the text box is the cell itself, the frame lies on top of its edge
+                          x: cell.x + 1,
+                          y: cell.y + 1,
+                          w: 0,
+                          h: 0,
+                      })}
+            </div>
+        );
+    }
+
+    private renderSlot(
+        entity: Entity6,
+        slot: SlotGeometry,
+        index: number,
+        statusVisible: boolean,
+    ): React.JSX.Element | null {
+        if (slot.kind === 'status') {
+            return this.renderStatusCell(entity, slot, index, statusVisible);
+        }
         if (isEmptySlot(entity)) {
             return null;
         }
@@ -269,7 +332,8 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
 
     render(): React.JSX.Element {
         const { model, ctx, global, press } = this.props;
-        const geometry = DEVICE_GEOMETRY[model.layout];
+        const geometry = deviceGeometry(model.layout, model.slots);
+        const statusVisible = statusBlockVisible(model.layout, model.slots);
         const { main, info } = model;
         return (
             <div
@@ -302,7 +366,9 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                               this.text('icon', main.icon, geometry.main.icon, 4, 1, color565ToCss(main.iconColor), o),
                               this.text('name', main.displayName, geometry.main.name, 0, 1, theme.foreground, o),
                           ])}
-                    {geometry.slots.map((slot, i) => this.renderSlot(model.slots[i] ?? emptyEntity(), slot, i))}
+                    {geometry.slots.map((slot, i) =>
+                        this.renderSlot(model.slots[i] ?? emptyEntity(), slot, i, statusVisible),
+                    )}
                     <div data-role="status">
                         {this.text('status', model.status, geometry.status, 0, geometry.statusAlign, theme.foreground)}
                     </div>

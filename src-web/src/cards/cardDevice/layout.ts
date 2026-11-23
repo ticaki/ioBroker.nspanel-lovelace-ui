@@ -1,3 +1,5 @@
+import type { Entity6 } from '../../protocol/types';
+import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import type { NextionAlign } from '../cardEntities/shared/widgets';
 
 /** A Nextion component box in stage pixels of the eu HMI */
@@ -9,7 +11,7 @@ export interface Box {
 }
 
 /** The kind of element a slot of a device page shows */
-export type DeviceSlotKind = 'info' | 'value' | 'progress' | 'button' | 'switch';
+export type DeviceSlotKind = 'info' | 'value' | 'progress' | 'button' | 'switch' | 'status';
 
 /** icon (font 1) + name + value (font 0, right aligned) */
 export interface InfoSlotGeometry {
@@ -49,8 +51,19 @@ export interface SwitchSlotGeometry {
     toggle: Box;
 }
 
+/** a cell of the status block of cardDevice1: only the icon (font 1), centred, in a 1 px grey frame */
+export interface StatusSlotGeometry {
+    kind: 'status';
+    cell: Box;
+}
+
 export type SlotGeometry =
-    InfoSlotGeometry | ValueSlotGeometry | ProgressSlotGeometry | ButtonSlotGeometry | SwitchSlotGeometry;
+    | InfoSlotGeometry
+    | ValueSlotGeometry
+    | ProgressSlotGeometry
+    | ButtonSlotGeometry
+    | SwitchSlotGeometry
+    | StatusSlotGeometry;
 
 /** The geometry of one device page (cardDevice1/2/3) */
 export interface DeviceGeometry {
@@ -77,6 +90,18 @@ const INFO = box(404, 288, 36, 32);
 function info1(y: number): InfoSlotGeometry {
     return { kind: 'info', icon: box(126, y, 36, 34), name: box(164, y + 4, 164, 26), value: box(330, y + 4, 110, 26) };
 }
+
+/** the info rows of cardDevice1 next to a visible status block */
+function info1Narrow(y: number): InfoSlotGeometry {
+    return { kind: 'info', icon: box(204, y, 36, 34), name: box(242, y + 4, 86, 26), value: box(330, y + 5, 110, 26) };
+}
+
+function status1(x: number, y: number): StatusSlotGeometry {
+    return { kind: 'status', cell: box(x, y, 38, 45) };
+}
+
+/** frame colour of the status cells: rgb565 14823 (the grey of the pie lines on cardPChart) */
+export const STATUS_FRAME_COLOR = 14823;
 
 function button1(x: number): ButtonSlotGeometry {
     return { kind: 'button', icon: box(x, 190, 104, 52), name: box(x, 244, 104, 26) };
@@ -118,7 +143,18 @@ function switch3(x: number): SwitchSlotGeometry {
 export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
     1: {
         main: { icon: box(10, 68, 110, 86), name: box(10, 156, 110, 26) },
-        slots: [info1(76), info1(120), button1(10), button1(118), button1(226), button1(334)],
+        slots: [
+            info1(76),
+            info1(120),
+            button1(10),
+            button1(118),
+            button1(226),
+            button1(334),
+            status1(124, 71),
+            status1(161, 71),
+            status1(124, 115),
+            status1(161, 115),
+        ],
         status: STATUS,
         statusAlign: 0,
         info: INFO,
@@ -170,4 +206,36 @@ export function deviceLayout(pageType: string): DeviceLayout {
 export function progressPercent(value: string): number {
     const n = Number.parseInt(value, 10);
     return Number.isFinite(n) ? Math.min(100, Math.max(0, n)) : 0;
+}
+
+/**
+ * `true` when the status block of the page is shown: at least one of its slots (cardDevice1 slots 7-10) is
+ * filled. An empty cell of a shown block stays as an empty grid cell.
+ *
+ * @param layout the layout
+ * @param slots the slots of the model
+ */
+export function statusBlockVisible(layout: DeviceLayout, slots: readonly Entity6[]): boolean {
+    return DEVICE_GEOMETRY[layout].slots.some((g, i) => {
+        const slot = slots[i];
+        return g.kind === 'status' && slot !== undefined && !isEmptySlot(slot);
+    });
+}
+
+/**
+ * The geometry of a page for the slots it shows: with a visible status block the two info rows of
+ * cardDevice1 move right and get narrower (icon x 204, name 242 86 px wide, value 1 px lower).
+ *
+ * @param layout the layout
+ * @param slots the slots of the model
+ */
+export function deviceGeometry(layout: DeviceLayout, slots: readonly Entity6[]): DeviceGeometry {
+    const geometry = DEVICE_GEOMETRY[layout];
+    if (layout !== 1 || !statusBlockVisible(layout, slots)) {
+        return geometry;
+    }
+    return {
+        ...geometry,
+        slots: geometry.slots.map((g, i) => (i === 0 ? info1Narrow(76) : i === 1 ? info1Narrow(120) : g)),
+    };
 }

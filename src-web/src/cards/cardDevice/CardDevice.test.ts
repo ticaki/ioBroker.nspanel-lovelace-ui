@@ -1,8 +1,11 @@
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { initialGlobalState } from '../../store/PanelStore';
 import type { Entity6 } from '../../protocol/types';
 import type { CardProps } from '../CardContract';
 import { CardDevice, deviceTouch } from './CardDevice';
-import { initial, type CardDeviceModel } from './parse';
+import { initial, parseEntityUpd, type CardDeviceModel } from './parse';
 
 interface Sent {
     press: unknown[][];
@@ -113,5 +116,49 @@ describe('cardDevice events', () => {
         const { card: c, sent } = card(model);
         c.onInfo();
         expect(sent.press).toEqual([['9?0?info', 'button']]);
+    });
+});
+
+describe('cardDevice1 status block rendering', () => {
+    const NAV = ['button', 'p', '<', '65535', '', '', 'button', 'n', '>', '65535', '', ''];
+    function html(statusIcons: number): string {
+        const slots: string[] = [];
+        for (let i = 1; i <= 10; i++) {
+            const filled = i <= 6 || i - 6 <= statusIcons;
+            slots.push(...(filled ? ['text', `s${i}`, 'X', '65535', `n${i}`, 'v'] : ['', '', '', '', '', '']));
+        }
+        const ctx = { pageType: 'cardDevice1', pageArgs: [] };
+        const model = parseEntityUpd(
+            ['T', ...NAV, 'text', 'm', 'M', '65535', 'Main', 'Status', ...slots],
+            initial(),
+            ctx,
+        );
+        return renderToStaticMarkup(
+            React.createElement(CardDevice, {
+                model,
+                ctx,
+                global: initialGlobalState('eu'),
+                send: () => undefined,
+                press: () => undefined,
+                openPopup: () => undefined,
+            }),
+        );
+    }
+
+    it('shows no cells without status icons, all 4 framed cells with one, none of them tappable', () => {
+        expect(html(0).match(/data-kind="status"/g) ?? []).toHaveLength(0);
+        for (const n of [1, 4]) {
+            const out = html(n);
+            expect(out.match(/data-kind="status"/g) ?? []).toHaveLength(4);
+            const cells = out.split('data-kind="status"').slice(1);
+            for (const cell of cells) {
+                expect(cell.split('data-role="slot-')[0]).not.toContain('data-pressable');
+            }
+        }
+    });
+
+    it('moves the info rows right while the block is shown', () => {
+        expect(html(0)).toContain('left:126px;top:76px');
+        expect(html(1)).toContain('left:204px;top:76px');
     });
 });
