@@ -23,15 +23,19 @@ __export(device_page_exports, {
   DEVICE_PAGE_EMPTY_ELEMENT: () => DEVICE_PAGE_EMPTY_ELEMENT,
   DEVICE_PAGE_PREFIX: () => DEVICE_PAGE_PREFIX,
   cardDeviceOf: () => cardDeviceOf,
+  cutToBytes: () => cutToBytes,
   devicePageChannelAdminItem: () => devicePageChannelAdminItem,
   devicePageChannelElement: () => devicePageChannelElement,
   devicePageChannelSlotItem: () => devicePageChannelSlotItem,
   devicePageChannels: () => devicePageChannels,
+  devicePageClampElement: () => devicePageClampElement,
   devicePageElements: () => devicePageElements,
   devicePageInfoItem: () => devicePageInfoItem,
   devicePageMainElement: () => devicePageMainElement,
   devicePageMainItem: () => devicePageMainItem,
+  devicePageMaxPayloadBytes: () => devicePageMaxPayloadBytes,
   devicePagePageConfig: () => devicePagePageConfig,
+  devicePagePayload: () => devicePagePayload,
   devicePageSlotItem: () => devicePageSlotItem,
   devicePageStatusIconElement: () => devicePageStatusIconElement,
   devicePageStatusIconItem: () => devicePageStatusIconItem,
@@ -43,6 +47,7 @@ __export(device_page_exports, {
 });
 module.exports = __toCommonJS(device_page_exports);
 var import_Color = require("../const/Color");
+var import_definition = require("../const/definition");
 var import_text_width = require("../const/text-width");
 var import_tools = require("../const/tools");
 var import_adminShareConfig = require("../types/adminShareConfig");
@@ -71,27 +76,85 @@ function cardDeviceOf(layout) {
       return "cardDevice3";
   }
 }
-function fitDevicePageStatus(text, layout, model) {
+function byteLength(text) {
+  return Buffer.byteLength(text, "utf8");
+}
+function cutToBytes(text, maxBytes) {
+  if (byteLength(text) <= maxBytes) {
+    return text;
+  }
+  let out = "";
+  let bytes = 0;
+  for (const char of text) {
+    bytes += byteLength(char);
+    if (bytes > maxBytes) {
+      break;
+    }
+    out += char;
+  }
+  return out;
+}
+function cutToBytesWithEllipsis(text, maxBytes, ellipsis) {
+  if (byteLength(text) <= maxBytes) {
+    return text;
+  }
+  const head = cutToBytes(text, maxBytes - byteLength(ellipsis)).trimEnd();
+  return head ? `${head}${ellipsis}` : "";
+}
+function fitDevicePageStatus(text, layout, model, maxBytes = Number.POSITIVE_INFINITY) {
   var _a;
-  const flat = text.replace(/[\r\n]+/g, " ");
-  let out = (0, import_text_width.fitText)(flat, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model, import_deviceDetails.DEVICE_PAGE_FIELDS[layout].status);
-  if (Buffer.byteLength(out, "utf8") <= import_deviceDetails.DEVICE_PAGE_STATUS_MAX_BYTES) {
-    return out;
+  const flat = text.replace(/[\r\n]+/g, " ").replaceAll("~", "").replaceAll(import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_CHAR, "");
+  const width = import_deviceDetails.DEVICE_PAGE_FIELDS[layout].status;
+  const standBytes = Math.max(0, Math.min(import_deviceDetails.DEVICE_PAGE_STATUS_MAX_BYTES, maxBytes));
+  if ((0, import_text_width.textWidth)(flat, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(flat) <= standBytes) {
+    return flat;
   }
   const ellipsis = (0, import_text_width.hasGlyph)((_a = import_text_width.ELLIPSIS.codePointAt(0)) != null ? _a : 0, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model) ? import_text_width.ELLIPSIS : import_text_width.ELLIPSIS_FALLBACK;
-  const chars = Array.from(flat);
-  for (let n = chars.length - 1; n > 0; n--) {
-    out = `${chars.slice(0, n).join("").trimEnd()}${ellipsis}`;
-    if (Buffer.byteLength(out, "utf8") <= import_deviceDetails.DEVICE_PAGE_STATUS_MAX_BYTES) {
-      return out;
-    }
+  const standing = cutToBytesWithEllipsis(
+    (0, import_text_width.fitText)(flat, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model, width, { ellipsis }),
+    standBytes,
+    ellipsis
+  );
+  if (!import_deviceDetails.DEVICE_PAGE_STATUS_SCROLLS[layout]) {
+    return standing;
   }
-  return "";
+  const scrollBytes = Math.min(
+    import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
+    maxBytes - byteLength(import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_MARK)
+  );
+  const scrolling = cutToBytesWithEllipsis(flat, scrollBytes, ellipsis);
+  if (byteLength(scrolling) <= byteLength(standing)) {
+    return standing;
+  }
+  return `${scrolling}${import_deviceDetails.DEVICE_PAGE_STATUS_SCROLL_MARK}`;
 }
 function devicePageMainElement(mainPayload, status) {
   const fields = mainPayload ? mainPayload.split("~") : [];
   const head = fields.length >= 6 ? fields.slice(0, 5) : ["", "", "", "", ""];
+  head[4] = cutToBytes(head[4], import_deviceDetails.DEVICE_PAGE_TEXT_MAX_BYTES);
   return [...head, status.replace(/~/g, "")].join("~");
+}
+function devicePageClampElement(element) {
+  const fields = element.split("~");
+  if (fields.length !== 6) {
+    return element;
+  }
+  fields[4] = cutToBytes(fields[4], import_deviceDetails.DEVICE_PAGE_TEXT_MAX_BYTES);
+  fields[5] = cutToBytes(fields[5], import_deviceDetails.DEVICE_PAGE_TEXT_MAX_BYTES);
+  return fields.join("~");
+}
+function devicePageMaxPayloadBytes(layout) {
+  return Math.min(import_deviceDetails.DEVICE_PAGE_RECEIVE_BYTES[layout], import_definition.MAX_PANEL_PAYLOAD_BYTES);
+}
+function devicePagePayload(head, mainPayload, elements, status, layout, model) {
+  const build = (field2) => [head, devicePageMainElement(mainPayload, field2), ...elements].join("~");
+  const field = fitDevicePageStatus(status, layout, model);
+  const payload = build(field);
+  const over = byteLength(payload) - devicePageMaxPayloadBytes(layout);
+  if (over <= 0) {
+    return payload;
+  }
+  return build(fitDevicePageStatus(status, layout, model, Math.max(0, byteLength(field) - over)));
 }
 function devicePageStatusIconElement(payload) {
   const fields = payload ? payload.split("~") : [];
@@ -482,15 +545,19 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   DEVICE_PAGE_EMPTY_ELEMENT,
   DEVICE_PAGE_PREFIX,
   cardDeviceOf,
+  cutToBytes,
   devicePageChannelAdminItem,
   devicePageChannelElement,
   devicePageChannelSlotItem,
   devicePageChannels,
+  devicePageClampElement,
   devicePageElements,
   devicePageInfoItem,
   devicePageMainElement,
   devicePageMainItem,
+  devicePageMaxPayloadBytes,
   devicePagePageConfig,
+  devicePagePayload,
   devicePageSlotItem,
   devicePageStatusIconElement,
   devicePageStatusIconItem,

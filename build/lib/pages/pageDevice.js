@@ -68,15 +68,10 @@ class PageDevice extends import_Page.Page {
       return;
     }
     await super.update();
-    const statusIndex = this.slotCount + 2;
-    const statusItem = (_a = this.pageItems) == null ? void 0 : _a[statusIndex];
-    const status = statusItem ? (0, import_device_page.fitDevicePageStatus)(
-      (0, import_device_page.optionalValueOf)(await statusItem.getPageItemPayload()),
-      this.layout,
-      this.basePanel.info.nspanel.model
-    ) : "";
+    const statusItem = (_a = this.pageItems) == null ? void 0 : _a[this.slotCount + 2];
+    const status = statusItem ? (0, import_device_page.optionalValueOf)(await statusItem.getPageItemPayload()) : "";
     const mainItem = (_b = this.pageItems) == null ? void 0 : _b[0];
-    const elements = [(0, import_device_page.devicePageMainElement)(mainItem ? await mainItem.getPageItemPayload() : "", status)];
+    const elements = [];
     const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout];
     const onOff = (on) => this.library.getTranslation(on ? "on" : "off");
     for (let index = 1; index <= this.slotCount + 1; index++) {
@@ -85,13 +80,19 @@ class PageDevice extends import_Page.Page {
       if (kind && this.channelSlots.has(index - 1)) {
         element = (0, import_device_page.devicePageChannelElement)(kind, element, onOff);
       }
-      elements.push(kind === "status" ? (0, import_device_page.devicePageStatusIconElement)(element) : element);
+      elements.push(kind === "status" ? (0, import_device_page.devicePageStatusIconElement)(element) : (0, import_device_page.devicePageClampElement)(element));
     }
     this.sendToPanel(
-      (0, import_tools.getPayload)(
-        (0, import_tools.getPayloadRemoveTilde)("entityUpd", this.shortHeadline(this.library.getTranslation(this.headline))),
-        this.getNavigation(),
-        (0, import_tools.getPayloadArray)(elements)
+      (0, import_device_page.devicePagePayload)(
+        (0, import_tools.getPayload)(
+          (0, import_tools.getPayloadRemoveTilde)("entityUpd", this.shortHeadline(this.library.getTranslation(this.headline))),
+          this.getNavigation()
+        ),
+        mainItem ? await mainItem.getPageItemPayload() : "",
+        elements,
+        status,
+        this.layout,
+        this.basePanel.info.nspanel.model
       ),
       false
     );
