@@ -24,6 +24,7 @@ __export(deviceDetails_exports, {
   DEVICE_PAGE_FIELDS: () => DEVICE_PAGE_FIELDS,
   DEVICE_PAGE_INFO_ROLE: () => DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS: () => DEVICE_PAGE_LAYOUTS,
+  DEVICE_PAGE_NAVIGATION_ICON: () => DEVICE_PAGE_NAVIGATION_ICON,
   DEVICE_PAGE_PROGRESS_ROLE: () => DEVICE_PAGE_PROGRESS_ROLE,
   DEVICE_PAGE_RECEIVE_BYTES: () => DEVICE_PAGE_RECEIVE_BYTES,
   DEVICE_PAGE_SLOT_LOOK_FIELDS: () => DEVICE_PAGE_SLOT_LOOK_FIELDS,
@@ -54,16 +55,20 @@ __export(deviceDetails_exports, {
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf: () => deviceDetailsRuntimeOf,
   devicePageChannelTakesLongPress: () => devicePageChannelTakesLongPress,
+  devicePageChannelTakesNavigation: () => devicePageChannelTakesNavigation,
   devicePageConfigOf: () => devicePageConfigOf,
   devicePageHasStatusIcons: () => devicePageHasStatusIcons,
   devicePageProgressPercent: () => devicePageProgressPercent,
   devicePageSlotAccepts: () => devicePageSlotAccepts,
   devicePageSlotAcceptsChannel: () => devicePageSlotAcceptsChannel,
+  devicePageSlotAcceptsNavigation: () => devicePageSlotAcceptsNavigation,
   devicePageSlotCount: () => devicePageSlotCount,
   devicePageSlotFields: () => devicePageSlotFields,
   devicePageSlotHasLook: () => devicePageSlotHasLook,
   devicePageSlotLookOf: () => devicePageSlotLookOf,
   devicePageSlotTakesLongPress: () => devicePageSlotTakesLongPress,
+  devicePageSlotTakesNavigation: () => devicePageSlotTakesNavigation,
+  devicePageSlotTargetOf: () => devicePageSlotTargetOf,
   deviceSelectionError: () => deviceSelectionError,
   deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
@@ -243,6 +248,27 @@ function devicePageProgressPercent(value, min, max) {
   return Math.min(100, Math.max(0, Math.round(percent)));
 }
 const DEVICE_PAGE_SLOT_LOOK_FIELDS = ["trueIcon", "falseIcon", "trueColor", "falseColor", "longPress"];
+const DEVICE_PAGE_NAVIGATION_ICON = "gesture-tap-button";
+function devicePageSlotAcceptsNavigation(kind) {
+  return kind === "info" || kind === "button" || kind === "status";
+}
+const CHANNEL_POPUP_ON_TAP_ROLES = ["blind", "gate", "lock", "select", "level.timer"];
+function devicePageChannelTakesNavigation(role) {
+  return typeof role === "string" && DEVICE_PAGE_CHANNEL_ROLES.info.includes(role) && !CHANNEL_POPUP_ON_TAP_ROLES.includes(role);
+}
+function devicePageSlotTakesNavigation(ref, channelRole) {
+  if (!ref) {
+    return false;
+  }
+  return ref.custom === "channel" ? devicePageChannelTakesNavigation(channelRole) : true;
+}
+function devicePageSlotTargetOf(ref) {
+  var _a;
+  if (!ref) {
+    return "";
+  }
+  return ref.custom === "navigation" || ref.isNavigation ? (_a = ref.targetPage) != null ? _a : "" : "";
+}
 function devicePageSlotLookOf(ref, withOlderIcon = true) {
   var _a;
   const legacy = !withOlderIcon || ref.trueIcon || ref.falseIcon ? "" : (_a = ref.icon) != null ? _a : "";
@@ -266,6 +292,12 @@ function devicePageSlotLookOf(ref, withOlderIcon = true) {
   }
   if (ref.longPress) {
     look.longPress = ref.longPress;
+  }
+  if (ref.isNavigation && ref.custom !== "navigation") {
+    look.isNavigation = true;
+    if (ref.targetPage) {
+      look.targetPage = ref.targetPage;
+    }
   }
   return look;
 }
@@ -328,7 +360,17 @@ function devicePageSlotRefOf(value, kind) {
   }
   let ref;
   const custom = "custom" in value ? value.custom : void 0;
-  if (custom === "state" || custom === "channel") {
+  const targetPage = trimmedField(value, "targetPage");
+  if (custom === "navigation") {
+    ref = { key: "", id: "", custom };
+    const name = trimmedField(value, "name");
+    if (name) {
+      ref.name = name;
+    }
+    if (targetPage) {
+      ref.targetPage = targetPage;
+    }
+  } else if (custom === "state" || custom === "channel") {
     ref = { key: "", id: value.id.trim(), custom };
   } else {
     ref = devicePageStateRefOf(value, kind === "status");
@@ -348,6 +390,12 @@ function devicePageSlotRefOf(value, kind) {
   const scale = "scale" in value ? value.scale : void 0;
   if ((0, import_adminShareConfig.isIconColorScaleElement)(scale)) {
     ref.scale = { ...scale };
+  }
+  if (ref.custom !== "navigation" && "isNavigation" in value && value.isNavigation === true) {
+    ref.isNavigation = true;
+    if (targetPage) {
+      ref.targetPage = targetPage;
+    }
   }
   return ref;
 }
@@ -853,8 +901,18 @@ function deviceDetailsRuntimeOf(config) {
   if (page) {
     const devicePage = {
       layout: page.layout,
-      // an own data point or channel that is not entered yet: an empty slot
-      slots: page.slots.map((slot) => slot && slot.id !== "" ? slot : null),
+      // an own data point or channel that is not entered yet, a navigation slot without target page or in a
+      // slot that needs a value: an empty slot
+      slots: page.slots.map((slot, i) => {
+        if (!slot) {
+          return null;
+        }
+        if (slot.custom === "navigation") {
+          const kind = DEVICE_PAGE_LAYOUTS[page.layout][i];
+          return slot.targetPage && kind && devicePageSlotAcceptsNavigation(kind) ? slot : null;
+        }
+        return slot.id !== "" ? slot : null;
+      }),
       // without rows the detail page would be empty: no info icon
       showInfo: page.showInfo && runtime.entries.length > 0,
       shortPress: deviceShortPressOf(config)
@@ -945,6 +1003,7 @@ function deviceDetailSubNames(deviceId, rows) {
   DEVICE_PAGE_FIELDS,
   DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS,
+  DEVICE_PAGE_NAVIGATION_ICON,
   DEVICE_PAGE_PROGRESS_ROLE,
   DEVICE_PAGE_RECEIVE_BYTES,
   DEVICE_PAGE_SLOT_LOOK_FIELDS,
@@ -975,16 +1034,20 @@ function deviceDetailSubNames(deviceId, rows) {
   deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf,
   devicePageChannelTakesLongPress,
+  devicePageChannelTakesNavigation,
   devicePageConfigOf,
   devicePageHasStatusIcons,
   devicePageProgressPercent,
   devicePageSlotAccepts,
   devicePageSlotAcceptsChannel,
+  devicePageSlotAcceptsNavigation,
   devicePageSlotCount,
   devicePageSlotFields,
   devicePageSlotHasLook,
   devicePageSlotLookOf,
   devicePageSlotTakesLongPress,
+  devicePageSlotTakesNavigation,
+  devicePageSlotTargetOf,
   deviceSelectionError,
   deviceShortPressOf,
   exchangeDeviceDetailRowState,

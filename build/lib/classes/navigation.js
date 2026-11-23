@@ -325,6 +325,13 @@ class Navigation extends import_library.BaseClass {
     this.currentItem = errorIndex;
     await this.panel.setActivePage(errorItem.page);
   }
+  /**
+   * @param n name of a navigation target
+   * @returns true when {@link setTargetPageByName} finds it: a node of this panel or the screensaver
+   */
+  hasTarget(n) {
+    return n === import_adminShareConfig.screensaverTargetPage || this.navigationConfig.some((a) => a && a.name === n);
+  }
   async setTargetPageByName(n) {
     if (n === import_adminShareConfig.screensaverTargetPage) {
       await this.panel.activateScreensaver();

@@ -34,6 +34,7 @@ __export(device_page_exports, {
   devicePageMainElement: () => devicePageMainElement,
   devicePageMainItem: () => devicePageMainItem,
   devicePageMaxPayloadBytes: () => devicePageMaxPayloadBytes,
+  devicePageNavigationSlotItem: () => devicePageNavigationSlotItem,
   devicePagePageConfig: () => devicePagePageConfig,
   devicePagePayload: () => devicePagePayload,
   devicePageSlotItem: () => devicePageSlotItem,
@@ -42,6 +43,7 @@ __export(device_page_exports, {
   devicePageStatusItem: () => devicePageStatusItem,
   devicePageStatusMessage: () => devicePageStatusMessage,
   optionalValueOf: () => optionalValueOf,
+  reportMissingDevicePageTarget: () => reportMissingDevicePageTarget,
   splitDevicePageStatus: () => splitDevicePageStatus,
   supportsCardDevice: () => supportsCardDevice,
   withDevicePageSlotLook: () => withDevicePageSlotLook
@@ -247,7 +249,12 @@ function devicePageInfoItem(details) {
   };
 }
 function devicePageChannelAdminItem(ref, role) {
-  const { longPress, ...look } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
+  const {
+    longPress,
+    isNavigation: _isNavigation,
+    targetPage: _targetPage,
+    ...look
+  } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
   const item = { channelId: (0, import_adminShareConfig.emptyChannelValueConfig)(ref.id), ...look };
   if (longPress && (0, import_deviceDetails.devicePageChannelTakesLongPress)(role)) {
     item.longPress = longPress;
@@ -388,7 +395,7 @@ function applySlotLook(icon, look, isBoolean) {
 }
 function withDevicePageSlotLook(item, ref, common) {
   var _a, _b;
-  const look = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
+  const { isNavigation: _isNavigation, targetPage: _targetPage, ...look } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
   if (Object.keys(look).length === 0) {
     return item;
   }
@@ -410,10 +417,38 @@ function withDevicePageSlotLook(item, ref, common) {
   return item;
 }
 function devicePageSlotItem(deviceId, kind, entry, common, name) {
-  const item = devicePageStateSlotItem(deviceId, kind, entry, common, name);
-  return item ? withDevicePageSlotLook(item, entry, common) : void 0;
+  const target = (0, import_deviceDetails.devicePageSlotTargetOf)(entry);
+  const item = devicePageStateSlotItem(deviceId, kind, entry, common, name, target !== "");
+  if (!item) {
+    return void 0;
+  }
+  const withLook = withDevicePageSlotLook(item, entry, common);
+  return target ? { ...withLook, devicePageTarget: target } : withLook;
 }
-function devicePageStateSlotItem(deviceId, kind, entry, common, name) {
+function devicePageNavigationSlotItem(kind, ref) {
+  var _a;
+  const target = ref.custom === "navigation" ? (0, import_deviceDetails.devicePageSlotTargetOf)(ref) : "";
+  if (!target || !(0, import_deviceDetails.devicePageSlotAcceptsNavigation)(kind)) {
+    return void 0;
+  }
+  const icon = { type: "const", constVal: ref.trueIcon || import_deviceDetails.DEVICE_PAGE_NAVIGATION_ICON };
+  const color = (_a = ref.trueColor ? colorItem(ref.trueColor) : void 0) != null ? _a : {
+    type: "const",
+    constVal: import_Color.Color.deviceInfo
+  };
+  const name = { type: "const", constVal: ref.name || target };
+  return {
+    type: "text",
+    role: import_deviceDetails.DEVICE_DETAIL_ROW_ROLE,
+    dpInit: "",
+    devicePageTarget: target,
+    data: {
+      icon: { true: { value: icon, color }, false: { value: icon, color } },
+      text: { true: name, false: name }
+    }
+  };
+}
+function devicePageStateSlotItem(deviceId, kind, entry, common, name, navigates = false) {
   if (!(0, import_deviceDetails.devicePageSlotAccepts)(kind, common)) {
     return void 0;
   }
@@ -421,7 +456,10 @@ function devicePageStateSlotItem(deviceId, kind, entry, common, name) {
   const value = { type: "triggered", dp: entry.id };
   switch (kind) {
     case "info":
-      return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, name, "keepSelect"), dpInit: "" };
+      return {
+        ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, name, navigates ? "all" : "keepSelect"),
+        dpInit: ""
+      };
     case "value":
       return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, name, "all"), dpInit: "" };
     case "switch":
@@ -477,6 +515,17 @@ function devicePageStatusIconItem(deviceId, entry, common) {
 function devicePageStatusItem(deviceId, entry, common) {
   return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, "", "all"), dpInit: "" };
 }
+const missingDevicePageTargets = /* @__PURE__ */ new WeakMap();
+function reportMissingDevicePageTarget(panel, target) {
+  var _a;
+  const reported = (_a = missingDevicePageTargets.get(panel)) != null ? _a : /* @__PURE__ */ new Set();
+  missingDevicePageTargets.set(panel, reported);
+  if (reported.has(target)) {
+    return false;
+  }
+  reported.add(target);
+  return true;
+}
 async function devicePageElements(source, details, page, getObject, translate, language) {
   var _a, _b, _c;
   const device = await getObject(details.deviceId);
@@ -499,10 +548,18 @@ async function devicePageElements(source, details, page, getObject, translate, l
   const channelSlots = [];
   for (let i = 0; i < kinds.length; i++) {
     const ref = (_b = page.slots[i]) != null ? _b : null;
+    if ((ref == null ? void 0 : ref.custom) === "navigation") {
+      slots[i] = devicePageNavigationSlotItem(kinds[i], ref);
+      continue;
+    }
     if ((ref == null ? void 0 : ref.custom) === "channel") {
       const channel = (_c = source.devicePageChannels) == null ? void 0 : _c[i];
       const item = channel ? devicePageChannelSlotItem(kinds[i], channel) : void 0;
       if (item) {
+        const target = (0, import_deviceDetails.devicePageChannelTakesNavigation)(channel == null ? void 0 : channel.role) ? (0, import_deviceDetails.devicePageSlotTargetOf)(ref) : "";
+        if (target) {
+          item.devicePageTarget = target;
+        }
         slots[i] = item;
         channelSlots.push(i);
       } else {
@@ -584,6 +641,7 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   devicePageMainElement,
   devicePageMainItem,
   devicePageMaxPayloadBytes,
+  devicePageNavigationSlotItem,
   devicePagePageConfig,
   devicePagePayload,
   devicePageSlotItem,
@@ -592,6 +650,7 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   devicePageStatusItem,
   devicePageStatusMessage,
   optionalValueOf,
+  reportMissingDevicePageTarget,
   splitDevicePageStatus,
   supportsCardDevice,
   withDevicePageSlotLook

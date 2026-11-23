@@ -29,11 +29,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
+  ITEM_MESSAGE_REPEAT_MS: () => ITEM_MESSAGE_REPEAT_MS,
   adminScreensaverMessage: () => adminScreensaverMessage,
   alarmButtonData: () => alarmButtonData,
   buildMediaScriptPage: () => buildMediaScriptPage,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage,
   buildThermoScriptPage: () => buildThermoScriptPage,
+  isNewItemMessage: () => isNewItemMessage,
   navigationTargetProblem: () => navigationTargetProblem,
   panelLabel: () => panelLabel,
   qrUsesPassword: () => qrUsesPassword
@@ -109,8 +111,38 @@ function shallowDescribe(value) {
   }
   return JSON.stringify(value);
 }
+const ITEM_MESSAGE_REPEAT_MS = 6e4;
+const loggedItemMessages = /* @__PURE__ */ new Map();
+function isNewItemMessage(text, now, logged = loggedItemMessages) {
+  for (const [key, time] of logged) {
+    if (now - time >= ITEM_MESSAGE_REPEAT_MS) {
+      logged.delete(key);
+    }
+  }
+  if (logged.has(text)) {
+    return false;
+  }
+  logged.set(text, now);
+  return true;
+}
 class AdminConfiguration extends import_library.BaseClass {
   pageConfig = [];
+  /**
+   * Logs the messages of the conversion of a page item that nobody logged yet (e.g. a slot of a device page that
+   * was left out) as warnings with page and item - once, also when the page is assigned to several panels.
+   *
+   * @param page unique name of the page
+   * @param index index of the item on the page
+   * @param messages the messages, undefined = none
+   */
+  logItemMessages(page, index, messages) {
+    for (const message of messages != null ? messages : []) {
+      const text = `Page '${page}', page item ${index}: ${message}`;
+      if (isNewItemMessage(text, Date.now())) {
+        this.log.warn(text);
+      }
+    }
+  }
   constructor(adapter) {
     super(adapter, "AdminConfiguration");
     this.adapter = adapter;
@@ -264,6 +296,7 @@ Stack: ${stack}`
         { card: "cardThermo2", uniqueName: entry.uniqueName },
         []
       );
+      this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
       if (!result.error && result.pageItem) {
         gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
         gridItem.pageItems.push(result.pageItem);
@@ -355,6 +388,7 @@ Stack: ${stack}`
         { card: "cardMedia", uniqueName: entry.uniqueName },
         []
       );
+      this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
       if (!result.error && result.pageItem) {
         gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
         gridItem.pageItems.push(result.pageItem);
@@ -569,6 +603,7 @@ Stack: ${stack}`
                 { card: entry.card, uniqueName: entry.uniqueName },
                 []
               );
+              this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
               if (!result.error && result.pageItem) {
                 newPage.pageItems = (_c = newPage.pageItems) != null ? _c : [];
                 newPage.pageItems.unshift(result.pageItem);
@@ -621,6 +656,7 @@ Stack: ${stack}`
                 { card: entry.card, uniqueName: entry.uniqueName },
                 []
               );
+              this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
               if (!result.error && result.pageItem) {
                 newPage.pageItems = (_d = newPage.pageItems) != null ? _d : [];
                 newPage.pageItems.unshift(result.pageItem);
@@ -1332,11 +1368,13 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
+  ITEM_MESSAGE_REPEAT_MS,
   adminScreensaverMessage,
   alarmButtonData,
   buildMediaScriptPage,
   buildThermo2ScriptPage,
   buildThermoScriptPage,
+  isNewItemMessage,
   navigationTargetProblem,
   panelLabel,
   qrUsesPassword

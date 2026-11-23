@@ -3277,6 +3277,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
     var _a, _b, _c, _d;
     let error = void 0;
+    const unloggedMessages = [];
     let pageItem = void 0;
     let pageConfig = void 0;
     if (preItem && prePage) {
@@ -3338,13 +3339,14 @@ class NspanelLovelaceUi extends utils.Adapter {
               pageItem.devicePageChannels = built.channels;
             }
             messages.push(...built.errors);
+            unloggedMessages.push(...built.errors);
           }
         }
       } catch (e) {
         error = `Error in configuration: ${e.message}`;
       }
     }
-    return { pageItem, messages, error, pageConfig };
+    return { pageItem, messages, error, pageConfig, unloggedMessages };
   }
 }
 if (require.main !== module) {
