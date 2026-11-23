@@ -21,11 +21,9 @@ import {
     DEVICE_PAGE_INFO_ROLE,
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_RECEIVE_BYTES,
+    DEVICE_PAGE_STATUS_COMMAND,
     DEVICE_PAGE_STATUS_MAX_BYTES,
-    DEVICE_PAGE_STATUS_SCROLL_CHAR,
-    DEVICE_PAGE_STATUS_SCROLL_MARK,
-    DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
-    DEVICE_PAGE_STATUS_SCROLLS,
+    DEVICE_PAGE_STATUS_MAX_PARTS,
     DEVICE_PAGE_TEXT_FONT,
     DEVICE_PAGE_TEXT_MAX_BYTES,
     DEVICE_PAGE_PROGRESS_ROLE,
@@ -156,61 +154,97 @@ function cutToBytesWithEllipsis(text: string, maxBytes: number, ellipsis: string
 }
 
 /**
- * The text of the status line (field 6 of main), never wrapped, without `~` and without the character of the scroll
- * mark:
- * - it fits the line of the layout (px in font 0) and {@link DEVICE_PAGE_STATUS_MAX_BYTES}: unchanged, it stands;
- * - else, where the HMI page scrolls ({@link DEVICE_PAGE_STATUS_SCROLLS}): the whole text with
- *   {@link DEVICE_PAGE_STATUS_SCROLL_MARK} appended - the HMI lets it run. A text of more than
- *   {@link DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES} bytes is cut there with an ellipsis ('…' if font 0 has it, else
- *   '...');
- * - else: cut at the end with the ellipsis to the width of the line and the bytes of the standing text.
- *
- * `maxBytes` limits the whole field (text and mark) further, for a message that would get too long: the scrolling
- * text gets shorter; when it would not show more than the standing text, the standing one is sent.
+ * @param model panel model (font tables)
+ * @returns what marks a cut text: '…' if font 0 has it, else '...'
+ */
+function statusEllipsis(model: NSpanelModel): string {
+    return hasGlyph(ELLIPSIS.codePointAt(0) ?? 0, DEVICE_PAGE_TEXT_FONT, model) ? ELLIPSIS : ELLIPSIS_FALLBACK;
+}
+
+/** after these characters a status text may be split (comma, full stop, semicolon, dashes) - not inside a number */
+const STATUS_BREAK_AFTER: ReadonlySet<string> = new Set([',', '.', ';', '–', '—']);
+
+/**
+ * @param chars the characters of a text
+ * @param at a position inside the text
+ * @returns true when the text may be split in front of `at`: after a punctuation mark of
+ * {@link STATUS_BREAK_AFTER} that no digit follows ("1,5" and "23.5" stay whole)
+ */
+function isStatusBreak(chars: readonly string[], at: number): boolean {
+    return STATUS_BREAK_AFTER.has(chars[at - 1]) && !/\d/.test(chars[at]);
+}
+
+/**
+ * The status text (field 6 of main) as the parts the status line shows one after the other. Line breaks become
+ * spaces, `~` is dropped.
+ * - The text fits the line of the layout (px in font 0) and {@link DEVICE_PAGE_STATUS_MAX_BYTES}: one part, unchanged.
+ * - Else it is split into parts that each fit the line and the bytes: at the last space (the space is dropped) or
+ *   behind the last comma, full stop, semicolon or dash that fits; a word that is too long on its own is cut at a
+ *   character.
+ * - At most {@link DEVICE_PAGE_STATUS_MAX_PARTS} parts: what does not fit the last one is dropped, that part ends
+ *   with the ellipsis ('…' if font 0 has it, else '...').
  *
  * @param text the status text
  * @param layout the layout
  * @param model panel model (font tables)
- * @param maxBytes maximum bytes of the field, default: no further limit
- * @returns the text for field 6 of main
+ * @returns the parts, at least one ('' for an empty text)
  */
-export function fitDevicePageStatus(
-    text: string,
-    layout: DevicePageLayout,
-    model: NSpanelModel,
-    maxBytes: number = Number.POSITIVE_INFINITY,
-): string {
-    const flat = text
-        .replace(/[\r\n]+/g, ' ')
-        .replaceAll('~', '')
-        .replaceAll(DEVICE_PAGE_STATUS_SCROLL_CHAR, '');
+export function splitDevicePageStatus(text: string, layout: DevicePageLayout, model: NSpanelModel): string[] {
+    const flat = text.replace(/[\r\n]+/g, ' ').replaceAll('~', '');
     const width = DEVICE_PAGE_FIELDS[layout].status;
-    const standBytes = Math.max(0, Math.min(DEVICE_PAGE_STATUS_MAX_BYTES, maxBytes));
-    if (textWidth(flat, DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(flat) <= standBytes) {
-        return flat;
+    const fits = (part: string): boolean =>
+        textWidth(part, DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(part) <= DEVICE_PAGE_STATUS_MAX_BYTES;
+    if (fits(flat)) {
+        return [flat];
     }
-    const ellipsis = hasGlyph(ELLIPSIS.codePointAt(0) ?? 0, DEVICE_PAGE_TEXT_FONT, model)
-        ? ELLIPSIS
-        : ELLIPSIS_FALLBACK;
-    // the standing text: the width of the line first, then the bytes of the text field
-    const standing = cutToBytesWithEllipsis(
-        fitText(flat, DEVICE_PAGE_TEXT_FONT, model, width, { ellipsis }),
-        standBytes,
-        ellipsis,
-    );
-    if (!DEVICE_PAGE_STATUS_SCROLLS[layout]) {
-        return standing;
+    const chars = Array.from(flat.trim());
+    const parts: string[] = [];
+    let start = 0;
+    while (start < chars.length) {
+        if (parts.length === DEVICE_PAGE_STATUS_MAX_PARTS - 1) {
+            // the last part: the rest, cut to the width of the line and the bytes of the text field
+            const rest = chars.slice(start).join('');
+            const ellipsis = statusEllipsis(model);
+            parts.push(
+                cutToBytesWithEllipsis(
+                    fitText(rest, DEVICE_PAGE_TEXT_FONT, model, width, { ellipsis }),
+                    DEVICE_PAGE_STATUS_MAX_BYTES,
+                    ellipsis,
+                ),
+            );
+            break;
+        }
+        // the longest run of characters from start that fits
+        let end = start;
+        let part = '';
+        while (end < chars.length && fits(part + chars[end])) {
+            part += chars[end];
+            end++;
+        }
+        if (end < chars.length && chars[end] !== ' ') {
+            // not at the end of a word: back to the last place to split, without one the word is cut here
+            let at = end;
+            while (at > start && chars[at] !== ' ' && !isStatusBreak(chars, at)) {
+                at--;
+            }
+            // a part has at least one character, also when not even that fits the line
+            end = at > start ? at : Math.max(end, start + 1);
+        }
+        parts.push(chars.slice(start, end).join('').trimEnd());
+        start = end;
+        while (chars[start] === ' ') {
+            start++;
+        }
     }
-    const scrollBytes = Math.min(
-        DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
-        maxBytes - byteLength(DEVICE_PAGE_STATUS_SCROLL_MARK),
-    );
-    const scrolling = cutToBytesWithEllipsis(flat, scrollBytes, ellipsis);
-    // a scrolling text that shows no more than the standing one is not worth the scrolling
-    if (byteLength(scrolling) <= byteLength(standing)) {
-        return standing;
-    }
-    return `${scrolling}${DEVICE_PAGE_STATUS_SCROLL_MARK}`;
+    return parts;
+}
+
+/**
+ * @param part a part of the status text ({@link splitDevicePageStatus}; `~` is dropped)
+ * @returns the message that shows it in the status line of the device page, nothing else changes
+ */
+export function devicePageStatusMessage(part: string): string {
+    return `${DEVICE_PAGE_STATUS_COMMAND}~${part.replaceAll('~', '')}`;
 }
 
 /**
@@ -218,7 +252,7 @@ export function fitDevicePageStatus(
  * {@link DEVICE_PAGE_TEXT_MAX_BYTES}), field 6 the status (empty without status).
  *
  * @param mainPayload payload of the main item ('' = none)
- * @param status the fitted status text ({@link fitDevicePageStatus})
+ * @param status the part of the status text that is shown ({@link splitDevicePageStatus})
  * @returns the element
  */
 export function devicePageMainElement(mainPayload: string, status: string): string {
@@ -257,15 +291,15 @@ export function devicePageMaxPayloadBytes(layout: DevicePageLayout): number {
 }
 
 /**
- * The `entityUpd` of the device page. The status line is fitted with {@link fitDevicePageStatus}; when the message
- * has more bytes than the page takes ({@link devicePageMaxPayloadBytes}), the status line gives way: the scrolling
- * text gets shorter, down to the standing text, at last a shorter standing text. Names and values are already
- * limited ({@link devicePageClampElement}), so that is enough for a message the adapter builds.
+ * The `entityUpd` of the device page with the shown part of the status text in field 6 of main. When the message
+ * has more bytes than the page takes ({@link devicePageMaxPayloadBytes}), the status line gives way: the part is cut
+ * by the overhang, with an ellipsis. Names and values are already limited ({@link devicePageClampElement}), so that
+ * is enough for a message the adapter builds.
  *
  * @param head `entityUpd~<heading>~<navigation>`
  * @param mainPayload payload of the main item ('' = none)
  * @param elements the elements of the slots and of info
- * @param status the status text ('' = none)
+ * @param status the part of the status text that is shown ({@link splitDevicePageStatus}; '' = none)
  * @param layout the layout
  * @param model panel model (font tables)
  * @returns the message
@@ -279,13 +313,12 @@ export function devicePagePayload(
     model: NSpanelModel,
 ): string {
     const build = (field: string): string => [head, devicePageMainElement(mainPayload, field), ...elements].join('~');
-    const field = fitDevicePageStatus(status, layout, model);
-    const payload = build(field);
+    const payload = build(status);
     const over = byteLength(payload) - devicePageMaxPayloadBytes(layout);
     if (over <= 0) {
         return payload;
     }
-    return build(fitDevicePageStatus(status, layout, model, Math.max(0, byteLength(field) - over)));
+    return build(cutToBytesWithEllipsis(status, Math.max(0, byteLength(status) - over), statusEllipsis(model)));
 }
 
 /**

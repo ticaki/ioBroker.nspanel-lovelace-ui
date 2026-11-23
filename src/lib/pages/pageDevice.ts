@@ -1,7 +1,12 @@
 import { Page } from '../classes/Page';
 import type { PageInterface } from '../classes/PageInterface';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
-import { DEVICE_PAGE_LAYOUTS, isDevicePageLayout, type DevicePageLayout } from '../types/deviceDetails';
+import {
+    DEVICE_PAGE_LAYOUTS,
+    DEVICE_PAGE_STATUS_INTERVAL_MS,
+    isDevicePageLayout,
+    type DevicePageLayout,
+} from '../types/deviceDetails';
 import type * as pages from '../types/pages';
 import type * as types from '../types/types';
 import {
@@ -10,7 +15,9 @@ import {
     devicePageClampElement,
     devicePagePayload,
     devicePageStatusIconElement,
+    devicePageStatusMessage,
     optionalValueOf,
+    splitDevicePageStatus,
 } from './device-page';
 
 /**
@@ -30,6 +37,11 @@ function isCardDeviceConfig(config: pages.PageBase['config']): config is pages.c
  * the HMI pages cardDevice1..3. The page items are created only while the page is shown (Page.onVisibilityChange),
  * a tap on an element is the tap of a cardGrid cell. A long press (`buttonPress3`) runs the long press action of a
  * slot, anything else does nothing - it never acts like the tap.
+ *
+ * A status text that does not fit the status line is split into parts (splitDevicePageStatus). The `entityUpd`
+ * carries the part that is shown; while the page is visible and there is more than one part, the next one follows
+ * every DEVICE_PAGE_STATUS_INTERVAL_MS as `devStatus~<text>`, round and round. Another status text starts with its
+ * first part again, an `entityUpd` for any other reason leaves the rotation alone.
  */
 export class PageDevice extends Page {
     private readonly headline: string;
@@ -37,6 +49,14 @@ export class PageDevice extends Page {
     private readonly layout: DevicePageLayout;
     /** index of the slots (0 = slot 1) that show an alias channel */
     private readonly channelSlots: ReadonlySet<number>;
+    /** the status text the parts were made of; undefined until the page has sent one since it became visible */
+    private statusText: string | undefined = undefined;
+    /** the parts of the status text, shown one after the other */
+    private statusParts: string[] = [''];
+    /** the part that is shown */
+    private statusIndex: number = 0;
+    /** the interval that shows the next part; only while there is more than one */
+    private statusTimer: ioBroker.Interval | undefined = undefined;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
@@ -66,6 +86,72 @@ export class PageDevice extends Page {
         return (await item.getPageItemPayload()) || DEVICE_PAGE_EMPTY_ELEMENT;
     }
 
+    /** Stops the rotation of the parts of the status text. */
+    private stopStatusRotation(): void {
+        if (this.statusTimer) {
+            this.adapter.clearInterval(this.statusTimer);
+            this.statusTimer = undefined;
+        }
+    }
+
+    /**
+     * Takes the status text of an update: another text than before is split anew, starts with its first part and
+     * restarts the rotation (stopped when one part is enough); the same text changes nothing.
+     *
+     * @param status the status text
+     * @returns the part to show
+     */
+    private statusPartOf(status: string): string {
+        if (status !== this.statusText) {
+            this.statusText = status;
+            this.statusParts = splitDevicePageStatus(status, this.layout, this.basePanel.info.nspanel.model);
+            this.statusIndex = 0;
+            this.stopStatusRotation();
+            if (this.statusParts.length > 1 && !this.unload && !this.adapter.unload) {
+                this.statusTimer = this.adapter.setInterval(
+                    () => this.showNextStatusPart(),
+                    DEVICE_PAGE_STATUS_INTERVAL_MS,
+                );
+            }
+        }
+        return this.statusParts[this.statusIndex] ?? '';
+    }
+
+    /**
+     * The next part of the status text, sent as the short message that only replaces the status line. Nothing is sent
+     * (and the part stays) while the page is not shown: hidden, or a popup is open on it (sleep).
+     */
+    private showNextStatusPart(): void {
+        if (this.unload || this.adapter.unload) {
+            this.stopStatusRotation();
+            return;
+        }
+        if (!this.visibility || this.sleep || this.statusParts.length < 2) {
+            return;
+        }
+        this.statusIndex = (this.statusIndex + 1) % this.statusParts.length;
+        // not through sendToPanel: the duplicate filter keeps comparing with the last entityUpd
+        this.sendToPanelClass(devicePageStatusMessage(this.statusParts[this.statusIndex]), false);
+    }
+
+    /**
+     * A hidden page stops the rotation; shown again it starts with the first part of the status text.
+     *
+     * @param val true: the page becomes visible
+     */
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        if (!val) {
+            this.stopStatusRotation();
+        }
+        this.statusText = undefined;
+        await super.onVisibilityChange(val);
+    }
+
+    async delete(): Promise<void> {
+        this.stopStatusRotation();
+        await super.delete();
+    }
+
     public async update(): Promise<void> {
         if (!this.visibility) {
             return;
@@ -87,7 +173,8 @@ export class PageDevice extends Page {
             }
             elements.push(kind === 'status' ? devicePageStatusIconElement(element) : devicePageClampElement(element));
         }
-        // the status line stands, scrolls or gives way to keep the message inside the buffer of the HMI page
+        // the status line shows the current part of the status text; it gives way to keep the message inside the
+        // buffer of the HMI page
         this.sendToPanel(
             devicePagePayload(
                 getPayload(
@@ -96,7 +183,7 @@ export class PageDevice extends Page {
                 ),
                 mainItem ? await mainItem.getPageItemPayload() : '',
                 elements,
-                status,
+                this.statusPartOf(status),
                 this.layout,
                 this.basePanel.info.nspanel.model,
             ),

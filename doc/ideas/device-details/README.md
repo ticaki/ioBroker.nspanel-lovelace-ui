@@ -429,7 +429,7 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
   und dem Gerätenamen, ohne Aktion.
 - **Feld 6 von main = Statuszeile**: der State `devicePage.status` wie eine Textzeile der Detailseite (Text aus
   `common.states` übersetzt, sonst Wert mit Einheit, boolean An/Aus übersetzt), sonst leer. Auch ohne main wird die
-  Statuszeile gesendet (`~~~~~<status>`). Steht oder läuft – siehe „Statuszeile und Lauftext“.
+  Statuszeile gesendet (`~~~~~<status>`). Ein zu langer Text wird geteilt – siehe „Statuszeile: Teilen und Wechsel“.
 - Namen und Werte (Felder 5 und 6 von main, Slots und info) begrenzt der Adapter auf die Textpuffer der HMI:
   **31 Byte**, an einer Zeichengrenze, ohne „...“ (`devicePageClampElement`, `DEVICE_PAGE_TEXT_MAX_BYTES`). In der
   Breite schneidet weiter die HMI an der Feldgrenze ab (Slot-Namen bekommen den Dubletten-Zusatz ungekürzt angehängt).
@@ -437,45 +437,63 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
   `buttonPress2,<intName>,button` öffnet die Detailseite.
 - Long-Press (`buttonPress3`): siehe „Long-Press auf der Geräteseite“ – nie ein Tipp.
 
-### Statuszeile und Lauftext
+### Statuszeile: Teilen und Wechsel
 
-`fitDevicePageStatus` (Zeilenumbrüche werden Leerzeichen, `~` und `¬` entfallen – ein `¬` im Text kann das
-Kennzeichen nicht vortäuschen):
+Ein Statustext, der nicht in die Zeile passt, wird in Abschnitte geteilt; die Statuszeile zeigt sie nacheinander,
+Wechsel alle 2 Sekunden, endlos im Kreis. Die Zeile ist nie leer. (Der Lauftext der HMI ist verworfen: das
+Nextion-Objekt beginnt leer rechts außerhalb, läuft ganz hinaus und ruckelt.)
+
+**Teilen** – `splitDevicePageStatus` (Zeilenumbrüche werden Leerzeichen, `~` entfällt):
 
 1. Passt der Text in die Zeile – ≤ 390 px in Font 0 (`text-width.ts`, `DEVICE_PAGE_FIELDS[layout].status`) **und**
-   ≤ 63 Byte (`DEVICE_PAGE_STATUS_MAX_BYTES`) –, geht er unverändert hinaus und steht.
-2. Sonst bekommt er das Kennzeichen `¬1` angehängt (`DEVICE_PAGE_STATUS_SCROLL_MARK`); die HMI schneidet die zwei
-   Zeichen ab und lässt den Text pixelweise laufen (4 px je 100 ms). Text höchstens **124 Byte**
-   (`DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES`, mit Kennzeichen 127); nur ein längerer wird gekürzt – an einer
-   Zeichengrenze, mit „...“ am Ende.
-3. Welche Seite laufen kann, steht je Layout in `DEVICE_PAGE_STATUS_SCROLLS` (heute alle drei). `false` = der Text
-   steht immer: auf 390 px gekürzt mit „...“, höchstens 63 Byte (das Verhalten vor dem Lauftext).
+   ≤ 63 Byte (`DEVICE_PAGE_STATUS_MAX_BYTES`, der Puffer von `tStatus`) –, bleibt er ein Abschnitt, unverändert.
+2. Sonst nimmt jeder Abschnitt so viel, wie in Breite **und** Byte passt, und endet an der letzten Trennstelle davor:
+   an einem Leerzeichen (es entfällt) oder hinter Komma, Punkt, Semikolon oder Gedankenstrich (`–`, `—`) – nicht
+   in einer Zahl (`1,5`, `23.5` bleiben ganz). Gibt es keine Trennstelle, wird das Wort hart an der Zeichengrenze
+   geteilt (nie in einem Mehrbyte-Zeichen).
+3. Höchstens **3 Abschnitte** (`DEVICE_PAGE_STATUS_MAX_PARTS`). Was nach dem dritten übrig wäre, entfällt; der
+   dritte endet dann mit der Ellipse (`…`, wenn Font 0 das Zeichen hat, sonst `...` – die Logik von `fitText`).
 
-| Statustext | Feld 6 von main |
+| Statustext | Abschnitte |
 |---|---|
 | `Schleudern, noch 23 min` | `Schleudern, noch 23 min` |
-| `Fehler: Wassertank leer, bitte nachfüllen und die Tür der Maschine schließen` (breiter als 390 px) | derselbe Text + `¬1` |
-| 125 × `a` | 121 × `a` + `...¬1` (127 Byte) |
-| `Fertig¬1` | `Fertig1` |
+| `Fehler: Wassertank leer, bitte nachfüllen und die Tür der Maschine schließen` | `Fehler: Wassertank leer, bitte nachfüllen und` · `die Tür der Maschine schließen` |
+| `Reinigung läuft, Wohnzimmer und Küche fertig, noch 23 min bis zur Rückkehr an die Ladestation` | `Reinigung läuft, Wohnzimmer und Küche` · `fertig, noch 23 min bis zur Rückkehr an die` · `Ladestation` |
+| 200 × `a` | 39 × `a` · 39 × `a` · 37 × `a` + `...` |
+| 200 × `ü` | 31 × `ü` (62 Byte) · 31 × `ü` · 30 × `ü` + `...` (63 Byte) |
+
+**Wechsel** – `PageDevice`:
+
+- Das `entityUpd` trägt in Feld 6 von main immer den **gerade gezeigten** Abschnitt (beim Öffnen der Seite und nach
+  einer Textänderung den ersten).
+- Bei mehr als einem Abschnitt läuft ein Adapter-Intervall (`adapter.setInterval`, `DEVICE_PAGE_STATUS_INTERVAL_MS`
+  = 2000 ms) und schickt jeweils den nächsten Abschnitt mit der Kurz-Nachricht **`devStatus~<text>`**
+  (`DEVICE_PAGE_STATUS_COMMAND`, `devicePageStatusMessage`). Die HMI setzt damit nur `tStatus`, nichts sonst.
+- **Start:** mit dem ersten `entityUpd` eines Texts, der mehr als einen Abschnitt hat.
+- **Neustart:** ein **anderer** Statustext wird neu geteilt, beginnt mit Abschnitt 1 (das `entityUpd` geht sofort
+  hinaus) und das Intervall startet neu. Ein `entityUpd` aus anderem Grund (State eines Slots) lässt Abschnitt und
+  Intervall unberührt.
+- **Stopp:** nur noch ein Abschnitt, Seite ausgeblendet (`onVisibilityChange(false)`), Seite gelöscht, Adapter-Unload.
+  Nach dem Ausblenden beginnt die Seite beim nächsten Anzeigen wieder mit Abschnitt 1.
+- **Pause:** solange auf der Seite ein Popup offen ist (`sleep`), sendet das Intervall nichts und bleibt beim
+  Abschnitt stehen.
+- `devStatus` geht am Duplikatfilter von `sendToPanel` vorbei (`sendToPanelClass`): der Filter vergleicht weiter mit
+  dem letzten `entityUpd`.
 
 **Länge der Nachricht** (`devicePagePayload`): Das `entityUpd` darf höchstens so lang sein wie der Empfangspuffer der
-Seite (`DEVICE_PAGE_RECEIVE_BYTES`: Layout 1 = 1015, Layout 2 = 943, Layout 3 = 1019 Byte) und nie länger als die
-1017 Byte, die das Display annimmt (`devicePageMaxPayloadBytes`: 1015 / 943 / 1017). Ist es länger, gibt nur die
-Statuszeile nach: der Lauftext wird um den Überhang kürzer (mit „...“); zeigte er dann nicht mehr als die stehende
-Fassung, geht die stehende hinaus (auf 390 px gekürzt, „...“), notfalls noch kürzer bis leer. Weil Namen und Werte
-auf 31 Byte begrenzt sind, reicht das für jede Nachricht, die der Adapter baut (Test „the longest message“). Eine
-Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kann den Lauftext.
+Seite (`DEVICE_PAGE_RECEIVE_BYTES`: Layout 1 = 943, Layout 2 = 875, Layout 3 = 1019 Byte) und nie länger als die
+1017 Byte, die das Display annimmt (`devicePageMaxPayloadBytes`: 943 / 875 / 1017). Ist es länger, gibt nur die
+Statuszeile nach: der gezeigte Abschnitt wird um den Überhang kürzer (mit „...“), notfalls bis leer. Weil Namen und
+Werte auf 31 Byte begrenzt sind, reicht das für jede Nachricht, die der Adapter baut (Test „the longest message“).
+Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `devStatus`.
 
 ### Web-Panel
 
 `src-web/src/cards/cardDevice`: die drei Seiten in der Geometrie der eu-HMI.
 
-- **Statuszeile:** endet Feld 6 von main auf `¬` + ein Zeichen (`parseDeviceStatus`), werden die zwei Zeichen
-  abgeschnitten und der Text läuft (`StatusScroll`): im Feld von `gStatus` (10/290, 390×30), nach links, 40 px/s,
-  abgeschnitten an der Feldgrenze. Er beginnt lesbar am linken Rand, läuft hinaus und kommt von rechts wieder. Die
-  Breite misst der Browser; die Animation hängt am Text – ein `entityUpd` mit gleichem Text lässt sie weiterlaufen,
-  ein anderer Text beginnt links. Ohne Kennzeichen steht der Text wie bisher und wird an der Feldgrenze
-  abgeschnitten (keine eigenen „…“).
+- **Statuszeile:** Feld 6 von main, ein stehender Text, an der Feldgrenze abgeschnitten (keine eigenen „…“),
+  Ausrichtung wie in der HMI (Layout 2 mittig). `devStatus~<text>` ersetzt nur diesen Text (`handleCommand` in
+  `parse.ts`, verteilt vom `default`-Zweig des `PanelStore`); alles andere der Seite bleibt.
 - **Tipp und Long-Press** wie in der HMI (`deviceTouch`, Tabelle „Ereignisse beim Antippen“ in
   [device-page-hmi.md](device-page-hmi.md)): main und **jede** Slot-Art sind eine Grid-Zelle – dieselbe Tippfläche
   (`Pressable`) und dieselbe Entscheidung (`tileTouch`) wie die Kachel von cardGrid, mit dem Timer der Geräteseite

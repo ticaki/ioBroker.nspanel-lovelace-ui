@@ -6,8 +6,7 @@ import type { Entity6 } from '../../protocol/types';
 import type { CardProps } from '../CardContract';
 import { Pressable, type PressableProps } from '../cardEntities/shared/Pressable';
 import { CardDevice, DEVICE_LONG_PRESS_MS, deviceTouch } from './CardDevice';
-import { STATUS_SCROLL_ANIMATION, STATUS_SCROLL_PX_PER_S, StatusScroll, statusScrollTiming } from './StatusScroll';
-import { initial, parseEntityUpd, type CardDeviceModel } from './parse';
+import { handleCommand, initial, parseEntityUpd, type CardDeviceModel } from './parse';
 
 interface Sent {
     press: unknown[][];
@@ -307,52 +306,44 @@ describe('cardDevice touch areas', () => {
 describe('cardDevice status line', () => {
     const main = (status: string): string[] => ['text', 'm', 'M', '65535', 'Main', status];
 
-    it('without the mark the text stands in its field as before', () => {
+    it('the text stands in its field, cut at its border, aligned like on the panel', () => {
         const out = page('cardDevice2', main('Schleudern'), []);
-        expect(out).not.toContain('data-role="status-scroll"');
         expect(out).toContain('left:10px;top:289px;width:390px;height:30px');
         expect(out).toContain('Schleudern');
-    });
-
-    it('with the mark the text scrolls in the box of gStatus, the mark is not shown', () => {
+        // no ellipsis of its own, no animation
+        const long = 'Fehler: Wassertank leer, bitte nachfüllen und die Tür der Maschine schließen';
         for (const pageType of ['cardDevice1', 'cardDevice2', 'cardDevice3']) {
-            const out = page(pageType, main('Ein langer Text, der läuft¬1'), []);
-            expect(tag(out, 'status-scroll')).toContain('left:10px;top:290px;width:390px;height:30px');
-            expect(tag(out, 'status-scroll')).toContain('overflow:hidden');
-            expect(out).toContain('Ein langer Text, der läuft<');
-            expect(out).not.toContain('¬');
-            expect(out).toContain(`@keyframes ${STATUS_SCROLL_ANIMATION}`);
+            const cut = page(pageType, main(long), []);
+            expect(cut).toContain(`${long}<`);
+            expect(cut).not.toContain('…');
+            expect(cut).not.toContain('animation');
+            expect(cut).not.toContain('@keyframes');
         }
     });
 
-    it('scrolls to the left at 40 px/s and starts with the text at the left edge', () => {
-        expect(STATUS_SCROLL_PX_PER_S).toBe(40);
-        // 390 px box, 810 px text: one round is 1200 px = 30 s, the first 390 px (9.75 s) are skipped
-        expect(statusScrollTiming(810, 390)).toEqual({ duration: 30, delay: -9.75 });
-        expect(statusScrollTiming(10, 390, 20)).toEqual({ duration: 20, delay: -19.5 });
-    });
-
-    it('keeps the animation over an update with the same text: same element, same style', () => {
-        const scroll = new StatusScroll({
-            text: 'läuft',
-            color: '#fff',
-            box: { x: 10, y: 290, w: 390, h: 30 },
-            font: 0,
-        });
-        scroll.state = { measured: { text: 'läuft', width: 410 } };
-        const first = renderToStaticMarkup(scroll.render());
-        expect(first).toContain(`animation:${STATUS_SCROLL_ANIMATION} 20s linear -9.75s infinite`);
-        expect(renderToStaticMarkup(scroll.render())).toBe(first);
-        // the strip is keyed by its text: another text is another element and starts again
-        const strip = (el: React.JSX.Element): React.Key | null => {
-            const children = React.Children.toArray((el.props as { children?: React.ReactNode }).children);
-            const last = children[children.length - 1];
-            return React.isValidElement(last) ? last.key : null;
-        };
-        expect(strip(scroll.render())).toContain('läuft');
-        // not measured for the text shown: it stands at the left edge, no animation
-        scroll.state = { measured: { text: 'anderer Text', width: 410 } };
-        expect(renderToStaticMarkup(scroll.render())).not.toContain('animation:');
+    it('devStatus replaces only the text of the status line', () => {
+        const ctx = { pageType: 'cardDevice2', pageArgs: [] };
+        const NAV = ['button', 'p', '<', '65535', '', '', 'button', 'n', '>', '65535', '', ''];
+        const before = parseEntityUpd(['T', ...NAV, ...main('Reinigung läuft,')], initial(), ctx);
+        const after = handleCommand('devStatus', ['noch 23 min'], before, ctx);
+        expect(after).toBeDefined();
+        if (!after) {
+            return;
+        }
+        const render = (model: CardDeviceModel): string =>
+            renderToStaticMarkup(
+                React.createElement(CardDevice, {
+                    model,
+                    ctx,
+                    global: initialGlobalState('eu'),
+                    send: (): void => undefined,
+                    press: (): void => undefined,
+                    openPopup: (): void => undefined,
+                }),
+            );
+        expect(render(before)).toContain('Reinigung läuft,');
+        expect(render(after)).toContain('noch 23 min');
+        expect(render(after)).toBe(render(before).replace('Reinigung läuft,', 'noch 23 min'));
     });
 });
 

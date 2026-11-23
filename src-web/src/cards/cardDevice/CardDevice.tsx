@@ -20,7 +20,6 @@ import {
     type StatusSlotGeometry,
 } from './layout';
 import type { CardDeviceModel } from './parse';
-import { StatusScroll } from './StatusScroll';
 
 /** Hold time of the `tmLP` timer the device pages copied from cardGrid */
 export const DEVICE_LONG_PRESS_MS = 500;
@@ -95,8 +94,8 @@ function unionBox(boxes: readonly Box[]): Box {
 
 /**
  * cardDevice1 / cardDevice2 / cardDevice3: the page of one device - big icon (main), fixed slots
- * (info, value, progress, button, switch, status), the status line (field 6 of main, standing or
- * scrolling) and the info icon at the bottom right. main and every slot are touched like a grid tile
+ * (info, value, progress, button, switch, status), the status line (field 6 of main, replaced by
+ * `devStatus`) and the info icon at the bottom right. main and every slot are touched like a grid tile
  * ({@link deviceTouch}). Rebuilt from the eu HMI pixel by pixel; on web-l the page is drawn in the
  * eu geometry (`CENTERED_ON_WEB`). Texts are cut at the border of their field like on the panel.
  */
@@ -397,23 +396,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                         this.renderSlot(model.slots[i] ?? emptyEntity(), slot, i, statusVisible),
                     )}
                     <div data-role="status">
-                        {model.statusScroll ? (
-                            <StatusScroll
-                                text={model.status}
-                                color={theme.foreground}
-                                box={geometry.statusScroll}
-                                font={0}
-                            />
-                        ) : (
-                            this.text(
-                                'status',
-                                model.status,
-                                geometry.status,
-                                0,
-                                geometry.statusAlign,
-                                theme.foreground,
-                            )
-                        )}
+                        {this.text('status', model.status, geometry.status, 0, geometry.statusAlign, theme.foreground)}
                     </div>
                     {isEmptySlot(info) ? null : (
                         <Pressable

@@ -19,7 +19,8 @@ import {
     devicePageStatusIconElement,
     devicePageStatusIconItem,
     devicePageStatusItem,
-    fitDevicePageStatus,
+    devicePageStatusMessage,
+    splitDevicePageStatus,
     supportsCardDevice,
 } from './device-page';
 import {
@@ -29,9 +30,10 @@ import {
     DEVICE_PAGE_FIELDS,
     DEVICE_PAGE_PROGRESS_ROLE,
     DEVICE_PAGE_RECEIVE_BYTES,
-    DEVICE_PAGE_STATUS_SCROLL_MARK,
-    DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
-    DEVICE_PAGE_STATUS_SCROLLS,
+    DEVICE_PAGE_STATUS_COMMAND,
+    DEVICE_PAGE_STATUS_INTERVAL_MS,
+    DEVICE_PAGE_STATUS_MAX_BYTES,
+    DEVICE_PAGE_STATUS_MAX_PARTS,
     DEVICE_PAGE_TEXT_MAX_BYTES,
     defaultDevicePageConfig,
     defaultDevicePageSlots,
@@ -51,7 +53,7 @@ import {
     type DeviceDetailsRuntime,
     type DevicePageRuntime,
 } from '../types/deviceDetails';
-import { fitText, textWidth } from '../const/text-width';
+import { textWidth } from '../const/text-width';
 import { PageDevice } from './pageDevice';
 import { PageItem } from './pageItem';
 import { Dataitem } from '../controller/data-item';
@@ -363,7 +365,7 @@ describe('lib/pages/device-page - panel support', () => {
 
 describe('lib/pages/device-page - status line', () => {
     it('a short text stays, field 6 of main is replaced', () => {
-        expect(fitDevicePageStatus('Schleudern, noch 23 min', 1, 'eu')).to.equal('Schleudern, noch 23 min');
+        expect(splitDevicePageStatus('Schleudern, noch 23 min', 1, 'eu')).to.deep.equal(['Schleudern, noch 23 min']);
         expect(devicePageMainElement('switch~dp_3?0~I~123~WM~1', 'Schleudern')).to.equal(
             'switch~dp_3?0~I~123~WM~Schleudern',
         );
@@ -384,64 +386,101 @@ describe('lib/pages/device-page - status line', () => {
     });
     const LONG = 'Fehler: Wassertank leer, bitte nachfüllen und die Tür der Maschine schließen';
     const bytes = (text: string): number => Buffer.byteLength(text, 'utf8');
-    it('a text wider than the line scrolls: the whole text with the mark, in every layout', () => {
+    const fitsLine = (part: string): boolean =>
+        textWidth(part, 0, 'eu') <= 390 && bytes(part) <= DEVICE_PAGE_STATUS_MAX_BYTES;
+    it('a text wider than the line is split at spaces into parts that fit, in every layout', () => {
         expect(textWidth(LONG, 0, 'eu')).to.be.above(390);
         for (const layout of [1, 2, 3] as const) {
-            expect(DEVICE_PAGE_STATUS_SCROLLS[layout]).to.equal(true);
-            expect(fitDevicePageStatus(LONG, layout, 'eu')).to.equal(`${LONG}¬1`);
+            expect(splitDevicePageStatus(LONG, layout, 'eu')).to.deep.equal([
+                'Fehler: Wassertank leer, bitte nachfüllen und',
+                'die Tür der Maschine schließen',
+            ]);
         }
-        expect(DEVICE_PAGE_STATUS_SCROLL_MARK).to.equal('¬1');
-        expect(bytes(DEVICE_PAGE_STATUS_SCROLL_MARK)).to.equal(3);
+        const three = splitDevicePageStatus(
+            'Reinigung läuft, Wohnzimmer und Küche fertig, noch 23 min bis zur Rückkehr an die Ladestation',
+            1,
+            'eu',
+        );
+        expect(three).to.deep.equal([
+            'Reinigung läuft, Wohnzimmer und Küche',
+            'fertig, noch 23 min bis zur Rückkehr an die',
+            'Ladestation',
+        ]);
+        expect(three.every(fitsLine)).to.equal(true);
+        // empty and short texts: one part
+        expect(splitDevicePageStatus('', 2, 'eu')).to.deep.equal(['']);
+        expect(splitDevicePageStatus('Kurz', 2, 'eu')).to.deep.equal(['Kurz']);
     });
-    it('a text that fits the line but not the 63 bytes of the standing text scrolls', () => {
+    it('a text that fits the line but not the 63 bytes of the text field is split too, never inside a character', () => {
         // 40 x 'i' and 12 x 'ü': narrow, but 64 bytes
         const text = `${'i'.repeat(40)}${'ü'.repeat(12)}`;
         expect(textWidth(text, 0, 'eu')).to.be.at.most(390);
         expect(bytes(text)).to.equal(64);
-        expect(fitDevicePageStatus(text, 3, 'eu')).to.equal(`${text}¬1`);
-        // one byte less: it stands
-        expect(fitDevicePageStatus(text.slice(1), 3, 'eu')).to.equal(text.slice(1));
+        expect(splitDevicePageStatus(text, 3, 'eu')).to.deep.equal([`${'i'.repeat(40)}${'ü'.repeat(11)}`, 'ü']);
+        // one byte less: one part
+        expect(splitDevicePageStatus(text.slice(1), 3, 'eu')).to.deep.equal([text.slice(1)]);
+        // 2-byte characters, words: every part within the bytes
+        const cyrillic = splitDevicePageStatus(
+            'Привет мир, это длинный текст статуса для проверки разбиения на части строки',
+            1,
+            'eu',
+        );
+        expect(cyrillic).to.deep.equal([
+            'Привет мир, это длинный текст',
+            'статуса для проверки разбиения на',
+            'части строки',
+        ]);
+        expect(cyrillic.every(fitsLine)).to.equal(true);
     });
-    it('a scrolling text has at most 124 bytes, cut at a character with "..." - 127 with the mark', () => {
-        const exact = 'a'.repeat(DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES);
-        expect(fitDevicePageStatus(exact, 2, 'eu')).to.equal(`${exact}¬1`);
-        const out = fitDevicePageStatus(`${exact}b`, 2, 'eu');
-        expect(out).to.equal(`${'a'.repeat(121)}...¬1`);
-        expect(bytes(out)).to.equal(127);
-        // 2-byte characters: never half a character
-        const umlauts = fitDevicePageStatus('ü'.repeat(80), 1, 'eu');
-        expect(umlauts).to.equal(`${'ü'.repeat(60)}...¬1`);
-        expect(bytes(umlauts)).to.equal(126);
+    it('splits behind comma, full stop, semicolon and dash - not inside a number', () => {
+        expect(splitDevicePageStatus(`${'a'.repeat(38)},${'b'.repeat(20)};ccc`, 1, 'eu')).to.deep.equal([
+            `${'a'.repeat(38)},`,
+            `${'b'.repeat(20)};ccc`,
+        ]);
+        expect(splitDevicePageStatus(`${'a'.repeat(30)}–${'b'.repeat(20)}`, 1, 'eu')).to.deep.equal([
+            `${'a'.repeat(30)}–`,
+            'b'.repeat(20),
+        ]);
+        // the comma of a number is no place to split: the word is cut where the line ends
+        expect(
+            splitDevicePageStatus('Wert 123456789012345678901234567890123,567890123456789 Ende', 1, 'eu'),
+        ).to.deep.equal(['Wert', '123456789012345678901234567890123,56789', '0123456789 Ende']);
     });
-    it('the character of the mark, "~" and line breaks never reach the field', () => {
-        expect(fitDevicePageStatus('Fertig¬1', 2, 'eu')).to.equal('Fertig1');
-        expect(fitDevicePageStatus('a~b¬', 2, 'eu')).to.equal('ab');
-        expect(fitDevicePageStatus('a\r\nb', 1, 'eu')).to.equal('a b');
-        const out = fitDevicePageStatus(`${LONG}¬1`, 2, 'eu');
-        expect(out).to.equal(`${LONG}1¬1`);
-        expect(out.match(/¬/g)).to.have.length(1);
+    it('a word that is too long on its own is cut at a character', () => {
+        expect(
+            splitDevicePageStatus('Donaudampfschifffahrtsgesellschaftskapitänsmützenabzeichen und mehr', 1, 'eu'),
+        ).to.deep.equal(['Donaudampfschifffahrtsgesellschaftskapitän', 'smützenabzeichen und mehr']);
     });
-    it('a smaller budget: the scrolling text gets shorter, down to the standing text with "..."', () => {
-        // LONG has 79 bytes: 82 with the mark
-        expect(bytes(LONG)).to.equal(79);
-        expect(fitDevicePageStatus(LONG, 3, 'eu', 82)).to.equal(`${LONG}¬1`);
-        const shorter = fitDevicePageStatus(LONG, 3, 'eu', 75);
-        expect(shorter.endsWith('...¬1')).to.equal(true);
-        expect(bytes(shorter)).to.be.at.most(75);
-        expect(LONG.startsWith(shorter.slice(0, -5).trimEnd())).to.equal(true);
-        // the standing text: cut to the width of the line
-        const standing = fitText(LONG, 0, 'eu', 390);
-        expect(standing.endsWith('...')).to.equal(true);
-        expect(textWidth(standing, 0, 'eu')).to.be.at.most(390);
-        // a scrolling text that would show no more than the standing one: the standing one
-        expect(fitDevicePageStatus(LONG, 3, 'eu', bytes(standing) + 3)).to.equal(standing);
-        expect(fitDevicePageStatus(LONG, 3, 'eu', bytes(standing))).to.equal(standing);
-        // even less: a shorter standing text, at last nothing
-        const less = fitDevicePageStatus(LONG, 3, 'eu', 20);
-        expect(less).to.equal(`${LONG.slice(0, 17)}...`);
-        expect(fitDevicePageStatus(LONG, 3, 'eu', 3)).to.equal('');
-        expect(fitDevicePageStatus(LONG, 3, 'eu', 0)).to.equal('');
-        expect(fitDevicePageStatus('ok', 3, 'eu', 1)).to.equal('');
+    it('at most 3 parts: the third one ends with "..." when text is left', () => {
+        expect(DEVICE_PAGE_STATUS_MAX_PARTS).to.equal(3);
+        const letters = splitDevicePageStatus('a'.repeat(200), 2, 'eu');
+        expect(letters).to.deep.equal(['a'.repeat(39), 'a'.repeat(39), `${'a'.repeat(37)}...`]);
+        const umlauts = splitDevicePageStatus('ü'.repeat(200), 1, 'eu');
+        expect(umlauts).to.deep.equal(['ü'.repeat(31), 'ü'.repeat(31), `${'ü'.repeat(30)}...`]);
+        expect(umlauts.map(bytes)).to.deep.equal([62, 62, 63]);
+        const words = splitDevicePageStatus(
+            'Verbrauch heute 1,5 kWh; Laufzeit 2.5 h – Programm Baumwolle 60 °C, Schleudern 1400 U/min, ' +
+                'Restzeit 1:23 h, danach Knitterschutz und Trocknen, Tür bleibt verriegelt',
+            1,
+            'eu',
+        );
+        expect(words).to.deep.equal([
+            'Verbrauch heute 1,5 kWh; Laufzeit 2.5 h –',
+            'Programm Baumwolle 60 °C, Schleudern 1400',
+            'U/min, Restzeit 1:23 h, danach Knitterschut...',
+        ]);
+        expect(words.every(fitsLine)).to.equal(true);
+        // exactly three parts: no ellipsis
+        const exact = splitDevicePageStatus(`${'a'.repeat(39)} ${'b'.repeat(35)} ${'c'.repeat(30)}`, 1, 'eu');
+        expect(exact).to.deep.equal(['a'.repeat(39), 'b'.repeat(35), 'c'.repeat(30)]);
+    });
+    it('"~" and line breaks never reach the field; the message of a part', () => {
+        expect(splitDevicePageStatus('a~b', 2, 'eu')).to.deep.equal(['ab']);
+        expect(splitDevicePageStatus('a\r\nb', 1, 'eu')).to.deep.equal(['a b']);
+        expect(DEVICE_PAGE_STATUS_COMMAND).to.equal('devStatus');
+        expect(devicePageStatusMessage('noch 23 min')).to.equal('devStatus~noch 23 min');
+        expect(devicePageStatusMessage('')).to.equal('devStatus~');
+        expect(devicePageStatusMessage('a~b')).to.equal('devStatus~ab');
     });
     it('names and values are cut to the 31 bytes of the text buffers, at a character', () => {
         expect(DEVICE_PAGE_TEXT_MAX_BYTES).to.equal(31);
@@ -456,8 +495,8 @@ describe('lib/pages/device-page - status line', () => {
         expect(devicePageClampElement('text~dp_3?1~I~123~Akku~80 %')).to.equal('text~dp_3?1~I~123~Akku~80 %');
         expect(devicePageClampElement(DEVICE_PAGE_EMPTY_ELEMENT)).to.equal(DEVICE_PAGE_EMPTY_ELEMENT);
         // the name of main too, the status line (field 6) is not a value
-        expect(devicePageMainElement(`button~dp_3?0~I~123~${name}~1`, `${LONG}¬1`)).to.equal(
-            `button~dp_3?0~I~123~${'N'.repeat(31)}~${LONG}¬1`,
+        expect(devicePageMainElement(`button~dp_3?0~I~123~${name}~1`, LONG)).to.equal(
+            `button~dp_3?0~I~123~${'N'.repeat(31)}~${LONG}`,
         );
     });
     describe('length of the message', () => {
@@ -467,57 +506,37 @@ describe('lib/pages/device-page - status line', () => {
         const full = (type: string, n: number): string =>
             `${type}~dp_1234567890?${n}~I~65535~${'n'.repeat(31)}~${'w'.repeat(31)}`;
         const info = 'button~dp_1234567890?9~I~65535~~1';
-        const status = 's'.repeat(200);
-        it('buffers of the HMI pages: 1015 / 943 / 1019, never more than the display takes (1017)', () => {
-            expect(DEVICE_PAGE_RECEIVE_BYTES).to.deep.equal({ 1: 1015, 2: 943, 3: 1019 });
-            expect([1, 2, 3].map(l => devicePageMaxPayloadBytes(l as 1 | 2 | 3))).to.deep.equal([1015, 943, 1017]);
+        const status = 's'.repeat(40);
+        it('buffers of the HMI pages: 943 / 875 / 1019, never more than the display takes (1017)', () => {
+            expect(DEVICE_PAGE_RECEIVE_BYTES).to.deep.equal({ 1: 943, 2: 875, 3: 1019 });
+            expect([1, 2, 3].map(l => devicePageMaxPayloadBytes(l as 1 | 2 | 3))).to.deep.equal([943, 875, 1017]);
         });
-        it('a message that fits keeps the whole scrolling text', () => {
+        it('a message that fits keeps the part of the status text', () => {
             const elements = [full('text', 1), full('text', 2), info];
             const out = devicePagePayload(head, main, elements, status, 3, 'eu');
-            expect(out).to.equal(
-                [head, `button~dp_12?0~I~65535~${'M'.repeat(31)}~${'s'.repeat(121)}...¬1`, ...elements].join('~'),
-            );
+            expect(out).to.equal([head, `button~dp_12?0~I~65535~${'M'.repeat(31)}~${status}`, ...elements].join('~'));
             expect(devicePagePayload(head, '', [], '', 2, 'eu')).to.equal(`${head}~~~~~~`);
         });
-        it('layout 3 with six full info slots: the scrolling text is shortened to 1017 bytes', () => {
-            const elements = [1, 2, 3, 4, 5, 6].map(n => full('input_sel', n));
-            elements.push(
-                `switch~dp_1234567890?7~I~65535~${'n'.repeat(31)}~1`,
-                `switch~dp_1234567890?8~I~65535~${'n'.repeat(31)}~0`,
-            );
-            elements.push(info);
-            const unlimited = [head, devicePageMainElement(main, fitDevicePageStatus(status, 3, 'eu')), ...elements];
-            expect(bytes(unlimited.join('~'))).to.be.above(1017);
-            const out = devicePagePayload(head, main, elements, status, 3, 'eu');
-            expect(bytes(out)).to.be.at.most(1017);
-            expect(bytes(out)).to.be.above(1017 - 4);
-            const field = out.split('~')[19];
-            expect(field.endsWith('...¬1')).to.equal(true);
-            expect(bytes(field)).to.be.below(127);
-            // nothing else changed
-            expect(out.split('~').slice(20).join('~')).to.equal(elements.join('~'));
-        });
-        it('layout 2 (943 bytes): falls back to the standing text when the room gets too small', () => {
+        it('layout 2 (875 bytes): the status line gives way when the message gets too long', () => {
             const elements = [1, 2, 3, 4, 5, 6].map(n => full('input_sel', n));
             elements.push(info);
-            // a long heading takes the room of the scrolling text: exactly the standing text is left
-            const standing = fitText(status, 0, 'eu', 390);
             const headOf = (n: number): string => `entityUpd~${'H'.repeat(n)}~${NAV}`;
-            const room = 943 - bytes(devicePagePayload(headOf(0), main, elements, '', 2, 'eu'));
-            const out = devicePagePayload(headOf(room - bytes(standing)), main, elements, status, 2, 'eu');
-            expect(bytes(out)).to.equal(943);
-            expect(out.split('~')[19]).to.equal(standing);
-            // 4 bytes more room: a scrolling text would show one character more than the standing one
-            const scrolls = devicePagePayload(headOf(room - bytes(standing) - 4), main, elements, status, 2, 'eu');
-            expect(bytes(scrolls)).to.equal(943);
-            expect(scrolls.split('~')[19].endsWith('...¬1')).to.equal(true);
-            // still less room: the standing text gets shorter
-            const tighter = devicePagePayload(headOf(room - bytes(standing) + 10), main, elements, status, 2, 'eu');
-            expect(bytes(tighter)).to.equal(943);
-            expect(tighter.split('~')[19]).to.equal(`${'s'.repeat(bytes(standing) - 13)}...`);
+            const room = 875 - bytes(devicePagePayload(headOf(0), main, elements, '', 2, 'eu'));
+            // exactly the room of the status text
+            const fits = devicePagePayload(headOf(room - 40), main, elements, status, 2, 'eu');
+            expect(bytes(fits)).to.equal(875);
+            expect(fits.split('~')[19]).to.equal(status);
+            // 10 bytes less: the text is cut by them, with "..."
+            const tighter = devicePagePayload(headOf(room - 30), main, elements, status, 2, 'eu');
+            expect(bytes(tighter)).to.equal(875);
+            expect(tighter.split('~')[19]).to.equal(`${'s'.repeat(27)}...`);
+            // nothing else changed
+            expect(tighter.split('~').slice(20).join('~')).to.equal(elements.join('~'));
+            // no room at all: no status text
+            const none = devicePagePayload(headOf(room), main, elements, status, 2, 'eu');
+            expect(none.split('~')[19]).to.equal('');
         });
-        it('the longest message the adapter builds fits every layout (names and values 31 bytes, status 124)', () => {
+        it('the longest message the adapter builds fits every layout (names and values 31 bytes, status 63)', () => {
             for (const layout of [1, 2, 3] as const) {
                 const kinds = DEVICE_PAGE_LAYOUTS[layout];
                 const elements = kinds.map((kind, i) =>
@@ -528,9 +547,11 @@ describe('lib/pages/device-page - status line', () => {
                           ),
                 );
                 elements.push(info);
-                const out = devicePagePayload(head, main, elements, 'ü'.repeat(200), layout, 'eu');
+                const part = splitDevicePageStatus('ü'.repeat(200), layout, 'eu')[2];
+                expect(bytes(part)).to.equal(63);
+                const out = devicePagePayload(head, main, elements, part, layout, 'eu');
                 expect(bytes(out), `layout ${layout}`).to.be.at.most(devicePageMaxPayloadBytes(layout));
-                expect(out.split('~')[19].endsWith('¬1'), `layout ${layout}`).to.equal(true);
+                expect(out.split('~')[19], `layout ${layout}`).to.equal(part);
                 expect(out.split('~')).to.have.length(1 + 1 + 12 + 6 * (kinds.length + 2));
             }
         });
@@ -831,8 +852,15 @@ function fakeDevicePage(
     slotCount: number,
     payloads: (string | undefined)[],
     layout: 1 | 2 | 3 = 1,
-): { page: PageDevice; sent: string[] } {
+): {
+    page: PageDevice;
+    sent: string[];
+    /** the running intervals of the adapter: ms and callback */
+    intervals: Map<number, { ms: number; run: () => void }>;
+} {
     const sent: string[] = [];
+    const intervals = new Map<number, { ms: number; run: () => void }>();
+    let nextInterval = 1;
     const page = Object.create(PageDevice.prototype) as PageDevice;
     Object.assign(page, {
         headline: 'Waschmaschine',
@@ -841,7 +869,24 @@ function fakeDevicePage(
         channelSlots: new Set<number>(),
         visibility: true,
         refreshTimeout: null,
-        adapter: { setTimeout: (): number => 1, clearTimeout: (): void => undefined },
+        statusText: undefined,
+        statusParts: [''],
+        statusIndex: 0,
+        statusTimer: undefined,
+        sleep: false,
+        unload: false,
+        adapter: {
+            unload: false,
+            setTimeout: (): number => 1,
+            clearTimeout: (): void => undefined,
+            setInterval: (run: () => void, ms: number): number => {
+                intervals.set(nextInterval, { ms, run });
+                return nextInterval++;
+            },
+            clearInterval: (id: number): void => {
+                intervals.delete(id);
+            },
+        },
         log: { debug: (): void => undefined },
         library: { getTranslation: (s: string): string => s },
         basePanel: { info: { nspanel: { model: 'eu' } } },
@@ -850,8 +895,11 @@ function fakeDevicePage(
         sendToPanel: (msg: string): void => {
             sent.push(msg);
         },
+        sendToPanelClass: (msg: string): void => {
+            sent.push(msg);
+        },
     });
-    return { page, sent };
+    return { page, sent, intervals };
 }
 
 describe('lib/pages/pageDevice - payload', () => {
@@ -889,6 +937,112 @@ describe('lib/pages/pageDevice - payload', () => {
         expect(elements.slice(0, 6)).to.deep.equal(['text', 'dp_3?0', 'M', '1', 'WM', '']);
         expect(elements).to.have.length(6 * (n + 2));
         expect(elements.slice(6 * (n + 1))).to.deep.equal(['', '', '', '', '', '']);
+    });
+    describe('a status text that does not fit: the parts alternate', () => {
+        const LONG = 'Reinigung läuft, Wohnzimmer und Küche fertig, noch 23 min bis zur Rückkehr an die Ladestation';
+        const PARTS = [
+            'Reinigung läuft, Wohnzimmer und Küche',
+            'fertig, noch 23 min bis zur Rückkehr an die',
+            'Ladestation',
+        ];
+        const n = DEVICE_PAGE_LAYOUTS[2].length;
+        // the page items: main, n empty slots, no info, the status item
+        const payloadsOf = (status: string, main = 'switch~dp_3?0~M~1~WM~1'): (string | undefined)[] => [
+            main,
+            ...new Array<undefined>(n + 1).fill(undefined),
+            `text~dp_3?${n + 2}~x~4~~${status}`,
+        ];
+        const setItems = (page: PageDevice, payloads: (string | undefined)[]): void => {
+            Object.assign(page, {
+                pageItems: payloads.map(p => (p === undefined ? undefined : { getPageItemPayload: async () => p })),
+            });
+        };
+        const statusOf = (msg: string): string => msg.split('~')[19];
+        const tick = (intervals: Map<number, { ms: number; run: () => void }>): void => {
+            expect(intervals.size).to.equal(1);
+            for (const interval of intervals.values()) {
+                interval.run();
+            }
+        };
+
+        it('entityUpd carries the first part, every 2 s devStatus brings the next one, round and round', async () => {
+            const { page, sent, intervals } = fakeDevicePage(n, payloadsOf(LONG), 2);
+            await page.update();
+            expect(sent).to.have.length(1);
+            expect(statusOf(sent[0])).to.equal(PARTS[0]);
+            expect([...intervals.values()].map(i => i.ms)).to.deep.equal([DEVICE_PAGE_STATUS_INTERVAL_MS]);
+            expect(DEVICE_PAGE_STATUS_INTERVAL_MS).to.equal(2000);
+            for (let i = 0; i < 4; i++) {
+                tick(intervals);
+            }
+            expect(sent.slice(1)).to.deep.equal([
+                `devStatus~${PARTS[1]}`,
+                `devStatus~${PARTS[2]}`,
+                `devStatus~${PARTS[0]}`,
+                `devStatus~${PARTS[1]}`,
+            ]);
+        });
+        it('a text that fits: no interval, no devStatus', async () => {
+            const { page, sent, intervals } = fakeDevicePage(n, payloadsOf('Schleudern'), 2);
+            await page.update();
+            expect(statusOf(sent[0])).to.equal('Schleudern');
+            expect(intervals.size).to.equal(0);
+        });
+        it('an entityUpd for another reason keeps the part and the interval', async () => {
+            const { page, sent, intervals } = fakeDevicePage(n, payloadsOf(LONG), 2);
+            await page.update();
+            const first = [...intervals.keys()];
+            tick(intervals);
+            setItems(page, payloadsOf(LONG, 'switch~dp_3?0~M~1~WM~0'));
+            await page.update();
+            expect(statusOf(sent[2])).to.equal(PARTS[1]);
+            expect([...intervals.keys()]).to.deep.equal(first);
+            tick(intervals);
+            expect(sent[3]).to.equal(`devStatus~${PARTS[2]}`);
+        });
+        it('another status text starts with its first part and a new interval; a short one stops it', async () => {
+            const { page, sent, intervals } = fakeDevicePage(n, payloadsOf(LONG), 2);
+            await page.update();
+            const first = [...intervals.keys()];
+            tick(intervals);
+            setItems(page, payloadsOf(`Fertig. ${LONG}`));
+            await page.update();
+            expect(statusOf(sent[2])).to.equal('Fertig. Reinigung läuft, Wohnzimmer und');
+            expect(intervals.size).to.equal(1);
+            expect([...intervals.keys()]).to.not.deep.equal(first);
+            setItems(page, payloadsOf('Fertig'));
+            await page.update();
+            expect(statusOf(sent[3])).to.equal('Fertig');
+            expect(intervals.size).to.equal(0);
+        });
+        it('nothing is sent while the page sleeps (popup) or is hidden; hidden stops the interval', async () => {
+            const { page, sent, intervals } = fakeDevicePage(n, payloadsOf(LONG), 2);
+            await page.update();
+            Object.assign(page, { sleep: true });
+            tick(intervals);
+            expect(sent).to.have.length(1);
+            Object.assign(page, { sleep: false });
+            tick(intervals);
+            expect(sent[1]).to.equal(`devStatus~${PARTS[1]}`);
+            // hidden: the interval ends, the page starts with the first part when it is shown again
+            Object.assign(page, { visibility: false, pageItems: [] });
+            await (page as any).onVisibilityChange(false);
+            expect(intervals.size).to.equal(0);
+            Object.assign(page, { visibility: true });
+            setItems(page, payloadsOf(LONG));
+            await page.update();
+            expect(statusOf(sent[2])).to.equal(PARTS[0]);
+            expect(intervals.size).to.equal(1);
+        });
+        it('an unloaded page stops the interval at its next tick', async () => {
+            const { page, intervals } = fakeDevicePage(n, payloadsOf(LONG), 2);
+            await page.update();
+            Object.assign(page, { unload: true });
+            for (const interval of [...intervals.values()]) {
+                interval.run();
+            }
+            expect(intervals.size).to.equal(0);
+        });
     });
     describe('layout 1 with status icons', () => {
         const kinds = DEVICE_PAGE_LAYOUTS[1];
