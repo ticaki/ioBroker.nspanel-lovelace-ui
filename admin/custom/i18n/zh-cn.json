@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "留空：自动",
     "deviceDetailsDialog_pageSlots": "槽位",
     "deviceDetailsDialog_pageStatus": "状态行",
+    "deviceDetailsDialog_pageStatusCustom": "自定义数据点",
+    "deviceDetailsDialog_pageStatusCustomId": "状态行的数据点",
     "deviceDetailsDialog_pageStatusIconsHint": "状态图标只显示一个带颜色的图标（开/关使用“已激活”/“未激活”颜色）。只要设置了一个状态图标，两行信息行就会变窄。",
     "deviceDetailsDialog_pageUnfit": "不适合此槽位",
     "deviceDetailsDialog_pushButton": "按钮，写入 true",

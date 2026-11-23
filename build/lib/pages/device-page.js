@@ -213,7 +213,7 @@ function devicePageStatusItem(deviceId, entry, common) {
   return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, "", "all"), dpInit: "" };
 }
 async function devicePageElements(source, details, page, getObject, translate, language) {
-  var _a, _b, _c;
+  var _a, _b;
   const device = await getObject(details.deviceId);
   const headline = (0, import_device_details.nameOfCommon)((_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name, language) || details.deviceId.split(".").pop() || "";
   const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
@@ -257,8 +257,9 @@ async function devicePageElements(source, details, page, getObject, translate, l
     }
     slots[p.index] = item;
   });
-  const statusCommon = await readCommon((_c = page.status) != null ? _c : null);
-  const status = page.status && statusCommon ? devicePageStatusItem(details.deviceId, page.status, statusCommon) : void 0;
+  const statusRef = page.status && page.status.id !== "" ? page.status : null;
+  const statusCommon = await readCommon(statusRef);
+  const status = statusRef && statusCommon ? devicePageStatusItem(details.deviceId, statusRef, statusCommon) : void 0;
   return {
     headline,
     slotCount: kinds.length,

@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "vacío: automático",
     "deviceDetailsDialog_pageSlots": "Ranuras",
     "deviceDetailsDialog_pageStatus": "Línea de estado",
+    "deviceDetailsDialog_pageStatusCustom": "Punto de datos personalizado",
+    "deviceDetailsDialog_pageStatusCustomId": "Punto de datos de la línea de estado",
     "deviceDetailsDialog_pageStatusIconsHint": "Los iconos de estado muestran solo un icono en su color (encendido/apagado en los colores activado/desactivado). En cuanto se asigna un icono de estado, las dos filas de información se estrechan.",
     "deviceDetailsDialog_pageUnfit": "no encaja en esta ranura",
     "deviceDetailsDialog_pushButton": "pulsador, escribe true",

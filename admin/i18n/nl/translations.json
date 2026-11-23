@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "leeg: automatisch",
     "deviceDetailsDialog_pageSlots": "Slots",
     "deviceDetailsDialog_pageStatus": "Statusregel",
+    "deviceDetailsDialog_pageStatusCustom": "Aangepast datapunt",
+    "deviceDetailsDialog_pageStatusCustomId": "Datapunt van de statusregel",
     "deviceDetailsDialog_pageStatusIconsHint": "Statuspictogrammen tonen alleen een pictogram in zijn kleur (aan/uit in de kleuren geactiveerd/gedeactiveerd). Zodra één statuspictogram is ingesteld, worden de twee inforegels smaller.",
     "deviceDetailsDialog_pageUnfit": "past niet bij dit slot",
     "deviceDetailsDialog_pushButton": "knop, schrijft true",

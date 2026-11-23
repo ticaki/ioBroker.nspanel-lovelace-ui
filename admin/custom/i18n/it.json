@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "vuoto: automatico",
     "deviceDetailsDialog_pageSlots": "Slot",
     "deviceDetailsDialog_pageStatus": "Riga di stato",
+    "deviceDetailsDialog_pageStatusCustom": "Punto dati personalizzato",
+    "deviceDetailsDialog_pageStatusCustomId": "Punto dati della riga di stato",
     "deviceDetailsDialog_pageStatusIconsHint": "Le icone di stato mostrano solo un'icona nel suo colore (acceso/spento nei colori attivato/disattivato). Appena è impostata un'icona di stato, le due righe informative diventano più strette.",
     "deviceDetailsDialog_pageUnfit": "non adatto a questo slot",
     "deviceDetailsDialog_pushButton": "pulsante, scrive true",

@@ -1,11 +1,16 @@
 import { expect } from 'chai';
 import {
+    DEVICE_PAGE_CUSTOM_STATUS,
     PREVIEW_INFO,
     PREVIEW_MAIN,
     PREVIEW_STATUS_LINE,
     devicePagePreviewAreas,
     devicePageRefOf,
     devicePageStateOptions,
+    devicePageStatusOf,
+    devicePageStatusSelectValue,
+    customDevicePageStatus,
+    isCustomDevicePageStatus,
     devicePageToSave,
     isLongPressTarget,
     longPressTargetOf,
@@ -160,6 +165,52 @@ describe('devicePageConfig - device page of the page item dialog', () => {
 
         expect(withDevicePageIcon(page, ' robot ').icon).to.equal('robot');
         expect(withDevicePageIcon({ ...page, icon: 'robot' }, '')).to.not.have.property('icon');
+    });
+
+    it('status line: own data point - the choice stays without id, never an option of the device', () => {
+        const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
+        const states: DeviceStateInfo[] = [
+            { id: `${DEV}.phase`, name: 'Phase', type: 'string', role: 'text', read: true, write: false },
+        ];
+        expect(devicePageStatusSelectValue(undefined)).to.equal('');
+        expect(devicePageStatusSelectValue({ key: '', id: `${DEV}.phase` })).to.equal(`${DEV}.phase`);
+        expect(isCustomDevicePageStatus({ key: '', id: `${DEV}.phase` })).to.equal(false);
+
+        // chosen, nothing entered yet: stays "own data point", also through the save
+        const options = devicePageStateOptions(DEV, states, null, null);
+        const pending = withDevicePageStatus(page, devicePageStatusOf(DEVICE_PAGE_CUSTOM_STATUS, options, [], null));
+        expect(pending.status).to.deep.equal({ key: '', id: '', custom: true });
+        expect(devicePageStatusSelectValue(pending.status)).to.equal(DEVICE_PAGE_CUSTOM_STATUS);
+        expect(devicePageToSave({ devicePage: pending })?.status).to.deep.equal({ key: '', id: '', custom: true });
+
+        // an id outside the device
+        const own = withDevicePageStatus(pending, customDevicePageStatus('0_userdata.0.msg'));
+        expect(own.status).to.deep.equal({ key: '', id: '0_userdata.0.msg', custom: true });
+        expect(devicePageStatusSelectValue(own.status)).to.equal(DEVICE_PAGE_CUSTOM_STATUS);
+        expect(isCustomDevicePageStatus(own.status)).to.equal(true);
+        expect(devicePageToSave({ devicePage: own })?.status).to.deep.equal(own.status);
+        // choosing "own data point" again keeps the id
+        expect(devicePageStatusOf(DEVICE_PAGE_CUSTOM_STATUS, options, [], own.status)).to.deep.equal(own.status);
+
+        // the section offers the states of the device without the own data point: nothing marked as missing
+        const offered = devicePageStateOptions(
+            DEV,
+            states,
+            null,
+            isCustomDevicePageStatus(own.status) ? null : own.status,
+        );
+        expect(offered.map(o => o.id)).to.deep.equal([`${DEV}.phase`]);
+        expect(offered.some(o => o.problem)).to.equal(false);
+
+        // back to a state of the device (no flag, the own id is not taken over) or to empty
+        expect(devicePageStatusOf(`${DEV}.phase`, offered, [], own.status)).to.deep.equal({
+            key: '',
+            id: `${DEV}.phase`,
+        });
+        expect(devicePageStatusOf('', offered, [], own.status)).to.equal(null);
+        // a state of the device chosen before keeps its reference
+        const saved = { key: 'k', id: `${DEV}.phase`, subName: 'x' };
+        expect(devicePageStatusOf(`${DEV}.phase`, offered, [], saved)).to.deep.equal(saved);
     });
 
     it('status slots: own icon only with a state, kept when another state is chosen', () => {

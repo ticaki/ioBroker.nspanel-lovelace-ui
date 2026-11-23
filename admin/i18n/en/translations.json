@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "empty: automatic",
     "deviceDetailsDialog_pageSlots": "Slots",
     "deviceDetailsDialog_pageStatus": "Status line",
+    "deviceDetailsDialog_pageStatusCustom": "Custom data point",
+    "deviceDetailsDialog_pageStatusCustomId": "Data point of the status line",
     "deviceDetailsDialog_pageStatusIconsHint": "Status icons show only an icon in its color (on/off in the colors activated/deactivated). As soon as one status icon is set, the two info rows get narrower.",
     "deviceDetailsDialog_pageUnfit": "does not fit this slot",
     "deviceDetailsDialog_pushButton": "button, writes true",

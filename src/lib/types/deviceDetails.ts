@@ -359,6 +359,17 @@ export type DevicePageStateRef = DeviceDetailEntryConfig & {
     icon?: string;
 };
 
+/**
+ * The state of the status line of the device page: a state of the device ({@link DevicePageStateRef}) or, with
+ * `custom`, an own data point of the user - any state, also outside the device (e.g. `0_userdata.0.…`), `key` is ''.
+ * With `custom` the `id` may be '' (chosen in the admin, no data point entered yet): the status line stays empty.
+ * A configuration without `custom` is a state of the device as before.
+ */
+export type DevicePageStatusRef = DevicePageStateRef & {
+    /** true = an own data point of the user (not chosen from the states of the device) */
+    custom?: true;
+};
+
 /** admin configuration of the device page ({@link DeviceDetailsConfig.devicePage}) */
 export type DevicePageConfig = {
     /** HMI page: 1 = cardDevice1, 2 = cardDevice2, 3 = cardDevice3 */
@@ -374,9 +385,9 @@ export type DevicePageConfig = {
     icon?: string;
     /**
      * the state shown as text in the wide status line (field 6 of the main item), missing = empty status line - no
-     * suggestion, the user chooses it
+     * suggestion, the user chooses it; with `custom` an own data point ({@link DevicePageStatusRef})
      */
-    status?: DevicePageStateRef;
+    status?: DevicePageStatusRef;
 };
 
 /** the device page at runtime ({@link DeviceDetailsRuntime.devicePage}) */
@@ -387,7 +398,8 @@ export type DevicePageRuntime = {
     /** the info icon is shown (configured and the device has rows for the detail page) */
     showInfo: boolean;
     icon?: string;
-    status?: DevicePageStateRef;
+    /** never a custom one without id */
+    status?: DevicePageStatusRef;
     /** the short tap of the item: `navigation` and `popup` make the main item a text without action */
     shortPress: DeviceShortPress;
 };
@@ -482,10 +494,22 @@ function devicePageStateRefOf(value: unknown, keepIcon: boolean): DevicePageStat
 }
 
 /**
+ * @param value a stored status
+ * @returns the reference of the status line: an own data point (`custom: true`, trimmed id, also an empty one - the
+ * choice stays) or a state of the device, null when it is none
+ */
+function devicePageStatusRefOf(value: unknown): DevicePageStatusRef | null {
+    if (isDeviceDetailEntryConfig(value) && 'custom' in value && value.custom === true) {
+        return { key: '', id: value.id.trim(), custom: true };
+    }
+    return devicePageStateRefOf(value, false);
+}
+
+/**
  * The normalized device page of a stored configuration: an unknown layout becomes 1, the slots are cut or filled to
  * the slots of the layout (an invalid slot or one without state is empty; an older layout 1 with 6 slots gets its 4
  * status slots empty; an own icon is kept only on a `status` slot), `showInfo` is true unless it is false, an
- * empty icon or status is left out.
+ * empty icon or status is left out - an own data point of the status line (`custom`) stays also without id.
  *
  * @param value the field `devicePage` of a device configuration
  * @returns the device page, undefined when there is none (not an object)
@@ -509,7 +533,7 @@ export function devicePageConfigOf(value: unknown): DevicePageConfig | undefined
     if (icon) {
         config.icon = icon;
     }
-    const status = 'status' in value ? devicePageStateRefOf(value.status, false) : null;
+    const status = 'status' in value ? devicePageStatusRefOf(value.status) : null;
     if (status) {
         config.status = status;
     }
@@ -1271,7 +1295,8 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
         if (page.icon) {
             devicePage.icon = page.icon;
         }
-        if (page.status) {
+        // an own data point that is not entered yet: no status line
+        if (page.status && page.status.id !== '') {
             devicePage.status = page.status;
         }
         runtime.devicePage = devicePage;

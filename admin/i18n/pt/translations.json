@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "vazio: automático",
     "deviceDetailsDialog_pageSlots": "Posições",
     "deviceDetailsDialog_pageStatus": "Linha de estado",
+    "deviceDetailsDialog_pageStatusCustom": "Ponto de dados personalizado",
+    "deviceDetailsDialog_pageStatusCustomId": "Ponto de dados da linha de estado",
     "deviceDetailsDialog_pageStatusIconsHint": "Os ícones de estado mostram apenas um ícone na sua cor (ligado/desligado nas cores ativado/desativado). Assim que um ícone de estado é definido, as duas linhas de informação ficam mais estreitas.",
     "deviceDetailsDialog_pageUnfit": "não serve para esta posição",
     "deviceDetailsDialog_pushButton": "botão, escreve true",

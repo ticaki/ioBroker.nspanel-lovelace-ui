@@ -60,6 +60,14 @@ const objects: Record<string, any> = {
     [`${DEV}.on`]: { type: 'state', common: { type: 'boolean', role: 'switch', write: true } },
     [`${DEV}.door`]: { type: 'state', common: { type: 'boolean', role: 'sensor.door', write: false } },
 };
+/** an own data point of the user, outside the device */
+const OWN = '0_userdata.0.wm.message';
+objects[OWN] = { type: 'state', common: { type: 'string', role: 'text', write: true } };
+objects['0_userdata.0.wm.energy'] = {
+    type: 'state',
+    common: { type: 'number', role: 'value.energy', write: false, unit: 'kWh' },
+};
+objects['0_userdata.0.wm'] = { type: 'folder', common: { name: 'wm' } };
 const getObject = async (id: string): Promise<ioBroker.Object | null> => Promise.resolve(objects[id] ?? null);
 const ref = (id: string): { key: string; id: string } => ({ key: '', id: `${DEV}.${id}` });
 /**
@@ -138,6 +146,20 @@ describe('lib/types/deviceDetails - device page configuration', () => {
         expect(d?.showInfo).to.equal(false);
         expect(d?.icon).to.equal('robot-mower');
         expect(d?.status).to.deep.equal(ref('phase'));
+    });
+    it('status line with an own data point: kept with its flag, also without id; old configurations unchanged', () => {
+        const custom = devicePageConfigOf({ layout: 1, status: { key: 'x', id: ' 0_userdata.0.msg ', custom: true } });
+        expect(custom?.status).to.deep.equal({ key: '', id: '0_userdata.0.msg', custom: true });
+        const pending = devicePageConfigOf({ layout: 1, status: { key: '', id: '', custom: true } });
+        expect(pending?.status).to.deep.equal({ key: '', id: '', custom: true });
+        // no flag (or not true): a state of the device as before
+        expect(devicePageConfigOf({ layout: 1, status: ref('phase') })?.status).to.deep.equal(ref('phase'));
+        expect(devicePageConfigOf({ layout: 1, status: { ...ref('phase'), custom: false } })?.status).to.deep.equal(
+            ref('phase'),
+        );
+        expect(devicePageConfigOf({ layout: 1, status: { key: '', id: '', custom: 1 } })).to.not.have.property(
+            'status',
+        );
     });
     it('a layout change keeps the slots by position', () => {
         const slots = [ref('power'), null, ref('door'), null, null, ref('start'), ref('on'), ref('on')];
@@ -272,6 +294,18 @@ describe('lib/types/deviceDetails - device page configuration', () => {
             shortPress: 'navigation',
             status: ref('phase'),
         });
+        const custom = deviceDetailsRuntimeOf({
+            deviceId: DEV,
+            entries: [],
+            devicePage: { layout: 2, slots: [], showInfo: true, status: { key: '', id: OWN, custom: true } },
+        });
+        expect(custom?.devicePage?.status).to.deep.equal({ key: '', id: OWN, custom: true });
+        const pending = deviceDetailsRuntimeOf({
+            deviceId: DEV,
+            entries: [],
+            devicePage: { layout: 2, slots: [], showInfo: true, status: { key: '', id: '', custom: true } },
+        });
+        expect(pending?.devicePage).to.not.have.property('status');
         const without = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [ref('power')] });
         expect(without).to.deep.equal({ deviceId: DEV, entries: [ref('power')] });
         const info = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [ref('power')], devicePage: { layout: 1 } });
@@ -450,6 +484,35 @@ describe('lib/pages/device-page - elements', () => {
             expect(config.config?.card).to.equal(`cardDevice${layout}`);
         });
     }
+    it('status line with an own data point outside the device: a triggered text row of exactly this state', async () => {
+        const text = runtime({ status: { key: '', id: OWN, custom: true } });
+        const content = await devicePageElements(sourceSwitch, text.details, text.page, getObject, tr, 'de');
+        const item: any = content.elements[content.slotCount + 2];
+        expect(item.type).to.equal('text');
+        expect(item.dpInit).to.equal('');
+        expect(item.data.entity2).to.deep.equal({ value: { type: 'triggered', dp: OWN } });
+        expect(content.skipped).to.deep.equal([]);
+
+        const energy = '0_userdata.0.wm.energy';
+        const unit = runtime({ status: { key: '', id: energy, custom: true } });
+        const withUnit = await devicePageElements(sourceSwitch, unit.details, unit.page, getObject, tr, 'de');
+        const unitItem: any = withUnit.elements[withUnit.slotCount + 2];
+        // value with the unit of common, like a state of the device
+        expect(unitItem.data.entity2).to.deep.equal({ value: { type: 'triggered', dp: energy } });
+    });
+    it('own data point: no id = no status line and no report; a missing state or no state = none, reported', async () => {
+        const pending = runtime({ status: { key: '', id: '', custom: true } });
+        const none = await devicePageElements(sourceSwitch, pending.details, pending.page, getObject, tr, 'de');
+        expect(none.elements[none.slotCount + 2]).to.equal(undefined);
+        expect(none.skipped).to.deep.equal([]);
+
+        for (const id of ['0_userdata.0.gone', '0_userdata.0.wm']) {
+            const r = runtime({ status: { key: '', id, custom: true } });
+            const content = await devicePageElements(sourceSwitch, r.details, r.page, getObject, tr, 'de');
+            expect(content.elements[content.slotCount + 2]).to.equal(undefined);
+            expect(content.skipped).to.deep.equal([id]);
+        }
+    });
     it('slots by kind, missing or unfitting states stay empty and are reported', async () => {
         const { details, page } = runtime({
             layout: 2,
