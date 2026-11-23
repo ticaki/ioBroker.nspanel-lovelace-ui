@@ -74,6 +74,8 @@ export interface DeviceGeometry {
     /** the status line (field 6 of main), font 0, one line */
     status: Box;
     statusAlign: NextionAlign;
+    /** the scrolling status line `gStatus`: the twin of the status line, 1 px lower */
+    statusScroll: Box;
     /** the info icon at the bottom right (font 1) */
     info: Box;
 }
@@ -85,6 +87,7 @@ function box(x: number, y: number, w: number, h: number): Box {
 }
 
 const STATUS = box(10, 289, 390, 30);
+const STATUS_SCROLL = box(10, 290, 390, 30);
 const INFO = box(404, 288, 36, 32);
 
 function info1(y: number): InfoSlotGeometry {
@@ -156,6 +159,7 @@ export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
             status1(161, 115),
         ],
         status: STATUS,
+        statusScroll: STATUS_SCROLL,
         statusAlign: 0,
         info: INFO,
     },
@@ -170,6 +174,7 @@ export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
             { kind: 'button', icon: box(340, 67, 100, 50), name: box(340, 119, 100, 26) },
         ],
         status: STATUS,
+        statusScroll: STATUS_SCROLL,
         statusAlign: 1,
         info: INFO,
     },
@@ -177,6 +182,7 @@ export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
         main: { icon: box(10, 67, 100, 82), name: box(10, 151, 100, 26) },
         slots: [info3(0), info3(1), info3(2), info3(3), info3(4), info3(5), switch3(10), switch3(226)],
         status: STATUS,
+        statusScroll: STATUS_SCROLL,
         statusAlign: 0,
         info: INFO,
     },

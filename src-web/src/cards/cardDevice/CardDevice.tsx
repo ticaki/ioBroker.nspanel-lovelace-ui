@@ -6,6 +6,7 @@ import type { Entity6 } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { isOn, popupForType } from '../cardEntities/shared/entityTypes';
+import { tileTouch } from '../cardGrid/CardGrid';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import { Pressable } from '../cardEntities/shared/Pressable';
 import { HmiTextBox, Toggle, type NextionAlign } from '../cardEntities/shared/widgets';
@@ -19,6 +20,7 @@ import {
     type StatusSlotGeometry,
 } from './layout';
 import type { CardDeviceModel } from './parse';
+import { StatusScroll } from './StatusScroll';
 
 /** Hold time of the `tmLP` timer the device pages copied from cardGrid */
 export const DEVICE_LONG_PRESS_MS = 500;
@@ -29,38 +31,53 @@ const POPUP_ON_TOUCH: ReadonlySet<string> = new Set(['shutter', 'shutter2', 'inp
 /** Entity types whose popup opens after holding {@link DEVICE_LONG_PRESS_MS} (`tmLP`) */
 const POPUP_ON_HOLD: ReadonlySet<string> = new Set(['light', 'light2', 'fan', 'number']);
 
-/** The tapped elements of a device page: the device itself (main), an info slot, a button slot */
-export type DeviceTapKind = 'main' | 'info' | 'button';
+/**
+ * The tapped elements of a device page: the device itself (main) and every kind of slot (of a switch slot its
+ * icon and name - the switch itself sends `OnOff`)
+ */
+export type DeviceTapKind = 'main' | 'info' | 'value' | 'progress' | 'button' | 'switch' | 'status';
 
-/** What a touch of main, an info slot or a button slot does */
+/** The elements the HMI draws as buttons: they dim while pressed. Texts and hotspots show no press effect. */
+const PRESS_EFFECT: ReadonlySet<DeviceTapKind> = new Set<DeviceTapKind>(['main', 'info', 'button']);
+
+/** What a touch of main or a slot does */
 export type DeviceTouch =
     /** `event,buttonPress2,<id>,button` */
     | { kind: 'press' }
     /** open the popup of the entity type: `event,pageOpenDetail,<popup>,<id>` */
     | { kind: 'popup'; popup: string }
-    /** nothing (main and info of type `text`) */
+    /** `event,buttonPress3,<id>,button` */
+    | { kind: 'longPress' }
+    /** nothing (an empty element, type `text` without an id) */
     | { kind: 'none' };
 
 /**
- * Touch of main, an info or a button slot - the code of a cardGrid cell of the HMI
- * (`doc/ideas/device-details/device-page-hmi.md`, Elementarten): shutter, shutter2, input_sel and
- * timer open their popup on touch, light, light2, fan and number after holding 500 ms, the release
- * sends `buttonPress2,<id>,button`. main and info of type `text` send nothing, a button always
- * sends. There is no long press event (`buttonPress3`) on these pages.
+ * Touch of main or a slot. Every place of a device page runs the code of a cardGrid cell of the HMI
+ * (`doc/ideas/device-details/device-page-hmi.md`, Ereignisse beim Antippen), so this is {@link tileTouch} of the
+ * grid tile with what the device pages add: shutter, shutter2, input_sel and timer open their popup already on a
+ * tap; an empty element and - except in a button slot - type `text` without an id send nothing.
+ * Short tap: `buttonPress2,<id>,button`, also for type `text`. Held 500 ms: light, light2, fan and number open
+ * their popup, every other type sends `buttonPress3,<id>,button`.
  *
  * @param element the kind of element that was touched
- * @param type the entity type of the element
+ * @param entity type and id of the element
+ * @param entity.type the entity type
+ * @param entity.id the internal name
  * @param held true when it was held longer than {@link DEVICE_LONG_PRESS_MS}
  */
-export function deviceTouch(element: DeviceTapKind, type: string, held: boolean): DeviceTouch {
-    const popup = popupForType(type);
-    if (popup !== undefined && (POPUP_ON_TOUCH.has(type) || (held && POPUP_ON_HOLD.has(type)))) {
-        return { kind: 'popup', popup };
-    }
-    if (element !== 'button' && type === 'text') {
+export function deviceTouch(element: DeviceTapKind, entity: { type: string; id: string }, held: boolean): DeviceTouch {
+    const { type, id } = entity;
+    if (type === '' || type === 'delete') {
         return { kind: 'none' };
     }
-    return { kind: 'press' };
+    const popup = popupForType(type);
+    if (popup !== undefined && POPUP_ON_TOUCH.has(type)) {
+        return { kind: 'popup', popup };
+    }
+    if (element !== 'button' && type === 'text' && id === '') {
+        return { kind: 'none' };
+    }
+    return tileTouch(type, held);
 }
 
 /**
@@ -78,26 +95,37 @@ function unionBox(boxes: readonly Box[]): Box {
 
 /**
  * cardDevice1 / cardDevice2 / cardDevice3: the page of one device - big icon (main), fixed slots
- * (info, value, progress, button, switch), the status line (field 6 of main) and the info icon
- * at the bottom right. Rebuilt from the eu HMI pixel by pixel; on web-l the page is drawn in the
+ * (info, value, progress, button, switch, status), the status line (field 6 of main, standing or
+ * scrolling) and the info icon at the bottom right. main and every slot are touched like a grid tile
+ * ({@link deviceTouch}). Rebuilt from the eu HMI pixel by pixel; on web-l the page is drawn in the
  * eu geometry (`CENTERED_ON_WEB`). Texts are cut at the border of their field like on the panel.
  */
 export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
     /**
-     * A tap on main, an info or a button slot.
+     * A touch of main or a slot ({@link deviceTouch}). A popup gets what the HMI hands over: name, icon and icon
+     * colour of the element - from a status cell no name (the page does not read it), from a progress slot no icon.
      *
      * @param element the kind of element
      * @param entity its entity
      * @param held true for a long press
      */
     onTap(element: DeviceTapKind, entity: Entity6, held: boolean): void {
-        const touch = deviceTouch(element, entity.type, held);
+        const touch = deviceTouch(element, entity, held);
         switch (touch.kind) {
             case 'popup':
-                this.props.openPopup(touch.popup, entity.id, entity.displayName, entity.icon, entity.iconColor);
+                this.props.openPopup(
+                    touch.popup,
+                    entity.id,
+                    element === 'status' ? '' : entity.displayName,
+                    element === 'progress' ? '' : entity.icon,
+                    element === 'progress' ? undefined : entity.iconColor,
+                );
                 break;
             case 'press':
                 this.props.press(entity.id, 'button');
+                break;
+            case 'longPress':
+                this.props.send(`event,buttonPress3,${entity.id},button`);
                 break;
             default:
                 break;
@@ -145,7 +173,9 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
 
     /**
      * A touch area around the boxes of an element (name and value forward their touch to the icon
-     * on the HMI, the whole element is tappable).
+     * on the HMI or lie under a hotspot, the whole element is tappable). It is the touch area of a grid tile
+     * ({@link Pressable}) with the timer of the device pages: a tap on release, after {@link DEVICE_LONG_PRESS_MS}
+     * the popup of light, light2, fan and number at once, the long press of every other type on release.
      *
      * @param role data-role of the area
      * @param element the kind of element
@@ -161,15 +191,16 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         render: (origin: Box) => React.ReactNode,
     ): React.JSX.Element {
         const area = unionBox(boxes);
-        const hold = POPUP_ON_HOLD.has(entity.type);
         return (
             <Pressable
                 key={role}
                 data-role={role}
                 data-id={entity.id}
                 onPress={(): void => this.onTap(element, entity, false)}
-                onLongPress={hold ? (): void => this.onTap(element, entity, true) : undefined}
+                onLongPress={(): void => this.onTap(element, entity, true)}
                 longPressMs={DEVICE_LONG_PRESS_MS}
+                longPressOnRelease={!POPUP_ON_HOLD.has(entity.type)}
+                pressEffect={PRESS_EFFECT.has(element)}
                 style={{
                     position: 'absolute',
                     left: area.x,
@@ -186,7 +217,8 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
 
     /**
      * A cell of the status block (cardDevice1 slots 7-10): the icon only, centred in a 1 px grey frame; an
-     * empty slot of a visible block keeps its frame. No touch.
+     * empty slot of a visible block keeps its frame and takes no touch. A filled cell is tappable like every
+     * other place, without press effect.
      *
      * @param entity the slot
      * @param slot its cell
@@ -220,13 +252,15 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
             >
                 {isEmptySlot(entity)
                     ? null
-                    : this.text('icon', entity.icon, cell, 1, 1, color565ToCss(entity.iconColor), {
-                          // the text box is the cell itself, the frame lies on top of its edge
-                          x: cell.x + 1,
-                          y: cell.y + 1,
-                          w: 0,
-                          h: 0,
-                      })}
+                    : // the touch area and the text box are the cell itself, the frame lies on top of their edge
+                      this.tapArea(
+                          'status-icon',
+                          'status',
+                          entity,
+                          [{ x: -1, y: -1, w: cell.w, h: cell.h }],
+                          (): React.ReactNode =>
+                              this.text('icon', entity.icon, cell, 1, 1, color565ToCss(entity.iconColor), cell),
+                      )}
             </div>
         );
     }
@@ -259,44 +293,35 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                     this.text('name', entity.displayName, slot.name, 0, 1, fg, o),
                 ]);
             case 'value':
-                return (
-                    <div
-                        key={role}
-                        data-role={role}
-                    >
-                        {this.text('icon', entity.icon, slot.icon, 1, 1, iconColor)}
-                        {this.text('value', entity.optionalValue, slot.value, 4, 0, fg)}
-                        {this.text('name', entity.displayName, slot.name, 0, 0, fg)}
-                    </div>
-                );
+                return this.tapArea(role, 'value', entity, [slot.icon, slot.value, slot.name], o => [
+                    this.text('icon', entity.icon, slot.icon, 1, 1, iconColor, o),
+                    this.text('value', entity.optionalValue, slot.value, 4, 0, fg, o),
+                    this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
+                ]);
             case 'progress': {
                 const inner = slot.bar.w - 2;
                 const fill = Math.round((inner * progressPercent(entity.optionalValue)) / 100);
-                return (
+                return this.tapArea(role, 'progress', entity, [slot.name, slot.bar], o => [
+                    this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
                     <div
-                        key={role}
-                        data-role={role}
+                        key="bar"
+                        data-role="progress-bar"
+                        style={{
+                            position: 'absolute',
+                            left: slot.bar.x - o.x,
+                            top: slot.bar.y - o.y,
+                            width: slot.bar.w,
+                            height: slot.bar.h,
+                            border: `1px solid ${fg}`,
+                            boxSizing: 'border-box',
+                        }}
                     >
-                        {this.text('name', entity.displayName, slot.name, 0, 0, fg)}
                         <div
-                            data-role="progress-bar"
-                            style={{
-                                position: 'absolute',
-                                left: slot.bar.x,
-                                top: slot.bar.y,
-                                width: slot.bar.w,
-                                height: slot.bar.h,
-                                border: `1px solid ${fg}`,
-                                boxSizing: 'border-box',
-                            }}
-                        >
-                            <div
-                                data-role="progress-fill"
-                                style={{ width: fill, height: slot.bar.h - 2, background: iconColor }}
-                            />
-                        </div>
-                    </div>
-                );
+                            data-role="progress-fill"
+                            style={{ width: fill, height: slot.bar.h - 2, background: iconColor }}
+                        />
+                    </div>,
+                ]);
             }
             case 'switch':
                 return (
@@ -304,8 +329,10 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                         key={role}
                         data-role={role}
                     >
-                        {this.text('icon', entity.icon, slot.icon, 1, 1, iconColor)}
-                        {this.text('name', entity.displayName, slot.name, 0, 0, fg)}
+                        {this.tapArea(`${role}-label`, 'switch', entity, [slot.icon, slot.name], o => [
+                            this.text('icon', entity.icon, slot.icon, 1, 1, iconColor, o),
+                            this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
+                        ])}
                         <div
                             style={{
                                 position: 'absolute',
@@ -370,7 +397,23 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                         this.renderSlot(model.slots[i] ?? emptyEntity(), slot, i, statusVisible),
                     )}
                     <div data-role="status">
-                        {this.text('status', model.status, geometry.status, 0, geometry.statusAlign, theme.foreground)}
+                        {model.statusScroll ? (
+                            <StatusScroll
+                                text={model.status}
+                                color={theme.foreground}
+                                box={geometry.statusScroll}
+                                font={0}
+                            />
+                        ) : (
+                            this.text(
+                                'status',
+                                model.status,
+                                geometry.status,
+                                0,
+                                geometry.statusAlign,
+                                theme.foreground,
+                            )
+                        )}
                     </div>
                     {isEmptySlot(info) ? null : (
                         <Pressable

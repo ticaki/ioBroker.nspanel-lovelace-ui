@@ -231,12 +231,48 @@ export type DevicePageLayoutFields = {
 /** font of the names, values and the status line of the device page: font 0 (Noto Sans 24) */
 export const DEVICE_PAGE_TEXT_FONT = 0;
 
-/** maximum bytes of the status line (txt_maxl of tStatus) */
+/** maximum bytes of a standing status line (txt_maxl of tStatus) */
 export const DEVICE_PAGE_STATUS_MAX_BYTES = 63;
 
 /**
- * The text fields of the device pages (EU HMI). Only the status line is shortened by the adapter (with "..."), every
- * other field is cut by the HMI at its edge - the widths are here for the admin and the web panel.
+ * appended to the status line (field 6 of main): the HMI cuts the two characters off and shows the text before them
+ * as a text that scrolls pixel by pixel (`gStatus`). The digit is not evaluated by the HMI.
+ */
+export const DEVICE_PAGE_STATUS_SCROLL_MARK = '¬1';
+
+/** the character of {@link DEVICE_PAGE_STATUS_SCROLL_MARK} - never part of the status text itself */
+export const DEVICE_PAGE_STATUS_SCROLL_CHAR = '¬';
+
+/**
+ * maximum bytes of the text of a scrolling status line: txt_maxl of gStatus (127) without the 3 bytes of
+ * {@link DEVICE_PAGE_STATUS_SCROLL_MARK}
+ */
+export const DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES = 124;
+
+/** the layouts whose HMI page can scroll the status line; false = the text always stands, cut with "..." */
+export const DEVICE_PAGE_STATUS_SCROLLS: Readonly<Record<DevicePageLayout, boolean>> = {
+    1: true,
+    2: true,
+    3: true,
+};
+
+/**
+ * bytes of the receive buffer (`strCommand`) of the HMI page of a layout: what an `entityUpd` has beyond that is cut
+ * off (the last elements are missing). The display itself takes at most MAX_PANEL_PAYLOAD_BYTES.
+ */
+export const DEVICE_PAGE_RECEIVE_BYTES: Readonly<Record<DevicePageLayout, number>> = {
+    1: 1015,
+    2: 943,
+    3: 1019,
+};
+
+/** maximum bytes of the name and of the value of an element (txt_maxl of tEntity / tValue / tMainName) */
+export const DEVICE_PAGE_TEXT_MAX_BYTES = 31;
+
+/**
+ * The text fields of the device pages (EU HMI). Only the status line is measured by the adapter (wider than its field
+ * it scrolls or is shortened with "..."), every other field is cut by the HMI at its edge - the widths are here for
+ * the admin and the web panel.
  *
  * The `value` slot of layout 2 draws field 6 in font 4 (Noto Sans Bold 80) in 190 px: a digit is 33 px, ':' 17 px,
  * '%' 53 px, '°' 25 px, a space 15 px - about 5 digits fit. The font has digits, `: % ° , . - /`, letters with

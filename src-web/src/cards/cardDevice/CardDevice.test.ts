@@ -1,10 +1,12 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { initialGlobalState } from '../../store/PanelStore';
 import type { Entity6 } from '../../protocol/types';
 import type { CardProps } from '../CardContract';
-import { CardDevice, deviceTouch } from './CardDevice';
+import { Pressable, type PressableProps } from '../cardEntities/shared/Pressable';
+import { CardDevice, DEVICE_LONG_PRESS_MS, deviceTouch } from './CardDevice';
+import { STATUS_SCROLL_ANIMATION, STATUS_SCROLL_PX_PER_S, StatusScroll, statusScrollTiming } from './StatusScroll';
 import { initial, parseEntityUpd, type CardDeviceModel } from './parse';
 
 interface Sent {
@@ -36,68 +38,114 @@ function entity(type: string, id = 'x'): Entity6 {
     return { type, id, icon: 'I', iconColor: 1234, displayName: 'Name', optionalValue: '' };
 }
 
-describe('deviceTouch (cardGrid cell of the HMI, no long press event)', () => {
-    it('opens shutter, shutter2, input_sel and timer on a tap', () => {
-        for (const element of ['main', 'info', 'button'] as const) {
-            expect(deviceTouch(element, 'shutter', false)).toEqual({ kind: 'popup', popup: 'popupShutter' });
-            expect(deviceTouch(element, 'shutter2', false)).toEqual({ kind: 'popup', popup: 'popupShutter2' });
-            expect(deviceTouch(element, 'input_sel', false)).toEqual({ kind: 'popup', popup: 'popupInSel' });
-            expect(deviceTouch(element, 'timer', true)).toEqual({ kind: 'popup', popup: 'popupTimer' });
+const NONE = [{ kind: 'none' }, { kind: 'none' }];
+
+const ELEMENTS = ['main', 'info', 'value', 'progress', 'button', 'switch', 'status'] as const;
+
+describe('deviceTouch (every place is a cardGrid cell of the HMI)', () => {
+    it('opens shutter, shutter2, input_sel and timer on a tap, in every place', () => {
+        for (const element of ELEMENTS) {
+            expect(deviceTouch(element, entity('shutter'), false)).toEqual({ kind: 'popup', popup: 'popupShutter' });
+            expect(deviceTouch(element, entity('shutter2'), false)).toEqual({ kind: 'popup', popup: 'popupShutter2' });
+            expect(deviceTouch(element, entity('input_sel'), false)).toEqual({ kind: 'popup', popup: 'popupInSel' });
+            expect(deviceTouch(element, entity('timer'), true)).toEqual({ kind: 'popup', popup: 'popupTimer' });
         }
     });
 
     it('presses light, light2, fan and number on a tap and opens their popup when held', () => {
-        expect(deviceTouch('main', 'light', false)).toEqual({ kind: 'press' });
-        expect(deviceTouch('main', 'light', true)).toEqual({ kind: 'popup', popup: 'popupLight' });
-        expect(deviceTouch('info', 'light2', true)).toEqual({ kind: 'popup', popup: 'popupLightNew' });
-        expect(deviceTouch('button', 'fan', true)).toEqual({ kind: 'popup', popup: 'popupFan' });
-        expect(deviceTouch('button', 'number', false)).toEqual({ kind: 'press' });
-        expect(deviceTouch('button', 'number', true)).toEqual({ kind: 'popup', popup: 'popupSlider' });
+        for (const element of ELEMENTS) {
+            expect(deviceTouch(element, entity('light'), false)).toEqual({ kind: 'press' });
+            expect(deviceTouch(element, entity('light'), true)).toEqual({ kind: 'popup', popup: 'popupLight' });
+            expect(deviceTouch(element, entity('light2'), true)).toEqual({ kind: 'popup', popup: 'popupLightNew' });
+            expect(deviceTouch(element, entity('fan'), true)).toEqual({ kind: 'popup', popup: 'popupFan' });
+            expect(deviceTouch(element, entity('number'), false)).toEqual({ kind: 'press' });
+            expect(deviceTouch(element, entity('number'), true)).toEqual({ kind: 'popup', popup: 'popupSlider' });
+        }
     });
 
-    it('presses button and switch types, held or not (no buttonPress3)', () => {
-        for (const type of ['button', 'switch']) {
-            for (const held of [false, true]) {
-                expect(deviceTouch('main', type, held)).toEqual({ kind: 'press' });
-                expect(deviceTouch('info', type, held)).toEqual({ kind: 'press' });
-                expect(deviceTouch('button', type, held)).toEqual({ kind: 'press' });
+    it('button, switch and text: buttonPress2 on a tap, buttonPress3 when held, in every place', () => {
+        for (const element of ELEMENTS) {
+            for (const type of ['button', 'switch', 'text']) {
+                expect(deviceTouch(element, entity(type), false)).toEqual({ kind: 'press' });
+                expect(deviceTouch(element, entity(type), true)).toEqual({ kind: 'longPress' });
             }
         }
     });
 
-    it('sends nothing for main and info of type text, a button of type text presses', () => {
-        expect(deviceTouch('main', 'text', false)).toEqual({ kind: 'none' });
-        expect(deviceTouch('info', 'text', true)).toEqual({ kind: 'none' });
-        expect(deviceTouch('button', 'text', false)).toEqual({ kind: 'press' });
+    it('type text without an id sends nothing, only a button slot always sends', () => {
+        for (const element of ELEMENTS) {
+            const expected = element === 'button' ? [{ kind: 'press' }, { kind: 'longPress' }] : NONE;
+            expect([
+                deviceTouch(element, entity('text', ''), false),
+                deviceTouch(element, entity('text', ''), true),
+            ]).toEqual(expected);
+        }
+    });
+
+    it('an empty element sends nothing', () => {
+        for (const element of ELEMENTS) {
+            expect(deviceTouch(element, entity('', 'x'), false)).toEqual({ kind: 'none' });
+            expect(deviceTouch(element, entity('delete', 'x'), true)).toEqual({ kind: 'none' });
+        }
     });
 });
 
 describe('cardDevice events', () => {
-    it('main: buttonPress2,<id>,button, popup on hold, nothing for text', () => {
+    it('main: buttonPress2 on a tap (also type text), buttonPress3 when held, popup of a light when held', () => {
         const { card: c, sent } = card();
         c.onTap('main', entity('button', 'dev'), false);
         c.onTap('main', entity('text', 'dev'), false);
+        c.onTap('main', entity('text', ''), false);
+        c.onTap('main', entity('button', 'dev'), true);
         c.onTap('main', entity('light', 'lamp'), true);
-        expect(sent.press).toEqual([['dev', 'button']]);
+        expect(sent.press).toEqual([
+            ['dev', 'button'],
+            ['dev', 'button'],
+        ]);
         expect(sent.popup).toEqual([['popupLight', 'lamp', 'Name', 'I', 1234]]);
-        expect(sent.send).toEqual([]);
+        expect(sent.send).toEqual(['event,buttonPress3,dev,button']);
     });
 
-    it('info: input_sel opens popupInSel, text sends nothing', () => {
+    it('info: input_sel opens popupInSel, a text with an id sends buttonPress2 / buttonPress3', () => {
         const { card: c, sent } = card();
         c.onTap('info', entity('input_sel', 'prog'), false);
         c.onTap('info', entity('text', 'akku'), false);
+        c.onTap('info', entity('text', 'akku'), true);
         expect(sent.popup).toEqual([['popupInSel', 'prog', 'Name', 'I', 1234]]);
-        expect(sent.press).toEqual([]);
+        expect(sent.press).toEqual([['akku', 'button']]);
+        expect(sent.send).toEqual(['event,buttonPress3,akku,button']);
     });
 
-    it('button: buttonPress2,<id>,button, also for type text', () => {
+    it('button: buttonPress2,<id>,button, also for type text; held buttonPress3', () => {
         const { card: c, sent } = card();
         c.onTap('button', entity('button', 'start'), false);
         c.onTap('button', entity('text', 'dock'), true);
-        expect(sent.press).toEqual([
-            ['start', 'button'],
-            ['dock', 'button'],
+        expect(sent.press).toEqual([['start', 'button']]);
+        expect(sent.send).toEqual(['event,buttonPress3,dock,button']);
+    });
+
+    it('value, progress, status and icon/name of a switch slot: tap and long press like a cell', () => {
+        for (const element of ['value', 'progress', 'status', 'switch'] as const) {
+            const { card: c, sent } = card();
+            c.onTap(element, entity('text', 'rest'), false);
+            c.onTap(element, entity('text', 'rest'), true);
+            c.onTap(element, entity('switch', 'klima'), true);
+            c.onTap(element, entity('text', ''), false);
+            expect(sent.press, element).toEqual([['rest', 'button']]);
+            expect(sent.send, element).toEqual(['event,buttonPress3,rest,button', 'event,buttonPress3,klima,button']);
+            expect(sent.popup, element).toEqual([]);
+        }
+    });
+
+    it('popups: a status cell hands over no name, a progress slot no icon', () => {
+        const { card: c, sent } = card();
+        c.onTap('status', entity('input_sel', 'mode'), false);
+        c.onTap('progress', entity('number', 'level'), true);
+        c.onTap('value', entity('timer', 'rest'), false);
+        expect(sent.popup).toEqual([
+            ['popupInSel', 'mode', '', 'I', 1234],
+            ['popupSlider', 'level', 'Name', '', undefined],
+            ['popupTimer', 'rest', 'Name', 'I', 1234],
         ]);
     });
 
@@ -116,6 +164,195 @@ describe('cardDevice events', () => {
         const { card: c, sent } = card(model);
         c.onInfo();
         expect(sent.press).toEqual([['9?0?info', 'button']]);
+    });
+});
+
+/** the handlers of a touch area, called like the browser does */
+function touchArea(props: PressableProps): { down: () => void; up: () => void; leave: () => void } {
+    const area = new Pressable(props);
+    // not mounted: keep the state by hand
+    area.setState = (state): void => {
+        Object.assign(area.state, state);
+    };
+    const event = { stopPropagation: (): void => undefined };
+    const handlers = (): Record<string, ((e: unknown) => void) | undefined> =>
+        (area.render() as React.ReactElement<Record<string, ((e: unknown) => void) | undefined>>).props;
+    return {
+        down: () => handlers().onPointerDown?.(event),
+        up: () => handlers().onPointerUp?.(event),
+        leave: () => handlers().onPointerLeave?.(event),
+    };
+}
+
+describe('touch area of the device pages (Pressable of the grid tile, long press on release)', () => {
+    function area(onRelease: boolean): { calls: string[]; touch: ReturnType<typeof touchArea> } {
+        const calls: string[] = [];
+        const touch = touchArea({
+            onPress: () => calls.push('press'),
+            onLongPress: () => calls.push('long'),
+            longPressMs: DEVICE_LONG_PRESS_MS,
+            longPressOnRelease: onRelease,
+        });
+        return { calls, touch };
+    }
+
+    it('a short tap presses on release', () => {
+        vi.useFakeTimers();
+        const { calls, touch } = area(true);
+        touch.down();
+        vi.advanceTimersByTime(DEVICE_LONG_PRESS_MS - 1);
+        expect(calls).toEqual([]);
+        touch.up();
+        expect(calls).toEqual(['press']);
+        vi.useRealTimers();
+    });
+
+    it('held 500 ms: the long press is sent on release, exactly once and without a press', () => {
+        vi.useFakeTimers();
+        const { calls, touch } = area(true);
+        touch.down();
+        vi.advanceTimersByTime(DEVICE_LONG_PRESS_MS + 2000);
+        expect(calls).toEqual([]);
+        touch.up();
+        expect(calls).toEqual(['long']);
+        vi.useRealTimers();
+    });
+
+    it('leaving the area while holding sends nothing', () => {
+        vi.useFakeTimers();
+        const { calls, touch } = area(true);
+        touch.down();
+        vi.advanceTimersByTime(DEVICE_LONG_PRESS_MS);
+        touch.leave();
+        touch.up();
+        expect(calls).toEqual([]);
+        vi.useRealTimers();
+    });
+
+    it('light, light2, fan, number (not on release): the popup opens when the hold time is reached', () => {
+        vi.useFakeTimers();
+        const { calls, touch } = area(false);
+        touch.down();
+        vi.advanceTimersByTime(DEVICE_LONG_PRESS_MS);
+        expect(calls).toEqual(['long']);
+        touch.up();
+        expect(calls).toEqual(['long']);
+        vi.useRealTimers();
+    });
+});
+
+const NAV12 = ['button', 'p', '<', '65535', '', '', 'button', 'n', '>', '65535', '', ''];
+
+function page(pageType: string, main: string[], slots: string[][]): string {
+    const ctx = { pageType, pageArgs: [] };
+    const model = parseEntityUpd(['T', ...NAV12, ...main, ...slots.flat()], initial(), ctx);
+    return renderToStaticMarkup(
+        React.createElement(CardDevice, {
+            model,
+            ctx,
+            global: initialGlobalState('eu'),
+            send: () => undefined,
+            press: () => undefined,
+            openPopup: () => undefined,
+        }),
+    );
+}
+
+/** the opening tag of the element with this data-role */
+function tag(html: string, role: string): string {
+    const at = html.indexOf(`data-role="${role}"`);
+    return at < 0 ? '' : html.slice(html.lastIndexOf('<', at), html.indexOf('>', at) + 1);
+}
+
+describe('cardDevice touch areas', () => {
+    const t = (id: string): string[] => ['text', id, 'X', '65535', `n${id}`, '50'];
+    const EMPTY = ['', '', '', '', '', ''];
+
+    it('cardDevice2: value and progress are touch areas the size of the HMI hotspots', () => {
+        const out = page('cardDevice2', t('m'), [t('1'), t('2'), t('3'), t('4'), t('5'), t('6')]);
+        expect(tag(out, 'slot-1')).toContain('data-pressable');
+        expect(tag(out, 'slot-1')).toContain('left:110px;top:67px;width:226px;height:110px');
+        expect(tag(out, 'slot-2')).toContain('data-pressable');
+        expect(tag(out, 'slot-2')).toContain('left:10px;top:179px;width:429px;height:42px');
+        // the bar stays where it was: 10 / 207 on the stage
+        expect(tag(out, 'progress-bar')).toContain('left:0;top:28px;width:429px;height:14px');
+    });
+
+    it('cardDevice3: icon and name of a switch slot are a touch area, the switch stays its own', () => {
+        const slots = [
+            t('1'),
+            t('2'),
+            t('3'),
+            t('4'),
+            t('5'),
+            t('6'),
+            ['switch', '7', 'X', '65535', 'Klima', '1'],
+            EMPTY,
+        ];
+        const out = page('cardDevice3', t('m'), slots);
+        expect(tag(out, 'slot-7-label')).toContain('data-pressable');
+        expect(tag(out, 'slot-7-label')).toContain('data-id="7"');
+        expect(tag(out, 'slot-7-label')).toContain('left:10px;top:236px;width:161px;height:34px');
+        expect(tag(out, 'toggle')).toContain('data-pressable');
+        expect(out).not.toContain('data-role="slot-8-label"');
+    });
+
+    it('empty value, progress and switch slots take no touch', () => {
+        const out = page('cardDevice2', t('m'), [EMPTY, EMPTY, t('3'), t('4'), t('5'), t('6')]);
+        expect(out).not.toContain('data-role="slot-1"');
+        expect(out).not.toContain('data-role="slot-2"');
+    });
+});
+
+describe('cardDevice status line', () => {
+    const main = (status: string): string[] => ['text', 'm', 'M', '65535', 'Main', status];
+
+    it('without the mark the text stands in its field as before', () => {
+        const out = page('cardDevice2', main('Schleudern'), []);
+        expect(out).not.toContain('data-role="status-scroll"');
+        expect(out).toContain('left:10px;top:289px;width:390px;height:30px');
+        expect(out).toContain('Schleudern');
+    });
+
+    it('with the mark the text scrolls in the box of gStatus, the mark is not shown', () => {
+        for (const pageType of ['cardDevice1', 'cardDevice2', 'cardDevice3']) {
+            const out = page(pageType, main('Ein langer Text, der läuft¬1'), []);
+            expect(tag(out, 'status-scroll')).toContain('left:10px;top:290px;width:390px;height:30px');
+            expect(tag(out, 'status-scroll')).toContain('overflow:hidden');
+            expect(out).toContain('Ein langer Text, der läuft<');
+            expect(out).not.toContain('¬');
+            expect(out).toContain(`@keyframes ${STATUS_SCROLL_ANIMATION}`);
+        }
+    });
+
+    it('scrolls to the left at 40 px/s and starts with the text at the left edge', () => {
+        expect(STATUS_SCROLL_PX_PER_S).toBe(40);
+        // 390 px box, 810 px text: one round is 1200 px = 30 s, the first 390 px (9.75 s) are skipped
+        expect(statusScrollTiming(810, 390)).toEqual({ duration: 30, delay: -9.75 });
+        expect(statusScrollTiming(10, 390, 20)).toEqual({ duration: 20, delay: -19.5 });
+    });
+
+    it('keeps the animation over an update with the same text: same element, same style', () => {
+        const scroll = new StatusScroll({
+            text: 'läuft',
+            color: '#fff',
+            box: { x: 10, y: 290, w: 390, h: 30 },
+            font: 0,
+        });
+        scroll.state = { measured: { text: 'läuft', width: 410 } };
+        const first = renderToStaticMarkup(scroll.render());
+        expect(first).toContain(`animation:${STATUS_SCROLL_ANIMATION} 20s linear -9.75s infinite`);
+        expect(renderToStaticMarkup(scroll.render())).toBe(first);
+        // the strip is keyed by its text: another text is another element and starts again
+        const strip = (el: React.JSX.Element): React.Key | null => {
+            const children = React.Children.toArray((el.props as { children?: React.ReactNode }).children);
+            const last = children[children.length - 1];
+            return React.isValidElement(last) ? last.key : null;
+        };
+        expect(strip(scroll.render())).toContain('läuft');
+        // not measured for the text shown: it stands at the left edge, no animation
+        scroll.state = { measured: { text: 'anderer Text', width: 410 } };
+        expect(renderToStaticMarkup(scroll.render())).not.toContain('animation:');
     });
 });
 
@@ -145,16 +382,25 @@ describe('cardDevice1 status block rendering', () => {
         );
     }
 
-    it('shows no cells without status icons, all 4 framed cells with one, none of them tappable', () => {
+    it('shows no cells without status icons, all 4 framed cells with one, only the filled ones tappable', () => {
         expect(html(0).match(/data-kind="status"/g) ?? []).toHaveLength(0);
         for (const n of [1, 4]) {
             const out = html(n);
             expect(out.match(/data-kind="status"/g) ?? []).toHaveLength(4);
             const cells = out.split('data-kind="status"').slice(1);
-            for (const cell of cells) {
-                expect(cell.split('data-role="slot-')[0]).not.toContain('data-pressable');
-            }
+            cells.forEach((cell, i) => {
+                const own = cell.split('data-role="slot-')[0];
+                expect(own.includes('data-pressable'), `cell ${i + 1} of ${n}`).toBe(i < n);
+            });
         }
+    });
+
+    it('a filled status cell is a touch area over the whole cell, the icon stays in place', () => {
+        const out = html(1);
+        const cell = out.split('data-kind="status"')[1];
+        expect(cell).toContain('data-role="status-icon"');
+        expect(cell).toContain('data-id="s7"');
+        expect(cell).toContain('left:-1px;top:-1px;width:38px;height:45px');
     });
 
     it('moves the info rows right while the block is shown', () => {

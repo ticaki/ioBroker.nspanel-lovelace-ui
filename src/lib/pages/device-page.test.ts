@@ -5,12 +5,16 @@ import {
     cardDeviceOf,
     devicePageChannelAdminItem,
     devicePageChannelElement,
+    cutToBytes,
     devicePageChannelSlotItem,
     devicePageChannels,
+    devicePageClampElement,
     devicePageElements,
     devicePageMainElement,
     devicePageMainItem,
+    devicePageMaxPayloadBytes,
     devicePagePageConfig,
+    devicePagePayload,
     devicePageSlotItem,
     devicePageStatusIconElement,
     devicePageStatusIconItem,
@@ -24,7 +28,11 @@ import {
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_FIELDS,
     DEVICE_PAGE_PROGRESS_ROLE,
-    DEVICE_PAGE_STATUS_MAX_BYTES,
+    DEVICE_PAGE_RECEIVE_BYTES,
+    DEVICE_PAGE_STATUS_SCROLL_MARK,
+    DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
+    DEVICE_PAGE_STATUS_SCROLLS,
+    DEVICE_PAGE_TEXT_MAX_BYTES,
     defaultDevicePageConfig,
     defaultDevicePageSlots,
     devicePageConfigOf,
@@ -43,7 +51,7 @@ import {
     type DeviceDetailsRuntime,
     type DevicePageRuntime,
 } from '../types/deviceDetails';
-import { textWidth } from '../const/text-width';
+import { fitText, textWidth } from '../const/text-width';
 import { PageDevice } from './pageDevice';
 import { PageItem } from './pageItem';
 import { Dataitem } from '../controller/data-item';
@@ -374,18 +382,158 @@ describe('lib/pages/device-page - status line', () => {
         }
         expect(DEVICE_PAGE_FIELDS[2].slots.value).to.deep.equal({ name: 190, value: 190, valueFont: 4 });
     });
-    it('a too long text is cut at the end with "..." to the width of the line', () => {
-        const long = 'Fehler: Wassertank leer, bitte nachfüllen und die Tür der Maschine schließen';
-        const out = fitDevicePageStatus(long, 2, 'eu');
-        expect(out.endsWith('...')).to.equal(true);
-        expect(long.startsWith(out.slice(0, -3))).to.equal(true);
-        expect(textWidth(out, 0, 'eu')).to.be.at.most(390);
-        expect(textWidth(`${long.slice(0, out.length - 2)}...`, 0, 'eu')).to.be.above(390);
+    const LONG = 'Fehler: Wassertank leer, bitte nachfüllen und die Tür der Maschine schließen';
+    const bytes = (text: string): number => Buffer.byteLength(text, 'utf8');
+    it('a text wider than the line scrolls: the whole text with the mark, in every layout', () => {
+        expect(textWidth(LONG, 0, 'eu')).to.be.above(390);
+        for (const layout of [1, 2, 3] as const) {
+            expect(DEVICE_PAGE_STATUS_SCROLLS[layout]).to.equal(true);
+            expect(fitDevicePageStatus(LONG, layout, 'eu')).to.equal(`${LONG}¬1`);
+        }
+        expect(DEVICE_PAGE_STATUS_SCROLL_MARK).to.equal('¬1');
+        expect(bytes(DEVICE_PAGE_STATUS_SCROLL_MARK)).to.equal(3);
     });
-    it('never more bytes than the text field holds, no line breaks', () => {
-        const out = fitDevicePageStatus('ü'.repeat(40), 1, 'web-l');
-        expect(Buffer.byteLength(out, 'utf8')).to.be.at.most(DEVICE_PAGE_STATUS_MAX_BYTES);
+    it('a text that fits the line but not the 63 bytes of the standing text scrolls', () => {
+        // 40 x 'i' and 12 x 'ü': narrow, but 64 bytes
+        const text = `${'i'.repeat(40)}${'ü'.repeat(12)}`;
+        expect(textWidth(text, 0, 'eu')).to.be.at.most(390);
+        expect(bytes(text)).to.equal(64);
+        expect(fitDevicePageStatus(text, 3, 'eu')).to.equal(`${text}¬1`);
+        // one byte less: it stands
+        expect(fitDevicePageStatus(text.slice(1), 3, 'eu')).to.equal(text.slice(1));
+    });
+    it('a scrolling text has at most 124 bytes, cut at a character with "..." - 127 with the mark', () => {
+        const exact = 'a'.repeat(DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES);
+        expect(fitDevicePageStatus(exact, 2, 'eu')).to.equal(`${exact}¬1`);
+        const out = fitDevicePageStatus(`${exact}b`, 2, 'eu');
+        expect(out).to.equal(`${'a'.repeat(121)}...¬1`);
+        expect(bytes(out)).to.equal(127);
+        // 2-byte characters: never half a character
+        const umlauts = fitDevicePageStatus('ü'.repeat(80), 1, 'eu');
+        expect(umlauts).to.equal(`${'ü'.repeat(60)}...¬1`);
+        expect(bytes(umlauts)).to.equal(126);
+    });
+    it('the character of the mark, "~" and line breaks never reach the field', () => {
+        expect(fitDevicePageStatus('Fertig¬1', 2, 'eu')).to.equal('Fertig1');
+        expect(fitDevicePageStatus('a~b¬', 2, 'eu')).to.equal('ab');
         expect(fitDevicePageStatus('a\r\nb', 1, 'eu')).to.equal('a b');
+        const out = fitDevicePageStatus(`${LONG}¬1`, 2, 'eu');
+        expect(out).to.equal(`${LONG}1¬1`);
+        expect(out.match(/¬/g)).to.have.length(1);
+    });
+    it('a smaller budget: the scrolling text gets shorter, down to the standing text with "..."', () => {
+        // LONG has 79 bytes: 82 with the mark
+        expect(bytes(LONG)).to.equal(79);
+        expect(fitDevicePageStatus(LONG, 3, 'eu', 82)).to.equal(`${LONG}¬1`);
+        const shorter = fitDevicePageStatus(LONG, 3, 'eu', 75);
+        expect(shorter.endsWith('...¬1')).to.equal(true);
+        expect(bytes(shorter)).to.be.at.most(75);
+        expect(LONG.startsWith(shorter.slice(0, -5).trimEnd())).to.equal(true);
+        // the standing text: cut to the width of the line
+        const standing = fitText(LONG, 0, 'eu', 390);
+        expect(standing.endsWith('...')).to.equal(true);
+        expect(textWidth(standing, 0, 'eu')).to.be.at.most(390);
+        // a scrolling text that would show no more than the standing one: the standing one
+        expect(fitDevicePageStatus(LONG, 3, 'eu', bytes(standing) + 3)).to.equal(standing);
+        expect(fitDevicePageStatus(LONG, 3, 'eu', bytes(standing))).to.equal(standing);
+        // even less: a shorter standing text, at last nothing
+        const less = fitDevicePageStatus(LONG, 3, 'eu', 20);
+        expect(less).to.equal(`${LONG.slice(0, 17)}...`);
+        expect(fitDevicePageStatus(LONG, 3, 'eu', 3)).to.equal('');
+        expect(fitDevicePageStatus(LONG, 3, 'eu', 0)).to.equal('');
+        expect(fitDevicePageStatus('ok', 3, 'eu', 1)).to.equal('');
+    });
+    it('names and values are cut to the 31 bytes of the text buffers, at a character', () => {
+        expect(DEVICE_PAGE_TEXT_MAX_BYTES).to.equal(31);
+        expect(cutToBytes('abc', 31)).to.equal('abc');
+        expect(cutToBytes('ü'.repeat(20), 31)).to.equal('ü'.repeat(15));
+        expect(cutToBytes('€€€', 4)).to.equal('€');
+        const name = 'N'.repeat(40);
+        const value = `${'v'.repeat(30)}ü`;
+        expect(devicePageClampElement(`text~dp_3?1~I~123~${name}~${value}`)).to.equal(
+            `text~dp_3?1~I~123~${'N'.repeat(31)}~${'v'.repeat(30)}`,
+        );
+        expect(devicePageClampElement('text~dp_3?1~I~123~Akku~80 %')).to.equal('text~dp_3?1~I~123~Akku~80 %');
+        expect(devicePageClampElement(DEVICE_PAGE_EMPTY_ELEMENT)).to.equal(DEVICE_PAGE_EMPTY_ELEMENT);
+        // the name of main too, the status line (field 6) is not a value
+        expect(devicePageMainElement(`button~dp_3?0~I~123~${name}~1`, `${LONG}¬1`)).to.equal(
+            `button~dp_3?0~I~123~${'N'.repeat(31)}~${LONG}¬1`,
+        );
+    });
+    describe('length of the message', () => {
+        const NAV = 'button~bSubPrev~<~65535~~~button~bSubNext~>~65535~~';
+        const head = `entityUpd~${'H'.repeat(40)}~${NAV}`;
+        const main = `button~dp_12?0~I~65535~${'M'.repeat(31)}~1`;
+        const full = (type: string, n: number): string =>
+            `${type}~dp_1234567890?${n}~I~65535~${'n'.repeat(31)}~${'w'.repeat(31)}`;
+        const info = 'button~dp_1234567890?9~I~65535~~1';
+        const status = 's'.repeat(200);
+        it('buffers of the HMI pages: 1015 / 943 / 1019, never more than the display takes (1017)', () => {
+            expect(DEVICE_PAGE_RECEIVE_BYTES).to.deep.equal({ 1: 1015, 2: 943, 3: 1019 });
+            expect([1, 2, 3].map(l => devicePageMaxPayloadBytes(l as 1 | 2 | 3))).to.deep.equal([1015, 943, 1017]);
+        });
+        it('a message that fits keeps the whole scrolling text', () => {
+            const elements = [full('text', 1), full('text', 2), info];
+            const out = devicePagePayload(head, main, elements, status, 3, 'eu');
+            expect(out).to.equal(
+                [head, `button~dp_12?0~I~65535~${'M'.repeat(31)}~${'s'.repeat(121)}...¬1`, ...elements].join('~'),
+            );
+            expect(devicePagePayload(head, '', [], '', 2, 'eu')).to.equal(`${head}~~~~~~`);
+        });
+        it('layout 3 with six full info slots: the scrolling text is shortened to 1017 bytes', () => {
+            const elements = [1, 2, 3, 4, 5, 6].map(n => full('input_sel', n));
+            elements.push(
+                `switch~dp_1234567890?7~I~65535~${'n'.repeat(31)}~1`,
+                `switch~dp_1234567890?8~I~65535~${'n'.repeat(31)}~0`,
+            );
+            elements.push(info);
+            const unlimited = [head, devicePageMainElement(main, fitDevicePageStatus(status, 3, 'eu')), ...elements];
+            expect(bytes(unlimited.join('~'))).to.be.above(1017);
+            const out = devicePagePayload(head, main, elements, status, 3, 'eu');
+            expect(bytes(out)).to.be.at.most(1017);
+            expect(bytes(out)).to.be.above(1017 - 4);
+            const field = out.split('~')[19];
+            expect(field.endsWith('...¬1')).to.equal(true);
+            expect(bytes(field)).to.be.below(127);
+            // nothing else changed
+            expect(out.split('~').slice(20).join('~')).to.equal(elements.join('~'));
+        });
+        it('layout 2 (943 bytes): falls back to the standing text when the room gets too small', () => {
+            const elements = [1, 2, 3, 4, 5, 6].map(n => full('input_sel', n));
+            elements.push(info);
+            // a long heading takes the room of the scrolling text: exactly the standing text is left
+            const standing = fitText(status, 0, 'eu', 390);
+            const headOf = (n: number): string => `entityUpd~${'H'.repeat(n)}~${NAV}`;
+            const room = 943 - bytes(devicePagePayload(headOf(0), main, elements, '', 2, 'eu'));
+            const out = devicePagePayload(headOf(room - bytes(standing)), main, elements, status, 2, 'eu');
+            expect(bytes(out)).to.equal(943);
+            expect(out.split('~')[19]).to.equal(standing);
+            // 4 bytes more room: a scrolling text would show one character more than the standing one
+            const scrolls = devicePagePayload(headOf(room - bytes(standing) - 4), main, elements, status, 2, 'eu');
+            expect(bytes(scrolls)).to.equal(943);
+            expect(scrolls.split('~')[19].endsWith('...¬1')).to.equal(true);
+            // still less room: the standing text gets shorter
+            const tighter = devicePagePayload(headOf(room - bytes(standing) + 10), main, elements, status, 2, 'eu');
+            expect(bytes(tighter)).to.equal(943);
+            expect(tighter.split('~')[19]).to.equal(`${'s'.repeat(bytes(standing) - 13)}...`);
+        });
+        it('the longest message the adapter builds fits every layout (names and values 31 bytes, status 124)', () => {
+            for (const layout of [1, 2, 3] as const) {
+                const kinds = DEVICE_PAGE_LAYOUTS[layout];
+                const elements = kinds.map((kind, i) =>
+                    kind === 'status'
+                        ? devicePageStatusIconElement(full('text', i + 1))
+                        : devicePageClampElement(
+                              `input_sel~dp_12?${i + 1}~I~65535~${'ü'.repeat(40)}~${'ü'.repeat(40)}`,
+                          ),
+                );
+                elements.push(info);
+                const out = devicePagePayload(head, main, elements, 'ü'.repeat(200), layout, 'eu');
+                expect(bytes(out), `layout ${layout}`).to.be.at.most(devicePageMaxPayloadBytes(layout));
+                expect(out.split('~')[19].endsWith('¬1'), `layout ${layout}`).to.equal(true);
+                expect(out.split('~')).to.have.length(1 + 1 + 12 + 6 * (kinds.length + 2));
+            }
+        });
     });
     it('the status item: text of common.states, value with unit, boolean on/off - all read only', () => {
         const states = devicePageStatusItem(DEV, ref('phase'), objects[`${DEV}.phase`].common) as any;

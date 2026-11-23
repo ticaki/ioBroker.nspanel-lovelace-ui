@@ -16,6 +16,14 @@ export interface PressableProps {
      * `tmLP` timer in the HMI (cardMedia 500 ms, cardThermo2 300 ms).
      */
     longPressMs?: number;
+    /**
+     * true: the long press is reported when the touch is released, not when the hold time is reached - the cell
+     * code of the HMI (`tmLP` only sets `LPState`, the release sends `buttonPress3`). Leaving the area while
+     * holding sends nothing.
+     */
+    longPressOnRelease?: boolean;
+    /** false: the area does not dim while it is pressed (an HMI hotspot or text without press effect) */
+    pressEffect?: boolean;
     disabled?: boolean;
     style?: React.CSSProperties;
     className?: string;
@@ -64,6 +72,9 @@ export class Pressable extends React.Component<PressableProps, PressableState> {
             this.timer = setTimeout(() => {
                 this.timer = undefined;
                 this.longFired = true;
+                if (this.props.longPressOnRelease) {
+                    return;
+                }
                 this.setState({ pressed: false });
                 this.props.onLongPress?.();
             }, this.props.longPressMs ?? LONG_PRESS_MS);
@@ -79,6 +90,8 @@ export class Pressable extends React.Component<PressableProps, PressableState> {
         this.setState({ pressed: false });
         if (!this.longFired) {
             this.props.onPress?.();
+        } else if (this.props.longPressOnRelease) {
+            this.props.onLongPress?.();
         }
     };
 
@@ -104,7 +117,7 @@ export class Pressable extends React.Component<PressableProps, PressableState> {
                 onPointerLeave={active ? this.onPointerCancel : undefined}
                 style={{
                     cursor: active ? 'pointer' : 'default',
-                    opacity: this.state.pressed ? 0.6 : 1,
+                    opacity: this.state.pressed && this.props.pressEffect !== false ? 0.6 : 1,
                     ...style,
                 }}
             >

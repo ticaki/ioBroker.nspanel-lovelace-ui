@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import { DEVICE_GEOMETRY, deviceGeometry, deviceLayout, progressPercent, statusBlockVisible } from './layout';
-import { initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
+import { initial, parseDeviceStatus, parseEntityUpd, parseEntityUpdateDetail } from './parse';
 import device1 from '../../../scripts/examples/cardDevice1.txt?raw';
 import device1Plain from '../../../scripts/examples/cardDevice1-plain.txt?raw';
 import device2 from '../../../scripts/examples/cardDevice2.txt?raw';
@@ -329,5 +329,44 @@ describe('cardDevice1 status block', () => {
         expect(statusBlockVisible(2, many)).toBe(false);
         expect(statusBlockVisible(3, many)).toBe(false);
         expect(deviceGeometry(3, many)).toBe(DEVICE_GEOMETRY[3]);
+    });
+});
+
+describe('cardDevice status line: scroll mark', () => {
+    it('a field without the mark stands', () => {
+        expect(parseDeviceStatus('Schleudern, noch 23 min')).toEqual({
+            text: 'Schleudern, noch 23 min',
+            scroll: false,
+        });
+        expect(parseDeviceStatus('')).toEqual({ text: '', scroll: false });
+        expect(parseDeviceStatus('1')).toEqual({ text: '1', scroll: false });
+        // the mark only counts at the end
+        expect(parseDeviceStatus('a¬1b')).toEqual({ text: 'a¬1b', scroll: false });
+        expect(parseDeviceStatus('abc¬')).toEqual({ text: 'abc¬', scroll: false });
+    });
+
+    it('a field that ends with ¬ and one character scrolls, the two characters are cut off', () => {
+        expect(parseDeviceStatus('Ein langer Text¬1')).toEqual({ text: 'Ein langer Text', scroll: true });
+        // the HMI does not evaluate the character behind ¬
+        expect(parseDeviceStatus('Text¬7')).toEqual({ text: 'Text', scroll: true });
+        expect(parseDeviceStatus('¬1')).toEqual({ text: '', scroll: true });
+    });
+
+    it('the model carries the text without the mark, on every layout', () => {
+        for (const pageType of ['cardDevice1', 'cardDevice2', 'cardDevice3']) {
+            const long = 'Fehler: Wassertank leer, bitte nachfüllen und die Tür schließen';
+            const m = parseEntityUpd(['T', ...NAV, ...el('text', 'm', 'Main', `${long}¬1`)], initial(), ctx(pageType));
+            expect(m.status).toBe(long);
+            expect(m.statusScroll).toBe(true);
+            expect(m.main.optionalValue).toBe(`${long}¬1`);
+            const standing = parseEntityUpd(
+                ['T', ...NAV, ...el('text', 'm', 'Main', 'kurz')],
+                initial(),
+                ctx(pageType),
+            );
+            expect(standing.status).toBe('kurz');
+            expect(standing.statusScroll).toBe(false);
+        }
+        expect(initial().statusScroll).toBe(false);
     });
 });

@@ -31,7 +31,7 @@ Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Rasenmähe
 6. **Slots**: Für jeden Slot steht die Nummer, die Art und eine Auswahl der Werte des Geräts. Angeboten werden nur
    Werte, die zur Art passen – „leer“ geht immer.
    - **Benutzerdefiniert** (zweiter Eintrag nach „leer“): der Slot zeigt etwas, das nicht zum Gerät gehören muss.
-     Darunter wählst du **Datenpunkt** (irgendein Datenpunkt, z. B. unter `0_userdata.0`) oder **Alias-Kanal** (z. B.
+     Darunter wählst du **Datenpunkt** (irgendein Datenpunkt, z. B. unter `0_userdata.0`) oder **Kanal** (z. B.
      ein Licht, ein Rollladen, eine Steckdose aus `alias.0`) und trägst die ID ein oder suchst sie mit **...** aus.
      Ein Alias-Kanal sieht aus und lässt sich bedienen wie auf einer Grid-Seite: Tipp schaltet, Rollladen, Auswahl
      und Timer öffnen ihr Popup, ein dimmbares Licht öffnet es beim Halten. Passt etwas nicht zur Art des Slots oder
@@ -40,9 +40,9 @@ Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Rasenmähe
      ![Slots: eigener Datenpunkt, Alias-Kanal und ein unpassender Datenpunkt](admin-slot-custom.png)
 
    - **…** rechts in jeder belegten Zeile öffnet die **Einstellungen des Elements**: eigenes Icon und eigene Farbe
-     für „wahr“ und „falsch“, ein Farbverlauf und – bei Knöpfen und Schaltern – ein Datenpunkt, den ein langer Druck
+     für „wahr“ und „unwahr“, ein Farbverlauf und – bei Knöpfen und Schaltern – ein Datenpunkt, den ein langer Druck
      schreibt. Alles ist freiwillig; der Knopf ist grün, sobald etwas eingestellt ist. Beispiel: ein Knopf für
-     „läuft / Pause“ – wähle einen An/Aus-Wert, Icon „pause“ bei wahr und „play“ bei falsch. Der Tipp schaltet um,
+     „läuft / Pause“ – wähle einen An/Aus-Wert, Icon „pause“ bei wahr und „play“ bei unwahr. Der Tipp schaltet um,
      das Icon wechselt mit.
 
      ![Einstellungen des Elements](admin-slot-dialog.png)
@@ -122,7 +122,7 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 1 | Item „Gerät mit Details“ öffnen, das noch keine Geräteseite hat | „Long-Press öffnet“ steht auf **Detailseite**, kein Geräteseiten-Bereich sichtbar | |
 | 2 | Auf **Geräteseite** umschalten | Layout 1 gewählt, Info-Slots 1 und 2 mit den ersten angehakten Einträgen vorbelegt, Knöpfe leer, Statuszeile leer, „i-Icon anzeigen“ an | |
 | 3 | Etwas ändern, auf **Detailseite** und zurück auf **Geräteseite** schalten | alle Änderungen sind wieder da | ✓ |
-| 4 | Layout 3 wählen, dann Layout 1 | Slots bleiben nach Position; Slots 7/8 fallen bei Layout 1 weg | |
+| 4 | Layout 1 mit belegten Status-Slots 7–10, dann Layout 2 und zurück auf Layout 1 wählen (Gegenprobe: Layout 3 → Layout 1) | Slots bleiben nach Position; Layout 2 hat nur 6 Slots – die Status-Slots 7–10 gehen dabei verloren und sind zurück auf Layout 1 leer. Von Layout 3 (8 Slots) nach Layout 1 (10 Slots) geht nichts verloren, die Slots 9/10 sind leer | |
 | 5 | Auswahl eines Knopf-/Schalter-/Fortschritts-Slots aufklappen | nur passende States (Knopf: Taster und schaltbare boolean, Schalter: schaltbare boolean, Balken: Zahlen), „leer“ oben | ✓ |
 | 6 | Statuszeile aufklappen | alle States des Geräts, Name + ID wie in der Filterliste | ✓ |
 | 6a | Statuszeile: **Benutzerdefinierter Datenpunkt** wählen (zweiter Eintrag nach „leer“) | darunter erscheint das Feld für die ID mit Knopf „...“; mit leerem Feld bleibt die Auswahl stehen (springt nicht auf „leer“), nichts ist rot markiert. ID außerhalb des Geräts eintragen (z. B. `0_userdata.0.status`), übernehmen, neu öffnen: Auswahl und ID sind da; am Panel zeigt die Statuszeile den Wert und folgt Änderungen | ✓ nur Admin |
@@ -144,16 +144,16 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 22 | Slot-Auswahl aufklappen (jede Art) | Reihenfolge: „leer“, **Benutzerdefiniert**, dann die Werte des Geräts | ✓ |
 | 23 | Info-Slot: Benutzerdefiniert → Datenpunkt, ID außerhalb des Geräts eintragen, übernehmen, neu öffnen | Auswahl und ID sind da, nichts rot; am Panel Name des Datenpunkts und Wert mit Einheit, folgt Änderungen. Leeres Feld: Auswahl bleibt stehen, Slot am Panel leer | ✓ nur Admin |
 | 24 | Fortschritts-Slot: eigenen Datenpunkt wählen, der keine Zahl ist; danach eine ID, die es nicht gibt | rot „passt nicht zu diesem Slot“ bzw. „Datenpunkt nicht gefunden“; am Panel bleibt der Slot leer (Warnung im Log) | ✓ nur Admin |
-| 25 | Knopf-Slot: Benutzerdefiniert → Alias-Kanal, mit „...“ ein Licht aussuchen (State unter dem Kanal anklicken) | die ID wird auf den Kanal gekürzt; angeboten werden nur Kanäle, die zur Slot-Art passen | ✓ |
+| 25 | Knopf-Slot: Benutzerdefiniert → Kanal, mit „...“ ein Licht aussuchen (State unter dem Kanal anklicken) | die ID wird auf den Kanal gekürzt; angeboten werden nur Kanäle, die zur Slot-Art passen | ✓ |
 | 26 | Schalter-Slot: Kanal-ID eines Rollladens eintippen | rot „passt nicht zu diesem Slot“ | ✓ |
 | 27 | Am Panel: Steckdose (socket) und einfaches Licht (light) in Info- und Knopf-Slot | Tipp schaltet, Icon/Farbe wechseln, **kein** popupLight beim Halten; Info-Zeile zeigt An/Aus | |
 | 28 | Am Panel: dimmbares Licht im Knopf-Slot, Rollladen und Auswahl (select) im Info-Slot, Regler (slider) im Fortschritts-Slot | Licht: Tipp schaltet, Halten öffnet popupLight; Rollladen/Auswahl öffnen ihr Popup sofort, Wertfeld des Rollladens leer; Balken folgt dem Regler | |
 | 29 | Am Panel: Steckdose im Schalter-Slot (Layout 3), Temperatur-Kanal im Info-Slot und als großer Wert | Schalter schaltet und zeigt den Zustand; Temperatur mit Icon (nicht Zahl statt Icon) und Wert mit Einheit | |
-| 30 | „…“ eines Knopf-Slots mit An/Aus-Wert: Icon „pause“ bei wahr, „play“ bei falsch, zwei Farben, übernehmen | „…“ grün; am Panel wechseln Icon und Farbe mit dem Wert, der Tipp schaltet um | ✓ nur Admin |
-| 31 | „…“ eines Info-Slots mit Zahl: Icon bei wahr und Farbe setzen; „Farbverlauf …“ mit Min/Max | Icon/Farbe gelten immer (kein „falsch“); mit Farbverlauf ändert sich die Farbe mit dem Wert; beim Fortschritts-Slot die Balkenfarbe | |
+| 30 | „…“ eines Knopf-Slots mit An/Aus-Wert: Icon „pause“ bei wahr, „play“ bei unwahr, zwei Farben, übernehmen | „…“ grün; am Panel wechseln Icon und Farbe mit dem Wert, der Tipp schaltet um | ✓ nur Admin |
+| 31 | „…“ eines Info-Slots mit Zahl: Icon bei wahr und Farbe setzen; „Farbverlauf …“ mit Min/Max | Icon/Farbe gelten immer (kein „unwahr“); mit Farbverlauf ändert sich die Farbe mit dem Wert; beim Fortschritts-Slot die Balkenfarbe | |
 | 32 | „…“ eines Knopf- und eines Schalter-Slots | Abschnitt Long-Press mit Datenpunkt-Auswahl; bei Info-/Wert-/Status-Slots fehlt er. Am Panel (HMI ab device5): langer Druck setzt den Datenpunkt (Knopf) bzw. schaltet ihn um (Schalter), kein Tipp dabei | ✓ nur Admin |
 | 33 | „…“ eines Kanal-Slots: eigenes Icon und Farbe | überschreiben die Vorgaben der Rolle am Panel | |
-| 34 | Altes Item mit Status-Icon (Feld `icon`) öffnen, „…“ des Slots | Dialog zeigt das Icon bei wahr und falsch, „…“ grün; ohne Änderung bleibt alles wie vorher | ✓ |
+| 34 | Altes Item mit Status-Icon (Feld `icon`) öffnen, „…“ des Slots | Dialog zeigt das Icon bei wahr und unwahr, „…“ grün; ohne Änderung bleibt alles wie vorher | ✓ |
 | 35 | Kurzer Tipp: **Geräteseite öffnen** bei „Long-Press öffnet: Detailseite“ | ausgegraut; mit Geräteseite wählbar. Wählen, dann auf Detailseite schalten → Kurzer Tipp springt auf „Keine“ | ✓ |
 | 36 | Am Panel: Item mit „Geräteseite öffnen“ kurz antippen (Grid und cardEntities) | Geräteseite erscheint; langer Druck ebenso; Zurück führt zur Seite des Items. Auf der Geräteseite tut ein Tipp auf das große Icon nichts. US-Panel/alte TFT: Detailseite | |
 | 37 | Am Panel: langer Druck auf einen Slot ohne Long-Press-Einstellung, auf das große Icon und auf „i“ | nichts passiert (kein Schalten, keine Detailseite) | |

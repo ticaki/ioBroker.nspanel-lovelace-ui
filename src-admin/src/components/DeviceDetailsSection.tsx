@@ -384,7 +384,11 @@ export default class DeviceDetailsSection extends React.Component<
                         color="text.secondary"
                         sx={{ whiteSpace: 'pre-line' }}
                     >
-                        {I18n.t('deviceDetailsDialog_longPressHint')}
+                        {I18n.t(
+                            longPressTargetOf(value) === 'devicePage'
+                                ? 'deviceDetailsDialog_longPressHintDevicePage'
+                                : 'deviceDetailsDialog_longPressHint',
+                        )}
                     </Typography>
                 </Box>
                 <FormControl>

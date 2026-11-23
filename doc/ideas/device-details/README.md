@@ -386,7 +386,7 @@ Standard-Page-Item und nutzen dessen Bausteine.
 
 ### Long-Press auf der Geräteseite
 
-Die HMI ab `device5` sendet aus main und allen Slots `buttonPress3`. `PageDevice.onButtonPress3` gibt ihn an das
+Die HMI ab `device5` und das Web-Panel senden aus main und allen Slots `buttonPress3`. `PageDevice.onButtonPress3` gibt ihn an das
 Page-Item des Slots (`onCommandLongPress`), main und das info-Icon haben keinen Long-Press. Ohne Aktion passiert
 nichts – ein Long-Press gilt nie als Tipp (die Seite meldet ihn immer als behandelt). Ältere Test-HMIs senden kein
 `buttonPress3` aus den Slots.
@@ -429,12 +429,73 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
   und dem Gerätenamen, ohne Aktion.
 - **Feld 6 von main = Statuszeile**: der State `devicePage.status` wie eine Textzeile der Detailseite (Text aus
   `common.states` übersetzt, sonst Wert mit Einheit, boolean An/Aus übersetzt), sonst leer. Auch ohne main wird die
-  Statuszeile gesendet (`~~~~~<status>`). Zu lang → mit `text-width.ts` (Font 0) auf 390 px gekürzt, am Ende „...“,
-  höchstens 63 Byte (`fitDevicePageStatus`). Nur die Statuszeile kürzt der Adapter; alle anderen Felder schneidet die
-  HMI an ihrer Grenze ab (Slot-Namen bekommen den Dubletten-Zusatz ungekürzt angehängt).
+  Statuszeile gesendet (`~~~~~<status>`). Steht oder läuft – siehe „Statuszeile und Lauftext“.
+- Namen und Werte (Felder 5 und 6 von main, Slots und info) begrenzt der Adapter auf die Textpuffer der HMI:
+  **31 Byte**, an einer Zeichengrenze, ohne „...“ (`devicePageClampElement`, `DEVICE_PAGE_TEXT_MAX_BYTES`). In der
+  Breite schneidet weiter die HMI an der Feldgrenze ab (Slot-Namen bekommen den Dubletten-Zusatz ungekürzt angehängt).
 - **info**: `button` mit Icon `information-outline` in der Farbe `deviceInfo`, ohne Namen; Tipp
   `buttonPress2,<intName>,button` öffnet die Detailseite.
 - Long-Press (`buttonPress3`): siehe „Long-Press auf der Geräteseite“ – nie ein Tipp.
+
+### Statuszeile und Lauftext
+
+`fitDevicePageStatus` (Zeilenumbrüche werden Leerzeichen, `~` und `¬` entfallen – ein `¬` im Text kann das
+Kennzeichen nicht vortäuschen):
+
+1. Passt der Text in die Zeile – ≤ 390 px in Font 0 (`text-width.ts`, `DEVICE_PAGE_FIELDS[layout].status`) **und**
+   ≤ 63 Byte (`DEVICE_PAGE_STATUS_MAX_BYTES`) –, geht er unverändert hinaus und steht.
+2. Sonst bekommt er das Kennzeichen `¬1` angehängt (`DEVICE_PAGE_STATUS_SCROLL_MARK`); die HMI schneidet die zwei
+   Zeichen ab und lässt den Text pixelweise laufen (4 px je 100 ms). Text höchstens **124 Byte**
+   (`DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES`, mit Kennzeichen 127); nur ein längerer wird gekürzt – an einer
+   Zeichengrenze, mit „...“ am Ende.
+3. Welche Seite laufen kann, steht je Layout in `DEVICE_PAGE_STATUS_SCROLLS` (heute alle drei). `false` = der Text
+   steht immer: auf 390 px gekürzt mit „...“, höchstens 63 Byte (das Verhalten vor dem Lauftext).
+
+| Statustext | Feld 6 von main |
+|---|---|
+| `Schleudern, noch 23 min` | `Schleudern, noch 23 min` |
+| `Fehler: Wassertank leer, bitte nachfüllen und die Tür der Maschine schließen` (breiter als 390 px) | derselbe Text + `¬1` |
+| 125 × `a` | 121 × `a` + `...¬1` (127 Byte) |
+| `Fertig¬1` | `Fertig1` |
+
+**Länge der Nachricht** (`devicePagePayload`): Das `entityUpd` darf höchstens so lang sein wie der Empfangspuffer der
+Seite (`DEVICE_PAGE_RECEIVE_BYTES`: Layout 1 = 1015, Layout 2 = 943, Layout 3 = 1019 Byte) und nie länger als die
+1017 Byte, die das Display annimmt (`devicePageMaxPayloadBytes`: 1015 / 943 / 1017). Ist es länger, gibt nur die
+Statuszeile nach: der Lauftext wird um den Überhang kürzer (mit „...“); zeigte er dann nicht mehr als die stehende
+Fassung, geht die stehende hinaus (auf 390 px gekürzt, „...“), notfalls noch kürzer bis leer. Weil Namen und Werte
+auf 31 Byte begrenzt sind, reicht das für jede Nachricht, die der Adapter baut (Test „the longest message“). Eine
+Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kann den Lauftext.
+
+### Web-Panel
+
+`src-web/src/cards/cardDevice`: die drei Seiten in der Geometrie der eu-HMI.
+
+- **Statuszeile:** endet Feld 6 von main auf `¬` + ein Zeichen (`parseDeviceStatus`), werden die zwei Zeichen
+  abgeschnitten und der Text läuft (`StatusScroll`): im Feld von `gStatus` (10/290, 390×30), nach links, 40 px/s,
+  abgeschnitten an der Feldgrenze. Er beginnt lesbar am linken Rand, läuft hinaus und kommt von rechts wieder. Die
+  Breite misst der Browser; die Animation hängt am Text – ein `entityUpd` mit gleichem Text lässt sie weiterlaufen,
+  ein anderer Text beginnt links. Ohne Kennzeichen steht der Text wie bisher und wird an der Feldgrenze
+  abgeschnitten (keine eigenen „…“).
+- **Tipp und Long-Press** wie in der HMI (`deviceTouch`, Tabelle „Ereignisse beim Antippen“ in
+  [device-page-hmi.md](device-page-hmi.md)): main und **jede** Slot-Art sind eine Grid-Zelle – dieselbe Tippfläche
+  (`Pressable`) und dieselbe Entscheidung (`tileTouch`) wie die Kachel von cardGrid, mit dem Timer der Geräteseite
+  (500 ms).
+
+  | Platz | kurzer Tipp | 500 ms gehalten |
+  |---|---|---|
+  | main, info, value, progress, button, status, Icon+Name eines switch-Slots | `buttonPress2,<id>,button` | `buttonPress3,<id>,button` beim Loslassen |
+  | … mit Typ `shutter`, `shutter2`, `input_sel`, `timer` | Popup | Popup |
+  | … mit Typ `light`, `light2`, `fan`, `number` | `buttonPress2,<id>,button` | Popup nach 500 ms |
+  | … Typ `text` ohne ID (außer im button-Slot), leeres Element | nichts | nichts |
+  | Schalter eines switch-Slots | `buttonPress2,<id>,OnOff,<0\|1>` | – |
+  | info-Icon | `buttonPress2,<id>,button` | wie kurz |
+  | Statuszeile | nichts | nichts |
+
+- Tippflächen wie die Hotspots der HMI: value 110/67 226×110, progress 10/179 429×42, Icon+Name des Schalters
+  161×34, Status-Zelle die ganze Zelle. main, info und button werden beim Drücken blasser (Knöpfe der HMI); value,
+  progress, status und Schalter-Icon/-Name zeigen wie in der HMI keinen Press-Effekt.
+- Popup aus einer Status-Zelle ohne Überschrift, aus dem progress-Slot ohne Icon (wie die HMI).
+- Abweichung: `shutter`/`shutter2`/`input_sel`/`timer` öffnen ihr Popup beim Loslassen, die HMI schon beim Berühren.
 
 ### Admin
 

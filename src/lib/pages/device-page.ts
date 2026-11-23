@@ -8,7 +8,8 @@
  * `type~intName~icon~iconColor~displayName~optionalValue`.
  */
 import { Color } from '../const/Color';
-import { ELLIPSIS, ELLIPSIS_FALLBACK, fitText, hasGlyph } from '../const/text-width';
+import { MAX_PANEL_PAYLOAD_BYTES } from '../const/definition';
+import { ELLIPSIS, ELLIPSIS_FALLBACK, fitText, hasGlyph, textWidth } from '../const/text-width';
 import { isVersionGreaterOrEqual } from '../const/tools';
 import { emptyChannelValueConfig, type AdminPageItemConfig } from '../types/adminShareConfig';
 import type { NSPanel } from '../types/NSPanel';
@@ -19,8 +20,14 @@ import {
     DEVICE_PAGE_FIELDS,
     DEVICE_PAGE_INFO_ROLE,
     DEVICE_PAGE_LAYOUTS,
+    DEVICE_PAGE_RECEIVE_BYTES,
     DEVICE_PAGE_STATUS_MAX_BYTES,
+    DEVICE_PAGE_STATUS_SCROLL_CHAR,
+    DEVICE_PAGE_STATUS_SCROLL_MARK,
+    DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
+    DEVICE_PAGE_STATUS_SCROLLS,
     DEVICE_PAGE_TEXT_FONT,
+    DEVICE_PAGE_TEXT_MAX_BYTES,
     DEVICE_PAGE_PROGRESS_ROLE,
     devicePageProgressPercent,
     devicePageSlotAccepts,
@@ -105,46 +112,180 @@ export function cardDeviceOf(layout: DevicePageLayout): 'cardDevice1' | 'cardDev
 }
 
 /**
- * The text of the status line: cut at the end with an ellipsis ('…' if font 0 has it, else '...') when it is wider
- * than the line of the layout, never wrapped; at most {@link DEVICE_PAGE_STATUS_MAX_BYTES} bytes (UTF-8).
+ * @param text a text
+ * @returns its bytes on the wire (UTF-8)
+ */
+function byteLength(text: string): number {
+    return Buffer.byteLength(text, 'utf8');
+}
+
+/**
+ * @param text a text
+ * @param maxBytes maximum bytes (UTF-8)
+ * @returns the longest prefix of whole characters that has at most maxBytes bytes
+ */
+export function cutToBytes(text: string, maxBytes: number): string {
+    if (byteLength(text) <= maxBytes) {
+        return text;
+    }
+    let out = '';
+    let bytes = 0;
+    for (const char of text) {
+        bytes += byteLength(char);
+        if (bytes > maxBytes) {
+            break;
+        }
+        out += char;
+    }
+    return out;
+}
+
+/**
+ * @param text a text
+ * @param maxBytes maximum bytes (UTF-8)
+ * @param ellipsis what is appended when the text is cut
+ * @returns the text, or its longest prefix that fits together with the ellipsis (spaces in front of the ellipsis
+ * dropped); '' when not even one character fits with it
+ */
+function cutToBytesWithEllipsis(text: string, maxBytes: number, ellipsis: string): string {
+    if (byteLength(text) <= maxBytes) {
+        return text;
+    }
+    const head = cutToBytes(text, maxBytes - byteLength(ellipsis)).trimEnd();
+    return head ? `${head}${ellipsis}` : '';
+}
+
+/**
+ * The text of the status line (field 6 of main), never wrapped, without `~` and without the character of the scroll
+ * mark:
+ * - it fits the line of the layout (px in font 0) and {@link DEVICE_PAGE_STATUS_MAX_BYTES}: unchanged, it stands;
+ * - else, where the HMI page scrolls ({@link DEVICE_PAGE_STATUS_SCROLLS}): the whole text with
+ *   {@link DEVICE_PAGE_STATUS_SCROLL_MARK} appended - the HMI lets it run. A text of more than
+ *   {@link DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES} bytes is cut there with an ellipsis ('…' if font 0 has it, else
+ *   '...');
+ * - else: cut at the end with the ellipsis to the width of the line and the bytes of the standing text.
+ *
+ * `maxBytes` limits the whole field (text and mark) further, for a message that would get too long: the scrolling
+ * text gets shorter; when it would not show more than the standing text, the standing one is sent.
  *
  * @param text the status text
  * @param layout the layout
  * @param model panel model (font tables)
+ * @param maxBytes maximum bytes of the field, default: no further limit
  * @returns the text for field 6 of main
  */
-export function fitDevicePageStatus(text: string, layout: DevicePageLayout, model: NSpanelModel): string {
-    const flat = text.replace(/[\r\n]+/g, ' ');
-    let out = fitText(flat, DEVICE_PAGE_TEXT_FONT, model, DEVICE_PAGE_FIELDS[layout].status);
-    if (Buffer.byteLength(out, 'utf8') <= DEVICE_PAGE_STATUS_MAX_BYTES) {
-        return out;
+export function fitDevicePageStatus(
+    text: string,
+    layout: DevicePageLayout,
+    model: NSpanelModel,
+    maxBytes: number = Number.POSITIVE_INFINITY,
+): string {
+    const flat = text
+        .replace(/[\r\n]+/g, ' ')
+        .replaceAll('~', '')
+        .replaceAll(DEVICE_PAGE_STATUS_SCROLL_CHAR, '');
+    const width = DEVICE_PAGE_FIELDS[layout].status;
+    const standBytes = Math.max(0, Math.min(DEVICE_PAGE_STATUS_MAX_BYTES, maxBytes));
+    if (textWidth(flat, DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(flat) <= standBytes) {
+        return flat;
     }
     const ellipsis = hasGlyph(ELLIPSIS.codePointAt(0) ?? 0, DEVICE_PAGE_TEXT_FONT, model)
         ? ELLIPSIS
         : ELLIPSIS_FALLBACK;
-    const chars = Array.from(flat);
-    for (let n = chars.length - 1; n > 0; n--) {
-        out = `${chars.slice(0, n).join('').trimEnd()}${ellipsis}`;
-        if (Buffer.byteLength(out, 'utf8') <= DEVICE_PAGE_STATUS_MAX_BYTES) {
-            return out;
-        }
+    // the standing text: the width of the line first, then the bytes of the text field
+    const standing = cutToBytesWithEllipsis(
+        fitText(flat, DEVICE_PAGE_TEXT_FONT, model, width, { ellipsis }),
+        standBytes,
+        ellipsis,
+    );
+    if (!DEVICE_PAGE_STATUS_SCROLLS[layout]) {
+        return standing;
     }
-    return '';
+    const scrollBytes = Math.min(
+        DEVICE_PAGE_STATUS_SCROLL_MAX_BYTES,
+        maxBytes - byteLength(DEVICE_PAGE_STATUS_SCROLL_MARK),
+    );
+    const scrolling = cutToBytesWithEllipsis(flat, scrollBytes, ellipsis);
+    // a scrolling text that shows no more than the standing one is not worth the scrolling
+    if (byteLength(scrolling) <= byteLength(standing)) {
+        return standing;
+    }
+    return `${scrolling}${DEVICE_PAGE_STATUS_SCROLL_MARK}`;
 }
 
 /**
- * The main element with the status text in field 6: fields 1-5 of the payload of the main item, field 6 the status
- * (empty without status).
+ * The main element with the status text in field 6: fields 1-5 of the payload of the main item (the name cut to
+ * {@link DEVICE_PAGE_TEXT_MAX_BYTES}), field 6 the status (empty without status).
  *
  * @param mainPayload payload of the main item ('' = none)
- * @param status the fitted status text
+ * @param status the fitted status text ({@link fitDevicePageStatus})
  * @returns the element
  */
 export function devicePageMainElement(mainPayload: string, status: string): string {
     // the HMI shows the status line also when main is hidden (empty type)
     const fields = mainPayload ? mainPayload.split('~') : [];
     const head = fields.length >= 6 ? fields.slice(0, 5) : ['', '', '', '', ''];
+    head[4] = cutToBytes(head[4], DEVICE_PAGE_TEXT_MAX_BYTES);
     return [...head, status.replace(/~/g, '')].join('~');
+}
+
+/**
+ * Name and value of an element (fields 5 and 6) cut to the text buffers of the HMI
+ * ({@link DEVICE_PAGE_TEXT_MAX_BYTES}, whole characters): the HMI would cut them anyway, possibly inside a character,
+ * and the length of the message could not be told. Anything that is not an element of 6 fields stays as it is.
+ *
+ * @param element the element of a slot or of info
+ * @returns the element
+ */
+export function devicePageClampElement(element: string): string {
+    const fields = element.split('~');
+    if (fields.length !== 6) {
+        return element;
+    }
+    fields[4] = cutToBytes(fields[4], DEVICE_PAGE_TEXT_MAX_BYTES);
+    fields[5] = cutToBytes(fields[5], DEVICE_PAGE_TEXT_MAX_BYTES);
+    return fields.join('~');
+}
+
+/**
+ * @param layout the layout
+ * @returns the bytes an `entityUpd` of the page may have: the receive buffer of its HMI page, at most what the
+ * display takes
+ */
+export function devicePageMaxPayloadBytes(layout: DevicePageLayout): number {
+    return Math.min(DEVICE_PAGE_RECEIVE_BYTES[layout], MAX_PANEL_PAYLOAD_BYTES);
+}
+
+/**
+ * The `entityUpd` of the device page. The status line is fitted with {@link fitDevicePageStatus}; when the message
+ * has more bytes than the page takes ({@link devicePageMaxPayloadBytes}), the status line gives way: the scrolling
+ * text gets shorter, down to the standing text, at last a shorter standing text. Names and values are already
+ * limited ({@link devicePageClampElement}), so that is enough for a message the adapter builds.
+ *
+ * @param head `entityUpd~<heading>~<navigation>`
+ * @param mainPayload payload of the main item ('' = none)
+ * @param elements the elements of the slots and of info
+ * @param status the status text ('' = none)
+ * @param layout the layout
+ * @param model panel model (font tables)
+ * @returns the message
+ */
+export function devicePagePayload(
+    head: string,
+    mainPayload: string,
+    elements: readonly string[],
+    status: string,
+    layout: DevicePageLayout,
+    model: NSpanelModel,
+): string {
+    const build = (field: string): string => [head, devicePageMainElement(mainPayload, field), ...elements].join('~');
+    const field = fitDevicePageStatus(status, layout, model);
+    const payload = build(field);
+    const over = byteLength(payload) - devicePageMaxPayloadBytes(layout);
+    if (over <= 0) {
+        return payload;
+    }
+    return build(fitDevicePageStatus(status, layout, model, Math.max(0, byteLength(field) - over)));
 }
 
 /**

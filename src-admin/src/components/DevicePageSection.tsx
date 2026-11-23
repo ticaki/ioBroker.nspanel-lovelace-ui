@@ -469,17 +469,19 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         value="state"
                         control={<Radio size="small" />}
                         label={I18n.t('deviceDetailsDialog_slotCustomState')}
+                        slotProps={{ typography: { variant: 'body2' } }}
                     />
                     <FormControlLabel
                         value="channel"
                         control={<Radio size="small" />}
                         label={I18n.t('deviceDetailsDialog_slotCustomChannel')}
+                        slotProps={{ typography: { variant: 'body2' } }}
                     />
                 </RadioGroup>
                 {source === 'channel' ? (
                     <EntitySelector
                         key="channel"
-                        label={I18n.t('channelConfigDialog_channelId')}
+                        label={I18n.t('deviceDetailsDialog_slotCustomChannelId')}
                         value={slot.id}
                         onChange={(id: string) => this.setSlot(index, customDevicePageSlot('channel', id.trim()))}
                         onTransformSelectedId={(id: string) => channelIdOf(channelIds, id)}
@@ -541,7 +543,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                 key={`${value.layout}-${index}`}
                 sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
             >
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Box
                         sx={{
                             width: 22,
@@ -554,14 +556,13 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            mb: 0.5,
                         }}
                     >
                         {index + 1}
                     </Box>
                     <Typography
                         variant="body2"
-                        sx={{ width: 140, flexShrink: 0, mb: 0.5 }}
+                        sx={{ width: 140, flexShrink: 0 }}
                         noWrap
                     >
                         {DevicePageSection.kindLabel(kind)}
@@ -573,7 +574,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         error={problem !== undefined}
                         data-dd="device-page-slot"
                     >
-                        <InputLabel shrink>{I18n.t('deviceDetailsDialog_state')}</InputLabel>
+                        {/* no label per row: number and kind stand in front of the selection */}
                         <Select
                             value={selected}
                             displayEmpty
@@ -621,7 +622,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
         const { value, onChange, socket, theme, themeType, iconSelect, adapterName, instance } = this.props;
         const kinds = DEVICE_PAGE_LAYOUTS[value.layout];
         return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <FormLabel sx={{ fontSize: '0.875rem' }}>{I18n.t('deviceDetailsDialog_pageSlots')}</FormLabel>
                 {kinds.map((kind, index) => this.renderSlot(kind, index))}
                 {kinds.includes('status') ? (

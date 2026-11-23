@@ -1,15 +1,15 @@
 import { Page } from '../classes/Page';
 import type { PageInterface } from '../classes/PageInterface';
-import { getPayload, getPayloadArray, getPayloadRemoveTilde } from '../const/tools';
+import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import { DEVICE_PAGE_LAYOUTS, isDevicePageLayout, type DevicePageLayout } from '../types/deviceDetails';
 import type * as pages from '../types/pages';
 import type * as types from '../types/types';
 import {
     DEVICE_PAGE_EMPTY_ELEMENT,
     devicePageChannelElement,
-    devicePageMainElement,
+    devicePageClampElement,
+    devicePagePayload,
     devicePageStatusIconElement,
-    fitDevicePageStatus,
     optionalValueOf,
 } from './device-page';
 
@@ -71,19 +71,12 @@ export class PageDevice extends Page {
             return;
         }
         await super.update();
-        const statusIndex = this.slotCount + 2;
-        const statusItem = this.pageItems?.[statusIndex];
-        const status = statusItem
-            ? fitDevicePageStatus(
-                  optionalValueOf(await statusItem.getPageItemPayload()),
-                  this.layout,
-                  this.basePanel.info.nspanel.model,
-              )
-            : '';
+        const statusItem = this.pageItems?.[this.slotCount + 2];
+        const status = statusItem ? optionalValueOf(await statusItem.getPageItemPayload()) : '';
         const mainItem = this.pageItems?.[0];
-        const elements = [devicePageMainElement(mainItem ? await mainItem.getPageItemPayload() : '', status)];
         // slots and info; a status icon never shows name or value, field 6 of an alias channel follows the kind of
-        // its slot
+        // its slot; names and values are cut to the text buffers of the HMI
+        const elements: string[] = [];
         const kinds = DEVICE_PAGE_LAYOUTS[this.layout];
         const onOff = (on: boolean): string => this.library.getTranslation(on ? 'on' : 'off');
         for (let index = 1; index <= this.slotCount + 1; index++) {
@@ -92,13 +85,20 @@ export class PageDevice extends Page {
             if (kind && this.channelSlots.has(index - 1)) {
                 element = devicePageChannelElement(kind, element, onOff);
             }
-            elements.push(kind === 'status' ? devicePageStatusIconElement(element) : element);
+            elements.push(kind === 'status' ? devicePageStatusIconElement(element) : devicePageClampElement(element));
         }
+        // the status line stands, scrolls or gives way to keep the message inside the buffer of the HMI page
         this.sendToPanel(
-            getPayload(
-                getPayloadRemoveTilde('entityUpd', this.shortHeadline(this.library.getTranslation(this.headline))),
-                this.getNavigation(),
-                getPayloadArray(elements),
+            devicePagePayload(
+                getPayload(
+                    getPayloadRemoveTilde('entityUpd', this.shortHeadline(this.library.getTranslation(this.headline))),
+                    this.getNavigation(),
+                ),
+                mainItem ? await mainItem.getPageItemPayload() : '',
+                elements,
+                status,
+                this.layout,
+                this.basePanel.info.nspanel.model,
             ),
             false,
         );
