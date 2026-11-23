@@ -18,12 +18,48 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var text_exports = {};
 __export(text_exports, {
+  BATTERY_CHARGING_ICON_READ: () => BATTERY_CHARGING_ICON_READ,
+  BATTERY_ICON_READ: () => BATTERY_ICON_READ,
   textTemplates: () => textTemplates
 });
 module.exports = __toCommonJS(text_exports);
 var import_Color = require("../const/Color");
 var import_definition = require("../const/definition");
 var import_adminShareConfig = require("../types/adminShareConfig");
+const BATTERY_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-' + v + '0';
+    case 10:
+    default:
+        return 'battery';}`;
+const BATTERY_CHARGING_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-charging-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-charging-' + v + '0';
+    case 10:
+    default:
+        return 'battery-charging';}`;
 const brightskyIconRead = `
     switch (val) {
         case 'weather-cloudy':
@@ -297,23 +333,7 @@ const textTemplates = {
             mode: "auto",
             role: "value.battery",
             dp: "",
-            read: `const v = Math.round(val / 10)
-                        switch (v) {
-                            case 0:
-                                return 'battery-charging-outline';
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                                return 'battery-charging-' + v + '0';
-                            case 10:
-                            default:
-                                return 'battery-charging';}`
+            read: BATTERY_CHARGING_ICON_READ
           },
           text: {
             value: {
@@ -338,23 +358,7 @@ const textTemplates = {
             mode: "auto",
             role: "value.battery",
             dp: "",
-            read: `const v = Math.round(val / 10)
-                            switch (v) {
-                                case 0:
-                                    return 'battery-outline';
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                case 5:
-                                case 6:
-                                case 7:
-                                case 8:
-                                case 9:
-                                    return 'battery-' + v + '0';
-                                case 10:
-                                default:
-                                    return 'battery';}`
+            read: BATTERY_ICON_READ
           },
           color: {
             type: "const",
@@ -416,23 +420,7 @@ const textTemplates = {
                         const max = options?.max != null ?  options.max : 100;
                         val = Math.min(Math.max(val, min), max);
                         val = (val - min) * 100 / (max - min);
-                        const v = Math.round(val / 10)
-                        switch (v) {
-                            case 0:
-                                return 'battery-charging-outline';
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                                return 'battery-charging-' + v + '0';
-                            case 10:
-                            default:
-                                return 'battery-charging';}`
+${BATTERY_CHARGING_ICON_READ}`
           },
           text: {
             value: {
@@ -467,23 +455,7 @@ const textTemplates = {
                             const max = options?.max != null ?  options.max : 100;
                             val = Math.min(Math.max(val, min), max);
                             val = (val - min) * 100 / (max - min);
-                            const v = Math.round(val / 10)
-                            switch (v) {
-                                case 0:
-                                    return 'battery-outline';
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                case 5:
-                                case 6:
-                                case 7:
-                                case 8:
-                                case 9:
-                                    return 'battery-' + v + '0';
-                                case 10:
-                                default:
-                                    return 'battery';}`
+${BATTERY_ICON_READ}`
           },
           color: void 0
         },
@@ -4205,6 +4177,8 @@ const textTemplates = {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  BATTERY_CHARGING_ICON_READ,
+  BATTERY_ICON_READ,
   textTemplates
 });
 //# sourceMappingURL=text.js.map
