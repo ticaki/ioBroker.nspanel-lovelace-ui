@@ -21,6 +21,9 @@ export const CENTERED_ON_WEB: ReadonlySet<string> = new Set([
     'cardChart',
     'cardLChart',
     'cardPChart',
+    'cardDevice1',
+    'cardDevice2',
+    'cardDevice3',
 ]);
 
 /**
