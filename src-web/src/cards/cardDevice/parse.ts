@@ -37,7 +37,7 @@ export function initial(): CardDeviceModel {
 
 /**
  * Parses the `entityUpd` of a device page; the number of slots follows from the pageType
- * (cardDevice1/2: 6, cardDevice3: 8), missing fields are empty.
+ * (cardDevice1: 10 incl. the 4 status icons, cardDevice2: 6, cardDevice3: 8), missing fields are empty.
  *
  * @param args the fields after `entityUpd` (`args[0]` is the heading)
  * @param _prev the model before

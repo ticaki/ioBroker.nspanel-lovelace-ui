@@ -1,4 +1,4 @@
-# cardDevice1: device page with the example data of doc/Pictures/device-page/hmi-cardDevice1.png
+# cardDevice1: device page (with the 2x2 status icons) with the example data of doc/Pictures/device-page/hmi-cardDevice1.png
 pageType~cardDevice1
-entityUpd~Saugroboter~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~button~9?0?main~~1631~Robbi~Reinigt Wohnzimmer, noch 12 min (Wischen)~text~9?0?1~~1760~Akku~80 %~text~9?0?2~~65535~Fläche~34 m²~button~9?0?3~~1760~Start~~button~9?0?4~~65535~Pause~~button~9?0?5~~65535~Dock~~button~9?0?6~~65535~Suchen~~button~9?0?info~~65535~~
+entityUpd~Saugroboter~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~button~9?0?main~~1631~Robbi~Reinigt Wohnzimmer, noch 12 min (Wischen)~text~9?0?1~~1760~Akku~80 %~text~9?0?2~~65535~Fläche~34 m²~button~9?0?3~~1760~Start~~button~9?0?4~~65535~Pause~~button~9?0?5~~65535~Dock~~button~9?0?6~~65535~Suchen~~text~9?0?7~~1760~~~text~9?0?8~~64768~~~text~9?0?9~~65535~~~text~9?0?10~~63813~~~button~9?0?info~~65535~~
 @sleep 300

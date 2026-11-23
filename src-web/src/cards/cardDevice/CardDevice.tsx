@@ -9,7 +9,14 @@ import { isOn, popupForType } from '../cardEntities/shared/entityTypes';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import { Pressable } from '../cardEntities/shared/Pressable';
 import { HmiTextBox, Toggle, type NextionAlign } from '../cardEntities/shared/widgets';
-import { DEVICE_GEOMETRY, progressPercent, type Box, type SlotGeometry } from './layout';
+import {
+    DEVICE_GEOMETRY,
+    STATUS_GRID_COLOR,
+    progressPercent,
+    showsStatusIcons,
+    type Box,
+    type SlotGeometry,
+} from './layout';
 import type { CardDeviceModel } from './parse';
 
 /** Hold time of the `tmLP` timer the device pages copied from cardGrid */
@@ -70,7 +77,8 @@ function unionBox(boxes: readonly Box[]): Box {
 
 /**
  * cardDevice1 / cardDevice2 / cardDevice3: the page of one device - big icon (main), fixed slots
- * (info, value, progress, button, switch), the status line (field 6 of main) and the info icon
+ * (info, value, progress, button, switch; cardDevice1 also a 2x2 grid of status icons that, once one
+ * of them is filled, narrows the info rows), the status line (field 6 of main) and the info icon
  * at the bottom right. Rebuilt from the eu HMI pixel by pixel; on web-l the page is drawn in the
  * eu geometry (`CENTERED_ON_WEB`). Texts are cut at the border of their field like on the panel.
  */
@@ -176,20 +184,59 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         );
     }
 
-    private renderSlot(entity: Entity6, slot: SlotGeometry, index: number): React.JSX.Element | null {
+    /**
+     * A cell of the status grid (cardDevice1): framed, icon only, no touch; an empty slot stays an empty cell.
+     *
+     * @param entity the slot
+     * @param slot its cell
+     * @param role data-role of the cell
+     */
+    private renderStatusCell(entity: Entity6, slot: Box, role: string): React.JSX.Element {
+        const empty = isEmptySlot(entity);
+        return (
+            <div
+                key={role}
+                data-role={role}
+                data-empty={empty ? '' : undefined}
+                style={{
+                    position: 'absolute',
+                    left: slot.x,
+                    top: slot.y,
+                    width: slot.w,
+                    height: slot.h,
+                    border: `1px solid ${color565ToCss(STATUS_GRID_COLOR)}`,
+                    boxSizing: 'border-box',
+                }}
+            >
+                {empty ? null : this.text('icon', entity.icon, slot, 1, 1, color565ToCss(entity.iconColor), slot)}
+            </div>
+        );
+    }
+
+    private renderSlot(
+        entity: Entity6,
+        slot: SlotGeometry,
+        index: number,
+        statusShown: boolean,
+    ): React.JSX.Element | null {
+        const role = `slot-${index + 1}`;
+        if (slot.kind === 'status') {
+            return statusShown ? this.renderStatusCell(entity, slot.icon, role) : null;
+        }
         if (isEmptySlot(entity)) {
             return null;
         }
         const fg = theme.foreground;
         const iconColor = color565ToCss(entity.iconColor);
-        const role = `slot-${index + 1}`;
         switch (slot.kind) {
-            case 'info':
-                return this.tapArea(role, 'info', entity, [slot.icon, slot.name, slot.value], o => [
-                    this.text('icon', entity.icon, slot.icon, 1, 1, iconColor, o),
-                    this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
-                    this.text('value', entity.optionalValue, slot.value, 0, 2, fg, o),
+            case 'info': {
+                const row = statusShown && slot.narrow ? slot.narrow : slot;
+                return this.tapArea(role, 'info', entity, [row.icon, row.name, row.value], o => [
+                    this.text('icon', entity.icon, row.icon, 1, 1, iconColor, o),
+                    this.text('name', entity.displayName, row.name, 0, 0, fg, o),
+                    this.text('value', entity.optionalValue, row.value, 0, 2, fg, o),
                 ]);
+            }
             case 'button':
                 return this.tapArea(role, 'button', entity, [slot.icon, slot.name], o => [
                     this.text('icon', entity.icon, slot.icon, 3, 1, iconColor, o),
@@ -271,6 +318,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         const { model, ctx, global, press } = this.props;
         const geometry = DEVICE_GEOMETRY[model.layout];
         const { main, info } = model;
+        const statusShown = showsStatusIcons(geometry.slots, i => isEmptySlot(model.slots[i] ?? emptyEntity()));
         return (
             <div
                 data-page={ctx.pageType}
@@ -302,7 +350,9 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                               this.text('icon', main.icon, geometry.main.icon, 4, 1, color565ToCss(main.iconColor), o),
                               this.text('name', main.displayName, geometry.main.name, 0, 1, theme.foreground, o),
                           ])}
-                    {geometry.slots.map((slot, i) => this.renderSlot(model.slots[i] ?? emptyEntity(), slot, i))}
+                    {geometry.slots.map((slot, i) =>
+                        this.renderSlot(model.slots[i] ?? emptyEntity(), slot, i, statusShown),
+                    )}
                     <div data-role="status">
                         {this.text('status', model.status, geometry.status, 0, geometry.statusAlign, theme.foreground)}
                     </div>

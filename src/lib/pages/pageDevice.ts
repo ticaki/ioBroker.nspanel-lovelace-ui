@@ -1,10 +1,16 @@
 import { Page } from '../classes/Page';
 import type { PageInterface } from '../classes/PageInterface';
 import { getPayload, getPayloadArray, getPayloadRemoveTilde } from '../const/tools';
-import { isDevicePageLayout, type DevicePageLayout } from '../types/deviceDetails';
+import { DEVICE_PAGE_LAYOUTS, isDevicePageLayout, type DevicePageLayout } from '../types/deviceDetails';
 import type * as pages from '../types/pages';
 import type * as types from '../types/types';
-import { DEVICE_PAGE_EMPTY_ELEMENT, devicePageMainElement, fitDevicePageStatus, optionalValueOf } from './device-page';
+import {
+    DEVICE_PAGE_EMPTY_ELEMENT,
+    devicePageMainElement,
+    devicePageStatusIconElement,
+    fitDevicePageStatus,
+    optionalValueOf,
+} from './device-page';
 
 /**
  * @param config the configuration of a page
@@ -71,9 +77,11 @@ export class PageDevice extends Page {
             : '';
         const mainItem = this.pageItems?.[0];
         const elements = [devicePageMainElement(mainItem ? await mainItem.getPageItemPayload() : '', status)];
-        // slots and info
+        // slots and info; a status icon never shows name or value
+        const kinds = DEVICE_PAGE_LAYOUTS[this.layout];
         for (let index = 1; index <= this.slotCount + 1; index++) {
-            elements.push(await this.elementAt(index));
+            const element = await this.elementAt(index);
+            elements.push(kinds[index - 1] === 'status' ? devicePageStatusIconElement(element) : element);
         }
         this.sendToPanel(
             getPayload(

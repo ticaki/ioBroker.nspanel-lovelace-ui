@@ -9,7 +9,7 @@ export interface Box {
 }
 
 /** The kind of element a slot of a device page shows */
-export type DeviceSlotKind = 'info' | 'value' | 'progress' | 'button' | 'switch';
+export type DeviceSlotKind = 'info' | 'value' | 'progress' | 'button' | 'switch' | 'status';
 
 /** icon (font 1) + name + value (font 0, right aligned) */
 export interface InfoSlotGeometry {
@@ -17,6 +17,17 @@ export interface InfoSlotGeometry {
     icon: Box;
     name: Box;
     value: Box;
+    /** the narrow row shown instead while the status icons are visible (cardDevice1 slots 1-2) */
+    narrow?: { icon: Box; name: Box; value: Box };
+}
+
+/**
+ * a status icon of cardDevice1: one cell of the 2x2 grid, icon only (font 1, centred), framed 1 px in
+ * {@link STATUS_GRID_COLOR}; neighbouring cells overlap by 1 px so their frames make the grid
+ */
+export interface StatusSlotGeometry {
+    kind: 'status';
+    icon: Box;
 }
 
 /** small icon (font 1) + value (font 4, left aligned) + name below */
@@ -50,7 +61,15 @@ export interface SwitchSlotGeometry {
 }
 
 export type SlotGeometry =
-    InfoSlotGeometry | ValueSlotGeometry | ProgressSlotGeometry | ButtonSlotGeometry | SwitchSlotGeometry;
+    | InfoSlotGeometry
+    | ValueSlotGeometry
+    | ProgressSlotGeometry
+    | ButtonSlotGeometry
+    | SwitchSlotGeometry
+    | StatusSlotGeometry;
+
+/** RGB565 frame color of the status cells (`borderc` 14823 of the HMI, the grey of the cardPChart lines) */
+export const STATUS_GRID_COLOR = 14823;
 
 /** The geometry of one device page (cardDevice1/2/3) */
 export interface DeviceGeometry {
@@ -75,7 +94,23 @@ const STATUS = box(10, 289, 390, 30);
 const INFO = box(404, 288, 36, 32);
 
 function info1(y: number): InfoSlotGeometry {
-    return { kind: 'info', icon: box(126, y, 36, 34), name: box(164, y + 4, 164, 26), value: box(330, y + 4, 110, 26) };
+    return {
+        kind: 'info',
+        icon: box(126, y, 36, 34),
+        name: box(164, y + 4, 164, 26),
+        value: box(330, y + 4, 110, 26),
+        // the HMI moves tValueS 1 px down (else it would cover tValue exactly) - invisible, kept for the pixels
+        narrow: { icon: box(204, y, 36, 34), name: box(242, y + 4, 86, 26), value: box(330, y + 5, 110, 26) },
+    };
+}
+
+/**
+ * A cell of the status grid of cardDevice1: index 0 top left, 1 top right, 2 bottom left, 3 bottom right.
+ *
+ * @param index number of the cell
+ */
+function status1(index: number): StatusSlotGeometry {
+    return { kind: 'status', icon: box(124 + (index % 2) * 37, 71 + Math.floor(index / 2) * 44, 38, 45) };
 }
 
 function button1(x: number): ButtonSlotGeometry {
@@ -118,7 +153,18 @@ function switch3(x: number): SwitchSlotGeometry {
 export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
     1: {
         main: { icon: box(10, 68, 110, 86), name: box(10, 156, 110, 26) },
-        slots: [info1(76), info1(120), button1(10), button1(118), button1(226), button1(334)],
+        slots: [
+            info1(76),
+            info1(120),
+            button1(10),
+            button1(118),
+            button1(226),
+            button1(334),
+            status1(0),
+            status1(1),
+            status1(2),
+            status1(3),
+        ],
         status: STATUS,
         statusAlign: 0,
         info: INFO,
@@ -145,6 +191,17 @@ export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
         info: INFO,
     },
 };
+
+/**
+ * Whether the status grid is shown: at least one status slot is filled. Then the HMI shows all cells (empty ones
+ * as empty framed cells) and the narrow info rows; otherwise no grid and the wide rows, as before.
+ *
+ * @param slots the slots of the layout
+ * @param empty whether the slot of the same index is empty
+ */
+export function showsStatusIcons(slots: readonly SlotGeometry[], empty: (index: number) => boolean): boolean {
+    return slots.some((slot, i) => slot.kind === 'status' && !empty(i));
+}
 
 /**
  * The layout of a device pageType: `cardDevice2` -> 2, `cardDevice3` -> 3, everything else 1.

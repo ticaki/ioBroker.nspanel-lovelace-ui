@@ -141,6 +141,21 @@ export function devicePageMainElement(mainPayload: string, status: string): stri
 }
 
 /**
+ * The element of a `status` slot: only type, id, icon and color - name and value (fields 5 and 6) are always empty,
+ * an empty payload is the empty element.
+ *
+ * @param payload payload of the page item of the slot ('' = none)
+ * @returns the element
+ */
+export function devicePageStatusIconElement(payload: string): string {
+    const fields = payload ? payload.split('~') : [];
+    if (fields.length < 6 || !fields[0]) {
+        return DEVICE_PAGE_EMPTY_ELEMENT;
+    }
+    return [...fields.slice(0, 4), '', ''].join('~');
+}
+
+/**
  * @param payload payload of a page item
  * @returns its field 6 (optionalValue), '' without
  */
@@ -248,7 +263,8 @@ export function devicePageInfoItem(details: DeviceDetailsRuntime): NSPanel.PageI
  * - `progress`: `text` whose field 6 is the value scaled to 0-100, icon color = color of the bar (group of the entry),
  * - `button`: `read: false` = the button row of the detail page (writes true), a writable boolean a `button` that
  *   switches it (icon in the colors activated / deactivated),
- * - `switch`: the switch row of the detail page (OnOff).
+ * - `switch`: the switch row of the detail page (OnOff),
+ * - `status`: {@link devicePageStatusIconItem}.
  *
  * @param deviceId id of the device
  * @param kind the kind of the slot
@@ -260,7 +276,7 @@ export function devicePageInfoItem(details: DeviceDetailsRuntime): NSPanel.PageI
 export function devicePageSlotItem(
     deviceId: string,
     kind: DevicePageSlotKind,
-    entry: DeviceDetailEntryConfig,
+    entry: DevicePageStateRef,
     common: DeviceDetailStateCommon,
     name: string,
 ): NSPanel.PageItemDataItemsOptions | undefined {
@@ -276,6 +292,8 @@ export function devicePageSlotItem(
             return { ...deviceDetailRowItem(deviceId, entry, common, name, 'all'), dpInit: '' };
         case 'switch':
             return { ...deviceDetailRowItem(deviceId, entry, common, name), dpInit: '' };
+        case 'status':
+            return devicePageStatusIconItem(deviceId, entry, common);
         case 'button': {
             if (common.read === false) {
                 return { ...deviceDetailRowItem(deviceId, entry, common, name), dpInit: '' };
@@ -312,6 +330,31 @@ export function devicePageSlotItem(
             };
         }
     }
+}
+
+/**
+ * The page item of a `status` slot: a small icon only - the read only text row of the state (icon of the mask entry /
+ * the kind, color of its group; a boolean in the colors activated / deactivated) without name and value, so fields 5
+ * and 6 stay empty. An own icon of the slot (`entry.icon`) replaces the icon, the colors stay. No tap: a stray
+ * `button` event of a text row of the device page does nothing.
+ *
+ * @param deviceId id of the device
+ * @param entry the state of the slot
+ * @param common common of the state
+ * @returns the page item
+ */
+export function devicePageStatusIconItem(
+    deviceId: string,
+    entry: DevicePageStateRef,
+    common: DeviceDetailStateCommon,
+): NSPanel.PageItemDataItemsOptions {
+    const row = deviceDetailRowItem(deviceId, entry, common, '', 'all', entry.icon ?? '');
+    if (row.type === 'text' && row.data) {
+        // no value: entity2 is the value text, text1 the on/off text - entity1 (color of a boolean) stays
+        delete row.data.entity2;
+        delete row.data.text1;
+    }
+    return { ...row, dpInit: '' };
 }
 
 /**
@@ -379,7 +422,8 @@ export async function devicePageElements(
         }
         return obj.common;
     };
-    // the slots that exist, for the names (duplicates are told apart only among the slots)
+    // the slots that exist, for the names (duplicates are told apart only among the slots that show a name - a status
+    // icon has none)
     const present: { index: number; entry: DevicePageStateRef; common: DeviceDetailStateCommon }[] = [];
     for (let i = 0; i < kinds.length; i++) {
         const ref = page.slots[i] ?? null;
@@ -388,17 +432,20 @@ export async function devicePageElements(
             present.push({ index: i, entry: ref, common });
         }
     }
+    const named = present.filter(p => kinds[p.index] !== 'status');
     const names = deviceDetailRowNames(
         details.deviceId,
-        present.map(p => p.entry),
-        present.map(p => p.common),
+        named.map(p => p.entry),
+        named.map(p => p.common),
         translate,
         language,
         null,
     );
     const slots: (NSPanel.PageItemDataItemsOptions | undefined)[] = kinds.map(() => undefined);
-    present.forEach((p, n) => {
-        const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, names[n] ?? '');
+    present.forEach(p => {
+        const n = named.indexOf(p);
+        const name = n >= 0 ? (names[n] ?? '') : '';
+        const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, name);
         if (!item) {
             skipped.push(p.entry.id);
         }

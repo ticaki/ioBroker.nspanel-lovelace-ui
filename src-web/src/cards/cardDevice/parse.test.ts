@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
-import { DEVICE_GEOMETRY, deviceLayout, progressPercent } from './layout';
+import { DEVICE_GEOMETRY, deviceLayout, progressPercent, showsStatusIcons } from './layout';
 import { initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
 import device1 from '../../../scripts/examples/cardDevice1.txt?raw';
 import device2 from '../../../scripts/examples/cardDevice2.txt?raw';
@@ -42,6 +42,10 @@ describe('cardDevice layouts', () => {
             'button',
             'button',
             'button',
+            'status',
+            'status',
+            'status',
+            'status',
         ]);
         expect(DEVICE_GEOMETRY[2].slots.map(s => s.kind)).toEqual([
             'value',
@@ -68,7 +72,14 @@ describe('cardDevice layouts', () => {
             const g = DEVICE_GEOMETRY[layout];
             const boxes = [g.main.icon, g.main.name, g.status, g.info];
             for (const s of g.slots) {
+                if (s.kind === 'status') {
+                    boxes.push(s.icon);
+                    continue;
+                }
                 boxes.push(s.name);
+                if (s.kind === 'info' && s.narrow) {
+                    boxes.push(s.narrow.icon, s.narrow.name, s.narrow.value);
+                }
                 if (s.kind === 'progress') {
                     boxes.push(s.bar);
                 } else {
@@ -88,6 +99,28 @@ describe('cardDevice layouts', () => {
                 expect(b.y + b.h, `layout ${layout}`).toBeLessThanOrEqual(320);
             }
         }
+    });
+
+    it('cardDevice1: 2x2 status grid right of the main icon, narrow info rows (device-page-hmi.md)', () => {
+        const cells = DEVICE_GEOMETRY[1].slots.flatMap(s => (s.kind === 'status' ? [s.icon] : []));
+        expect(cells).toEqual([
+            { x: 124, y: 71, w: 38, h: 45 },
+            { x: 161, y: 71, w: 38, h: 45 },
+            { x: 124, y: 115, w: 38, h: 45 },
+            { x: 161, y: 115, w: 38, h: 45 },
+        ]);
+        const info = DEVICE_GEOMETRY[1].slots[0];
+        expect(info.kind === 'info' ? info.narrow : undefined).toEqual({
+            icon: { x: 204, y: 76, w: 36, h: 34 },
+            name: { x: 242, y: 80, w: 86, h: 26 },
+            value: { x: 330, y: 81, w: 110, h: 26 },
+        });
+        const slots = DEVICE_GEOMETRY[1].slots;
+        expect(showsStatusIcons(slots, () => true)).toBe(false);
+        // a filled info slot does not show the grid, one filled status slot does
+        expect(showsStatusIcons(slots, i => i !== 0)).toBe(false);
+        expect(showsStatusIcons(slots, i => i !== 9)).toBe(true);
+        expect(showsStatusIcons(DEVICE_GEOMETRY[3].slots, () => false)).toBe(false);
     });
 
     it('places the status line left on cardDevice1/3 and centred on cardDevice2', () => {
@@ -111,7 +144,7 @@ describe('cardDevice layouts', () => {
 });
 
 describe('cardDevice parse', () => {
-    it('cardDevice1: main, 2 info, 4 buttons and the info icon', () => {
+    it('cardDevice1: main, 2 info, 4 buttons, 4 status icons and the info icon', () => {
         const m = parseEntityUpd(example('cardDevice1'), initial(), ctx('cardDevice1'));
         expect(m.layout).toBe(1);
         expect(m.title).toBe('Saugroboter');
@@ -119,10 +152,16 @@ describe('cardDevice parse', () => {
         expect(m.navigation.right.id).toBe('bSubNext');
         expect(m.main).toMatchObject({ type: 'button', id: '9?0?main', displayName: 'Robbi' });
         expect(m.status).toBe('Reinigt Wohnzimmer, noch 12 min (Wischen)');
-        expect(m.slots).toHaveLength(6);
+        expect(m.slots).toHaveLength(10);
         expect(m.slots[0]).toMatchObject({ type: 'text', displayName: 'Akku', optionalValue: '80 %' });
         expect(m.slots[1]).toMatchObject({ displayName: 'Fläche', optionalValue: '34 m²' });
-        expect(m.slots.slice(2).map(s => s.displayName)).toEqual(['Start', 'Pause', 'Dock', 'Suchen']);
+        expect(m.slots.slice(2, 6).map(s => s.displayName)).toEqual(['Start', 'Pause', 'Dock', 'Suchen']);
+        expect(m.slots.slice(6).map(s => [s.type, s.id, s.displayName, s.optionalValue])).toEqual([
+            ['text', '9?0?7', '', ''],
+            ['text', '9?0?8', '', ''],
+            ['text', '9?0?9', '', ''],
+            ['text', '9?0?10', '', ''],
+        ]);
         expect(m.info).toMatchObject({ type: 'button', id: '9?0?info' });
         expect(isEmptySlot(m.info)).toBe(false);
     });
@@ -168,10 +207,14 @@ describe('cardDevice parse', () => {
             ...EMPTY,
             ...EMPTY,
             ...EMPTY,
+            ...el('delete', '', '', ''),
+            ...EMPTY,
+            ...EMPTY,
+            ...EMPTY,
             ...EMPTY,
         ];
         const m = parseEntityUpd(args, initial(), ctx('cardDevice1'));
-        expect(m.slots.map(isEmptySlot)).toEqual([true, true, false, true, true, true]);
+        expect(m.slots.map(isEmptySlot)).toEqual([true, true, false, true, true, true, true, true, true, true]);
         expect(isEmptySlot(m.info)).toBe(true);
     });
 
@@ -186,8 +229,13 @@ describe('cardDevice parse', () => {
     it('reads the info icon at element N+1 of each layout', () => {
         const slots6 = Array.from({ length: 6 }, (_, i) => el('text', `s${i + 1}`)).flat();
         const slots8 = Array.from({ length: 8 }, (_, i) => el('text', `s${i + 1}`)).flat();
+        const slots10 = Array.from({ length: 10 }, (_, i) => el('text', `s${i + 1}`)).flat();
         const info = el('button', 'info');
-        const m1 = parseEntityUpd(['T', ...NAV, ...el('text', 'm'), ...slots6, ...info], initial(), ctx('cardDevice1'));
+        const m1 = parseEntityUpd(
+            ['T', ...NAV, ...el('text', 'm'), ...slots10, ...info],
+            initial(),
+            ctx('cardDevice1'),
+        );
         const m2 = parseEntityUpd(['T', ...NAV, ...el('text', 'm'), ...slots6, ...info], initial(), ctx('cardDevice2'));
         const m3 = parseEntityUpd(['T', ...NAV, ...el('text', 'm'), ...slots8, ...info], initial(), ctx('cardDevice3'));
         for (const m of [m1, m2, m3]) {
@@ -216,7 +264,7 @@ describe('cardDevice parse', () => {
 
     it('starts empty and does not handle entityUpdateDetail', () => {
         const m = initial();
-        expect(m.slots).toHaveLength(6);
+        expect(m.slots).toHaveLength(10);
         expect(m.status).toBe('');
         expect(parseEntityUpdateDetail(['x'], m, ctx('cardDevice1'))).toBeUndefined();
     });

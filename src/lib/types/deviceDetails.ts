@@ -174,17 +174,20 @@ export type DevicePageLayout = 1 | 2 | 3;
  * - `progress`: `text`, field 6 = whole number 0-100 (the value scaled from common.min/max, without them as it is,
  *   clamped), field 4 = color of the bar - number states only,
  * - `button`: `button`; a state with `read: false` is written with true, a writable boolean is switched,
- * - `switch`: `switch`, field 6 = 0/1, the tap comes as `OnOff` like on cardEntities - writable boolean only.
+ * - `switch`: `switch`, field 6 = 0/1, the tap comes as `OnOff` like on cardEntities - writable boolean only,
+ * - `status`: a small status icon only (field 3) in its color (field 4) - type `text`, name and value (fields 5/6)
+ *   empty, no tap. Icon and color like an info row of the same state (a boolean in the colors activated /
+ *   deactivated); the icon can be chosen per slot ({@link DevicePageStateRef.icon}). Any state.
  */
-export type DevicePageSlotKind = 'info' | 'value' | 'progress' | 'button' | 'switch';
+export type DevicePageSlotKind = 'info' | 'value' | 'progress' | 'button' | 'switch' | 'status';
 
 /**
  * The slots of every layout in the order of the payload (slot1 … slotN). The single place for the number and kind of
  * the slots (HMI doc/ideas/device-details/device-page-hmi.md, section "Art je Slot").
  */
 export const DEVICE_PAGE_LAYOUTS: Readonly<Record<DevicePageLayout, readonly DevicePageSlotKind[]>> = {
-    /** "Steuern" (control) */
-    1: ['info', 'info', 'button', 'button', 'button', 'button'],
+    /** "Steuern" (control): slots 7-10 are the 2x2 status icons right of the big icon */
+    1: ['info', 'info', 'button', 'button', 'button', 'button', 'status', 'status', 'status', 'status'],
     /** "Fortschritt" (progress) */
     2: ['value', 'progress', 'info', 'info', 'info', 'button'],
     /** "Werte" (values) */
@@ -207,8 +210,13 @@ export type DevicePageLayoutFields = {
     mainName: number;
     /** the status line (field 6 of main), font 0, one line */
     status: number;
-    /** the fields of the kinds of slots the layout has */
+    /** the fields of the kinds of slots the layout has (`status` shows no text) */
     slots: Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>;
+    /**
+     * the fields that change when at least one `status` slot is filled (layout 1: the info rows get narrower to make
+     * room for the 2x2 status icons); missing kinds keep {@link DevicePageLayoutFields.slots}
+     */
+    slotsWithStatus?: Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>;
 };
 
 /** font of the names, values and the status line of the device page: font 0 (Noto Sans 24) */
@@ -230,6 +238,9 @@ export const DEVICE_PAGE_FIELDS: Readonly<Record<DevicePageLayout, DevicePageLay
         mainName: 110,
         status: 390,
         slots: { info: { name: 164, value: 110 }, button: { name: 104 } },
+        // at least one status icon: the 2x2 block stands right of the big icon, the info rows get narrower (empty status
+        // slots inside the shown block stay empty grid cells)
+        slotsWithStatus: { info: { name: 86, value: 110 } },
     },
     2: {
         mainName: 96,
@@ -257,6 +268,33 @@ export function devicePageSlotCount(layout: DevicePageLayout): number {
 }
 
 /**
+ * @param layout the layout
+ * @param slots the slots of the page (same order as {@link DEVICE_PAGE_LAYOUTS})
+ * @returns true when at least one `status` slot is filled - then the HMI draws the 2x2 status icons
+ */
+export function devicePageHasStatusIcons(
+    layout: DevicePageLayout,
+    slots: readonly (DevicePageStateRef | null | undefined)[],
+): boolean {
+    return DEVICE_PAGE_LAYOUTS[layout].some((kind, i) => kind === 'status' && !!slots[i]);
+}
+
+/**
+ * @param layout the layout
+ * @param kind the kind of the slot
+ * @param withStatusIcons at least one status slot is filled ({@link devicePageHasStatusIcons})
+ * @returns the text fields of the kind, undefined for a kind without text
+ */
+export function devicePageSlotFields(
+    layout: DevicePageLayout,
+    kind: DevicePageSlotKind,
+    withStatusIcons: boolean,
+): DevicePageSlotFields | undefined {
+    const fields = DEVICE_PAGE_FIELDS[layout];
+    return (withStatusIcons ? fields.slotsWithStatus?.[kind] : undefined) ?? fields.slots[kind];
+}
+
+/**
  * Whether a state of the device may be shown in a slot of this kind.
  *
  * @param kind the kind of the slot
@@ -264,7 +302,7 @@ export function devicePageSlotCount(layout: DevicePageLayout): number {
  * @param state.type common.type
  * @param state.read common.read (undefined counts as true)
  * @param state.write common.write (undefined counts as true)
- * @returns true for `info` / `value` always, `button` a button (`read: false`) or a writable boolean, `switch` a
+ * @returns true for `info` / `value` / `status` always, `button` a button (`read: false`) or a writable boolean, `switch` a
  * writable (readable) boolean, `progress` a number
  */
 export function devicePageSlotAccepts(
@@ -276,6 +314,7 @@ export function devicePageSlotAccepts(
     switch (kind) {
         case 'info':
         case 'value':
+        case 'status':
             return true;
         case 'button':
             return button || (state.type === 'boolean' && writable);
@@ -315,7 +354,10 @@ export function devicePageProgressPercent(value: number | null | undefined, min?
  * by the state), `id` = full id of the state, `subName` = own text appended to the name. A slot may show any state of
  * the device, it does not have to be ticked for the detail page.
  */
-export type DevicePageStateRef = DeviceDetailEntryConfig;
+export type DevicePageStateRef = DeviceDetailEntryConfig & {
+    /** MDI name of the icon of a `status` slot, missing = the icon of the mask entry / the kind - other slots ignore it */
+    icon?: string;
+};
 
 /** admin configuration of the device page ({@link DeviceDetailsConfig.devicePage}) */
 export type DevicePageConfig = {
@@ -353,24 +395,30 @@ export type DevicePageRuntime = {
 /**
  * @param slots slots of a device page
  * @param layout the layout
- * @returns the slots cut or filled with null to the number of slots of the layout - by position, nothing is guessed
+ * @returns the slots cut or filled with null to the number of slots of the layout - by position, nothing is guessed;
+ * the own icon stays only on a `status` slot
  */
 export function fitDevicePageSlots(
     slots: readonly (DevicePageStateRef | null)[],
     layout: DevicePageLayout,
 ): (DevicePageStateRef | null)[] {
-    const out: (DevicePageStateRef | null)[] = [];
-    for (let i = 0; i < devicePageSlotCount(layout); i++) {
+    return DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => {
         const slot = slots[i];
-        out.push(slot ? { ...slot } : null);
-    }
-    return out;
+        if (!slot) {
+            return null;
+        }
+        const out: DevicePageStateRef = { ...slot };
+        if (kind !== 'status') {
+            delete out.icon;
+        }
+        return out;
+    });
 }
 
 /**
  * The suggestion for the slots of a new device page: only the `info` / `value` slots are filled, one after the other
- * with the ticked rows of the detail page (learned ticks / mask) - every state fits them. `button`, `switch` and
- * `progress` stay empty, the user chooses them.
+ * with the ticked rows of the detail page (learned ticks / mask) - every state fits them. `button`, `switch`,
+ * `progress` and `status` stay empty, the user chooses them.
  *
  * @param entries the ticked rows of the item in their order
  * @param layout the layout
@@ -414,19 +462,29 @@ export function isDevicePageLayout(value: unknown): value is DevicePageLayout {
 
 /**
  * @param value a stored slot / status
- * @returns the reference with a trimmed own text, null when it is no usable reference (no state)
+ * @param keepIcon keep the own icon (only a `status` slot has one)
+ * @returns the reference with a trimmed own text and icon (empty ones left out), null when it is no usable reference (no state)
  */
-function devicePageStateRefOf(value: unknown): DevicePageStateRef | null {
+function devicePageStateRefOf(value: unknown, keepIcon: boolean): DevicePageStateRef | null {
     if (!isDeviceDetailEntryConfig(value) || value.id === '') {
         return null;
     }
+    const ref: DevicePageStateRef = { key: value.key, id: value.id };
     const subName = value.subName?.trim();
-    return subName ? { key: value.key, id: value.id, subName } : { key: value.key, id: value.id };
+    if (subName) {
+        ref.subName = subName;
+    }
+    const icon = keepIcon && 'icon' in value && typeof value.icon === 'string' ? value.icon.trim() : '';
+    if (icon) {
+        ref.icon = icon;
+    }
+    return ref;
 }
 
 /**
  * The normalized device page of a stored configuration: an unknown layout becomes 1, the slots are cut or filled to
- * the slots of the layout (an invalid slot or one without state is empty), `showInfo` is true unless it is false, an
+ * the slots of the layout (an invalid slot or one without state is empty; an older layout 1 with 6 slots gets its 4
+ * status slots empty; an own icon is kept only on a `status` slot), `showInfo` is true unless it is false, an
  * empty icon or status is left out.
  *
  * @param value the field `devicePage` of a device configuration
@@ -439,9 +497,9 @@ export function devicePageConfigOf(value: unknown): DevicePageConfig | undefined
     const layout = 'layout' in value && isDevicePageLayout(value.layout) ? value.layout : 1;
     const rawSlots: unknown[] = 'slots' in value && Array.isArray(value.slots) ? value.slots : [];
     const slots: (DevicePageStateRef | null)[] = [];
-    for (let i = 0; i < devicePageSlotCount(layout); i++) {
-        slots.push(devicePageStateRefOf(rawSlots[i]));
-    }
+    DEVICE_PAGE_LAYOUTS[layout].forEach((kind, i) => {
+        slots.push(devicePageStateRefOf(rawSlots[i], kind === 'status'));
+    });
     const config: DevicePageConfig = {
         layout,
         slots,
@@ -451,7 +509,7 @@ export function devicePageConfigOf(value: unknown): DevicePageConfig | undefined
     if (icon) {
         config.icon = icon;
     }
-    const status = 'status' in value ? devicePageStateRefOf(value.status) : null;
+    const status = 'status' in value ? devicePageStateRefOf(value.status, false) : null;
     if (status) {
         config.status = status;
     }

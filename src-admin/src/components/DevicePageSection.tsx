@@ -22,6 +22,7 @@ import { I18n } from '@iobroker/gui-components';
 import {
     DEVICE_PAGE_LAYOUTS,
     deviceDetailNameKey,
+    devicePageHasStatusIcons,
     isDevicePageLayout,
     type DeviceDetailEntryConfig,
     type DevicePageConfig,
@@ -31,6 +32,9 @@ import {
     type DeviceStateInfo,
 } from '../../../src/lib/types/deviceDetails';
 import {
+    PREVIEW_INFO,
+    PREVIEW_MAIN,
+    devicePagePreviewAreas,
     devicePageRefOf,
     devicePageStateOptions,
     withDevicePageLayout,
@@ -49,61 +53,14 @@ export interface DevicePageSectionProps {
     onChange: (value: DevicePageConfig) => void;
     /** the icon selector of the big icon, rendered by the page item dialog */
     iconSelector: React.ReactNode;
+    /**
+     * the icon selector of a status slot, rendered by the page item dialog
+     *
+     * @param index index of the slot (0 = slot 1)
+     * @param icon the saved icon, '' = none
+     */
+    slotIconSelector: (index: number, icon: string) => React.ReactNode;
 }
-
-/** an area of the schematic preview in display pixels (480 × 320, doc/ideas/device-details/device-page-hmi.md) */
-interface PreviewArea {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-    /** slot number (1 …), 0 = main icon, -1 = status line, -2 = "i" */
-    slot: number;
-}
-
-const MAIN = 0;
-const STATUS = -1;
-const INFO = -2;
-const COMMON_AREAS: PreviewArea[] = [
-    { x: 10, y: 289, w: 390, h: 30, slot: STATUS },
-    { x: 404, y: 288, w: 36, h: 32, slot: INFO },
-];
-
-/** the areas of every layout (geometry of the HMI pages cardDevice1-3) */
-const PREVIEW_AREAS: Readonly<Record<DevicePageLayout, PreviewArea[]>> = {
-    1: [
-        { x: 10, y: 68, w: 110, h: 114, slot: MAIN },
-        { x: 126, y: 76, w: 314, h: 34, slot: 1 },
-        { x: 126, y: 120, w: 314, h: 34, slot: 2 },
-        { x: 10, y: 190, w: 104, h: 80, slot: 3 },
-        { x: 118, y: 190, w: 104, h: 80, slot: 4 },
-        { x: 226, y: 190, w: 104, h: 80, slot: 5 },
-        { x: 334, y: 190, w: 104, h: 80, slot: 6 },
-        ...COMMON_AREAS,
-    ],
-    2: [
-        { x: 10, y: 67, w: 96, h: 110, slot: MAIN },
-        { x: 110, y: 67, w: 226, h: 110, slot: 1 },
-        { x: 10, y: 179, w: 429, h: 42, slot: 2 },
-        { x: 10, y: 226, w: 140, h: 51, slot: 3 },
-        { x: 154, y: 226, w: 140, h: 51, slot: 4 },
-        { x: 298, y: 226, w: 141, h: 51, slot: 5 },
-        { x: 340, y: 67, w: 100, h: 78, slot: 6 },
-        ...COMMON_AREAS,
-    ],
-    3: [
-        { x: 10, y: 67, w: 100, h: 110, slot: MAIN },
-        { x: 114, y: 67, w: 161, h: 51, slot: 1 },
-        { x: 277, y: 67, w: 161, h: 51, slot: 2 },
-        { x: 114, y: 119, w: 161, h: 51, slot: 3 },
-        { x: 277, y: 119, w: 161, h: 51, slot: 4 },
-        { x: 114, y: 171, w: 161, h: 51, slot: 5 },
-        { x: 277, y: 171, w: 161, h: 51, slot: 6 },
-        { x: 10, y: 228, w: 213, h: 50, slot: 7 },
-        { x: 226, y: 228, w: 213, h: 50, slot: 8 },
-        ...COMMON_AREAS,
-    ],
-};
 
 const LAYOUTS: readonly DevicePageLayout[] = [1, 2, 3];
 
@@ -117,6 +74,7 @@ const KIND_COLOR: Readonly<Record<DevicePageSlotKind, string>> = {
     progress: '#2e7d32',
     button: '#1565c0',
     switch: '#6a1b9a',
+    status: '#00838f',
 };
 
 export default class DevicePageSection extends React.Component<DevicePageSectionProps> {
@@ -170,7 +128,9 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      */
     private renderPreview(layout: DevicePageLayout): React.JSX.Element {
         const kinds = DEVICE_PAGE_LAYOUTS[layout];
-        const { showInfo } = this.props.value;
+        const { showInfo, slots } = this.props.value;
+        // the status grid only when one of its slots is filled - the slots stay by position on a layout change
+        const withStatusIcons = devicePageHasStatusIcons(layout, slots);
         return (
             <Box
                 sx={{
@@ -195,16 +155,16 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         bgcolor: '#333',
                     }}
                 />
-                {PREVIEW_AREAS[layout].map(area => {
+                {devicePagePreviewAreas(layout, withStatusIcons).map(area => {
                     const kind = area.slot > 0 ? kinds[area.slot - 1] : undefined;
                     let bg = '#424242';
                     let text = '';
                     if (kind) {
                         bg = KIND_COLOR[kind];
                         text = String(area.slot);
-                    } else if (area.slot === MAIN) {
+                    } else if (area.slot === PREVIEW_MAIN) {
                         bg = '#9e9e9e';
-                    } else if (area.slot === INFO) {
+                    } else if (area.slot === PREVIEW_INFO) {
                         bg = showInfo ? '#0288d1' : '#212121';
                         text = 'i';
                     }
@@ -319,7 +279,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
     }
 
     private renderSlots(): React.JSX.Element {
-        const { value, onChange } = this.props;
+        const { value, onChange, slotIconSelector } = this.props;
         const kinds = DEVICE_PAGE_LAYOUTS[value.layout];
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -360,8 +320,16 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                             ref => onChange(withDevicePageSlot(value, index, ref)),
                             'device-page-slot',
                         )}
+                        {kind === 'status' && value.slots[index] ? (
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                {slotIconSelector(index, value.slots[index]?.icon ?? '')}
+                            </Box>
+                        ) : null}
                     </Box>
                 ))}
+                {kinds.includes('status') ? (
+                    <FormHelperText sx={{ mt: 0 }}>{I18n.t('deviceDetailsDialog_pageStatusIconsHint')}</FormHelperText>
+                ) : null}
             </Box>
         );
     }

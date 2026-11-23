@@ -1,4 +1,5 @@
 import {
+    DEVICE_PAGE_LAYOUTS,
     defaultDevicePageConfig,
     deviceDetailEntryOfState,
     deviceDetailMaskOf,
@@ -98,7 +99,7 @@ export function withDevicePageLayout(config: DevicePageConfig, layout: DevicePag
  * @param config the device page
  * @param index index of the slot (0 = slot 1)
  * @param ref the state of the slot, null = empty
- * @returns the device page with the slot
+ * @returns the device page with the slot; a status slot keeps its own icon when another state is chosen
  */
 export function withDevicePageSlot(
     config: DevicePageConfig,
@@ -109,8 +110,128 @@ export function withDevicePageSlot(
     if (index < 0 || index >= slots.length) {
         return config;
     }
-    slots[index] = ref ? { ...ref } : null;
+    const icon = slots[index]?.icon;
+    const next: DevicePageStateRef | null = ref ? { ...ref } : null;
+    if (next && icon && !next.icon && DEVICE_PAGE_LAYOUTS[config.layout][index] === 'status') {
+        next.icon = icon;
+    }
+    slots[index] = next;
+    // an own icon only on a status slot
+    return { ...config, slots: fitDevicePageSlots(slots, config.layout) };
+}
+
+/**
+ * The own icon of a status slot; other slots and an empty slot (no state) stay as they are.
+ *
+ * @param config the device page
+ * @param index index of the slot (0 = slot 1)
+ * @param icon MDI name, '' = the icon of the mask entry / the kind
+ * @returns the device page with the icon
+ */
+export function withDevicePageSlotIcon(config: DevicePageConfig, index: number, icon: string): DevicePageConfig {
+    const slot = config.slots[index];
+    if (!slot || DEVICE_PAGE_LAYOUTS[config.layout][index] !== 'status') {
+        return config;
+    }
+    const { icon: _old, ...rest } = slot;
+    const trimmed = icon.trim();
+    const slots = [...config.slots];
+    slots[index] = trimmed ? { ...rest, icon: trimmed } : rest;
     return { ...config, slots };
+}
+
+/** an area of the schematic preview in display pixels (480 x 320, doc/ideas/device-details/device-page-hmi.md) */
+export interface DevicePagePreviewArea {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    /** slot number (1 ...), 0 = main icon, -1 = status line, -2 = "i" */
+    slot: number;
+}
+
+/** main icon in {@link DevicePagePreviewArea.slot} */
+export const PREVIEW_MAIN = 0;
+/** status line in {@link DevicePagePreviewArea.slot} */
+export const PREVIEW_STATUS_LINE = -1;
+/** "i" icon in {@link DevicePagePreviewArea.slot} */
+export const PREVIEW_INFO = -2;
+
+/** the status grid of layout 1: two columns of 38 px (1 px overlap), rows of 45 px (1 px overlap), at x 124 / y 71 */
+const STATUS_GRID = { x: 124, y: 71, w: 38, h: 45, columns: 2 };
+
+/**
+ * The areas of the schematic preview of a layout (geometry of the HMI pages cardDevice1-3). Layout 1 with at least one
+ * status slot filled: the status grid right of the main icon (2 columns, rows = number of status slots / 2, all of
+ * them - an empty one stays an empty cell) and the narrow info rows; otherwise the wide rows and no grid.
+ *
+ * @param layout the layout
+ * @param withStatusIcons at least one status slot is filled (devicePageHasStatusIcons)
+ * @returns the areas
+ */
+export function devicePagePreviewAreas(layout: DevicePageLayout, withStatusIcons: boolean): DevicePagePreviewArea[] {
+    const common: DevicePagePreviewArea[] = [
+        { x: 10, y: 289, w: 390, h: 30, slot: PREVIEW_STATUS_LINE },
+        { x: 404, y: 288, w: 36, h: 32, slot: PREVIEW_INFO },
+    ];
+    switch (layout) {
+        case 1: {
+            // narrow rows: icon at 204, name 86 px, value 110 px (the value stays at 330)
+            const rowX = withStatusIcons ? 204 : 126;
+            const areas: DevicePagePreviewArea[] = [
+                { x: 10, y: 68, w: 110, h: 114, slot: PREVIEW_MAIN },
+                { x: rowX, y: 76, w: 440 - rowX, h: 34, slot: 1 },
+                { x: rowX, y: 120, w: 440 - rowX, h: 34, slot: 2 },
+                { x: 10, y: 190, w: 104, h: 80, slot: 3 },
+                { x: 118, y: 190, w: 104, h: 80, slot: 4 },
+                { x: 226, y: 190, w: 104, h: 80, slot: 5 },
+                { x: 334, y: 190, w: 104, h: 80, slot: 6 },
+            ];
+            if (withStatusIcons) {
+                let cell = 0;
+                DEVICE_PAGE_LAYOUTS[1].forEach((kind, index) => {
+                    if (kind !== 'status') {
+                        return;
+                    }
+                    const column = cell % STATUS_GRID.columns;
+                    const row = Math.floor(cell / STATUS_GRID.columns);
+                    areas.push({
+                        x: STATUS_GRID.x + column * (STATUS_GRID.w - 1),
+                        y: STATUS_GRID.y + row * (STATUS_GRID.h - 1),
+                        w: STATUS_GRID.w,
+                        h: STATUS_GRID.h,
+                        slot: index + 1,
+                    });
+                    cell++;
+                });
+            }
+            return [...areas, ...common];
+        }
+        case 2:
+            return [
+                { x: 10, y: 67, w: 96, h: 110, slot: PREVIEW_MAIN },
+                { x: 110, y: 67, w: 226, h: 110, slot: 1 },
+                { x: 10, y: 179, w: 429, h: 42, slot: 2 },
+                { x: 10, y: 226, w: 140, h: 51, slot: 3 },
+                { x: 154, y: 226, w: 140, h: 51, slot: 4 },
+                { x: 298, y: 226, w: 141, h: 51, slot: 5 },
+                { x: 340, y: 67, w: 100, h: 78, slot: 6 },
+                ...common,
+            ];
+        case 3:
+            return [
+                { x: 10, y: 67, w: 100, h: 110, slot: PREVIEW_MAIN },
+                { x: 114, y: 67, w: 161, h: 51, slot: 1 },
+                { x: 277, y: 67, w: 161, h: 51, slot: 2 },
+                { x: 114, y: 119, w: 161, h: 51, slot: 3 },
+                { x: 277, y: 119, w: 161, h: 51, slot: 4 },
+                { x: 114, y: 171, w: 161, h: 51, slot: 5 },
+                { x: 277, y: 171, w: 161, h: 51, slot: 6 },
+                { x: 10, y: 228, w: 213, h: 50, slot: 7 },
+                { x: 226, y: 228, w: 213, h: 50, slot: 8 },
+                ...common,
+            ];
+    }
 }
 
 /**
