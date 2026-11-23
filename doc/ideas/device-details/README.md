@@ -175,6 +175,9 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
    mehr, Zeile 5 = Felder 38–43). Ersetzt die frühere Idee, cardSchedule für die Detailseite zu ändern (Typ `number`
    mit Wert, Tipp öffnet `popupSlider`) – das entfällt, **cardSchedule bleibt unverändert**.
 
+3. Geräteseiten **cardDevice1–3** (Steuern / Fortschritt / Werte): Protokoll, Elementarten und Geometrie in
+   [device-page-hmi.md](device-page-hmi.md), Werkzeug `HMI/tools/card_device.py`.
+
 ### cardEntities2 ist nicht im Adapter
 
 - cardEntities2 existiert nur in der HMI (Werkzeug `HMI/tools/entities2_five_rows.py`). Adapter, Admin und Web-Panel
