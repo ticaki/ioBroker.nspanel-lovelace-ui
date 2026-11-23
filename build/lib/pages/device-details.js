@@ -158,10 +158,10 @@ function deviceDetailRowLook(deviceId, entry, common, kind) {
     color: deviceDetailGroupColor((_c = maskEntry == null ? void 0 : maskEntry.group) != null ? _c : "info")
   };
 }
-function deviceDetailRowItem(deviceId, entry, common, name, readOnly = false) {
+function deviceDetailRowItem(deviceId, entry, common, name, readOnly = false, iconName = "") {
   const kind = readOnlyRowKind((0, import_deviceDetails.deviceDetailRowKind)(common), readOnly);
   const look = deviceDetailRowLook(deviceId, entry, common, kind);
-  const icon = { type: "const", constVal: look.icon };
+  const icon = { type: "const", constVal: iconName || look.icon };
   const valueColor = { type: "const", constVal: look.color };
   const nameItem = { type: "const", constVal: name };
   const text = { true: nameItem, false: nameItem };

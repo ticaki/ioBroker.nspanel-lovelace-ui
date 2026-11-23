@@ -47,9 +47,11 @@ __export(deviceDetails_exports, {
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf: () => deviceDetailsRuntimeOf,
   devicePageConfigOf: () => devicePageConfigOf,
+  devicePageHasStatusIcons: () => devicePageHasStatusIcons,
   devicePageProgressPercent: () => devicePageProgressPercent,
   devicePageSlotAccepts: () => devicePageSlotAccepts,
   devicePageSlotCount: () => devicePageSlotCount,
+  devicePageSlotFields: () => devicePageSlotFields,
   deviceSelectionError: () => deviceSelectionError,
   deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
@@ -90,8 +92,8 @@ function deviceShortPressOf(config) {
   }
 }
 const DEVICE_PAGE_LAYOUTS = {
-  /** "Steuern" (control) */
-  1: ["info", "info", "button", "button", "button", "button"],
+  /** "Steuern" (control): slots 7-10 are the 2x2 status icons right of the big icon */
+  1: ["info", "info", "button", "button", "button", "button", "status", "status", "status", "status"],
   /** "Fortschritt" (progress) */
   2: ["value", "progress", "info", "info", "info", "button"],
   /** "Werte" (values) */
@@ -103,7 +105,10 @@ const DEVICE_PAGE_FIELDS = {
   1: {
     mainName: 110,
     status: 390,
-    slots: { info: { name: 164, value: 110 }, button: { name: 104 } }
+    slots: { info: { name: 164, value: 110 }, button: { name: 104 } },
+    // at least one status icon: the 2x2 block stands right of the big icon, the info rows get narrower (empty status
+    // slots inside the shown block stay empty grid cells)
+    slotsWithStatus: { info: { name: 86, value: 110 } }
   },
   2: {
     mainName: 96,
@@ -124,12 +129,21 @@ const DEVICE_PAGE_FIELDS = {
 function devicePageSlotCount(layout) {
   return DEVICE_PAGE_LAYOUTS[layout].length;
 }
+function devicePageHasStatusIcons(layout, slots) {
+  return DEVICE_PAGE_LAYOUTS[layout].some((kind, i) => kind === "status" && !!slots[i]);
+}
+function devicePageSlotFields(layout, kind, withStatusIcons) {
+  var _a, _b;
+  const fields = DEVICE_PAGE_FIELDS[layout];
+  return (_b = withStatusIcons ? (_a = fields.slotsWithStatus) == null ? void 0 : _a[kind] : void 0) != null ? _b : fields.slots[kind];
+}
 function devicePageSlotAccepts(kind, state) {
   const writable = state.write !== false;
   const button = state.read === false;
   switch (kind) {
     case "info":
     case "value":
+    case "status":
       return true;
     case "button":
       return button || state.type === "boolean" && writable;
@@ -151,12 +165,17 @@ function devicePageProgressPercent(value, min, max) {
   return Math.min(100, Math.max(0, Math.round(percent)));
 }
 function fitDevicePageSlots(slots, layout) {
-  const out = [];
-  for (let i = 0; i < devicePageSlotCount(layout); i++) {
+  return DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => {
     const slot = slots[i];
-    out.push(slot ? { ...slot } : null);
-  }
-  return out;
+    if (!slot) {
+      return null;
+    }
+    const out = { ...slot };
+    if (kind !== "status") {
+      delete out.icon;
+    }
+    return out;
+  });
 }
 function defaultDevicePageSlots(entries, layout) {
   const rows = entries.filter((e) => e.id !== "");
@@ -174,13 +193,21 @@ function defaultDevicePageConfig(entries, layout = 1) {
 function isDevicePageLayout(value) {
   return value === 1 || value === 2 || value === 3;
 }
-function devicePageStateRefOf(value) {
+function devicePageStateRefOf(value, keepIcon) {
   var _a;
   if (!isDeviceDetailEntryConfig(value) || value.id === "") {
     return null;
   }
+  const ref = { key: value.key, id: value.id };
   const subName = (_a = value.subName) == null ? void 0 : _a.trim();
-  return subName ? { key: value.key, id: value.id, subName } : { key: value.key, id: value.id };
+  if (subName) {
+    ref.subName = subName;
+  }
+  const icon = keepIcon && "icon" in value && typeof value.icon === "string" ? value.icon.trim() : "";
+  if (icon) {
+    ref.icon = icon;
+  }
+  return ref;
 }
 function devicePageConfigOf(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -189,9 +216,9 @@ function devicePageConfigOf(value) {
   const layout = "layout" in value && isDevicePageLayout(value.layout) ? value.layout : 1;
   const rawSlots = "slots" in value && Array.isArray(value.slots) ? value.slots : [];
   const slots = [];
-  for (let i = 0; i < devicePageSlotCount(layout); i++) {
-    slots.push(devicePageStateRefOf(rawSlots[i]));
-  }
+  DEVICE_PAGE_LAYOUTS[layout].forEach((kind, i) => {
+    slots.push(devicePageStateRefOf(rawSlots[i], kind === "status"));
+  });
   const config = {
     layout,
     slots,
@@ -201,7 +228,7 @@ function devicePageConfigOf(value) {
   if (icon) {
     config.icon = icon;
   }
-  const status = "status" in value ? devicePageStateRefOf(value.status) : null;
+  const status = "status" in value ? devicePageStateRefOf(value.status, false) : null;
   if (status) {
     config.status = status;
   }
@@ -792,9 +819,11 @@ function deviceDetailSubNames(deviceId, rows) {
   deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf,
   devicePageConfigOf,
+  devicePageHasStatusIcons,
   devicePageProgressPercent,
   devicePageSlotAccepts,
   devicePageSlotCount,
+  devicePageSlotFields,
   deviceSelectionError,
   deviceShortPressOf,
   exchangeDeviceDetailRowState,

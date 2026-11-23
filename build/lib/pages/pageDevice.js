@@ -73,8 +73,10 @@ class PageDevice extends import_Page.Page {
     ) : "";
     const mainItem = (_b = this.pageItems) == null ? void 0 : _b[0];
     const elements = [(0, import_device_page.devicePageMainElement)(mainItem ? await mainItem.getPageItemPayload() : "", status)];
+    const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout];
     for (let index = 1; index <= this.slotCount + 1; index++) {
-      elements.push(await this.elementAt(index));
+      const element = await this.elementAt(index);
+      elements.push(kinds[index - 1] === "status" ? (0, import_device_page.devicePageStatusIconElement)(element) : element);
     }
     this.sendToPanel(
       (0, import_tools.getPayload)(

@@ -29,6 +29,8 @@ __export(device_page_exports, {
   devicePageMainItem: () => devicePageMainItem,
   devicePagePageConfig: () => devicePagePageConfig,
   devicePageSlotItem: () => devicePageSlotItem,
+  devicePageStatusIconElement: () => devicePageStatusIconElement,
+  devicePageStatusIconItem: () => devicePageStatusIconItem,
   devicePageStatusItem: () => devicePageStatusItem,
   fitDevicePageStatus: () => fitDevicePageStatus,
   optionalValueOf: () => optionalValueOf,
@@ -85,6 +87,13 @@ function devicePageMainElement(mainPayload, status) {
   const head = fields.length >= 6 ? fields.slice(0, 5) : ["", "", "", "", ""];
   return [...head, status.replace(/~/g, "")].join("~");
 }
+function devicePageStatusIconElement(payload) {
+  const fields = payload ? payload.split("~") : [];
+  if (fields.length < 6 || !fields[0]) {
+    return DEVICE_PAGE_EMPTY_ELEMENT;
+  }
+  return [...fields.slice(0, 4), "", ""].join("~");
+}
 function optionalValueOf(payload) {
   var _a;
   return (_a = payload.split("~")[5]) != null ? _a : "";
@@ -93,19 +102,24 @@ function withIcon(icon, name) {
   const value = { type: "const", constVal: name };
   return { ...icon, true: { ...icon == null ? void 0 : icon.true, value }, false: { ...icon == null ? void 0 : icon.false, value } };
 }
-function devicePageMainItem(source, details, page) {
+function devicePageMainItem(source, details, page, name) {
+  const nameItem = { type: "const", constVal: name };
+  const text = { true: nameItem, false: nameItem };
   const deviceDetails = { deviceId: details.deviceId, entries: details.entries };
   if ((page.shortPress === "state" || page.shortPress === "none") && (source.type === "button" || source.type === "switch" || source.type === "text")) {
     const item = structuredClone(source);
     item.deviceDetails = deviceDetails;
     item.dpInit = "";
+    item.data.text = text;
+    if (item.role === "text.states") {
+      delete item.role;
+    }
     if (page.icon) {
       item.data.icon = withIcon(item.data.icon, page.icon);
     }
     return item;
   }
   const data = source.data;
-  const text = data && "text" in data && data.text ? structuredClone(data.text) : data && "headline" in data && data.headline ? { true: structuredClone(data.headline), false: structuredClone(data.headline) } : void 0;
   const icon = data && "icon" in data && data.icon ? structuredClone(data.icon) : void 0;
   const entity1 = data && "entity1" in data && data.entity1 ? structuredClone(data.entity1) : void 0;
   return {
@@ -147,6 +161,8 @@ function devicePageSlotItem(deviceId, kind, entry, common, name) {
       return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, name, "all"), dpInit: "" };
     case "switch":
       return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, name), dpInit: "" };
+    case "status":
+      return devicePageStatusIconItem(deviceId, entry, common);
     case "button": {
       if (common.read === false) {
         return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, name), dpInit: "" };
@@ -184,6 +200,15 @@ function devicePageSlotItem(deviceId, kind, entry, common, name) {
     }
   }
 }
+function devicePageStatusIconItem(deviceId, entry, common) {
+  var _a;
+  const row = (0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, "", "all", (_a = entry.icon) != null ? _a : "");
+  if (row.type === "text" && row.data) {
+    delete row.data.entity2;
+    delete row.data.text1;
+  }
+  return { ...row, dpInit: "" };
+}
 function devicePageStatusItem(deviceId, entry, common) {
   return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, "", "all"), dpInit: "" };
 }
@@ -212,18 +237,21 @@ async function devicePageElements(source, details, page, getObject, translate, l
       present.push({ index: i, entry: ref, common });
     }
   }
+  const named = present.filter((p) => kinds[p.index] !== "status");
   const names = (0, import_device_details.deviceDetailRowNames)(
     details.deviceId,
-    present.map((p) => p.entry),
-    present.map((p) => p.common),
+    named.map((p) => p.entry),
+    named.map((p) => p.common),
     translate,
     language,
     null
   );
   const slots = kinds.map(() => void 0);
-  present.forEach((p, n) => {
+  present.forEach((p) => {
     var _a2;
-    const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, (_a2 = names[n]) != null ? _a2 : "");
+    const n = named.indexOf(p);
+    const name = n >= 0 ? (_a2 = names[n]) != null ? _a2 : "" : "";
+    const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, name);
     if (!item) {
       skipped.push(p.entry.id);
     }
@@ -235,7 +263,7 @@ async function devicePageElements(source, details, page, getObject, translate, l
     headline,
     slotCount: kinds.length,
     elements: [
-      devicePageMainItem(source, details, page),
+      devicePageMainItem(source, details, page, headline),
       ...slots,
       page.showInfo ? devicePageInfoItem(details) : void 0,
       status
@@ -270,6 +298,8 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   devicePageMainItem,
   devicePagePageConfig,
   devicePageSlotItem,
+  devicePageStatusIconElement,
+  devicePageStatusIconItem,
   devicePageStatusItem,
   fitDevicePageStatus,
   optionalValueOf,
