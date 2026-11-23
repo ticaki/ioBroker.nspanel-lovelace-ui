@@ -9,11 +9,12 @@ Nur EU; us-l und us-p sind nicht angepasst.
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device3.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device4.HMI --preview doc/Pictures/device-page
 ```
 
 Teststände: `device1` (cardDevice1 mit N=6, ohne Status-Icons), `device2` (N=10, erstes Raster 42 px hoch),
-`device3` (N=10, Raster auf die info-Zeilen ausgerichtet – aktuell; beide in `/mnt/projekte/nspanel emu/`).
+`device3` (N=10, Raster auf die info-Zeilen ausgerichtet), `device4` (wie device3, zusätzlich senden main und info
+auch bei Typ `text` – aktuell; alle in `/mnt/projekte/nspanel emu/`).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
   cardEntities2 und die pageType-Einträge unterscheiden sich). Dort fehlte `swipe_release_fix.py` (#934, keine HMI
@@ -60,8 +61,8 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
 
 | Art | Darstellung | Tipp |
 |---|---|---|
-| main | Icon Font 4 (Bold 80, Icon 66 px) in iconColor, Name (Feld 5) darunter. **Feld 6 → Statuszeile** | wie eine cardGrid-Zelle des Typs, bei `text` nichts |
-| info | Icon Font 1 in iconColor, Name Font 0, Wert (Feld 6) Font 0 rechtsbündig | wie eine cardGrid-Zelle des Typs, bei `text` nichts |
+| main | Icon Font 4 (Bold 80, Icon 66 px) in iconColor, Name (Feld 5) darunter. **Feld 6 → Statuszeile** | wie eine cardGrid-Zelle des Typs, auch `text` sendet `buttonPress2` |
+| info | Icon Font 1 in iconColor, Name Font 0, Wert (Feld 6) Font 0 rechtsbündig | wie eine cardGrid-Zelle des Typs, auch `text` sendet `buttonPress2` |
 | value | Feld 6 in Font 4, Name Font 0 darunter, kleines Icon Font 1 daneben (leeres Icon-Feld = kein Icon) | keiner |
 | progress | Name Font 0 darüber, Balken über die volle Breite; Feld 6 = ganze Zahl 0–100 (wird begrenzt), Füllung in iconColor, Rahmen in der Textfarbe | keiner |
 | button | Icon Font 3 in iconColor, Name Font 0 darunter | genau wie eine cardGrid-Zelle (auch `text` sendet) |
@@ -74,10 +75,33 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
   `event,buttonPress2,<intName>,button`. Es gibt **kein `buttonPress3`** auf diesen Seiten.
 - Bei info, button und main leiten Name und Wert ihren Tipp an das Icon weiter (`click <Icon>,1/0`), die ganze
   Zeile/Kachel ist also bedienbar.
+- **Regel:** Jedes Objekt, das beim Antippen den Press-Effekt zeigt, sendet beim Loslassen auch ein Ereignis (siehe
+  „Ereignisse beim Antippen“). Bis `device3` sendeten main und info bei Typ `text` nichts, obwohl der Knopf aufleuchtete.
 - **Statuszeile** `tStatus`: Feld 6 von main, immer (auch wenn main ausgeblendet ist), einzeilig, Font 0, normale
   Textfarbe. Leeres Feld = leere Zeile.
 - **value-Schrift:** Font 4 (NotoSans Bold 80) enthält Ziffern, `:`, `%`, `°`, `,`, `.`, `-`, `/`, Leerzeichen,
   Buchstaben inkl. ä/ö/ü – aber **kein `€`**. Vorschub: Ziffer 33 px, `:` 17 px, `%` 53 px, `°` 25 px, Leerzeichen 15 px.
+
+### Ereignisse beim Antippen
+
+Alle Ereignisse gehen beim **Loslassen** raus (Schalter: beim Berühren, wie cardEntities) und haben das Format der
+cardGrid-Zellen. Ausgeblendete Elemente (`vis 0`) nehmen keinen Tipp an.
+
+| Element | Objekte (Tipp) | Press-Effekt | Ereignis |
+|---|---|---|---|
+| main | `bMain`, `tMainName` → `bMain` | ja (Knopf, `bco2` 14823) | `event,buttonPress2,<intName>,button` – bei jedem Typ; Typ `text` mit leerem intName sendet nichts |
+| info | `bEntity<k>`, `tEntity<k>`/`tValue<k>` → `bEntity<k>` (cardDevice1 Slot 1–2 auch `bEntityS<k>`, `tEntityS<k>`, `tValueS<k>`) | ja | wie main |
+| button | `bEntity<k>`, `tEntity<k>` → `bEntity<k>` | ja | `event,buttonPress2,<intName>,button`, immer (unverändert) |
+| info-Icon | `bInfo` | ja | `event,buttonPress2,<intName>,button`, immer (unverändert) |
+| switch | `btOnOff<k>` | Bildwechsel | `event,buttonPress2,<intName>,OnOff,<0\|1>` (unverändert) |
+| switch: Icon und Name | `tIcon<k>`, `tEntity<k>` (cardDevice3) | nein, reiner Text ohne Code | – |
+| value | `tIcon1`, `tValue1`, `tEntity1` (cardDevice2) | nein, reiner Text ohne Code | – |
+| progress | `tEntity2`, gezeichneter Balken (cardDevice2) | nein | – |
+| status | `tStat7–10` (cardDevice1) | nein, Textfelder mit Rahmen ohne Code | – |
+| Statuszeile | `tStatus` | nein | – |
+
+Die Popups der Typen bleiben wie bisher (siehe oben); die Bedingung im Loslassen-Code von main/info lautet
+`if(type<k>.txt!="text"||entn<k>.txt!="")`, alle anderen Typen senden also unverändert.
 
 ## Feldbreiten für den Adapter (Kürzen)
 
@@ -153,7 +177,7 @@ Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den S
 - Die info-Zeilen 1–2 gibt es zweimal: breit (`bEntity/tEntity/tValue1–2`) und schmal (`bEntityS/tEntityS/tValueS1–2`).
   Der Parser schreibt in den breiten Satz, kopiert Text, Icon-Schrift und Farbe in den schmalen und schaltet per `vis`
   den passenden Satz sichtbar. Position/Breite werden zur Laufzeit nie geändert (keine Seite des Projekts tut das).
-  Beide Sätze haben den gleichen Tipp-Code (cardGrid-Zelle, `text` sendet nichts) mit Typ/ID von Slot 1 bzw. 2.
+  Beide Sätze haben den gleichen Tipp-Code (cardGrid-Zelle, auch `text` sendet) mit Typ/ID von Slot 1 bzw. 2.
 - `tValueS1/2` liegen 1 px tiefer als `tValue1/2`, sonst wären die Rechtecke deckungsgleich und der Editor meldet
   „Component overlap“.
 
@@ -216,7 +240,7 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 
 ## Im Nextion-Editor prüfen
 
-1. `nspanel-v6.2.0.device3.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
+1. `nspanel-v6.2.0.device4.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
 2. Kompilieren: keine Fehler in den Seiten cardDevice1–3 (Code ist nur Klartext, nicht kompiliert getestet).
    Besonders: `fill`/`draw` mit `defaultBcoColor`/`defaultFontColor`/`sys2` im tmSerial von cardDevice2,
@@ -227,6 +251,13 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
    Popups (input_sel sofort, light nach Halten), ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach
    Rückkehr aus einem Popup (der Adapter schickt nach renderCurrentPage neu). cardDevice1: Wechsel mit/ohne
    Status-Icons in beiden Richtungen (Zeilen springen um, Raster erscheint/verschwindet), Tipp auf die schmalen Zeilen.
+5. Ereignisse (Simulator, Ausgabe „Simulator Return“ bzw. am Panel im Adapter-Log): alle Elemente mit Typ `text` und
+   einer ID belegen, dann auf jeder der drei Seiten antippen – Haupt-Icon und sein Name, jede info-Zeile/-Kachel auf
+   Icon, Name und Wert (cardDevice1: breite **und** schmale Zeilen), Knöpfe, info-Icon. Jeder Tipp mit Press-Effekt
+   muss genau ein `event,buttonPress2,<intName>,button` liefern. Gegenprobe: Typ `text` mit leerem intName sendet
+   nichts; Status-Icons, value, Balken, Schalter-Icon/-Name und Statuszeile zeigen keinen Effekt und senden nichts.
+   Kompiliert die Zeile `if(typeMain.txt!="text"||entnMain.txt!="")` (Zeichenkettenvergleiche mit `||`, wie schon
+   `tTmp.txt=="delete"||tTmp.txt==""` im tmSerial)?
 
 ## Bekannte Unsicherheiten / Abweichungen
 
@@ -238,6 +269,8 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
   das Werkzeug sie als Vorlage nehmen.
 - Langes Halten auf info/button/main: die Popups von light/light2/fan/number öffnen wie auf cardGrid nach 500 ms;
   ohne Popup sendet auch langes Halten nur `buttonPress2`.
+- Ein Tipp auf Name/Wert läuft über `click <Knopf>,1/0`; dass dabei genau ein Ereignis entsteht (und nicht zwei), ist
+  vom Aufbau her so, aber nicht im Simulator gesehen.
 - Die Statuszeile hat nur eine Zeile (für zwei war kein Platz).
 - Status-Raster: ob die Nextion bei `style` 1 und `borderw` 1 genau 1 px zeichnet und die überlappenden Rahmen sauber
   aufeinanderliegen, ist nur aus der Vorlage cardPower (2 px) abgeleitet, nicht am Gerät gesehen. Beim Umschalten

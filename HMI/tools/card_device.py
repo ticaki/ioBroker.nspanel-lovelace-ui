@@ -26,9 +26,9 @@ Protocol:
   in any case, empty = empty line).
   main      icon font 4 ('¬<font>' suffix like cardGrid) in iconColor, name below it; optionalValue -> status
             line tStatus at the bottom (font 0, one line, normal text colour). Tap: like a cardGrid cell of its type
-            (type text: nothing).
+            (also type text sends buttonPress2, unless intName is empty).
   info      row: icon (font 1, iconColor), name (font 0), value (font 0, right aligned). Tap on icon, name or value:
-            like a cardGrid cell of its type, type text sends nothing.
+            like a cardGrid cell of its type; also type text sends buttonPress2, unless intName is empty.
   value     optionalValue in font 4 (Bold 80: digits, ':', '%', '°', ',', '.', letters incl. umlauts; no
             '€'), name below in font 0, optional small icon (font 1) beside it. No tap.
   progress  bar drawn with fill/draw (the project has no progress bar component to copy): outline in the text
@@ -46,6 +46,8 @@ Protocol:
   Tap code of a cardGrid cell: shutter/shutter2/input_sel/timer open their popup on touch, light/light2/fan/number
   after holding 500 ms (tmLP), the release sends buttonPress2. There is no buttonPress3 on these pages.
   Name and value texts of a tappable element forward their touch to its icon button (click <button>,1 / ,0).
+  Every object with a press effect (the icon buttons of main, info, button and the info icon) sends on release;
+  value, progress, status, the icon/name of a switch and the status line are plain texts without touch code.
 
 Buffers: ids (entn*) 23 like cardEntities2, names 31, values 31, status 63, icons 10, tSend 63 (longest event
 'event,buttonPress2,' + id + ',OnOff,1'), strCommand 1019 (the receive buffer of the display, a longer entityUpd
@@ -234,9 +236,11 @@ def cell_down(down1, typ, entn, name, button_name):
     return [pattern.sub(lambda m: rename[m.group(1)], x) for x in down1]
 
 
-def up_unless_text(typ, entn):
-    return ['tmLP.en=0', '// type text sends nothing (card_device.py)', f'if({typ}.txt!="text")', '{'] \
-        + ['  ' + x for x in send_lines(entn)] + ['}']
+def up_code(typ, entn):
+    """release of main / an info row: every type sends buttonPress2 (the button shows its press effect for every
+    type, so the tap must arrive); only type text without an intName has nothing to report"""
+    return ['tmLP.en=0', '// every type sends, type text only with an intName (card_device.py)',
+            f'if({typ}.txt!="text"||{entn}.txt!="")', '{'] + ['  ' + x for x in send_lines(entn)] + ['}']
 
 
 def slot_names(k, kind):
@@ -264,7 +268,7 @@ def tapped_row(button_t, text_t, down1, k, names, spec):
     icon, name_n, value_n = names
     b = make_button(button_t, icon, spec['icon'])
     b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', name_n, icon))
-    b.set_code('up', up_unless_text(f'type{k}', f'entn{k}'))
+    b.set_code('up', up_code(f'type{k}', f'entn{k}'))
     name = make_text(text_t, name_n, spec['name'], NAME_LEN)
     value = make_text(text_t, value_n, spec['value'], VALUE_LEN)
     forward(name, icon)
@@ -287,7 +291,7 @@ def build_objects(page, layout, switch_template):
 
     main = make_button(button_t, 'bMain', layout['main'])
     main.set_code('down', cell_down(down1, 'typeMain', 'entnMain', 'tMainName', 'bMain'))
-    main.set_code('up', up_unless_text('typeMain', 'entnMain'))
+    main.set_code('up', up_code('typeMain', 'entnMain'))
     main_name = make_text(text_t, 'tMainName', layout['mainName'], NAME_LEN)
     forward(main_name, 'bMain')
     visible = [main, main_name]
@@ -306,7 +310,7 @@ def build_objects(page, layout, switch_template):
         if kind in TAPPED:
             b = make_button(button_t, icon, spec['icon'])
             b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', f'tEntity{k}', icon))
-            b.set_code('up', up_unless_text(f'type{k}', f'entn{k}') if kind == 'info'
+            b.set_code('up', up_code(f'type{k}', f'entn{k}') if kind == 'info'
                        else ['tmLP.en=0'] + send_lines(f'entn{k}'))
             visible.append(b)
         elif kind in ('value', 'switch'):
