@@ -3,6 +3,10 @@ import {
     CARD_DEVICE_MIN_TFT,
     DEVICE_PAGE_EMPTY_ELEMENT,
     cardDeviceOf,
+    devicePageChannelAdminItem,
+    devicePageChannelElement,
+    devicePageChannelSlotItem,
+    devicePageChannels,
     devicePageElements,
     devicePageMainElement,
     devicePageMainItem,
@@ -26,8 +30,14 @@ import {
     devicePageConfigOf,
     devicePageHasStatusIcons,
     devicePageProgressPercent,
+    DEVICE_PAGE_CHANNEL_ROLES,
     devicePageSlotAccepts,
+    devicePageSlotAcceptsChannel,
     devicePageSlotFields,
+    devicePageSlotHasLook,
+    devicePageSlotLookOf,
+    devicePageSlotTakesLongPress,
+    deviceShortPressOf,
     deviceDetailsRuntimeOf,
     fitDevicePageSlots,
     type DeviceDetailsRuntime,
@@ -36,6 +46,10 @@ import {
 import { textWidth } from '../const/text-width';
 import { PageDevice } from './pageDevice';
 import { PageItem } from './pageItem';
+import { Dataitem } from '../controller/data-item';
+import { adminPageItemToScriptItem } from '../configuration/admin-page-item';
+import { emptyChannelValueConfig } from '../types/adminShareConfig';
+import { isCardDeviceType } from '../types/function-and-const';
 import { Page } from '../classes/Page';
 import { Color } from '../const/Color';
 
@@ -676,6 +690,7 @@ function fakeDevicePage(
         headline: 'Waschmaschine',
         slotCount,
         layout,
+        channelSlots: new Set<number>(),
         visibility: true,
         refreshTimeout: null,
         adapter: { setTimeout: (): number => 1, clearTimeout: (): void => undefined },
@@ -775,9 +790,442 @@ describe('lib/pages/pageDevice - payload', () => {
             expect(element(elements, n + 1).slice(0, 2)).to.deep.equal(['button', `dp_3?${n + 1}`]);
         });
     });
-    it('no long press on the device page: buttonPress3 falls back to the tap', async () => {
+    it('long press: a slot runs the long press of its item, main and info never; always handled (no tap)', async () => {
         const { page } = fakeDevicePage(6, []);
-        expect(await page.onButtonPress3()).to.equal(false);
+        const pressed: number[] = [];
+        const items = [0, 1, 2, 3, 4, 5, 6, 7].map(i => ({
+            onCommandLongPress: async (): Promise<boolean> => {
+                pressed.push(i);
+                return Promise.resolve(false);
+            },
+        }));
+        Object.assign(page, { pageItems: items });
+        for (const id of ['0', '1', '6', '7']) {
+            expect(await page.onButtonPress3(id, undefined, 'button', ''), id).to.equal(true);
+        }
+        expect(pressed).to.deep.equal([1, 6]);
+    });
+    it('alias channel slots: field 6 follows the kind of the slot, other slots stay as they are', async () => {
+        // layout 2: value, progress, info, info, info, button
+        const payloads = [
+            'text~dp_3?0~M~1~WM~',
+            'number~dp_3?1~I~2~Vol~40|0|200',
+            'number~dp_3?2~I~2~Vol~40|0|200',
+            'switch~dp_3?3~I~2~Dose~1',
+            'shutter~dp_3?4~I~2~Rollo~A|B|C|enable|enable|enable',
+            'number~dp_3?5~I~2~State~40|0|200',
+            'shutter~dp_3?6~I~2~Rollo~A|B|C|enable|enable|enable',
+        ];
+        const { page, sent } = fakeDevicePage(6, payloads, 2);
+        Object.assign(page, { channelSlots: new Set([0, 1, 2, 3, 5]) });
+        await page.update();
+        const elements = sent[0].split('~').slice(14);
+        const field6 = (e: number): string => elements[6 * e + 5];
+        expect([1, 2, 3, 4, 5, 6].map(field6)).to.deep.equal(['40', '20', 'on', '', '40|0|200', '']);
+        expect(elements.slice(18, 22)).to.deep.equal(['switch', 'dp_3?3', 'I', '2']);
+    });
+});
+
+describe('lib/types/deviceDetails - own data points, alias channels and settings of a slot', () => {
+    it('custom slots: kept with their kind of source, also without id; trimmed; the runtime leaves empty ones out', () => {
+        const config = devicePageConfigOf({
+            layout: 2,
+            slots: [
+                { key: 'x', id: ' 0_userdata.0.a ', custom: 'state', subName: 's' },
+                { key: '', id: '', custom: 'channel' },
+                { key: '', id: 'alias.0.light', custom: 'channel' },
+                { key: '', id: '', custom: 'nope' },
+                { key: 'power', id: `${DEV}.power` },
+            ],
+        });
+        expect(config?.slots).to.deep.equal([
+            { key: '', id: '0_userdata.0.a', custom: 'state' },
+            { key: '', id: '', custom: 'channel' },
+            { key: '', id: 'alias.0.light', custom: 'channel' },
+            null,
+            { key: 'power', id: `${DEV}.power` },
+            null,
+        ]);
+        const run = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [], devicePage: config });
+        expect(run?.devicePage?.slots[1]).to.equal(null);
+        expect(run?.devicePage?.slots[2]).to.deep.equal({ key: '', id: 'alias.0.light', custom: 'channel' });
+    });
+    it('settings of a slot: on every kind, icons trimmed, colors only as #rrggbb, a valid scale, the long press', () => {
+        const scale = { val_min: 0, val_max: 100 };
+        const config = devicePageConfigOf({
+            layout: 2,
+            slots: [
+                { ...ref('power'), trueIcon: ' play ', falseIcon: '', trueColor: '#00FF00', falseColor: 'red', scale },
+                { ...ref('progress'), scale: { val_min: 'x' }, longPress: ' 0_userdata.0.lp ' },
+            ],
+        });
+        expect(config?.slots[0]).to.deep.equal({ ...ref('power'), trueIcon: 'play', trueColor: '#00FF00', scale });
+        expect(config?.slots[1]).to.deep.equal({ ...ref('progress'), longPress: '0_userdata.0.lp' });
+        expect(devicePageSlotHasLook(config?.slots[0])).to.equal(true);
+        expect(devicePageSlotHasLook(ref('power'))).to.equal(false);
+        expect(devicePageSlotHasLook(null)).to.equal(false);
+        // a layout change keeps them
+        expect(fitDevicePageSlots(config?.slots ?? [], 3)[0]).to.deep.equal(config?.slots[0]);
+    });
+    it('older status icon: read as the icon for both states until an own icon is set', () => {
+        const old = { ...ref('door'), icon: 'door' };
+        expect(devicePageSlotLookOf(old)).to.deep.equal({ trueIcon: 'door', falseIcon: 'door' });
+        expect(devicePageSlotLookOf(old, false)).to.deep.equal({});
+        expect(devicePageSlotLookOf({ ...old, falseIcon: 'door-open' })).to.deep.equal({ falseIcon: 'door-open' });
+        const slots = (slot: unknown): unknown[] => [null, null, null, null, null, null, slot];
+        expect(devicePageConfigOf({ layout: 1, slots: slots(old) })?.slots[6]).to.deep.equal(old);
+        expect(devicePageConfigOf({ layout: 1, slots: slots({ ...old, trueIcon: 'a' }) })?.slots[6]).to.deep.equal({
+            ...ref('door'),
+            trueIcon: 'a',
+        });
+    });
+    it('short tap devicePage is a short tap of its own', () => {
+        expect(deviceShortPressOf({ shortPress: 'devicePage' })).to.equal('devicePage');
+        expect(deviceShortPressOf({ shortPress: 'x' })).to.equal('state');
+    });
+    it('which channel roles fit which kind of slot', () => {
+        const all = DEVICE_PAGE_CHANNEL_ROLES.info;
+        expect([...DEVICE_PAGE_CHANNEL_ROLES.button].sort()).to.deep.equal([...all].sort());
+        expect([...DEVICE_PAGE_CHANNEL_ROLES.status].sort()).to.deep.equal([...all].sort());
+        for (const role of ['socket', 'light', 'dimmer', 'blind', 'select', 'slider', 'temperature', 'level.timer']) {
+            expect(devicePageSlotAcceptsChannel('info', role), role).to.equal(true);
+        }
+        for (const role of ['media', 'timeTable', 'sensor.alarm.flood', '', undefined, null]) {
+            for (const kind of ['info', 'value', 'progress', 'button', 'switch', 'status'] as const) {
+                expect(devicePageSlotAcceptsChannel(kind, role), `${kind} ${role}`).to.equal(false);
+            }
+        }
+        // value: no button and no shutter (nothing to read)
+        expect(
+            ['temperature', 'slider', 'select', 'light'].every(r => devicePageSlotAcceptsChannel('value', r)),
+        ).to.equal(true);
+        expect(['button', 'blind', 'gate', 'lock'].some(r => devicePageSlotAcceptsChannel('value', r))).to.equal(false);
+        expect(DEVICE_PAGE_CHANNEL_ROLES.progress).to.deep.equal(['slider', 'volume']);
+        expect(
+            ['socket', 'light', 'dimmer', 'level.mode.fan'].every(r => devicePageSlotAcceptsChannel('switch', r)),
+        ).to.equal(true);
+        expect(
+            ['blind', 'button', 'temperature', 'slider'].some(r => devicePageSlotAcceptsChannel('switch', r)),
+        ).to.equal(false);
+    });
+    it('long press action: a state in a button / switch slot, a channel with role button / socket', () => {
+        expect(devicePageSlotTakesLongPress('button', ref('on'))).to.equal(true);
+        expect(devicePageSlotTakesLongPress('switch', { key: '', id: 'a', custom: 'state' })).to.equal(true);
+        expect(devicePageSlotTakesLongPress('info', ref('on'))).to.equal(false);
+        expect(devicePageSlotTakesLongPress('button', null)).to.equal(false);
+        const channel = { key: '', id: 'alias.0.x', custom: 'channel' as const };
+        expect(devicePageSlotTakesLongPress('info', channel, 'socket')).to.equal(true);
+        expect(devicePageSlotTakesLongPress('button', channel, 'light')).to.equal(false);
+    });
+});
+
+describe('lib/pages/device-page - settings of a slot on a state', () => {
+    const c = (id: string): any => objects[`${DEV}.${id}`].common;
+    const rgb = (hex: string): unknown => Color.ConvertHexToRgb(hex);
+    it('button with a boolean: icon and color follow the state, the tap still switches (go / pause)', () => {
+        const plain = devicePageSlotItem(DEV, 'button', ref('on'), c('on'), 'Lauf') as any;
+        const own = devicePageSlotItem(
+            DEV,
+            'button',
+            { ...ref('on'), trueIcon: 'pause', falseIcon: 'play', trueColor: '#00ff00', falseColor: '#ff0000' },
+            c('on'),
+            'Lauf',
+        ) as any;
+        expect(own.data.icon.true.value.constVal).to.equal('pause');
+        expect(own.data.icon.false.value.constVal).to.equal('play');
+        expect(own.data.icon.true.color.constVal).to.deep.equal(rgb('#00ff00'));
+        expect(own.data.icon.false.color.constVal).to.deep.equal(rgb('#ff0000'));
+        expect(own.type).to.equal('button');
+        expect(own.role).to.equal(DEVICE_DETAIL_ROW_ROLE);
+        expect(own.data.entity1).to.deep.equal(plain.data.entity1);
+        expect(own.data.text).to.deep.equal(plain.data.text);
+    });
+    it('only what is set changes', () => {
+        const plain = devicePageSlotItem(DEV, 'info', ref('door'), c('door'), 'Tür') as any;
+        const own = devicePageSlotItem(DEV, 'info', { ...ref('door'), falseColor: '#0000ff' }, c('door'), 'Tür') as any;
+        expect(own.data.icon.true).to.deep.equal(plain.data.icon.true);
+        expect(own.data.icon.false.value).to.deep.equal(plain.data.icon.false.value);
+        expect(own.data.icon.false.color.constVal).to.deep.equal(rgb('#0000ff'));
+        expect(
+            devicePageSlotItem(DEV, 'info', { ...ref('door'), trueColor: 'nonsense' }, c('door'), 'Tür'),
+        ).to.deep.equal(plain);
+    });
+    it('a number or text has no false: the true icon is the only one', () => {
+        const own = devicePageSlotItem(
+            DEV,
+            'info',
+            { ...ref('power'), trueIcon: 'flash', falseIcon: 'x' },
+            c('power'),
+            'P',
+        ) as any;
+        expect(own.data.icon.true.value.constVal).to.equal('flash');
+        expect(own.data.icon.false.value.constVal).to.equal('flash');
+        expect(own.data.entity1).to.equal(undefined);
+        const sel = devicePageSlotItem(DEV, 'info', { ...ref('program'), trueIcon: 'tune' }, c('program'), 'P') as any;
+        expect(sel.type).to.equal('input_sel');
+        expect(sel.data.icon.true.value.constVal).to.equal('tune');
+    });
+    it('color scale: the icon options get it, a number the state as entity1 (progress: the color of the bar)', () => {
+        const scale = { val_min: 0, val_max: 200 };
+        const own = devicePageSlotItem(
+            DEV,
+            'progress',
+            { ...ref('progress'), scale, trueColor: '#00ff00' },
+            c('progress'),
+            'F',
+        ) as any;
+        expect(own.data.icon.scale).to.deep.equal({ type: 'const', constVal: scale });
+        expect(own.data.entity1).to.deep.equal({ value: { type: 'triggered', dp: `${DEV}.progress` } });
+        expect(own.role).to.equal(DEVICE_PAGE_PROGRESS_ROLE);
+        const text = devicePageSlotItem(DEV, 'info', { ...ref('phase'), scale }, c('phase'), 'F') as any;
+        expect(text.data.entity1).to.equal(undefined);
+    });
+    it('long press: on a button and a switch item, not on a text', () => {
+        const lp = { longPress: '0_userdata.0.lp' };
+        const button = devicePageSlotItem(DEV, 'button', { ...ref('start'), ...lp }, c('start'), 'S') as any;
+        expect(button.data.longPress).to.deep.equal({ type: 'state', dp: '0_userdata.0.lp' });
+        const toggle = devicePageSlotItem(DEV, 'switch', { ...ref('on'), ...lp }, c('on'), 'S') as any;
+        expect(toggle.data.longPress).to.deep.equal({ type: 'state', dp: '0_userdata.0.lp' });
+        const info = devicePageSlotItem(DEV, 'info', { ...ref('on'), ...lp }, c('on'), 'S') as any;
+        expect(info.data.longPress).to.equal(undefined);
+    });
+    it('status: the older icon for both states, an own icon replaces it', () => {
+        const old = devicePageSlotItem(DEV, 'status', { ...ref('door'), icon: 'door' }, c('door'), '') as any;
+        expect(old.data.icon.true.value.constVal).to.equal('door');
+        expect(old.data.icon.false.value.constVal).to.equal('door');
+        const own = devicePageSlotItem(
+            DEV,
+            'status',
+            { ...ref('door'), trueIcon: 'door-open', falseIcon: 'door-closed' },
+            c('door'),
+            '',
+        ) as any;
+        expect(own.data.icon.true.value.constVal).to.equal('door-open');
+        expect(own.data.icon.false.value.constVal).to.equal('door-closed');
+    });
+});
+
+describe('lib/pages/device-page - alias channels in slots', () => {
+    const channel = (id: string): { key: string; id: string; custom: 'channel' } => ({
+        key: '',
+        id,
+        custom: 'channel',
+    });
+    const light: any = {
+        type: 'light',
+        role: 'light',
+        data: {
+            icon: { true: { value: { type: 'const', constVal: 'lightbulb' } } },
+            headline: { type: 'const', constVal: 'Licht' },
+        },
+    };
+    const sensor: any = {
+        type: 'text',
+        role: '',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: 'thermometer' },
+                    text: {
+                        value: { type: 'triggered', dp: 'alias.0.t.ACTUAL' },
+                        unit: { type: 'const', constVal: '°C' },
+                    },
+                },
+                false: {
+                    value: { type: 'const', constVal: 'thermometer' },
+                    text: { value: { type: 'triggered', dp: 'alias.0.t.ACTUAL' } },
+                },
+            },
+            entity1: { value: { type: 'triggered', dp: 'alias.0.t.ACTUAL' } },
+            text: { true: { type: 'const', constVal: 'Temp' } },
+        },
+    };
+    it('the admin item of a channel: the channel with the settings of the slot, a long press only where the role takes it', () => {
+        const slot = {
+            ...channel('alias.0.s'),
+            trueIcon: 'a',
+            falseColor: '#010203',
+            scale: { val_min: 0, val_max: 1 },
+            longPress: 'x.y',
+        };
+        expect(devicePageChannelAdminItem(slot, 'socket')).to.deep.equal({
+            channelId: emptyChannelValueConfig('alias.0.s'),
+            trueIcon: 'a',
+            falseColor: '#010203',
+            scale: { val_min: 0, val_max: 1 },
+            longPress: 'x.y',
+        });
+        expect(devicePageChannelAdminItem(slot, 'light').longPress).to.equal(undefined);
+        // the existing chain takes the fields
+        const script = adminPageItemToScriptItem(devicePageChannelAdminItem(slot, 'socket')) as any;
+        expect(script.id).to.equal('alias.0.s');
+        expect(script.icon).to.equal('a');
+        expect(script.offColor).to.deep.equal({ red: 1, green: 2, blue: 3 });
+        expect(script.longPress).to.equal('x.y');
+    });
+    it('built when the item is configured: by slot, with the role; missing, unfitting and rejected ones reported', async () => {
+        const { page } = runtime({
+            layout: 3,
+            slots: [
+                channel('alias.0.light'),
+                channel('alias.0.gone'),
+                channel('alias.0.broken'),
+                ref('power'),
+                { key: '', id: OWN, custom: 'state' },
+                null,
+                channel('alias.0.blind'),
+                channel('alias.0.light'),
+            ],
+        });
+        const roles: Record<string, string> = {
+            'alias.0.light': 'light',
+            'alias.0.broken': 'socket',
+            'alias.0.blind': 'blind',
+        };
+        const converted: string[] = [];
+        const result = await devicePageChannels(
+            page,
+            async id => Promise.resolve(roles[id]),
+            async item => {
+                converted.push(item.channelId.valueStateId);
+                if (item.channelId.valueStateId === 'alias.0.broken') {
+                    throw new Error('SET missing');
+                }
+                return Promise.resolve(light);
+            },
+        );
+        expect(converted).to.deep.equal(['alias.0.light', 'alias.0.broken', 'alias.0.light']);
+        expect(Object.keys(result.channels)).to.deep.equal(['0', '7']);
+        expect(result.channels[0]).to.deep.equal({ role: 'light', item: light });
+        expect(result.errors).to.have.length(3);
+        expect(result.errors[0]).to.contain('alias.0.gone').and.contain('not found');
+        expect(result.errors[1]).to.contain('alias.0.broken').and.contain('SET missing');
+        expect(result.errors[2]).to.contain('slot 7 (switch)').and.contain('role blind');
+    });
+    it('the item of a channel stays as it is; a text shows its icon and has its value in field 6', () => {
+        expect(devicePageChannelSlotItem('button', { role: 'light', item: light })).to.deep.equal(light);
+        expect(devicePageChannelSlotItem('progress', { role: 'light', item: light })).to.equal(undefined);
+        const info = devicePageChannelSlotItem('info', { role: 'thermostat', item: sensor }) as any;
+        expect(info.data.icon.true.text).to.equal(undefined);
+        expect(info.data.icon.false.text).to.equal(undefined);
+        expect(info.data.icon.true.value.constVal).to.equal('thermometer');
+        expect(info.data.entity2).to.deep.equal({
+            value: { type: 'triggered', dp: 'alias.0.t.ACTUAL' },
+            unit: { type: 'const', constVal: '°C' },
+        });
+        // the source is not changed, a status icon needs no value, a button slot keeps the item
+        expect(sensor.data.icon.true.text).to.not.equal(undefined);
+        expect(
+            (devicePageChannelSlotItem('status', { role: 'thermostat', item: sensor }) as any).data.entity2,
+        ).to.equal(undefined);
+        expect(devicePageChannelSlotItem('button', { role: 'thermostat', item: sensor })).to.deep.equal(sensor);
+    });
+    it('field 6 by kind of slot and type of the element', () => {
+        const onOff = (on: boolean): string => (on ? 'An' : 'Aus');
+        const e = (type: string, value: string): string => `${type}~dp_3?1~I~5~Name~${value}`;
+        const f6 = (kind: Parameters<typeof devicePageChannelElement>[0], type: string, value: string): string =>
+            devicePageChannelElement(kind, e(type, value), onOff).split('~')[5];
+        const shutter = 'A|B|C|enable|enable|disable';
+        for (const kind of ['info', 'value'] as const) {
+            expect(f6(kind, 'text', '21.5 °C')).to.equal('21.5 °C');
+            expect(f6(kind, 'input_sel', 'Auto')).to.equal('Auto');
+            expect(f6(kind, 'timer', '05:00')).to.equal('05:00');
+            expect(f6(kind, 'number', '40|0|200')).to.equal('40');
+            expect(f6(kind, 'light', '1')).to.equal('An');
+            expect(f6(kind, 'switch', '0')).to.equal('Aus');
+            expect(f6(kind, 'fan', '1')).to.equal('An');
+            expect(f6(kind, 'button', '1')).to.equal('');
+            expect(f6(kind, 'shutter', shutter)).to.equal('');
+            expect(f6(kind, 'shutter2', shutter)).to.equal('');
+        }
+        expect(f6('progress', 'number', '40|0|200')).to.equal('20');
+        expect(f6('progress', 'number', '150||')).to.equal('100');
+        expect(f6('progress', 'text', 'x')).to.equal('0');
+        expect(f6('switch', 'light', '1')).to.equal('1');
+        expect(f6('switch', 'switch', '0')).to.equal('0');
+        expect(f6('switch', 'fan', 'x')).to.equal('0');
+        expect(f6('button', 'switch', '1')).to.equal('1');
+        expect(f6('button', 'shutter', shutter)).to.equal('');
+        expect(f6('button', 'number', '40|0|200')).to.equal('');
+        expect(f6('status', 'light', '1')).to.equal('');
+        // the other fields stay, an empty element stays
+        expect(devicePageChannelElement('info', e('light', '1'), onOff)).to.equal('light~dp_3?1~I~5~Name~An');
+        expect(devicePageChannelElement('info', DEVICE_PAGE_EMPTY_ELEMENT, onOff)).to.equal(DEVICE_PAGE_EMPTY_ELEMENT);
+        expect(devicePageChannelElement('info', '', onOff)).to.equal('');
+    });
+    it('elements: an own data point like a state of the device, a channel as its item; missing ones reported', async () => {
+        const { details, page } = runtime({
+            layout: 3,
+            slots: [
+                { key: '', id: '0_userdata.0.wm.energy', custom: 'state' },
+                channel('alias.0.light'),
+                channel('alias.0.none'),
+                { key: '', id: '0_userdata.0.wm.gone', custom: 'state' },
+                null,
+                null,
+                channel('alias.0.light'),
+                null,
+            ],
+        });
+        const source = {
+            ...sourceSwitch,
+            devicePageChannels: { 1: { role: 'light', item: light }, 6: { role: 'light', item: light } },
+        };
+        const content = await devicePageElements(source, details, page, getObject, k => k, 'de');
+        const own = content.elements[1] as any;
+        expect(own.type).to.equal('text');
+        expect(own.data.entity2.value.dp).to.equal('0_userdata.0.wm.energy');
+        expect(own.data.text.true.constVal).to.equal('energy');
+        expect(content.elements[2]).to.deep.equal(light);
+        expect(content.elements[7]).to.deep.equal(light);
+        expect(content.elements[3]).to.equal(undefined);
+        expect(content.channelSlots).to.deep.equal([1, 6]);
+        expect(content.skipped).to.deep.equal(['alias.0.none', '0_userdata.0.wm.gone']);
+        expect((devicePagePageConfig('dp_3', 3, 'none', content).config as any).channelSlots).to.deep.equal([1, 6]);
+        // main is the item itself without the channel items
+        expect((content.elements[0] as any).devicePageChannels).to.equal(undefined);
+    });
+});
+
+describe('lib/pages/pageItem - a plain light on the device page', () => {
+    const noop = (): void => undefined;
+    const log = { debug: noop, warn: noop, error: noop, info: noop, silly: noop };
+    /**
+     * @param card card of the page
+     * @param role role of the item
+     * @returns field 1 (type) of the payload of a light item
+     */
+    async function typeOn(card: string, role: string): Promise<string> {
+        const controller = { statesControler: { activateTrigger: async (): Promise<void> => undefined } };
+        const adapter: unknown = { log, controller, config: {} };
+        const c = (v: string | boolean | number): Dataitem =>
+            new Dataitem(adapter, { type: 'const', constVal: v }, {} as never, {} as never);
+        const item = Object.create(PageItem.prototype) as PageItem;
+        Object.assign(item, {
+            id: 'dp_3?3',
+            log,
+            config: { role },
+            adapter,
+            library: { getTranslation: (k: string): string => k },
+            parent: { card, basePanel: { overrideLightPopup: false } },
+            isEnabled: async (): Promise<boolean> => true,
+            dataItems: {
+                type: 'light',
+                role,
+                data: { entity1: { value: c(true) }, icon: { true: { value: c('lightbulb') } }, headline: c('Licht') },
+            },
+        });
+        return (await item.getPageItemPayload()).split('~')[0];
+    }
+    it('cardDevice1-3 are device pages', () => {
+        expect(['cardDevice1', 'cardDevice2', 'cardDevice3'].every(isCardDeviceType)).to.equal(true);
+        expect(isCardDeviceType('cardGrid')).to.equal(false);
+    });
+    it('role light / socket: a switch (no popupLight when held), a dimmer stays a light', async () => {
+        expect(await typeOn('cardDevice1', 'light')).to.equal('switch');
+        expect(await typeOn('cardDevice3', 'socket')).to.equal('switch');
+        expect(await typeOn('cardDevice2', 'dimmer')).to.equal('light');
+        expect(await typeOn('cardEntities', 'light')).to.equal('light');
     });
 });
 
@@ -987,6 +1435,29 @@ describe('lib/pages/pageItem - device page', () => {
             );
             await it.onCommand('button', '');
             expect(calls).to.deep.include({ flip: 1, setTrue: 0 });
+        });
+        it('short tap devicePage: the tap opens the device page like the long press, the detail page as fallback', async () => {
+            const f = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });
+            const details = deviceDetailsRuntimeOf({
+                deviceId: DEV,
+                shortPress: 'devicePage',
+                entries: [ref('power')],
+                devicePage: { layout: 2, slots: [ref('power')] },
+            });
+            const config = { type: 'button', data: {}, deviceDetails: details };
+            await f.makeItem(f.parent, config, { type: 'button', data: {} }).onCommand('button', '');
+            expect(f.created.map((p: { id: string }) => p.id)).to.deep.equal(['dp_3']);
+            // main of the device page: no device page inside, the tap does nothing
+            const main = f.created[0].config.config.elements[0];
+            expect(main.type).to.equal('text');
+            expect(main.deviceDetails.devicePage).to.equal(undefined);
+            const old = setup({ model: 'us-p', displayVersion: '9.0.0' });
+            await old.makeItem(old.parent, config, { type: 'button', data: {} }).onCommand('button', '');
+            expect(old.created.map((p: { id: string }) => p.id)).to.deep.equal(['dd_3']);
+            // any other short tap never opens it
+            const other = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });
+            await other.item.onCommand('button', '');
+            expect(other.created).to.have.length(0);
         });
         it('main (short tap none / navigation / popup): a text, the tap does nothing', async () => {
             const f = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });

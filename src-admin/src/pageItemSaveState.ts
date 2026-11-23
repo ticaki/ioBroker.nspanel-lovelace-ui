@@ -65,6 +65,7 @@ export function pageItemSaveState(f: PageItemSaveFields): PageItemSaveState {
         standardCanSave =
             deviceOk &&
             (shortPress === 'none' ||
+                shortPress === 'devicePage' ||
                 (shortPress === 'navigation' && f.targetPage !== '') ||
                 (shortPress === 'state' && channelIdValid) ||
                 (shortPress === 'popup' && channelReady));

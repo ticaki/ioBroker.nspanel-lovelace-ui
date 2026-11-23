@@ -52,6 +52,7 @@ var import_pageDump = require("./lib/types/pageDump");
 var import_script_to_admin_runner = require("./lib/configuration/script-to-admin-runner");
 var import_admin_page_item = require("./lib/configuration/admin-page-item");
 var import_admin_device_details = require("./lib/configuration/admin-device-details");
+var import_device_page = require("./lib/pages/device-page");
 var import_deviceDetails = require("./lib/types/deviceDetails");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
@@ -3262,7 +3263,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (preItem && prePage) {
       const manager = new import_config_manager.ConfigManager(this);
       const shortPress = preItem.device && !preItem.useNative ? (0, import_deviceDetails.deviceShortPressOf)(preItem.device) : void 0;
-      if (!preItem.name && preItem.device && (shortPress === "none" || shortPress === "navigation")) {
+      if (!preItem.name && preItem.device && (shortPress === "none" || shortPress === "navigation" || shortPress === "devicePage")) {
         const device = await this.getForeignObjectAsync(preItem.device.deviceId);
         const deviceName = (_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name;
         const name = typeof deviceName === "string" ? deviceName : deviceName ? (_d = (_c = deviceName[(_b = this.language) != null ? _b : "en"]) != null ? _c : deviceName.en) != null ? _d : "" : "";
@@ -3287,6 +3288,38 @@ class NspanelLovelaceUi extends utils.Adapter {
         const deviceDetails = preItem.useNative ? void 0 : (0, import_deviceDetails.deviceDetailsRuntimeOf)(preItem.device);
         if (pageItem && deviceDetails) {
           pageItem.deviceDetails = deviceDetails;
+          if (deviceDetails.devicePage) {
+            const built = await (0, import_device_page.devicePageChannels)(
+              deviceDetails.devicePage,
+              async (id) => {
+                var _a2;
+                const obj = await this.getForeignObjectAsync(id);
+                const role = (_a2 = obj == null ? void 0 : obj.common) == null ? void 0 : _a2.role;
+                return obj ? typeof role === "string" ? role : "" : void 0;
+              },
+              async (slotItem) => {
+                const scriptItem = (0, import_admin_page_item.adminPageItemToScriptItem)(
+                  slotItem,
+                  (color) => this.log.warn(`Invalid color format: ${color}`)
+                );
+                return scriptItem ? (await manager.getPageItemConfig(
+                  scriptItem,
+                  // a slot is a cardGrid cell
+                  {
+                    type: "cardGrid",
+                    uniqueName: prePage.uniqueName,
+                    heading: "",
+                    items: []
+                  },
+                  []
+                )).itemConfig : void 0;
+              }
+            );
+            if (Object.keys(built.channels).length > 0) {
+              pageItem.devicePageChannels = built.channels;
+            }
+            messages.push(...built.errors);
+          }
         }
       } catch (e) {
         error = `Error in configuration: ${e.message}`;

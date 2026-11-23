@@ -10,6 +10,7 @@
 import { Color } from '../const/Color';
 import { ELLIPSIS, ELLIPSIS_FALLBACK, fitText, hasGlyph } from '../const/text-width';
 import { isVersionGreaterOrEqual } from '../const/tools';
+import { emptyChannelValueConfig, type AdminPageItemConfig } from '../types/adminShareConfig';
 import type { NSPanel } from '../types/NSPanel';
 import type { PageBase } from '../types/pages';
 import type { NSpanelModel } from '../types/types';
@@ -21,13 +22,19 @@ import {
     DEVICE_PAGE_STATUS_MAX_BYTES,
     DEVICE_PAGE_TEXT_FONT,
     DEVICE_PAGE_PROGRESS_ROLE,
+    devicePageProgressPercent,
     devicePageSlotAccepts,
+    devicePageChannelTakesLongPress,
+    devicePageSlotAcceptsChannel,
+    devicePageSlotLookOf,
     deviceDetailRowKind,
     type DeviceDetailEntryConfig,
     type DeviceDetailsRuntime,
     type DevicePageLayout,
     type DevicePageRuntime,
     type DevicePageSlotKind,
+    type DevicePageSlotLook,
+    type DevicePageSlotRef,
     type DevicePageStateRef,
 } from '../types/deviceDetails';
 import {
@@ -180,8 +187,8 @@ function withIcon(icon: IconOptions | undefined, name: string): IconOptions {
  * The main element: the device item itself (icon `devicePage.icon`, else the one of the item; color as on the page of
  * the item). Its name is always the name of the device - the headline of the device page, whatever the short tap.
  * A tap does what the short tap of the item does (`state`: the state is switched / a button pressed; `none`: a text,
- * nothing). A short tap `navigation` or `popup` is not built here: main is a text with icon, name and on/off of the
- * item, without action. Its field 6 is replaced by the status line ({@link devicePageMainElement}).
+ * nothing). A short tap `navigation`, `popup` or `devicePage` is not built here: main is a text with icon, name and
+ * on/off of the item, without action. Its field 6 is replaced by the status line ({@link devicePageMainElement}).
  *
  * @param source runtime configuration of the device item
  * @param details the device part of the item
@@ -206,6 +213,7 @@ export function devicePageMainItem(
     ) {
         const item = structuredClone(source);
         item.deviceDetails = deviceDetails;
+        delete item.devicePageChannels;
         item.dpInit = '';
         item.data.text = text;
         // text.states takes the name from common.states of the text - the name is fixed here
@@ -255,6 +263,306 @@ export function devicePageInfoItem(details: DeviceDetailsRuntime): NSPanel.PageI
     };
 }
 
+/** an alias channel of a slot as page item, built when the item is configured ({@link devicePageChannels}) */
+export interface DevicePageChannelItem {
+    /** common.role of the channel */
+    role: string;
+    /** the page item of the channel as the config manager builds it for a normal page */
+    item: NSPanel.PageItemDataItemsOptions;
+}
+
+/** the alias channels of the slots of a device page by the index of their slot (0 = slot 1) */
+export type DevicePageChannelItems = Record<number, DevicePageChannelItem>;
+
+/**
+ * The admin page item an alias channel of a slot is converted from: a standard item of the channel with the own look
+ * of the slot - the same fields a page item has (`trueIcon`, `falseIcon`, `trueColor`, `falseColor`, `scale`,
+ * `longPress` where the role takes one), everything else the defaults of the role.
+ *
+ * @param ref the slot (`custom: 'channel'`)
+ * @param role common.role of the channel
+ * @returns the admin page item
+ */
+export function devicePageChannelAdminItem(ref: DevicePageSlotRef, role: string): AdminPageItemConfig {
+    const { longPress, ...look } = devicePageSlotLookOf(ref, false);
+    const item: AdminPageItemConfig = { channelId: emptyChannelValueConfig(ref.id), ...look };
+    if (longPress && devicePageChannelTakesLongPress(role)) {
+        item.longPress = longPress;
+    }
+    return item;
+}
+
+/**
+ * The alias channels of the slots of a device page as page items, built once when the item is configured (the device
+ * page itself is built when it is opened). A channel that does not exist, whose role does not fit the kind of its
+ * slot ({@link devicePageSlotAcceptsChannel}) or that the config manager rejects is left out and reported.
+ *
+ * @param page the device page
+ * @param getRole reads common.role of a channel, undefined when the object does not exist
+ * @param convert builds the page item of an admin page item (config manager), may throw
+ * @returns the page items by slot and the reasons of the channels left out
+ */
+export async function devicePageChannels(
+    page: DevicePageRuntime,
+    getRole: (id: string) => Promise<string | undefined>,
+    convert: (item: AdminPageItemConfig) => Promise<NSPanel.PageItemDataItemsOptions | undefined>,
+): Promise<{ channels: DevicePageChannelItems; errors: string[] }> {
+    const channels: DevicePageChannelItems = {};
+    const errors: string[] = [];
+    const kinds = DEVICE_PAGE_LAYOUTS[page.layout];
+    for (let i = 0; i < kinds.length; i++) {
+        const ref = page.slots[i];
+        if (!ref || ref.custom !== 'channel' || ref.id === '') {
+            continue;
+        }
+        const where = `Device page slot ${i + 1} (${kinds[i]}): channel ${ref.id}`;
+        try {
+            const role = await getRole(ref.id);
+            if (role === undefined) {
+                errors.push(`${where} not found!`);
+                continue;
+            }
+            if (!devicePageSlotAcceptsChannel(kinds[i], role)) {
+                errors.push(`${where} with role ${role || '(none)'} does not fit the slot!`);
+                continue;
+            }
+            const item = await convert(devicePageChannelAdminItem(ref, role));
+            // a template item (timeTable) is resolved by its page - no slot can show it
+            if (!item || ('template' in item && item.template)) {
+                errors.push(`${where} gives no page item!`);
+                continue;
+            }
+            channels[i] = { role, item };
+        } catch (e) {
+            errors.push(`${where}: ${e instanceof Error ? e.message : String(e)}`);
+        }
+    }
+    return { channels, errors };
+}
+
+/**
+ * The page item of an alias channel in a slot: the page item of the channel as it is (icon, colors, name, tap and
+ * popup of its role). Changed is only what the device page would draw wrong: in an `info`, `value` or `status` slot a
+ * text item shows its icon, not its value in place of the icon (as it does on cardGrid) - the value stands in field 6;
+ * a text item without value text (thermostat) takes the value of its icon text for it. Field 6 itself is fitted to
+ * the kind of the slot when the page is sent ({@link devicePageChannelElement}).
+ *
+ * @param kind the kind of the slot
+ * @param channel the channel
+ * @returns the page item, undefined when the role does not fit the kind
+ */
+export function devicePageChannelSlotItem(
+    kind: DevicePageSlotKind,
+    channel: DevicePageChannelItem,
+): NSPanel.PageItemDataItemsOptions | undefined {
+    if (!devicePageSlotAcceptsChannel(kind, channel.role)) {
+        return undefined;
+    }
+    const item = structuredClone(channel.item);
+    if (item.type === 'text' && item.data?.icon && (kind === 'info' || kind === 'value' || kind === 'status')) {
+        const icon = item.data.icon;
+        const valueText = icon.true?.text;
+        if (kind !== 'status' && valueText?.value && !item.data.entity2 && !item.data.text1) {
+            item.data.entity2 = { value: valueText.value, unit: valueText.unit };
+        }
+        if (icon.true) {
+            delete icon.true.text;
+        }
+        if (icon.false) {
+            delete icon.false.text;
+        }
+    }
+    return item;
+}
+
+/**
+ * Field 6 of the element of an alias channel, fitted to the kind of its slot - the HMI draws a slot by its kind, blind
+ * to the type of the element:
+ * - `info` / `value`: a short readable value - a text, selection or timer its text, a number its value (without
+ *   `|min|max`), a light, switch or fan on / off; a button and a shutter (whose field 6 is the icon list of its popup)
+ *   nothing,
+ * - `progress`: whole number 0-100 from `value|min|max` of a number,
+ * - `switch`: `0` / `1`,
+ * - `button`: `0` / `1` as on cardGrid, anything else nothing (the slot shows icon and name only),
+ * - `status`: nothing ({@link devicePageStatusIconElement} clears name and value anyway).
+ *
+ * @param kind the kind of the slot
+ * @param payload payload of the page item
+ * @param onOff the text of on (true) / off (false) in the language of the panel
+ * @returns the element
+ */
+export function devicePageChannelElement(
+    kind: DevicePageSlotKind,
+    payload: string,
+    onOff: (on: boolean) => string,
+): string {
+    const fields = payload.split('~');
+    if (fields.length < 6 || !fields[0]) {
+        return payload;
+    }
+    const type = fields[0];
+    const raw = fields[5];
+    let value = '';
+    switch (kind) {
+        case 'info':
+        case 'value':
+            switch (type) {
+                case 'text':
+                case 'input_sel':
+                case 'timer':
+                    value = raw;
+                    break;
+                case 'number':
+                    value = raw.split('|')[0];
+                    break;
+                case 'light':
+                case 'light2':
+                case 'switch':
+                case 'fan':
+                    value = onOff(raw === '1');
+                    break;
+            }
+            break;
+        case 'progress': {
+            const [current, min, max] = raw.split('|').map(part => (part === '' ? NaN : Number(part)));
+            value = String(
+                devicePageProgressPercent(
+                    current,
+                    Number.isFinite(min) ? min : undefined,
+                    Number.isFinite(max) ? max : undefined,
+                ),
+            );
+            break;
+        }
+        case 'switch':
+            value = raw === '1' ? '1' : '0';
+            break;
+        case 'button':
+            value = raw === '0' || raw === '1' ? raw : '';
+            break;
+        case 'status':
+            break;
+    }
+    return [...fields.slice(0, 5), value.replace(/~/g, '')].join('~');
+}
+
+/**
+ * @param hex hex color `#rrggbb`
+ * @returns the color as const data item, undefined when it cannot be read
+ */
+function colorItem(hex: string): NSPanel.DataItemsOptions | undefined {
+    if (!/^#[0-9a-f]{6}$/i.test(hex)) {
+        return undefined;
+    }
+    return { type: 'const', constVal: Color.ConvertHexToRgb(hex) };
+}
+
+/** icon and color of one state of an icon */
+type LookBranch = { value?: NSPanel.DataItemsOptions | null; color?: NSPanel.DataItemsOptions | null };
+
+/**
+ * Puts the own look of a slot into the icon options of a page item.
+ *
+ * @param icon the icon options (changed)
+ * @param icon.true icon and color while true
+ * @param icon.false icon and color while false
+ * @param icon.scale the color scale
+ * @param look the own look
+ * @param isBoolean the state is a boolean - anything else has no false and shows the true icon
+ */
+function applySlotLook(
+    icon: { true?: LookBranch | null; false?: LookBranch | null; scale?: NSPanel.DataItemsOptions | null },
+    look: DevicePageSlotLook,
+    isBoolean: boolean,
+): void {
+    const branches = [
+        { key: 'true', name: look.trueIcon, color: look.trueColor },
+        { key: 'false', name: isBoolean ? look.falseIcon : look.trueIcon, color: look.falseColor },
+    ] as const;
+    for (const branch of branches) {
+        const color = branch.color ? colorItem(branch.color) : undefined;
+        if (!branch.name && !color) {
+            continue;
+        }
+        const entry: LookBranch = { ...icon[branch.key] };
+        if (branch.name) {
+            entry.value = { type: 'const', constVal: branch.name };
+        }
+        if (color) {
+            entry.color = color;
+        }
+        icon[branch.key] = entry;
+    }
+    if (look.scale) {
+        icon.scale = { type: 'const', constVal: look.scale };
+    }
+}
+
+/**
+ * The own settings of a slot ({@link DevicePageSlotLook}) on the page item of a state:
+ * - the icons and colors for true and false replace those of the mask entry / kind; a number or a text has no false
+ *   and shows the true icon (as it does without own look),
+ * - a color scale colors the icon (the bar of a `progress` slot) by the value of a number between the false and the
+ *   true color - the row gets the state as `entity1` for it,
+ * - a long press writes a state (`longPress`): a button sets it to true, a switch toggles it - only where the page
+ *   item is a button or a switch ({@link devicePageSlotTakesLongPress}).
+ *
+ * A page item without icon stays as it is.
+ *
+ * @param item the page item of the slot (changed)
+ * @param ref the slot
+ * @param common common of the state
+ * @returns the page item
+ */
+export function withDevicePageSlotLook(
+    item: NSPanel.PageItemDataItemsOptions,
+    ref: DevicePageSlotRef,
+    common: DeviceDetailStateCommon,
+): NSPanel.PageItemDataItemsOptions {
+    // the older icon of a status slot is already in the item (devicePageStatusIconItem)
+    const look = devicePageSlotLookOf(ref, false);
+    if (Object.keys(look).length === 0) {
+        return item;
+    }
+    const isBoolean = common.type === 'boolean';
+    if (item.type === 'text' || item.type === 'button' || item.type === 'switch') {
+        if (!item.data?.icon) {
+            return item;
+        }
+        applySlotLook(item.data.icon, look, isBoolean);
+        if (look.scale && common.type === 'number' && !item.data.entity1) {
+            item.data.entity1 = { value: { type: 'triggered', dp: ref.id } };
+        }
+        if (look.longPress && item.type !== 'text') {
+            item.data.longPress = { type: 'state', dp: look.longPress };
+        }
+    } else if (item.type === 'input_sel' && item.data?.icon) {
+        applySlotLook(item.data.icon, look, isBoolean);
+    }
+    return item;
+}
+
+/**
+ * The page item of a slot with a state (DEVICE_PAGE_LAYOUTS) with its own settings ({@link withDevicePageSlotLook}).
+ *
+ * @param deviceId id of the device
+ * @param kind the kind of the slot
+ * @param entry the state of the slot
+ * @param common common of the state
+ * @param name name of the slot
+ * @returns the page item, undefined when the state does not fit the kind (devicePageSlotAccepts)
+ */
+export function devicePageSlotItem(
+    deviceId: string,
+    kind: DevicePageSlotKind,
+    entry: DevicePageSlotRef,
+    common: DeviceDetailStateCommon,
+    name: string,
+): NSPanel.PageItemDataItemsOptions | undefined {
+    const item = devicePageStateSlotItem(deviceId, kind, entry, common, name);
+    return item ? withDevicePageSlotLook(item, entry, common) : undefined;
+}
+
 /**
  * The page item of a slot (DEVICE_PAGE_LAYOUTS):
  * - `info`: the read only rows of the detail page, a writable state with common.states stays a selection
@@ -266,6 +574,9 @@ export function devicePageInfoItem(details: DeviceDetailsRuntime): NSPanel.PageI
  * - `switch`: the switch row of the detail page (OnOff),
  * - `status`: {@link devicePageStatusIconItem}.
  *
+ * The state may be any state, also one outside the device (own data point, `DevicePageSlotRef.custom` `state`): only
+ * its id and common are used, the device only for the look of a state with mask entry.
+ *
  * @param deviceId id of the device
  * @param kind the kind of the slot
  * @param entry the state of the slot
@@ -273,7 +584,7 @@ export function devicePageInfoItem(details: DeviceDetailsRuntime): NSPanel.PageI
  * @param name name of the slot
  * @returns the page item, undefined when the state does not fit the kind (devicePageSlotAccepts)
  */
-export function devicePageSlotItem(
+function devicePageStateSlotItem(
     deviceId: string,
     kind: DevicePageSlotKind,
     entry: DevicePageStateRef,
@@ -386,8 +697,10 @@ export interface DevicePageElements {
      * number of the item in its id `<page>?<index>`.
      */
     elements: (NSPanel.PageItemDataItemsOptions | undefined)[];
-    /** slots whose state does not exist or does not fit the kind of the slot (log) */
+    /** slots whose state or channel does not exist or does not fit the kind of the slot (log) */
     skipped: string[];
+    /** index of the slots (0 = slot 1) that show an alias channel ({@link devicePageChannelElement}) */
+    channelSlots: number[];
 }
 
 /**
@@ -426,9 +739,23 @@ export async function devicePageElements(
     };
     // the slots that exist, for the names (duplicates are told apart only among the slots that show a name - a status
     // icon has none)
-    const present: { index: number; entry: DevicePageStateRef; common: DeviceDetailStateCommon }[] = [];
+    const present: { index: number; entry: DevicePageSlotRef; common: DeviceDetailStateCommon }[] = [];
+    const slots: (NSPanel.PageItemDataItemsOptions | undefined)[] = kinds.map(() => undefined);
+    const channelSlots: number[] = [];
     for (let i = 0; i < kinds.length; i++) {
         const ref = page.slots[i] ?? null;
+        if (ref?.custom === 'channel') {
+            // an alias channel: its page item was built when the item was configured, it brings its own name
+            const channel = source.devicePageChannels?.[i];
+            const item = channel ? devicePageChannelSlotItem(kinds[i], channel) : undefined;
+            if (item) {
+                slots[i] = item;
+                channelSlots.push(i);
+            } else {
+                skipped.push(ref.id);
+            }
+            continue;
+        }
         const common = await readCommon(ref);
         if (ref && common) {
             present.push({ index: i, entry: ref, common });
@@ -443,7 +770,6 @@ export async function devicePageElements(
         language,
         null,
     );
-    const slots: (NSPanel.PageItemDataItemsOptions | undefined)[] = kinds.map(() => undefined);
     present.forEach(p => {
         const n = named.indexOf(p);
         const name = n >= 0 ? (names[n] ?? '') : '';
@@ -468,6 +794,7 @@ export async function devicePageElements(
             status,
         ],
         skipped,
+        channelSlots,
     };
 }
 
@@ -484,7 +811,8 @@ export function devicePagePageConfig(
     uniqueID: string,
     layout: DevicePageLayout,
     alwaysOn: 'none' | 'always' | 'action' | 'ignore',
-    content: Pick<DevicePageElements, 'headline' | 'slotCount' | 'elements'>,
+    content: Pick<DevicePageElements, 'headline' | 'slotCount' | 'elements'> &
+        Partial<Pick<DevicePageElements, 'channelSlots'>>,
 ): PageBase {
     return {
         uniqueID,
@@ -496,6 +824,7 @@ export function devicePagePageConfig(
             data: { headline: { type: 'const', constVal: content.headline } },
             slotCount: content.slotCount,
             elements: content.elements,
+            channelSlots: content.channelSlots ?? [],
         },
     };
 }

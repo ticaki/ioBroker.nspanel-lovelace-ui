@@ -3,12 +3,14 @@
  * channel); a long press opens a generated detail page (cardEntities) with the chosen states of the device.
  *
  * Pure module, shared by the adapter and the admin - it must not import anything that pulls adapter code into the
- * admin bundle.
+ * admin bundle (adminShareConfig is shared as well).
  *
  * A mask describes the entries of the filter list for the devices of one adapter. Every entry has a name (translation
  * key `deviceDetail_<key>`), a color group, an icon and rules in the style of the templates (`src/lib/templates`):
  * first by `role`, and where the role does not carry it by the end of the id (`dp`).
  */
+
+import { isIconColorScaleElement, type IconColorElement } from './adminShareConfig';
 
 /** sendTo command of main.ts: the states of a device for the filter list ({@link DeviceDetailsInfo}) */
 export const SENDTO_GET_DEVICE_DETAILS_COMMAND = 'getDeviceDetails';
@@ -120,7 +122,13 @@ export type DeviceShortPress =
     /** navigates to a target page (stored as navigation item, `targetPage`) */
     | 'navigation'
     /** the popup of an alias channel (stored as standard item, `channelId` = the channel) */
-    | 'popup';
+    | 'popup'
+    /**
+     * opens the device page like the long press (stored without channel, runtime item of type button); only with a
+     * device page ({@link DeviceDetailsConfig.devicePage}), without one it does nothing like `none`. Where the panel
+     * has no device page the detail page opens, as with the long press.
+     */
+    | 'devicePage';
 
 /**
  * @param state a state of the device
@@ -142,6 +150,7 @@ export function deviceShortPressOf(config: { shortPress?: unknown }): DeviceShor
         case 'none':
         case 'navigation':
         case 'popup':
+        case 'devicePage':
             return config.shortPress;
         default:
             return 'state';
@@ -274,7 +283,7 @@ export function devicePageSlotCount(layout: DevicePageLayout): number {
  */
 export function devicePageHasStatusIcons(
     layout: DevicePageLayout,
-    slots: readonly (DevicePageStateRef | null | undefined)[],
+    slots: readonly (DevicePageSlotRef | null | undefined)[],
 ): boolean {
     return DEVICE_PAGE_LAYOUTS[layout].some((kind, i) => kind === 'status' && !!slots[i]);
 }
@@ -325,6 +334,109 @@ export function devicePageSlotAccepts(
     }
 }
 
+/** the channel roles a slot can show: every role with a page item of its own, see {@link DEVICE_PAGE_CHANNEL_ROLES} */
+const CHANNEL_SENSOR_ROLES = [
+    'temperature',
+    'value.temperature',
+    'humidity',
+    'value.humidity',
+    'thermostat',
+    'airCondition',
+    'motion',
+    'door',
+    'window',
+    'info',
+    'warning',
+] as const;
+
+/** channel roles that switch on / off (`OnOff` of a switch slot), field 6 is `0` / `1` */
+const CHANNEL_SWITCH_ROLES = ['socket', 'light', 'dimmer', 'hue', 'rgb', 'rgbSingle', 'ct', 'level.mode.fan'] as const;
+
+/** channel roles with a number and its range in field 6 (`value|min|max`) */
+const CHANNEL_NUMBER_ROLES = ['slider', 'volume'] as const;
+
+/** channel roles without a readable value in field 6 (a button, the icon list of the shutter popup) */
+const CHANNEL_NO_VALUE_ROLES = ['button', 'blind', 'gate', 'lock'] as const;
+
+/** channel roles with a text in field 6 (selection, time of a timer) */
+const CHANNEL_TEXT_ROLES = ['select', 'level.timer'] as const;
+
+/**
+ * The roles of the alias channels a slot of a kind takes ({@link DevicePageSlotRef.custom} `channel`,
+ * doc/ideas/device-details/README.md, table Alias-Kanäle). Every slot is tapped like a cardGrid cell (tap, popup of
+ * the type, long press), so a kind only limits what its field 6 can show: `info`, `button` and `status` take every
+ * role, `value` what has a value to read, `progress` a number with a range, `switch` what `OnOff` switches. `media`,
+ * `timeTable` and `sensor.alarm.flood` never (they need a page of their own or a template).
+ */
+export const DEVICE_PAGE_CHANNEL_ROLES: Readonly<Record<DevicePageSlotKind, readonly string[]>> = {
+    info: [
+        ...CHANNEL_SWITCH_ROLES,
+        ...CHANNEL_NUMBER_ROLES,
+        ...CHANNEL_TEXT_ROLES,
+        ...CHANNEL_NO_VALUE_ROLES,
+        ...CHANNEL_SENSOR_ROLES,
+    ],
+    value: [...CHANNEL_SENSOR_ROLES, ...CHANNEL_NUMBER_ROLES, ...CHANNEL_TEXT_ROLES, ...CHANNEL_SWITCH_ROLES],
+    progress: CHANNEL_NUMBER_ROLES,
+    button: [
+        ...CHANNEL_SWITCH_ROLES,
+        ...CHANNEL_NUMBER_ROLES,
+        ...CHANNEL_TEXT_ROLES,
+        ...CHANNEL_NO_VALUE_ROLES,
+        ...CHANNEL_SENSOR_ROLES,
+    ],
+    switch: CHANNEL_SWITCH_ROLES,
+    status: [
+        ...CHANNEL_SWITCH_ROLES,
+        ...CHANNEL_NUMBER_ROLES,
+        ...CHANNEL_TEXT_ROLES,
+        ...CHANNEL_NO_VALUE_ROLES,
+        ...CHANNEL_SENSOR_ROLES,
+    ],
+};
+
+/**
+ * @param role common.role of an alias channel
+ * @returns true when its page item takes a long press action (`longPress`): the config manager allows it for the
+ * item types button and switch only - the roles `button` and `socket`
+ */
+export function devicePageChannelTakesLongPress(role: string | null | undefined): boolean {
+    return role === 'button' || role === 'socket';
+}
+
+/**
+ * Whether a slot takes a long press action ({@link DevicePageSlotLook.longPress}): a state in a `button` or `switch`
+ * slot (its page item is a button / switch), an alias channel by its role ({@link devicePageChannelTakesLongPress}).
+ *
+ * @param kind the kind of the slot
+ * @param ref the slot
+ * @param channelRole common.role of the channel of a channel slot
+ * @returns true when the long press action works there
+ */
+export function devicePageSlotTakesLongPress(
+    kind: DevicePageSlotKind,
+    ref: DevicePageSlotRef | null | undefined,
+    channelRole?: string | null,
+): boolean {
+    if (!ref) {
+        return false;
+    }
+    return ref.custom === 'channel'
+        ? devicePageChannelTakesLongPress(channelRole)
+        : kind === 'button' || kind === 'switch';
+}
+
+/**
+ * Whether an alias channel may be shown in a slot of this kind ({@link DEVICE_PAGE_CHANNEL_ROLES}).
+ *
+ * @param kind the kind of the slot
+ * @param role common.role of the channel
+ * @returns true when the role fits
+ */
+export function devicePageSlotAcceptsChannel(kind: DevicePageSlotKind, role: string | null | undefined): boolean {
+    return typeof role === 'string' && DEVICE_PAGE_CHANNEL_ROLES[kind].includes(role);
+}
+
 /** role of a `progress` slot of the device page (PageItem): field 6 is {@link devicePageProgressPercent} */
 export const DEVICE_PAGE_PROGRESS_ROLE = 'devicePageProgress';
 
@@ -355,9 +467,94 @@ export function devicePageProgressPercent(value: number | null | undefined, min?
  * the device, it does not have to be ticked for the detail page.
  */
 export type DevicePageStateRef = DeviceDetailEntryConfig & {
-    /** MDI name of the icon of a `status` slot, missing = the icon of the mask entry / the kind - other slots ignore it */
+    /**
+     * older configurations: MDI name of the icon of a `status` slot. Still read as the icon for both states while
+     * {@link DevicePageSlotLook.trueIcon} and {@link DevicePageSlotLook.falseIcon} are missing
+     * ({@link devicePageSlotLookOf}); the admin writes the new fields.
+     */
     icon?: string;
 };
+
+/**
+ * The own settings of a slot (dialog "settings of the element"), the fields and their form are those of a standard
+ * page item (AdminPageItemConfig): icon and color while the state is true / false, a color scale and the state a long
+ * press writes. Everything optional, missing = as before (mask entry / kind / role of the channel, no long press).
+ * A number or a text has no false: it shows the true icon and color.
+ */
+export type DevicePageSlotLook = {
+    /** MDI name */
+    trueIcon?: string;
+    /** MDI name */
+    falseIcon?: string;
+    /** hex color `#rrggbb` */
+    trueColor?: string;
+    /** hex color `#rrggbb` */
+    falseColor?: string;
+    /** color scale of the icon by the value of a number, between {@link falseColor} and {@link trueColor} */
+    scale?: IconColorElement;
+    /**
+     * id of a writable boolean state a long press writes: a button sets it to true, a switch toggles it. Only where
+     * {@link devicePageSlotTakesLongPress} - elsewhere it is kept but does nothing.
+     */
+    longPress?: string;
+};
+
+/** the text fields of {@link DevicePageSlotLook} */
+export const DEVICE_PAGE_SLOT_LOOK_FIELDS = ['trueIcon', 'falseIcon', 'trueColor', 'falseColor', 'longPress'] as const;
+
+/**
+ * What a slot of the device page shows:
+ * - without `custom` a state of the device ({@link DevicePageStateRef}), as before,
+ * - `custom: 'state'` an own data point of the user - any state, also outside the device; it behaves like a state of
+ *   the device without mask entry (`key` is ''),
+ * - `custom: 'channel'` an alias channel (`id` = the channel): the page item the channel is on a normal page, built by
+ *   the config manager; which roles fit a slot says {@link devicePageSlotAcceptsChannel}.
+ *
+ * With `custom` the `id` may be '' (chosen in the admin, nothing entered yet): the slot stays empty.
+ */
+export type DevicePageSlotRef = DevicePageStateRef &
+    DevicePageSlotLook & {
+        custom?: 'state' | 'channel';
+    };
+
+/**
+ * @param ref a slot
+ * @param withOlderIcon false = without the older `icon` (the adapter: the status icon item applies it itself)
+ * @returns its own settings: the new fields, an older `icon` as icon for both states while no own icon is set
+ */
+export function devicePageSlotLookOf(ref: DevicePageSlotRef, withOlderIcon = true): DevicePageSlotLook {
+    const legacy = !withOlderIcon || ref.trueIcon || ref.falseIcon ? '' : (ref.icon ?? '');
+    const look: DevicePageSlotLook = {};
+    const trueIcon = ref.trueIcon || legacy;
+    const falseIcon = ref.falseIcon || legacy;
+    if (trueIcon) {
+        look.trueIcon = trueIcon;
+    }
+    if (falseIcon) {
+        look.falseIcon = falseIcon;
+    }
+    if (ref.trueColor) {
+        look.trueColor = ref.trueColor;
+    }
+    if (ref.falseColor) {
+        look.falseColor = ref.falseColor;
+    }
+    if (ref.scale) {
+        look.scale = ref.scale;
+    }
+    if (ref.longPress) {
+        look.longPress = ref.longPress;
+    }
+    return look;
+}
+
+/**
+ * @param ref a slot
+ * @returns true when the slot has own settings
+ */
+export function devicePageSlotHasLook(ref: DevicePageSlotRef | null | undefined): boolean {
+    return !!ref && Object.keys(devicePageSlotLookOf(ref)).length > 0;
+}
 
 /**
  * The state of the status line of the device page: a state of the device ({@link DevicePageStateRef}) or, with
@@ -378,7 +575,7 @@ export type DevicePageConfig = {
      * one entry per slot of the layout ({@link DEVICE_PAGE_LAYOUTS}, same order), null = empty slot. A change of the
      * layout keeps the entries by position (cut or filled with null), nothing is guessed again.
      */
-    slots: (DevicePageStateRef | null)[];
+    slots: (DevicePageSlotRef | null)[];
     /** the "i" icon bottom right opens the detail page - only if the device has ticked rows ({@link DeviceDetailsConfig.entries}) */
     showInfo: boolean;
     /** MDI name of the big device icon, missing = the icon of the item */
@@ -393,14 +590,17 @@ export type DevicePageConfig = {
 /** the device page at runtime ({@link DeviceDetailsRuntime.devicePage}) */
 export type DevicePageRuntime = {
     layout: DevicePageLayout;
-    /** one entry per slot of the layout, null = empty slot */
-    slots: (DevicePageStateRef | null)[];
+    /** one entry per slot of the layout, null = empty slot - never a custom one without id */
+    slots: (DevicePageSlotRef | null)[];
     /** the info icon is shown (configured and the device has rows for the detail page) */
     showInfo: boolean;
     icon?: string;
     /** never a custom one without id */
     status?: DevicePageStatusRef;
-    /** the short tap of the item: `navigation` and `popup` make the main item a text without action */
+    /**
+     * the short tap of the item: `navigation`, `popup` and `devicePage` make the main item a text without action;
+     * `devicePage` opens the device page from the page of the item
+     */
     shortPress: DeviceShortPress;
 };
 
@@ -408,18 +608,18 @@ export type DevicePageRuntime = {
  * @param slots slots of a device page
  * @param layout the layout
  * @returns the slots cut or filled with null to the number of slots of the layout - by position, nothing is guessed;
- * the own icon stays only on a `status` slot
+ * the older own icon (`icon`) stays only on a `status` slot, the own look ({@link DevicePageSlotLook}) on every slot
  */
 export function fitDevicePageSlots(
-    slots: readonly (DevicePageStateRef | null)[],
+    slots: readonly (DevicePageSlotRef | null)[],
     layout: DevicePageLayout,
-): (DevicePageStateRef | null)[] {
+): (DevicePageSlotRef | null)[] {
     return DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => {
         const slot = slots[i];
         if (!slot) {
             return null;
         }
-        const out: DevicePageStateRef = { ...slot };
+        const out: DevicePageSlotRef = { ...slot };
         if (kind !== 'status') {
             delete out.icon;
         }
@@ -439,7 +639,7 @@ export function fitDevicePageSlots(
 export function defaultDevicePageSlots(
     entries: readonly DeviceDetailEntryConfig[],
     layout: DevicePageLayout,
-): (DevicePageStateRef | null)[] {
+): (DevicePageSlotRef | null)[] {
     const rows = entries.filter(e => e.id !== '');
     let next = 0;
     return DEVICE_PAGE_LAYOUTS[layout].map(kind => {
@@ -494,6 +694,54 @@ function devicePageStateRefOf(value: unknown, keepIcon: boolean): DevicePageStat
 }
 
 /**
+ * @param value an object
+ * @param key name of a field
+ * @returns the trimmed text of the field, '' when it is missing or no text
+ */
+function trimmedField(value: object, key: string): string {
+    const found: unknown = Object.entries(value).find(([k]) => k === key)?.[1];
+    return typeof found === 'string' ? found.trim() : '';
+}
+
+/**
+ * @param value a stored slot
+ * @param kind the kind of the slot
+ * @returns the slot: a state of the device, an own data point or an alias channel (`custom`, trimmed id, also an
+ * empty one - the choice stays), with its own look (icons trimmed, colors only as `#rrggbb`, empty ones left out);
+ * null when it is none
+ */
+function devicePageSlotRefOf(value: unknown, kind: DevicePageSlotKind): DevicePageSlotRef | null {
+    if (!isDeviceDetailEntryConfig(value)) {
+        return null;
+    }
+    let ref: DevicePageSlotRef | null;
+    const custom = 'custom' in value ? value.custom : undefined;
+    if (custom === 'state' || custom === 'channel') {
+        ref = { key: '', id: value.id.trim(), custom };
+    } else {
+        ref = devicePageStateRefOf(value, kind === 'status');
+    }
+    if (!ref) {
+        return null;
+    }
+    for (const field of DEVICE_PAGE_SLOT_LOOK_FIELDS) {
+        const text = trimmedField(value, field);
+        if (text && (!field.endsWith('Color') || /^#[0-9a-f]{6}$/i.test(text))) {
+            ref[field] = text;
+        }
+    }
+    if (ref.trueIcon || ref.falseIcon) {
+        // the older icon counts only while no own icon is set
+        delete ref.icon;
+    }
+    const scale: unknown = 'scale' in value ? value.scale : undefined;
+    if (isIconColorScaleElement(scale)) {
+        ref.scale = { ...scale };
+    }
+    return ref;
+}
+
+/**
  * @param value a stored status
  * @returns the reference of the status line: an own data point (`custom: true`, trimmed id, also an empty one - the
  * choice stays) or a state of the device, null when it is none
@@ -508,8 +756,9 @@ function devicePageStatusRefOf(value: unknown): DevicePageStatusRef | null {
 /**
  * The normalized device page of a stored configuration: an unknown layout becomes 1, the slots are cut or filled to
  * the slots of the layout (an invalid slot or one without state is empty; an older layout 1 with 6 slots gets its 4
- * status slots empty; an own icon is kept only on a `status` slot), `showInfo` is true unless it is false, an
- * empty icon or status is left out - an own data point of the status line (`custom`) stays also without id.
+ * status slots empty; an older own icon is kept only on a `status` slot, the own look on every slot), `showInfo` is
+ * true unless it is false, an empty icon or status is left out - an own data point of the status line and an own
+ * data point or alias channel of a slot (`custom`) stay also without id.
  *
  * @param value the field `devicePage` of a device configuration
  * @returns the device page, undefined when there is none (not an object)
@@ -520,9 +769,9 @@ export function devicePageConfigOf(value: unknown): DevicePageConfig | undefined
     }
     const layout = 'layout' in value && isDevicePageLayout(value.layout) ? value.layout : 1;
     const rawSlots: unknown[] = 'slots' in value && Array.isArray(value.slots) ? value.slots : [];
-    const slots: (DevicePageStateRef | null)[] = [];
+    const slots: (DevicePageSlotRef | null)[] = [];
     DEVICE_PAGE_LAYOUTS[layout].forEach((kind, i) => {
-        slots.push(devicePageStateRefOf(rawSlots[i], kind === 'status'));
+        slots.push(devicePageSlotRefOf(rawSlots[i], kind));
     });
     const config: DevicePageConfig = {
         layout,
@@ -1287,7 +1536,8 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
     if (page) {
         const devicePage: DevicePageRuntime = {
             layout: page.layout,
-            slots: page.slots,
+            // an own data point or channel that is not entered yet: an empty slot
+            slots: page.slots.map(slot => (slot && slot.id !== '' ? slot : null)),
             // without rows the detail page would be empty: no info icon
             showInfo: page.showInfo && runtime.entries.length > 0,
             shortPress: deviceShortPressOf(config),

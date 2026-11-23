@@ -259,6 +259,8 @@ export type cardDeviceDataItemOptions = {
     /** number of slots of the layout */
     slotCount: number;
     elements: (NSPanel.PageItemDataItemsOptions | undefined)[];
+    /** index of the slots (0 = slot 1) that show an alias channel: their field 6 is fitted to the kind of the slot */
+    channelSlots?: number[];
 };
 
 type PageBaseTemplate = {

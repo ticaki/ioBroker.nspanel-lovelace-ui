@@ -9,7 +9,7 @@ import { SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
 import { cycleValueToState, nextCycleIndex } from '../const/screensaver-cycle';
 import { isDataItem, type Dataitem } from '../controller/data-item';
 import { type ChangeTypeOfKeys, type DeviceRole, type PageBase } from '../types/pages';
-import { isCardEntitiesType, isCardGridType } from '../types/function-and-const';
+import { isCardDeviceType, isCardEntitiesType, isCardGridType } from '../types/function-and-const';
 import type { Screensaver } from './screensaver';
 import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
@@ -357,8 +357,10 @@ export class PageItem extends BaseTriggeredPage {
                     if (this.config.role === 'volume.mute') {
                         message.type = 'light';
                     } else {
+                        // a plain light / socket has no popup: on the grid pages and on the device page (where a
+                        // light would open popupLight when held) it is a switch
                         message.type =
-                            isCardGridType(this.parent.card) &&
+                            (isCardGridType(this.parent.card) || isCardDeviceType(this.parent.card)) &&
                             (this.config.role === 'light' || this.config.role === 'socket')
                                 ? 'switch'
                                 : this.parent.basePanel.overrideLightPopup
@@ -2558,12 +2560,7 @@ export class PageItem extends BaseTriggeredPage {
         // device with details: the long press opens the device page or the detail page, before every other long press
         // of the item
         if (action === 'button' && this.config?.deviceDetails) {
-            const details = this.config.deviceDetails;
-            if (details.devicePage && this.panelHasDevicePage()) {
-                await this.openDevicePage(details, details.devicePage);
-            } else {
-                await this.openDeviceDetails(details);
-            }
+            await this.openDeviceOf(this.config.deviceDetails);
             return true;
         }
         const entry = this.dataItems;
@@ -2597,6 +2594,20 @@ export class PageItem extends BaseTriggeredPage {
             }
         }
         return done;
+    }
+
+    /**
+     * What the long press of a device item opens (and its short tap `devicePage`): the device page when the item has
+     * one and the panel can show it, else the detail page.
+     *
+     * @param details the device part of the item
+     */
+    private async openDeviceOf(details: DeviceDetailsRuntime): Promise<void> {
+        if (details.devicePage && this.panelHasDevicePage()) {
+            await this.openDevicePage(details, details.devicePage);
+        } else {
+            await this.openDeviceDetails(details);
+        }
     }
 
     /**
@@ -2793,6 +2804,12 @@ export class PageItem extends BaseTriggeredPage {
             case 'button': {
                 if (entry.role === DEVICE_DETAIL_ROW_ROLE) {
                     await this.onDeviceDetailTap();
+                    break;
+                }
+                // device with details, short tap "open the device page": like the long press. The main item of the
+                // device page has no device page of its own - a tap on it does nothing.
+                if (this.config?.deviceDetails?.devicePage?.shortPress === 'devicePage') {
+                    await this.openDeviceOf(this.config.deviceDetails);
                     break;
                 }
                 // the info icon of a device page: the detail page, back leads to the device page

@@ -3,6 +3,7 @@ import type * as typePageItem from './type-pageItem';
 import type * as pages from './pages';
 import type { PageItemTemplateOption, ScreensaverArea } from './adminShareConfig';
 import type { DeviceDetailsRuntime } from './deviceDetails';
+import type { DevicePageChannelItems } from '../pages/device-page';
 
 export namespace NSPanel {
     type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
@@ -1542,6 +1543,11 @@ export namespace NSPanel {
          * with these states of the device - it comes before every other long press of the item
          */
         deviceDetails?: DeviceDetailsRuntime;
+        /**
+         * device with details: the alias channels of the slots of its device page as page items, by the index of
+         * their slot - built when the item is configured (device-page.ts devicePageChannels)
+         */
+        devicePageChannels?: DevicePageChannelItems;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

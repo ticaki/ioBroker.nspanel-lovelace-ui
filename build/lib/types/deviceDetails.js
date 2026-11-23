@@ -20,10 +20,12 @@ var deviceDetails_exports = {};
 __export(deviceDetails_exports, {
   DEVICE_DETAIL_NAME_PREFIX: () => DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE: () => DEVICE_DETAIL_ROW_ROLE,
+  DEVICE_PAGE_CHANNEL_ROLES: () => DEVICE_PAGE_CHANNEL_ROLES,
   DEVICE_PAGE_FIELDS: () => DEVICE_PAGE_FIELDS,
   DEVICE_PAGE_INFO_ROLE: () => DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS: () => DEVICE_PAGE_LAYOUTS,
   DEVICE_PAGE_PROGRESS_ROLE: () => DEVICE_PAGE_PROGRESS_ROLE,
+  DEVICE_PAGE_SLOT_LOOK_FIELDS: () => DEVICE_PAGE_SLOT_LOOK_FIELDS,
   DEVICE_PAGE_STATUS_MAX_BYTES: () => DEVICE_PAGE_STATUS_MAX_BYTES,
   DEVICE_PAGE_TEXT_FONT: () => DEVICE_PAGE_TEXT_FONT,
   SENDTO_GET_DEVICE_DETAILS_COMMAND: () => SENDTO_GET_DEVICE_DETAILS_COMMAND,
@@ -46,12 +48,17 @@ __export(deviceDetails_exports, {
   deviceDetailsAdapter: () => deviceDetailsAdapter,
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf: () => deviceDetailsRuntimeOf,
+  devicePageChannelTakesLongPress: () => devicePageChannelTakesLongPress,
   devicePageConfigOf: () => devicePageConfigOf,
   devicePageHasStatusIcons: () => devicePageHasStatusIcons,
   devicePageProgressPercent: () => devicePageProgressPercent,
   devicePageSlotAccepts: () => devicePageSlotAccepts,
+  devicePageSlotAcceptsChannel: () => devicePageSlotAcceptsChannel,
   devicePageSlotCount: () => devicePageSlotCount,
   devicePageSlotFields: () => devicePageSlotFields,
+  devicePageSlotHasLook: () => devicePageSlotHasLook,
+  devicePageSlotLookOf: () => devicePageSlotLookOf,
+  devicePageSlotTakesLongPress: () => devicePageSlotTakesLongPress,
   deviceSelectionError: () => deviceSelectionError,
   deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
@@ -68,6 +75,7 @@ __export(deviceDetails_exports, {
   updatedDeviceDetailsLearned: () => updatedDeviceDetailsLearned
 });
 module.exports = __toCommonJS(deviceDetails_exports);
+var import_adminShareConfig = require("./adminShareConfig");
 const SENDTO_GET_DEVICE_DETAILS_COMMAND = "getDeviceDetails";
 const DEVICE_DETAIL_ROW_ROLE = "deviceDetail";
 const DEVICE_PAGE_INFO_ROLE = "devicePageInfo";
@@ -86,6 +94,7 @@ function deviceShortPressOf(config) {
     case "none":
     case "navigation":
     case "popup":
+    case "devicePage":
       return config.shortPress;
     default:
       return "state";
@@ -153,6 +162,61 @@ function devicePageSlotAccepts(kind, state) {
       return !button && state.type === "number";
   }
 }
+const CHANNEL_SENSOR_ROLES = [
+  "temperature",
+  "value.temperature",
+  "humidity",
+  "value.humidity",
+  "thermostat",
+  "airCondition",
+  "motion",
+  "door",
+  "window",
+  "info",
+  "warning"
+];
+const CHANNEL_SWITCH_ROLES = ["socket", "light", "dimmer", "hue", "rgb", "rgbSingle", "ct", "level.mode.fan"];
+const CHANNEL_NUMBER_ROLES = ["slider", "volume"];
+const CHANNEL_NO_VALUE_ROLES = ["button", "blind", "gate", "lock"];
+const CHANNEL_TEXT_ROLES = ["select", "level.timer"];
+const DEVICE_PAGE_CHANNEL_ROLES = {
+  info: [
+    ...CHANNEL_SWITCH_ROLES,
+    ...CHANNEL_NUMBER_ROLES,
+    ...CHANNEL_TEXT_ROLES,
+    ...CHANNEL_NO_VALUE_ROLES,
+    ...CHANNEL_SENSOR_ROLES
+  ],
+  value: [...CHANNEL_SENSOR_ROLES, ...CHANNEL_NUMBER_ROLES, ...CHANNEL_TEXT_ROLES, ...CHANNEL_SWITCH_ROLES],
+  progress: CHANNEL_NUMBER_ROLES,
+  button: [
+    ...CHANNEL_SWITCH_ROLES,
+    ...CHANNEL_NUMBER_ROLES,
+    ...CHANNEL_TEXT_ROLES,
+    ...CHANNEL_NO_VALUE_ROLES,
+    ...CHANNEL_SENSOR_ROLES
+  ],
+  switch: CHANNEL_SWITCH_ROLES,
+  status: [
+    ...CHANNEL_SWITCH_ROLES,
+    ...CHANNEL_NUMBER_ROLES,
+    ...CHANNEL_TEXT_ROLES,
+    ...CHANNEL_NO_VALUE_ROLES,
+    ...CHANNEL_SENSOR_ROLES
+  ]
+};
+function devicePageChannelTakesLongPress(role) {
+  return role === "button" || role === "socket";
+}
+function devicePageSlotTakesLongPress(kind, ref, channelRole) {
+  if (!ref) {
+    return false;
+  }
+  return ref.custom === "channel" ? devicePageChannelTakesLongPress(channelRole) : kind === "button" || kind === "switch";
+}
+function devicePageSlotAcceptsChannel(kind, role) {
+  return typeof role === "string" && DEVICE_PAGE_CHANNEL_ROLES[kind].includes(role);
+}
 const DEVICE_PAGE_PROGRESS_ROLE = "devicePageProgress";
 function devicePageProgressPercent(value, min, max) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -163,6 +227,36 @@ function devicePageProgressPercent(value, min, max) {
     percent = (value - min) / (max - min) * 100;
   }
   return Math.min(100, Math.max(0, Math.round(percent)));
+}
+const DEVICE_PAGE_SLOT_LOOK_FIELDS = ["trueIcon", "falseIcon", "trueColor", "falseColor", "longPress"];
+function devicePageSlotLookOf(ref, withOlderIcon = true) {
+  var _a;
+  const legacy = !withOlderIcon || ref.trueIcon || ref.falseIcon ? "" : (_a = ref.icon) != null ? _a : "";
+  const look = {};
+  const trueIcon = ref.trueIcon || legacy;
+  const falseIcon = ref.falseIcon || legacy;
+  if (trueIcon) {
+    look.trueIcon = trueIcon;
+  }
+  if (falseIcon) {
+    look.falseIcon = falseIcon;
+  }
+  if (ref.trueColor) {
+    look.trueColor = ref.trueColor;
+  }
+  if (ref.falseColor) {
+    look.falseColor = ref.falseColor;
+  }
+  if (ref.scale) {
+    look.scale = ref.scale;
+  }
+  if (ref.longPress) {
+    look.longPress = ref.longPress;
+  }
+  return look;
+}
+function devicePageSlotHasLook(ref) {
+  return !!ref && Object.keys(devicePageSlotLookOf(ref)).length > 0;
 }
 function fitDevicePageSlots(slots, layout) {
   return DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => {
@@ -209,6 +303,40 @@ function devicePageStateRefOf(value, keepIcon) {
   }
   return ref;
 }
+function trimmedField(value, key) {
+  var _a;
+  const found = (_a = Object.entries(value).find(([k]) => k === key)) == null ? void 0 : _a[1];
+  return typeof found === "string" ? found.trim() : "";
+}
+function devicePageSlotRefOf(value, kind) {
+  if (!isDeviceDetailEntryConfig(value)) {
+    return null;
+  }
+  let ref;
+  const custom = "custom" in value ? value.custom : void 0;
+  if (custom === "state" || custom === "channel") {
+    ref = { key: "", id: value.id.trim(), custom };
+  } else {
+    ref = devicePageStateRefOf(value, kind === "status");
+  }
+  if (!ref) {
+    return null;
+  }
+  for (const field of DEVICE_PAGE_SLOT_LOOK_FIELDS) {
+    const text = trimmedField(value, field);
+    if (text && (!field.endsWith("Color") || /^#[0-9a-f]{6}$/i.test(text))) {
+      ref[field] = text;
+    }
+  }
+  if (ref.trueIcon || ref.falseIcon) {
+    delete ref.icon;
+  }
+  const scale = "scale" in value ? value.scale : void 0;
+  if ((0, import_adminShareConfig.isIconColorScaleElement)(scale)) {
+    ref.scale = { ...scale };
+  }
+  return ref;
+}
 function devicePageStatusRefOf(value) {
   if (isDeviceDetailEntryConfig(value) && "custom" in value && value.custom === true) {
     return { key: "", id: value.id.trim(), custom: true };
@@ -223,7 +351,7 @@ function devicePageConfigOf(value) {
   const rawSlots = "slots" in value && Array.isArray(value.slots) ? value.slots : [];
   const slots = [];
   DEVICE_PAGE_LAYOUTS[layout].forEach((kind, i) => {
-    slots.push(devicePageStateRefOf(rawSlots[i], kind === "status"));
+    slots.push(devicePageSlotRefOf(rawSlots[i], kind));
   });
   const config = {
     layout,
@@ -711,7 +839,8 @@ function deviceDetailsRuntimeOf(config) {
   if (page) {
     const devicePage = {
       layout: page.layout,
-      slots: page.slots,
+      // an own data point or channel that is not entered yet: an empty slot
+      slots: page.slots.map((slot) => slot && slot.id !== "" ? slot : null),
       // without rows the detail page would be empty: no info icon
       showInfo: page.showInfo && runtime.entries.length > 0,
       shortPress: deviceShortPressOf(config)
@@ -798,10 +927,12 @@ function deviceDetailSubNames(deviceId, rows) {
 0 && (module.exports = {
   DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE,
+  DEVICE_PAGE_CHANNEL_ROLES,
   DEVICE_PAGE_FIELDS,
   DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS,
   DEVICE_PAGE_PROGRESS_ROLE,
+  DEVICE_PAGE_SLOT_LOOK_FIELDS,
   DEVICE_PAGE_STATUS_MAX_BYTES,
   DEVICE_PAGE_TEXT_FONT,
   SENDTO_GET_DEVICE_DETAILS_COMMAND,
@@ -824,12 +955,17 @@ function deviceDetailSubNames(deviceId, rows) {
   deviceDetailsAdapter,
   deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf,
+  devicePageChannelTakesLongPress,
   devicePageConfigOf,
   devicePageHasStatusIcons,
   devicePageProgressPercent,
   devicePageSlotAccepts,
+  devicePageSlotAcceptsChannel,
   devicePageSlotCount,
   devicePageSlotFields,
+  devicePageSlotHasLook,
+  devicePageSlotLookOf,
+  devicePageSlotTakesLongPress,
   deviceSelectionError,
   deviceShortPressOf,
   exchangeDeviceDetailRowState,

@@ -32,7 +32,10 @@ class PageDevice extends import_Page.Page {
   headline;
   slotCount;
   layout;
+  /** index of the slots (0 = slot 1) that show an alias channel */
+  channelSlots;
   constructor(config, options) {
+    var _a;
     super(config, options);
     const card = options.config;
     if (!isCardDeviceConfig(card)) {
@@ -43,6 +46,7 @@ class PageDevice extends import_Page.Page {
     const headline = card.data.headline;
     this.headline = headline.type === "const" && typeof headline.constVal === "string" ? headline.constVal : "";
     this.slotCount = card.slotCount;
+    this.channelSlots = new Set((_a = card.channelSlots) != null ? _a : []);
     this.pageItemConfig = [...card.elements];
     this.minUpdateInterval = 1e3;
   }
@@ -74,9 +78,14 @@ class PageDevice extends import_Page.Page {
     const mainItem = (_b = this.pageItems) == null ? void 0 : _b[0];
     const elements = [(0, import_device_page.devicePageMainElement)(mainItem ? await mainItem.getPageItemPayload() : "", status)];
     const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout];
+    const onOff = (on) => this.library.getTranslation(on ? "on" : "off");
     for (let index = 1; index <= this.slotCount + 1; index++) {
-      const element = await this.elementAt(index);
-      elements.push(kinds[index - 1] === "status" ? (0, import_device_page.devicePageStatusIconElement)(element) : element);
+      let element = await this.elementAt(index);
+      const kind = kinds[index - 1];
+      if (kind && this.channelSlots.has(index - 1)) {
+        element = (0, import_device_page.devicePageChannelElement)(kind, element, onOff);
+      }
+      elements.push(kind === "status" ? (0, import_device_page.devicePageStatusIconElement)(element) : element);
     }
     this.sendToPanel(
       (0, import_tools.getPayload)(
@@ -88,12 +97,24 @@ class PageDevice extends import_Page.Page {
     );
   }
   /**
-   * No long press on the device page: the caller (Panel) treats the press as a tap.
+   * A long press on an element: a slot runs the long press of its page item (the action configured for the slot, a
+   * channel item what it does on cardGrid). main and the info icon have none - they keep the device part of the
+   * item, whose long press would open the detail page from here. Without an action nothing happens: the press is
+   * always handled, the caller (Panel) never treats it as a tap.
    *
-   * @returns false
+   * @param id number of the element
+   * @param popup popup of the event
+   * @param action action of the event
+   * @param value value of the event
+   * @param event the event
+   * @returns true
    */
-  async onButtonPress3() {
-    return Promise.resolve(false);
+  async onButtonPress3(id, popup, action, value, event = null) {
+    const index = typeof id === "number" ? id : parseInt(id);
+    if (index >= 1 && index <= this.slotCount) {
+      await super.onButtonPress3(id, popup, action, value, event);
+    }
+    return true;
   }
   async onButtonEvent(_event) {
   }

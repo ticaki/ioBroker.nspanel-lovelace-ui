@@ -81,6 +81,7 @@ import {
 } from './lib/configuration/script-to-admin-runner';
 import { adminPageItemToScriptItem } from './lib/configuration/admin-page-item';
 import { deviceDetailsInfo } from './lib/configuration/admin-device-details';
+import { devicePageChannels } from './lib/pages/device-page';
 import {
     deviceDetailsRuntimeOf,
     deviceShortPressOf,
@@ -3786,7 +3787,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             const manager = new ConfigManager(this);
             // device with details without own state or channel: an item without name shows the name of the device
             const shortPress = preItem.device && !preItem.useNative ? deviceShortPressOf(preItem.device) : undefined;
-            if (!preItem.name && preItem.device && (shortPress === 'none' || shortPress === 'navigation')) {
+            if (
+                !preItem.name &&
+                preItem.device &&
+                (shortPress === 'none' || shortPress === 'navigation' || shortPress === 'devicePage')
+            ) {
                 const device = await this.getForeignObjectAsync(preItem.device.deviceId);
                 const deviceName = device?.common?.name;
                 const name =
@@ -3818,6 +3823,42 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const deviceDetails = preItem.useNative ? undefined : deviceDetailsRuntimeOf(preItem.device);
                 if (pageItem && deviceDetails) {
                     pageItem.deviceDetails = deviceDetails;
+                    if (deviceDetails.devicePage) {
+                        // alias channels in the slots of the device page: their page items are built here, the
+                        // device page itself only when it is opened
+                        const built = await devicePageChannels(
+                            deviceDetails.devicePage,
+                            async id => {
+                                const obj = await this.getForeignObjectAsync(id);
+                                const role: unknown = obj?.common?.role;
+                                return obj ? (typeof role === 'string' ? role : '') : undefined;
+                            },
+                            async slotItem => {
+                                const scriptItem = adminPageItemToScriptItem(slotItem, color =>
+                                    this.log.warn(`Invalid color format: ${color}`),
+                                );
+                                return scriptItem
+                                    ? (
+                                          await manager.getPageItemConfig(
+                                              scriptItem,
+                                              // a slot is a cardGrid cell
+                                              {
+                                                  type: 'cardGrid',
+                                                  uniqueName: prePage.uniqueName,
+                                                  heading: '',
+                                                  items: [],
+                                              },
+                                              [],
+                                          )
+                                      ).itemConfig
+                                    : undefined;
+                            },
+                        );
+                        if (Object.keys(built.channels).length > 0) {
+                            pageItem.devicePageChannels = built.channels;
+                        }
+                        messages.push(...built.errors);
+                    }
                 }
             } catch (e: any) {
                 error = `Error in configuration: ${e.message}`;

@@ -26,6 +26,7 @@ __export(function_and_const_exports, {
   exhaustiveCheck: () => exhaustiveCheck,
   isAlarmButtonEvent: () => isAlarmButtonEvent,
   isButtonActionType: () => isButtonActionType,
+  isCardDeviceType: () => isCardDeviceType,
   isCardEntitiesType: () => isCardEntitiesType,
   isCardGridType: () => isCardGridType,
   isCardMenuHalfPageScrollType: () => isCardMenuHalfPageScrollType,
@@ -178,6 +179,9 @@ function isCardEntitiesType(value) {
 }
 function isCardGridType(value) {
   return typeof value === "string" && CARD_GRID_TYPES.includes(value);
+}
+function isCardDeviceType(value) {
+  return value === "cardDevice1" || value === "cardDevice2" || value === "cardDevice3";
 }
 function isCardMenuHalfPageScrollType(value) {
   return typeof value === "string" && CARD_MENU_HALF_PAGE_SCROLL_TYPES.includes(value);
@@ -380,6 +384,7 @@ function isTasmotaSTATUS0(F) {
   exhaustiveCheck,
   isAlarmButtonEvent,
   isButtonActionType,
+  isCardDeviceType,
   isCardEntitiesType,
   isCardGridType,
   isCardMenuHalfPageScrollType,

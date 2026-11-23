@@ -18,8 +18,15 @@ import {
     withDevicePageIcon,
     withDevicePageLayout,
     withDevicePageSlot,
-    withDevicePageSlotIcon,
+    withDevicePageSlotLook,
     withDevicePageStatus,
+    DEVICE_PAGE_CUSTOM,
+    customDevicePageSlot,
+    devicePageCustomProblem,
+    devicePageSlotDialogValue,
+    devicePageSlotOf,
+    devicePageSlotSelectValue,
+    shortPressToSave,
     type LongPressStash,
 } from './devicePageConfig';
 import {
@@ -28,6 +35,7 @@ import {
     type DevicePageConfig,
     type DeviceStateInfo,
 } from '../../src/lib/types/deviceDetails';
+import { channelIdOf, channelRolesOf, isInChannels, roleOfObject } from './channelSelection';
 
 const DEV = 'shelly.0.dev1';
 
@@ -213,28 +221,113 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         expect(devicePageStatusOf(`${DEV}.phase`, offered, [], saved)).to.deep.equal(saved);
     });
 
-    it('status slots: own icon only with a state, kept when another state is chosen', () => {
+    it('settings of a slot: stay when something else is chosen, the dialog replaces all of them', () => {
         const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
         const s = STATUS[0];
-        expect(withDevicePageSlotIcon(page, s, 'filter')).to.equal(page);
-        const withState = withDevicePageSlot(page, s, { key: '', id: 'x.door' });
-        const withIcon = withDevicePageSlotIcon(withState, s, ' filter ');
-        expect(withIcon.slots[s]).to.deep.equal({ key: '', id: 'x.door', icon: 'filter' });
-        // another state keeps the icon, removing the state removes it
-        expect(withDevicePageSlot(withIcon, s, { key: 'k', id: 'x.bin' }).slots[s]).to.deep.equal({
+        expect(withDevicePageSlotLook(page, s, { trueIcon: 'filter' })).to.equal(page);
+        // an older status icon: the dialog starts with it for both states and writes the new fields
+        const old = withDevicePageSlot(page, s, { key: '', id: 'x.door', icon: 'filter' });
+        expect(old.slots[s]).to.deep.equal({ key: '', id: 'x.door', icon: 'filter' });
+        const oldSlot = old.slots[s];
+        expect(oldSlot && devicePageSlotDialogValue(oldSlot)).to.deep.equal({
+            trueIcon: 'filter',
+            falseIcon: 'filter',
+        });
+        const look = { trueIcon: ' play ', falseIcon: 'pause', trueColor: '#00ff00', falseColor: '', longPress: 'a.b' };
+        const withLook = withDevicePageSlotLook(old, s, look);
+        expect(withLook.slots[s]).to.deep.equal({
+            key: '',
+            id: 'x.door',
+            trueIcon: 'play',
+            falseIcon: 'pause',
+            trueColor: '#00ff00',
+            longPress: 'a.b',
+        });
+        // another state keeps the settings, removing the state removes them
+        expect(withDevicePageSlot(withLook, s, { key: 'k', id: 'x.bin' }).slots[s]).to.deep.include({
             key: 'k',
             id: 'x.bin',
-            icon: 'filter',
+            trueIcon: 'play',
+            longPress: 'a.b',
         });
-        expect(withDevicePageSlot(withIcon, s, null).slots[s]).to.equal(null);
-        expect(withDevicePageSlotIcon(withIcon, s, '').slots[s]).to.deep.equal({ key: '', id: 'x.door' });
-        // no own icon on other kinds
-        const info = withDevicePageSlot(page, 0, { key: '', id: 'x.p' });
-        expect(withDevicePageSlotIcon(info, 0, 'filter')).to.equal(info);
-        expect(withDevicePageSlot(info, 0, { key: '', id: 'x.p', icon: 'filter' }).slots[0]).to.deep.equal({
+        expect(withDevicePageSlot(withLook, s, null).slots[s]).to.equal(null);
+        expect(withDevicePageSlotLook(withLook, s, {}).slots[s]).to.deep.equal({ key: '', id: 'x.door' });
+        // every kind of slot takes them, a custom slot keeps its source, the save keeps them
+        const scale = { val_min: 0, val_max: 10 };
+        const info = withDevicePageSlotLook(
+            withDevicePageSlot(page, 0, customDevicePageSlot('channel', 'alias.0.l')),
+            0,
+            { trueColor: '#010203', scale },
+        );
+        expect(info.slots[0]).to.deep.equal({
+            key: '',
+            id: 'alias.0.l',
+            custom: 'channel',
+            trueColor: '#010203',
+            scale,
+        });
+        expect(devicePageToSave({ devicePage: info })?.slots[0]).to.deep.equal(info.slots[0]);
+        // the older icon never on another kind
+        expect(withDevicePageSlot(page, 0, { key: '', id: 'x.p', icon: 'filter' }).slots[0]).to.deep.equal({
             key: '',
             id: 'x.p',
         });
+    });
+
+    it('user defined slot: own data point or alias channel, the choice stays without id', () => {
+        const page: DevicePageConfig = { layout: 3, slots: [], showInfo: true };
+        const options = devicePageStateOptions(DEV, STATES, 'info', null);
+        expect(devicePageSlotSelectValue(null)).to.equal('');
+        expect(devicePageSlotSelectValue({ key: '', id: `${DEV}.Relay0.Power` })).to.equal(`${DEV}.Relay0.Power`);
+        const pending = devicePageSlotOf(DEVICE_PAGE_CUSTOM, options, [], null);
+        expect(pending).to.deep.equal({ key: '', id: '', custom: 'state' });
+        expect(devicePageSlotSelectValue(pending)).to.equal(DEVICE_PAGE_CUSTOM);
+        const saved = devicePageToSave({ devicePage: withDevicePageSlot(page, 0, pending) });
+        expect(saved?.slots[0]).to.deep.equal({ key: '', id: '', custom: 'state' });
+        // a channel, chosen again: kept
+        const channel = customDevicePageSlot('channel', 'alias.0.light');
+        expect(devicePageSlotOf(DEVICE_PAGE_CUSTOM, options, [], channel)).to.deep.equal(channel);
+        expect(devicePageSlotSelectValue(channel)).to.equal(DEVICE_PAGE_CUSTOM);
+        // a user defined slot is never an option of the device, nothing marked there
+        const offered = devicePageStateOptions(DEV, STATES, 'info', null);
+        expect(offered.some(o => o.id === 'alias.0.light' || o.problem)).to.equal(false);
+        // back to a state of the device (the own id is not taken over) or to empty
+        expect(devicePageSlotOf(`${DEV}.Relay0.Power`, offered, device().entries, channel)).to.deep.equal({
+            key: 'power',
+            id: `${DEV}.Relay0.Power`,
+        });
+        expect(devicePageSlotOf('', offered, [], channel)).to.equal(null);
+    });
+
+    it('user defined slot: marked when the object is missing or does not fit the kind of the slot', () => {
+        const own = customDevicePageSlot('state', '0_userdata.0.x');
+        const number = { type: 'state', valueType: 'number', read: true, write: true };
+        const bool = { type: 'state', valueType: 'boolean', read: true, write: true };
+        expect(devicePageCustomProblem('info', own, undefined)).to.equal(undefined);
+        expect(devicePageCustomProblem('info', customDevicePageSlot('state', ''), null)).to.equal(undefined);
+        expect(devicePageCustomProblem('info', { key: '', id: 'x' }, null)).to.equal(undefined);
+        expect(devicePageCustomProblem('info', own, null)).to.equal('missing');
+        expect(devicePageCustomProblem('info', own, { type: 'channel' })).to.equal('missing');
+        expect(devicePageCustomProblem('info', own, number)).to.equal(undefined);
+        expect(devicePageCustomProblem('progress', own, number)).to.equal(undefined);
+        expect(devicePageCustomProblem('progress', own, bool)).to.equal('unfit');
+        expect(devicePageCustomProblem('switch', own, number)).to.equal('unfit');
+        expect(devicePageCustomProblem('button', own, bool)).to.equal(undefined);
+        const channel = customDevicePageSlot('channel', 'alias.0.x');
+        expect(devicePageCustomProblem('switch', channel, null)).to.equal('missing');
+        expect(devicePageCustomProblem('switch', channel, { type: 'channel', role: 'socket' })).to.equal(undefined);
+        expect(devicePageCustomProblem('switch', channel, { type: 'channel', role: 'blind' })).to.equal('unfit');
+        expect(devicePageCustomProblem('info', channel, { type: 'channel', role: 'blind' })).to.equal(undefined);
+        expect(devicePageCustomProblem('info', channel, { type: 'channel' })).to.equal('unfit');
+        expect(devicePageCustomProblem('info', channel, { type: 'channel', role: 'media' })).to.equal('unfit');
+    });
+
+    it('short tap devicePage is saved only with a device page', () => {
+        const devicePage: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
+        expect(shortPressToSave({ shortPress: 'devicePage', devicePage })).to.equal('devicePage');
+        expect(shortPressToSave({ shortPress: 'devicePage' })).to.equal('none');
+        expect(shortPressToSave({ shortPress: 'popup' })).to.equal('popup');
+        expect(shortPressToSave({})).to.equal('state');
     });
 
     it('preview: the status grid only with a status slot filled, 2 columns, narrow info rows then', () => {
@@ -341,5 +434,28 @@ describe('devicePageConfig - device page of the page item dialog', () => {
                 id: `${DEV}.Sys.reboot`,
             });
         });
+    });
+});
+
+describe('channelSelection - alias channels in the object browser', () => {
+    const objects = {
+        'alias.0.light': { type: 'channel', common: { role: 'light' } },
+        'alias.0.light.sub': { type: 'channel', common: { role: 'socket' } },
+        'alias.0.other': { type: 'channel', common: { role: 'whatever' } },
+        'alias.0.norole': { type: 'channel', common: {} },
+        'alias.0.broken': null,
+    };
+    it('channels with a known role, a picked id becomes its longest channel', () => {
+        const roles = channelRolesOf(objects, ['light', 'socket']);
+        expect(roles).to.deep.equal({ 'alias.0.light': 'light', 'alias.0.light.sub': 'socket' });
+        expect(channelRolesOf(null, ['light'])).to.deep.equal({});
+        const ids = Object.keys(roles);
+        expect(isInChannels(ids, 'alias.0.light.ON')).to.equal(true);
+        expect(isInChannels(ids, 'alias.0.light')).to.equal(true);
+        expect(isInChannels(ids, 'alias.0.lighter.ON')).to.equal(false);
+        expect(channelIdOf(ids, 'alias.0.light.ON')).to.equal('alias.0.light');
+        expect(channelIdOf(ids, 'alias.0.light.sub.SET')).to.equal('alias.0.light.sub');
+        expect(channelIdOf(ids, 'alias.0.other.SET')).to.equal('alias.0.other.SET');
+        expect(roleOfObject({ common: { role: 5 } })).to.equal(undefined);
     });
 });
