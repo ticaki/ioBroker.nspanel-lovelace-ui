@@ -389,20 +389,57 @@ describe('lib/pages/device-page - elements', () => {
 describe('lib/pages/device-page - main', () => {
     it('short tap state: the item itself, own icon, colors kept, no device page inside', () => {
         const { details, page } = runtime({ icon: 'washing-machine-alert' });
-        const main = devicePageMainItem(sourceSwitch, details, page) as any;
+        const main = devicePageMainItem(sourceSwitch, details, page, 'Waschmaschine') as any;
         expect(main.type).to.equal('switch');
         expect(main.data.icon.true.value.constVal).to.equal('washing-machine-alert');
         expect(main.data.icon.false.color.constVal).to.equal('off');
         expect(main.deviceDetails).to.deep.equal({ deviceId: DEV, entries: details.entries });
         // the source is not changed
         expect(sourceSwitch.data.icon.true.value.constVal).to.equal('washing-machine');
+        expect(sourceSwitch.data.text.true.constVal).to.equal('WM');
     });
-    it('short tap none: a text', () => {
+    it('short tap state without an own name: the name of the device, not the one of the state', () => {
+        const { details, page } = runtime({});
+        const source = {
+            type: 'button',
+            role: 'text.states',
+            data: {
+                icon: sourceSwitch.data.icon,
+                entity1: { value: { type: 'triggered', dp: `${DEV}.phase` } },
+                text: {
+                    true: { type: 'triggered', dp: `${DEV}.phase` },
+                    false: { type: 'triggered', dp: `${DEV}.phase` },
+                },
+            },
+        } as any;
+        const main = devicePageMainItem(source, details, page, 'Waschmaschine') as any;
+        expect(main.type).to.equal('button');
+        expect(main.role).to.equal(undefined);
+        expect(main.data.text.true).to.deep.equal({ type: 'const', constVal: 'Waschmaschine' });
+        expect(main.data.text.false).to.deep.equal({ type: 'const', constVal: 'Waschmaschine' });
+        const noText = devicePageMainItem(
+            { ...sourceSwitch, data: { ...sourceSwitch.data, text: undefined } },
+            details,
+            page,
+            'Waschmaschine',
+        ) as any;
+        expect(noText.data.text.true.constVal).to.equal('Waschmaschine');
+    });
+    it('short tap state with an own name: the source of the headline (the device), not the name of the item', async () => {
+        const { details, page } = runtime({});
+        const content = await devicePageElements(sourceSwitch, details, page, getObject, (k: string) => k, 'de');
+        const main = content.elements[0] as any;
+        expect(main.data.text.true.constVal).to.equal(content.headline);
+        expect(main.data.text.false.constVal).to.equal(content.headline);
+        expect(content.headline).to.equal('Waschmaschine');
+    });
+    it('short tap none: a text with the name of the device', () => {
         const { details, page } = runtime({ shortPress: 'none' });
-        const main = devicePageMainItem({ ...sourceSwitch, type: 'text' }, details, page);
+        const main = devicePageMainItem({ ...sourceSwitch, type: 'text' }, details, page, 'Waschmaschine') as any;
         expect(main.type).to.equal('text');
+        expect(main.data.text.true.constVal).to.equal('Waschmaschine');
     });
-    it('short tap navigation / popup: a text with icon and name, without action', () => {
+    it('short tap navigation / popup: a text with icon and the name of the device, without action', () => {
         const { details, page } = runtime({ shortPress: 'navigation' });
         const nav = devicePageMainItem(
             {
@@ -412,10 +449,11 @@ describe('lib/pages/device-page - main', () => {
             },
             details,
             page,
+            'Waschmaschine',
         ) as any;
         expect(nav.type).to.equal('text');
         expect(nav.data.setNavi).to.equal(undefined);
-        expect(nav.data.text.true.constVal).to.equal('WM');
+        expect(nav.data.text.true.constVal).to.equal('Waschmaschine');
         const popup = runtime({ shortPress: 'popup', icon: 'lamp' });
         const light = devicePageMainItem(
             {
@@ -428,9 +466,11 @@ describe('lib/pages/device-page - main', () => {
             } as any,
             popup.details,
             popup.page,
+            'Deckenlampe',
         ) as any;
         expect(light.type).to.equal('text');
-        expect(light.data.text.false.constVal).to.equal('Licht');
+        expect(light.data.text.false.constVal).to.equal('Deckenlampe');
+        expect(light.data.text.true.constVal).to.equal('Deckenlampe');
         expect(light.data.icon.true.value.constVal).to.equal('lamp');
         expect(light.data.entity1.value.dp).to.equal('alias.0.l.ON');
     });

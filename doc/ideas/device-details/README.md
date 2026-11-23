@@ -291,9 +291,10 @@ entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info
 
 - Jedes Element hat die 6 Felder einer cardGrid-Zelle `type~intName~icon~iconColor~displayName~optionalValue`, leere
   Elemente `~~~~~` (wie leere cardGrid-Zellen, die HMI blendet sie aus). Überschrift = Name des Geräts.
-- **main** = das Geräte-Item: Icon `devicePage.icon`, sonst das des Items; Farbe und Name wie auf der Ursprungsseite.
-  Kurz-Tipp „State des Geräts“ → das Item selbst (Tipp schaltet / drückt), „Keine“ → `text`. „Navigation“ und „Popup
-  eines Alias-Kanals“ → `text` mit Icon, Name und An/Aus des Items, ohne Aktion.
+- **main** = das Geräte-Item: Icon `devicePage.icon`, sonst das des Items; Farbe wie auf der Ursprungsseite. Name
+  immer der des Geräts (dieselbe Quelle wie die Überschrift), bei jeder Kurz-Tipp-Art – die Kachel auf der
+  Ursprungsseite behält ihren Namen. Kurz-Tipp „State des Geräts“ → das Item selbst (Tipp schaltet / drückt), „Keine“
+  → `text`. „Navigation“ und „Popup eines Alias-Kanals“ → `text` mit Icon und An/Aus des Items und dem Gerätenamen, ohne Aktion.
 - **Feld 6 von main = Statuszeile**: der State `devicePage.status` wie eine Textzeile der Detailseite (Text aus
   `common.states` übersetzt, sonst Wert mit Einheit, boolean An/Aus übersetzt), sonst leer. Auch ohne main wird die
   Statuszeile gesendet (`~~~~~<status>`). Zu lang → mit `text-width.ts` (Font 0) auf 390 px gekürzt, am Ende „...“,

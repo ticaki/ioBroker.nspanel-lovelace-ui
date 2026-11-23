@@ -162,21 +162,26 @@ function withIcon(icon: IconOptions | undefined, name: string): IconOptions {
 }
 
 /**
- * The main element: the device item itself (icon `devicePage.icon`, else the one of the item; color and name as on
- * the page of the item). A tap does what the short tap of the item does (`state`: the state is switched / a button
- * pressed; `none`: a text, nothing). A short tap `navigation` or `popup` is not built here: main is a text with icon,
- * name and on/off of the item, without action. Its field 6 is replaced by the status line ({@link devicePageMainElement}).
+ * The main element: the device item itself (icon `devicePage.icon`, else the one of the item; color as on the page of
+ * the item). Its name is always the name of the device - the headline of the device page, whatever the short tap.
+ * A tap does what the short tap of the item does (`state`: the state is switched / a button pressed; `none`: a text,
+ * nothing). A short tap `navigation` or `popup` is not built here: main is a text with icon, name and on/off of the
+ * item, without action. Its field 6 is replaced by the status line ({@link devicePageMainElement}).
  *
  * @param source runtime configuration of the device item
  * @param details the device part of the item
  * @param page the device page
+ * @param name the name of the device (the headline of the device page)
  * @returns the page item of main
  */
 export function devicePageMainItem(
     source: NSPanel.PageItemDataItemsOptionsWithOutTemplate,
     details: DeviceDetailsRuntime,
     page: DevicePageRuntime,
+    name: string,
 ): NSPanel.PageItemDataItemsOptions {
+    const nameItem: NSPanel.DataItemsOptions = { type: 'const', constVal: name };
+    const text: NSPanel.PageItemButtonDataItemsOptions['data']['text'] = { true: nameItem, false: nameItem };
     // the device part stays for the button semantics of the short tap (read: false is pressed), without the device
     // page - there is no long press on the device page
     const deviceDetails: DeviceDetailsRuntime = { deviceId: details.deviceId, entries: details.entries };
@@ -187,18 +192,17 @@ export function devicePageMainItem(
         const item = structuredClone(source);
         item.deviceDetails = deviceDetails;
         item.dpInit = '';
+        item.data.text = text;
+        // text.states takes the name from common.states of the text - the name is fixed here
+        if (item.role === 'text.states') {
+            delete item.role;
+        }
         if (page.icon) {
             item.data.icon = withIcon(item.data.icon, page.icon);
         }
         return item;
     }
     const data = source.data;
-    const text: NSPanel.PageItemButtonDataItemsOptions['data']['text'] =
-        data && 'text' in data && data.text
-            ? structuredClone(data.text)
-            : data && 'headline' in data && data.headline
-              ? { true: structuredClone(data.headline), false: structuredClone(data.headline) }
-              : undefined;
     const icon: IconOptions | undefined = data && 'icon' in data && data.icon ? structuredClone(data.icon) : undefined;
     const entity1 = data && 'entity1' in data && data.entity1 ? structuredClone(data.entity1) : undefined;
     return {
@@ -407,7 +411,7 @@ export async function devicePageElements(
         headline,
         slotCount: kinds.length,
         elements: [
-            devicePageMainItem(source, details, page),
+            devicePageMainItem(source, details, page, headline),
             ...slots,
             page.showInfo ? devicePageInfoItem(details) : undefined,
             status,
