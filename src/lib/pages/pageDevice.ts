@@ -6,6 +6,7 @@ import type * as pages from '../types/pages';
 import type * as types from '../types/types';
 import {
     DEVICE_PAGE_EMPTY_ELEMENT,
+    devicePageChannelElement,
     devicePageMainElement,
     devicePageStatusIconElement,
     fitDevicePageStatus,
@@ -27,12 +28,15 @@ function isCardDeviceConfig(config: pages.PageBase['config']): config is pages.c
 /**
  * The generated device page of a device item (device-page.ts): main, the slots of the layout and info as elements of
  * the HMI pages cardDevice1..3. The page items are created only while the page is shown (Page.onVisibilityChange),
- * a tap on an element is the tap of a cardGrid cell. There is no long press: a `buttonPress3` acts like the tap.
+ * a tap on an element is the tap of a cardGrid cell. A long press (`buttonPress3`) runs the long press action of a
+ * slot, anything else does nothing - it never acts like the tap.
  */
 export class PageDevice extends Page {
     private readonly headline: string;
     private readonly slotCount: number;
     private readonly layout: DevicePageLayout;
+    /** index of the slots (0 = slot 1) that show an alias channel */
+    private readonly channelSlots: ReadonlySet<number>;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
@@ -45,6 +49,7 @@ export class PageDevice extends Page {
         const headline = card.data.headline;
         this.headline = headline.type === 'const' && typeof headline.constVal === 'string' ? headline.constVal : '';
         this.slotCount = card.slotCount;
+        this.channelSlots = new Set(card.channelSlots ?? []);
         this.pageItemConfig = [...card.elements];
         this.minUpdateInterval = 1000;
     }
@@ -77,11 +82,17 @@ export class PageDevice extends Page {
             : '';
         const mainItem = this.pageItems?.[0];
         const elements = [devicePageMainElement(mainItem ? await mainItem.getPageItemPayload() : '', status)];
-        // slots and info; a status icon never shows name or value
+        // slots and info; a status icon never shows name or value, field 6 of an alias channel follows the kind of
+        // its slot
         const kinds = DEVICE_PAGE_LAYOUTS[this.layout];
+        const onOff = (on: boolean): string => this.library.getTranslation(on ? 'on' : 'off');
         for (let index = 1; index <= this.slotCount + 1; index++) {
-            const element = await this.elementAt(index);
-            elements.push(kinds[index - 1] === 'status' ? devicePageStatusIconElement(element) : element);
+            let element = await this.elementAt(index);
+            const kind = kinds[index - 1];
+            if (kind && this.channelSlots.has(index - 1)) {
+                element = devicePageChannelElement(kind, element, onOff);
+            }
+            elements.push(kind === 'status' ? devicePageStatusIconElement(element) : element);
         }
         this.sendToPanel(
             getPayload(
@@ -94,12 +105,31 @@ export class PageDevice extends Page {
     }
 
     /**
-     * No long press on the device page: the caller (Panel) treats the press as a tap.
+     * A long press on an element: a slot runs the long press of its page item (the action configured for the slot, a
+     * channel item what it does on cardGrid). main and the info icon have none - they keep the device part of the
+     * item, whose long press would open the detail page from here. Without an action nothing happens: the press is
+     * always handled, the caller (Panel) never treats it as a tap.
      *
-     * @returns false
+     * @param id number of the element
+     * @param popup popup of the event
+     * @param action action of the event
+     * @param value value of the event
+     * @param event the event
+     * @returns true
      */
-    public async onButtonPress3(): Promise<boolean> {
-        return Promise.resolve(false);
+    public async onButtonPress3(
+        id: number | string,
+        popup: types.PopupType | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        action: types.ButtonActionType | undefined | string,
+        value: string | undefined,
+        event: types.IncomingEvent | null = null,
+    ): Promise<boolean> {
+        const index = typeof id === 'number' ? id : parseInt(id);
+        if (index >= 1 && index <= this.slotCount) {
+            await super.onButtonPress3(id, popup, action, value, event);
+        }
+        return true;
     }
 
     async onButtonEvent(_event: types.IncomingEvent): Promise<void> {

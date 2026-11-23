@@ -196,6 +196,8 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
   - „Navigation“: Kurz-Tipp öffnet eine Zielseite (gespeichert als Navigations-Item mit `targetPage`).
   - „Popup eines Alias-Kanals“: das Popup braucht die Rollen eines Alias-Kanals, der Kanal wird nur in diesem Fall gewählt;
     gespeichert als Standard-Item (`channelId` = Kanal).
+  - „Geräteseite öffnen“ (`shortPress: 'devicePage'`): der Kurz-Tipp öffnet, was sonst der Long-Press öffnet – siehe
+    Abschnitt Geräteseite, „Kurz-Tipp öffnet die Geräteseite“.
   - Ohne eigenen Namen zeigen „Keine“ und „Navigation“ den Namen des Geräts.
   - Gespeichert in `AdminPageItemConfig.device` (`deviceId`, `shortPress`, `entries` = angehakte Zeilen in Reihenfolge).
 - **Gerät:** nur `device`/`channel`, nie Instanz, Adapter-Wurzel oder Info-Kanal (`<adapter>.<n>.info`); bekannte
@@ -244,13 +246,21 @@ bleibt alles wie bisher.
 ```ts
 devicePage?: {
     layout: 1 | 2 | 3;                         // cardDevice1 / cardDevice2 / cardDevice3
-    slots: (DevicePageStateRef | null)[];      // ein Eintrag je Slot des Layouts, null = leer
+    slots: (DevicePageSlotRef | null)[];       // ein Eintrag je Slot des Layouts, null = leer
     showInfo: boolean;                         // „i“ zur Detailseite
     icon?: string;                             // MDI-Name des großen Icons, fehlt = Icon des Items
     status?: DevicePageStatusRef;              // State der Statuszeile, fehlt = leere Zeile
 }
 // DevicePageStateRef = DeviceDetailEntryConfig & { icon?: string }:
-//   { key: Masken-Eintrag ('' = ohne), id: State, subName?: eigener Zusatz, icon?: eigenes Icon (nur status-Slots) }
+//   { key: Masken-Eintrag ('' = ohne), id: State, subName?: eigener Zusatz, icon?: älteres Icon der status-Slots }
+// DevicePageSlotRef = DevicePageStateRef & DevicePageSlotLook & { custom?: 'state' | 'channel' }:
+//   ohne custom        = State des Geräts (wie bisher)
+//   custom: 'state'    = benutzerdefinierter Datenpunkt (beliebiger State, key '')
+//   custom: 'channel'  = Alias-Kanal (id = Kanal, key '')
+//   mit custom darf id '' sein (gewählt, noch nichts eingetragen) – der Slot bleibt dann leer
+// DevicePageSlotLook („Einstellungen des Elements“, Feldnamen wie AdminPageItemConfig), alles optional:
+//   trueIcon?, falseIcon?: MDI-Name; trueColor?, falseColor?: '#rrggbb';
+//   scale?: IconColorElement (Farbverlauf); longPress?: State-ID, die ein Long-Press schreibt
 // DevicePageStatusRef = DevicePageStateRef & { custom?: true }:
 //   custom: true = benutzerdefinierter Datenpunkt (beliebiger State, auch außerhalb des Geräts, key ''),
 //   id darf dann '' sein (gewählt, aber noch nichts eingetragen); ohne custom = State des Geräts wie bisher
@@ -260,10 +270,15 @@ devicePage?: {
   `id`. Ein Slot darf jeden State des Geräts zeigen, er muss nicht für die Detailseite angehakt sein.
 - Normalisierung `devicePageConfigOf`: unbekanntes Layout → 1, Slots auf die Länge des Layouts gekürzt/mit `null`
   aufgefüllt (ungültige oder ohne State → `null`), `showInfo` nur bei `false` aus, leeres Icon/leerer Status entfällt.
-  Ein gespeichertes Layout 1 von vor den Status-Icons (6 Slots) bekommt so die Status-Slots leer dazu. Das eigene
+  Ein gespeichertes Layout 1 von vor den Status-Icons (6 Slots) bekommt so die Status-Slots leer dazu. Das ältere
   `icon` eines Verweises bleibt nur auf einem `status`-Slot (getrimmt, leer entfällt), Statuszeile und andere Slots
   verlieren es. Beim Layoutwechsel (`fitDevicePageSlots`) bleiben die Slots nach Position, nichts wird neu geraten
-  (auch dort fällt das Icon weg, wenn der Slot keine `status`-Art mehr ist).
+  (auch dort fällt das ältere Icon weg, wenn der Slot keine `status`-Art mehr ist).
+- Slots mit `custom`: `id` getrimmt, `key` immer `''`, bleiben auch mit leerer `id` gespeichert; die Laufzeit
+  (`deviceDetailsRuntimeOf`) macht daraus einen leeren Slot. Unbekannte Werte von `custom` gelten als State des Geräts.
+- Einstellungen des Elements (`DevicePageSlotLook`): bleiben auf jeder Slot-Art und beim Layoutwechsel erhalten; Icons
+  getrimmt, Farben nur als `#rrggbb`, `scale` nur wenn gültig (`isIconColorScaleElement`). Das ältere `icon` gilt als
+  Icon für beide Zustände, solange `trueIcon`/`falseIcon` fehlen (`devicePageSlotLookOf`); sind sie gesetzt, entfällt es.
 - Statuszeile mit `custom: true`: bleibt auch mit leerer `id` gespeichert (die Auswahl im Admin springt nicht auf
   „leer“ zurück), die `id` wird getrimmt, `key` ist immer `''`. Zur Laufzeit gibt es mit leerer `id` keine Statuszeile
   (`deviceDetailsRuntimeOf` lässt `status` weg). Der Adapter liest nur `id` und `common` des States – ob er unter
@@ -303,6 +318,90 @@ Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (beide 
 
 Ein State, der nicht (mehr) existiert oder nicht zur Art passt, lässt den Slot leer (Warnung im Log).
 
+### Benutzerdefinierte Slots
+
+Jeder Slot kann statt eines States des Geräts etwas Eigenes zeigen (`custom`); Anordnung und Art der Slots bleiben fest.
+
+- **Datenpunkt** (`custom: 'state'`): ein beliebiger State, auch außerhalb des Geräts. Er verhält sich wie ein
+  Geräte-State ohne Masken-Eintrag: Name aus `common.name`, Icon/Einheit/Format nach Typ und Rolle, zulässig nach
+  `devicePageSlotAccepts` (Tabelle oben). Der Adapter liest nur `id` und `common`.
+- **Alias-Kanal** (`custom: 'channel'`): der Kanal wird über die vorhandene Kette zum normalen Page-Item
+  (`devicePageChannelAdminItem` → `adminPageItemToScriptItem` → `ConfigManager.getPageItemConfig`, Seitenart
+  `cardGrid`) – Icon, Farben, Name, Tipp und Popup wie auf einer Grid-Seite. Gebaut wird beim Konfigurieren des Items
+  (`devicePageChannels` in `convertAdminPageItemToPageItemConfig`), abgelegt am Laufzeit-Item als
+  `devicePageChannels` (Slot-Index → `{ role, item }`); die Geräteseite selbst entsteht weiter erst beim Öffnen. Ein
+  Kanal, den es nicht gibt, dessen Rolle nicht zum Slot passt oder den der ConfigManager ablehnt (fehlende
+  Datenpunkte), lässt den Slot leer und steht in den Meldungen der Konvertierung; das Item bleibt gültig.
+
+Welche Rolle in welche Slot-Art darf (`DEVICE_PAGE_CHANNEL_ROLES` / `devicePageSlotAcceptsChannel`): Alle Slots lassen
+sich wie eine cardGrid-Zelle antippen (HMI ab `device5`), die Art begrenzt nur, was Feld 6 zeigen kann.
+
+| Rolle des Kanals | Typ des Elements | info / value: Feld 6 | progress | button | switch | status | Tipp |
+|---|---|---|---|---|---|---|---|
+| socket, light | `switch` (kein Popup) | An / Aus (übersetzt) | – | `0`/`1` | `0`/`1` | ja | schaltet um; switch-Slot `OnOff` |
+| dimmer, hue, rgb, rgbSingle, ct | `light` | An / Aus | – | `0`/`1` | `0`/`1` | ja | schaltet um, Halten → popupLight; switch-Slot `OnOff` |
+| level.mode.fan | `fan` | An / Aus | – | `0`/`1` | `0`/`1` | ja | schaltet um, Halten → popupFan; switch-Slot `OnOff` |
+| slider, volume | `number` | die Zahl (ohne `\|min\|max`) | 0–100 aus `Wert\|min\|max` | leer | – | ja | Halten → popupSlider |
+| select | `input_sel` | Text der Auswahl | – | leer | – | ja | popupInSel sofort |
+| level.timer | `timer` | Zeit / Text | – | leer | – | ja | popupTimer sofort |
+| blind, gate, lock | `shutter`/`shutter2` | nur info: leer (nie die Icon-Liste des Popups); value nicht zulässig | – | leer | – | ja | popupShutter sofort |
+| button | `button` | nur info: leer; value nicht zulässig | – | `0`/`1` | – | ja | schreibt `true` |
+| temperature, humidity, thermostat, airCondition, motion, door, window, info, warning (auch `value.*`) | `text` | Wert mit Einheit bzw. Text | – | `0`/`1` oder leer | – | ja | keiner |
+
+- `media`, `timeTable`, `sensor.alarm.flood`: nie (brauchen eine eigene Seite bzw. ein Template).
+- **Feld 6** passt `PageDevice` beim Senden an die Slot-Art an (`devicePageChannelElement`, nur für Kanal-Slots –
+  `cardDeviceDataItemOptions.channelSlots`): die HMI zeichnet je Slot-Art und kennt den Typ nicht.
+- **Steckdose / einfaches Licht:** `getPageItemPayload` macht die Rollen `light` und `socket` jetzt auch auf den
+  Geräteseiten zum Typ `switch` (`isCardDeviceType`, wie auf den Grid-Seiten) – sonst öffnete ein gehaltenes einfaches
+  Licht popupLight. Der Kanal `socket` ist ohnehin ein `switch`-Item.
+- **Text-Items** (Sensoren) zeigen in info/value/status ihr Icon, nicht wie auf cardGrid den Wert an Stelle des Icons;
+  der Wert steht in Feld 6. Ein Text-Item ohne Werttext (thermostat) bekommt den Wert seines Icon-Texts als `entity2`
+  (`devicePageChannelSlotItem`). Sonst bleibt das Item des Kanals unverändert.
+- Der Name eines Kanal-Slots kommt vom Kanal; er zählt nicht bei den Dubletten-Zusätzen der State-Slots mit.
+
+### Einstellungen des Elements
+
+`DevicePageSlotLook` je Slot, im Admin hinter dem „…“-Knopf der Slot-Zeile. Die Felder heißen wie beim
+Standard-Page-Item und nutzen dessen Bausteine.
+
+- **Icon und Farbe für true / false** (`trueIcon`, `falseIcon`, `trueColor`, `falseColor`): ersetzen Icon/Farbe aus
+  Maske bzw. Art (`withDevicePageSlotLook`), nur was gesetzt ist. Eine Zahl oder ein Text kennt kein false und zeigt
+  Icon und Farbe von true (wie ohne Einstellung). Beispiel „ein Knopf für go/pause“: button-Slot mit lesbarem,
+  schreibbarem boolean, `trueIcon: 'pause'`, `falseIcon: 'play'` – der Tipp schaltet um (das tat er schon vorher:
+  `entity1.value` → `onDeviceDetailTap` → `setStateFlip`; nur `read: false` schreibt `true`), Icon und Farbe folgen
+  dem State.
+- **Farbverlauf** (`scale`): `icon.scale` des Items; ein Zahlen-State bekommt dafür den State als `entity1`, die Farbe
+  läuft zwischen false- und true-Farbe. Beim progress-Slot ist das die Balkenfarbe.
+- **Long-Press** (`longPress`): State-ID; ein Knopf-Item setzt ihn auf `true`, ein Schalter-Item schaltet ihn um
+  (vorhandener Weg `data.longPress` → `onCommandLongPress`). Nur wo das Element ein Knopf oder Schalter ist
+  (`devicePageSlotTakesLongPress`): State in einem button- oder switch-Slot, Kanal mit Rolle `button` oder `socket`
+  (der ConfigManager erlaubt `longPress` nur für die Typen button/switch).
+- **Alias-Kanäle** bekommen die Felder über die Kette (`trueIcon`/`falseIcon`/`trueColor`/`falseColor`/`scale`/
+  `longPress` des Admin-Items) – sie überschreiben die Vorgaben der Rolle.
+- Status-Slots: das ältere Feld `icon` gilt weiter als Icon für beide Zustände, bis im Dialog Icons gesetzt werden.
+- Andocken weiterer Einstellungen: ein Feld in `DevicePageSlotLook` (+ `DEVICE_PAGE_SLOT_LOOK_FIELDS` für Texte), ein
+  Abschnitt in `DevicePageSlotDialog` (`renderLook` / `renderActions`), Anwenden in `withDevicePageSlotLook` (States)
+  bzw. `devicePageChannelAdminItem` (Kanäle). Nicht gebaut: eine eigene Aktion für den Kurz-Tipp (z. B. Navigation
+  aus einem Slot) – ein State-Slot ist kein Navigations-Item, das wäre ein Nachbau.
+
+### Long-Press auf der Geräteseite
+
+Die HMI ab `device5` sendet aus main und allen Slots `buttonPress3`. `PageDevice.onButtonPress3` gibt ihn an das
+Page-Item des Slots (`onCommandLongPress`), main und das info-Icon haben keinen Long-Press. Ohne Aktion passiert
+nichts – ein Long-Press gilt nie als Tipp (die Seite meldet ihn immer als behandelt). Ältere Test-HMIs senden kein
+`buttonPress3` aus den Slots.
+
+### Kurz-Tipp öffnet die Geräteseite
+
+`shortPress: 'devicePage'`: der Kurz-Tipp des Items öffnet dasselbe wie der Long-Press (`PageItem.openDeviceOf`:
+Geräteseite, wo das Panel sie hat, sonst die Detailseite). Der Long-Press bleibt unverändert.
+
+- Nur mit Geräteseite: das Admin bietet die Auswahl nur dann an und speichert sonst `none` (`shortPressToSave`); ohne
+  `devicePage` baut der Adapter das Item wie `none` (Text, Tipp ohne Wirkung).
+- Laufzeit-Item: ein `button` ohne State mit Icon und Name des Items (ohne eigenen Namen der Name des Geräts) –
+  ein Knopf, damit der Tipp auf jeder Seitenart als `buttonPress2,<id>,button` ankommt.
+- main auf der Geräteseite: wie bei „Navigation“ und „Popup“ ein Text mit Icon und Gerätenamen, ohne Aktion.
+
 ### Protokoll
 
 ```
@@ -326,7 +425,8 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
 - **main** = das Geräte-Item: Icon `devicePage.icon`, sonst das des Items; Farbe wie auf der Ursprungsseite. Name
   immer der des Geräts (dieselbe Quelle wie die Überschrift), bei jeder Kurz-Tipp-Art – die Kachel auf der
   Ursprungsseite behält ihren Namen. Kurz-Tipp „State des Geräts“ → das Item selbst (Tipp schaltet / drückt), „Keine“
-  → `text`. „Navigation“ und „Popup eines Alias-Kanals“ → `text` mit Icon und An/Aus des Items und dem Gerätenamen, ohne Aktion.
+  → `text`. „Navigation“, „Popup eines Alias-Kanals“ und „Geräteseite öffnen“ → `text` mit Icon und An/Aus des Items
+  und dem Gerätenamen, ohne Aktion.
 - **Feld 6 von main = Statuszeile**: der State `devicePage.status` wie eine Textzeile der Detailseite (Text aus
   `common.states` übersetzt, sonst Wert mit Einheit, boolean An/Aus übersetzt), sonst leer. Auch ohne main wird die
   Statuszeile gesendet (`~~~~~<status>`). Zu lang → mit `text-width.ts` (Font 0) auf 390 px gekürzt, am Ende „...“,
@@ -334,7 +434,7 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
   HMI an ihrer Grenze ab (Slot-Namen bekommen den Dubletten-Zusatz ungekürzt angehängt).
 - **info**: `button` mit Icon `information-outline` in der Farbe `deviceInfo`, ohne Namen; Tipp
   `buttonPress2,<intName>,button` öffnet die Detailseite.
-- Kein Long-Press auf der Geräteseite: ein `buttonPress3` gilt als Tipp.
+- Long-Press (`buttonPress3`): siehe „Long-Press auf der Geräteseite“ – nie ein Tipp.
 
 ### Admin
 
@@ -348,11 +448,24 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
   Bei „Benutzerdefinierter Datenpunkt“ erscheint darunter der `EntitySelector` (Textfeld + Objekt-Browser, nur States)
   für eine beliebige ID, z. B. `0_userdata.0.…`. Gespeichert als `status: { key: '', id, custom: true }`
   (`devicePageStatusOf`, `customDevicePageStatus`); ein eigener Datenpunkt steht nie in der Liste der Geräte-States und
-  wird nie als „nicht im Gerät gefunden“ markiert. Nur die Statuszeile hat das, die Slots nicht.
-- Status-Slots (Layout 1): Art „Status-Icon“, mit gewähltem State zusätzlich ein IconSelect für das eigene Icon
-  (`withDevicePageSlotIcon`, leer = automatisch); ein anderer State im selben Slot behält das Icon. Hinweis unter den
-  Slots, dass die Info-Zeilen schmaler werden. Die Vorschau zeichnet das Raster (2 Spalten, Zeilen = Anzahl/2) und die
-  schmalen Info-Zeilen nur, wenn mindestens ein Status-Slot belegt ist.
+  wird nie als „nicht im Gerät gefunden“ markiert.
+- Slots: die Auswahl jedes Slots beginnt mit „leer“ und „Benutzerdefiniert“, danach die States des Geräts
+  (`devicePageSlotOf`, `devicePageSlotSelectValue`). Bei „Benutzerdefiniert“ erscheinen darunter die Wahl
+  Datenpunkt / Alias-Kanal und der `EntitySelector`: für einen Datenpunkt alle States, für einen Kanal die Kanäle,
+  deren Rolle zur Slot-Art passt (Auswahl eines States darunter wird auf den Kanal gekürzt – die Logik des
+  Page-Item-Dialogs, ausgelagert nach `src-admin/src/channelSelection.ts` und von `ChannelConfigDialog` weiter
+  benutzt). Die Section liest das Objekt der eingetragenen ID und markiert den Slot rot: „Datenpunkt/Kanal nicht
+  gefunden“ bzw. „passt nicht zu diesem Slot“ (`devicePageCustomProblem`) – gespeichert bleibt er trotzdem.
+- „…“-Knopf jeder belegten Slot-Zeile: Dialog „Einstellungen des Elements“ (`DevicePageSlotDialog`): Icon und Farbe
+  für true/false (IconSelect und Farbfelder wie im Page-Item-Dialog), „Farbverlauf …“ (der `ChannelColorDialog` des
+  Page-Items) und – wo möglich – der Long-Press-Datenpunkt. Der Knopf ist grün, wenn etwas gesetzt ist
+  (`devicePageSlotHasLook`). Übernehmen ersetzt alle Einstellungen des Slots (`withDevicePageSlotLook`); wählt man
+  danach etwas anderes für den Slot, bleiben sie, ein geleerter Slot verliert sie (`withDevicePageSlot`).
+- Status-Slots (Layout 1): Art „Status-Icon“; das eigene Icon steht jetzt im „…“-Dialog (kein eigener Icon-Wähler
+  mehr in der Zeile). Hinweis unter den Slots, dass die Info-Zeilen schmaler werden. Die Vorschau zeichnet das Raster
+  (2 Spalten, Zeilen = Anzahl/2) und die schmalen Info-Zeilen nur, wenn mindestens ein Status-Slot belegt ist.
+- Kurz-Tipp: zusätzliche Auswahl „Geräteseite öffnen“, nur wählbar mit „Long-Press öffnet: Geräteseite“; wechselt man
+  zurück auf die Detailseite, springt der Kurz-Tipp auf „Keine“.
 - Ein gewählter State wird als Verweis gespeichert: gleicher State behält seinen Verweis, ein angehakter Eintrag der
   Filterliste gibt `key` und `subName`, sonst der Masken-Eintrag des States. Ein gespeicherter State, den das Gerät nicht
   (mehr) hat oder der nicht zum Slot passt, bleibt markiert stehen; ohne Antwort des Adapters bleibt alles, wie es ist.

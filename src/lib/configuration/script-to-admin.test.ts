@@ -25,6 +25,7 @@ import type { PageBase } from '../types/pages';
 import { AdminConfiguration } from './admin';
 import { adminPageItemToScriptItem } from './admin-page-item';
 import { deviceDetailsRuntimeOf, deviceShortPressOf } from '../types/deviceDetails';
+import { devicePageChannels } from '../pages/device-page';
 import type { NSPanel } from '../types/NSPanel';
 import { screensaverItemToScript } from './admin-screensaver-item';
 import { ensureMainPage } from './main-page';
@@ -145,7 +146,7 @@ const channels: Record<ScriptConfig.channelRoles | 'none', string[]> = {
     motion: [],
     rgb: [],
     select: [],
-    socket: [],
+    socket: ['alias.0.dp.socket'],
     timeTable: [],
     warning: [],
     'level.mode.fan': [],
@@ -266,6 +267,7 @@ function loadConvertAdminPageItem(): ConvertAdminItem {
         'adminPageItemToScriptItem',
         'deviceDetailsRuntimeOf',
         'deviceShortPressOf',
+        'devicePageChannels',
         js,
     ) as (
         module: typeof mod,
@@ -273,8 +275,16 @@ function loadConvertAdminPageItem(): ConvertAdminItem {
         toScriptItem: typeof adminPageItemToScriptItem,
         runtimeOf: typeof deviceDetailsRuntimeOf,
         shortPressOf: typeof deviceShortPressOf,
+        channels: typeof devicePageChannels,
     ) => void;
-    factory(mod, ConfigManager, adminPageItemToScriptItem, deviceDetailsRuntimeOf, deviceShortPressOf);
+    factory(
+        mod,
+        ConfigManager,
+        adminPageItemToScriptItem,
+        deviceDetailsRuntimeOf,
+        deviceShortPressOf,
+        devicePageChannels,
+    );
     return mod.exports!.prototype.convertAdminPageItemToPageItemConfig;
 }
 
@@ -4849,6 +4859,79 @@ describe('lib/configuration - device with details: the short tap of the admin it
             expect(result.messages, item.device?.shortPress).to.deep.equal([]);
             expect(result.pageItem, item.device?.shortPress).to.not.equal(undefined);
         }
+    });
+    it('devicePage: a button with the name of the device (the tap reaches the adapter); without device page a text', async () => {
+        const devicePage = { layout: 1 as const, slots: [], showInfo: true };
+        const withPage = await convertAdminPageItem.call(
+            fakeAdapter([]),
+            {
+                channelId: ShareConfig.emptyChannelValueConfig(''),
+                device: { deviceId: DEV, shortPress: 'devicePage', entries: [], devicePage },
+            },
+            page,
+            [],
+        );
+        expect(withPage.error).to.equal(undefined);
+        const item = withPage.pageItem as NSPanel.PageItemDataItemsOptions;
+        expect(item.type).to.equal('button');
+        expect(JSON.stringify(item.data)).to.include('Kitchen lamp');
+        expect(item.deviceDetails?.devicePage?.shortPress).to.equal('devicePage');
+        const without = await convertAdminPageItem.call(
+            fakeAdapter([]),
+            {
+                channelId: ShareConfig.emptyChannelValueConfig(''),
+                device: { deviceId: DEV, shortPress: 'devicePage', entries: [] },
+            },
+            page,
+            [],
+        );
+        expect((without.pageItem as NSPanel.PageItemDataItemsOptions).type).to.equal('text');
+    });
+    it('alias channels in slots of the device page: built by the config manager, a broken one reported, not fatal', async () => {
+        DB.objects['alias.0.dp.empty'] = {
+            _id: 'alias.0.dp.empty',
+            type: 'channel',
+            common: { name: 'empty', role: 'socket' },
+            native: {},
+        };
+        const channel = (id: string, more: object = {}): object => ({ key: '', id, custom: 'channel', ...more });
+        const result = await convertAdminPageItem.call(
+            fakeAdapter([]),
+            {
+                channelId: ShareConfig.emptyChannelValueConfig(`${DEV}.Relay0.Switch`),
+                type: 'custom',
+                device: {
+                    deviceId: DEV,
+                    shortPress: 'state',
+                    entries: [],
+                    devicePage: {
+                        layout: 1,
+                        showInfo: true,
+                        slots: [
+                            channel(channels.temperature[0]),
+                            channel('alias.0.dp.empty'),
+                            channel('alias.0.dp.socket', { trueIcon: 'power-plug', trueColor: '#010203' }),
+                            channel(channels.blind[0]),
+                            { key: '', id: `${DEV}.Relay0.Switch` },
+                        ],
+                    },
+                },
+            } as ShareConfig.AdminPageItemConfig,
+            page,
+            [],
+        );
+        expect(result.error).to.equal(undefined);
+        const item = result.pageItem as NSPanel.PageItemDataItemsOptions;
+        const built = JSON.parse(JSON.stringify(item.devicePageChannels));
+        expect(Object.keys(built)).to.deep.equal(['0', '2', '3']);
+        expect(built[0].role).to.equal('temperature');
+        expect(built[0].item.type).to.equal('text');
+        expect(built[2].item.type).to.equal('switch');
+        expect(built[2].item.data.icon.true.value.constVal).to.equal('power-plug');
+        expect(built[2].item.data.icon.true.color.constVal).to.deep.equal({ r: 1, g: 2, b: 3 });
+        expect(built[3].item.type).to.match(/^shutter/);
+        expect(result.messages).to.have.length(1);
+        expect(result.messages[0]).to.contain('slot 2 (info): channel alias.0.dp.empty');
     });
     it('a name of the item wins over the name of the device', async () => {
         const result = await convertAdminPageItem.call(

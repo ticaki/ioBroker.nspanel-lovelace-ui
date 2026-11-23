@@ -38,6 +38,7 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
+import { channelIdOf, channelRolesOf, isInChannels } from '../channelSelection';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
 import DeviceDetailsSection, { isBlockingDeviceError } from './DeviceDetailsSection';
@@ -55,9 +56,9 @@ import {
 import { applyDeviceAnswer } from '../deviceAnswer';
 import {
     devicePageToSave,
+    shortPressToSave,
     switchLongPressTarget,
     withDevicePageIcon,
-    withDevicePageSlotIcon,
     type LongPressStash,
     type LongPressTarget,
 } from '../devicePageConfig';
@@ -895,7 +896,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 device !== null
                     ? {
                           deviceId: device.deviceId.trim(),
-                          shortPress: deviceShortPressOf(device),
+                          shortPress: shortPressToSave(device),
                           entries: device.entries,
                           devicePage: devicePageToSave(device),
                       }
@@ -1140,14 +1141,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         try {
             const objects: Record<string, ioBroker.Object> | null | undefined =
                 await socket.getObjectViewSystem('channel');
-            const validIds: string[] = [];
-            for (const [id, obj] of Object.entries(objects ?? {})) {
-                const role = (obj as any)?.common?.role;
-                if (typeof role === 'string' && (CHANNEL_ROLES_LIST as readonly string[]).includes(role)) {
-                    validIds.push(id);
-                }
-            }
-            this.setState({ validChannelIds: validIds });
+            this.setState({ validChannelIds: Object.keys(channelRolesOf(objects, CHANNEL_ROLES_LIST)) });
         } catch (e) {
             console.warn('[ChannelConfigDialog] loadValidChannels failed', e);
         }
@@ -1169,7 +1163,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             if (!id) {
                 return false;
             }
-            return validChannelIds.some(chId => id === chId || id.startsWith(`${chId}.`));
+            return isInChannels(validChannelIds, id);
         };
     }
 
@@ -1183,13 +1177,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (isCustom) {
             return id;
         }
-        let best = '';
-        for (const chId of validChannelIds) {
-            if ((id === chId || id.startsWith(`${chId}.`)) && chId.length > best.length) {
-                best = chId;
-            }
-        }
-        return best || id;
+        return channelIdOf(validChannelIds, id);
     };
 
     private handleChannelIdChange = (id: string): void => {
@@ -1634,7 +1622,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
         const switched = switchLongPressTarget(device, this.longPressStash, target);
         this.longPressStash = switched.stash;
-        this.setState({ device: switched.device });
+        // the short tap "open the device page" needs the device page: without it the tap does nothing
+        this.setState({ device: { ...switched.device, shortPress: shortPressToSave(switched.device) } });
     };
 
     /**
@@ -1926,7 +1915,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     onLongPressTargetChange={this.handleLongPressTargetChange}
                     onDevicePageChange={this.handleDevicePageChange}
                     devicePageIconSelector={device.devicePage ? this.renderDevicePageIcon(device.devicePage) : null}
-                    devicePageSlotIconSelector={this.renderDevicePageSlotIcon}
+                    devicePageIconSelect={this.renderSlotIconSelect}
+                    adapterName={this.props.adapterName}
                 />
                 <TextField
                     label={I18n.t('channelConfigDialog_name')}
@@ -1956,19 +1946,49 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     /**
-     * The own icon of a status slot of the device page, empty = the icon of the mask entry / the state.
+     * An icon selector for the settings of a slot of the device page (DevicePageSlotDialog): the icon selector of the
+     * page item dialog, the value lives in the dialog of the slot.
      *
-     * @param index index of the slot (0 = slot 1)
-     * @param icon the saved icon, '' = none
+     * @param label translation key of the label
+     * @param iconValue the chosen icon, '' = none
+     * @param onPick the picked icon
      */
-    private renderDevicePageSlotIcon = (index: number, icon: string): React.JSX.Element =>
-        this.renderDevicePageIconSelect(
-            'device-page-slot-icon',
-            icon,
-            'deviceDetailsDialog_pageSlotIcon',
-            'deviceDetailsDialog_pageSlotIconHint',
-            (page, picked) => withDevicePageSlotIcon(page, index, picked),
+    private renderSlotIconSelect = (
+        label: string,
+        iconValue: string,
+        onPick: (icon: string) => void,
+    ): React.JSX.Element => {
+        const themeName: ThemeName = this.props.themeType === 'dark' ? 'dark' : 'light';
+        return (
+            <IconSelect
+                oContext={this.buildOContext()}
+                alive={true}
+                changed={false}
+                themeName={themeName}
+                common={EMPTY_COMMON}
+                attr="devicePageSlotIcon"
+                data={{ devicePageSlotIcon: iconValue }}
+                originalData={{ devicePageSlotIcon: iconValue }}
+                onError={() => {}}
+                schema={{ type: 'custom', name: 'IconSelect', url: '', label, i18n: true }}
+                custom
+                onChange={(attrOrData, val, cb): void => {
+                    let icon = '';
+                    if (typeof attrOrData === 'object') {
+                        const picked: unknown = attrOrData.devicePageSlotIcon;
+                        icon = typeof picked === 'string' ? picked : '';
+                    } else if (typeof val === 'string') {
+                        icon = val;
+                    }
+                    onPick(icon);
+                    if (cb) {
+                        cb();
+                    }
+                }}
+                theme={this.props.theme}
+            />
         );
+    };
 
     /**
      * An icon selector of the device page.

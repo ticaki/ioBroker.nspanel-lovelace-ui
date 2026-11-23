@@ -43,10 +43,14 @@ function hexToScriptColor(
  * The runtime item of a device item whose short tap does nothing (`device.shortPress: 'none'`): a text item with the
  * icon and the name of the item - a tap does nothing, the long press opens the details.
  *
+ * `devicePage` (the short tap opens the device page): the same as a button, so that the tap reaches the adapter on
+ * every page like the tap of any button - PageItem.onCommand opens the device page.
+ *
  * @param preItem item of the admin
+ * @param type type of the runtime item
  * @returns the script item in native format
  */
-function deviceWithoutShortPressItem(preItem: AdminPageItemConfig): ScriptConfig.PageItem {
+function deviceWithoutShortPressItem(preItem: AdminPageItemConfig, type: 'text' | 'button'): ScriptConfig.PageItem {
     // the runtime item takes the color as {r, g, b} - an own color of the item or the theme color activated
     let color: RGB | string = Color.activated;
     if (preItem.trueColor) {
@@ -58,7 +62,7 @@ function deviceWithoutShortPressItem(preItem: AdminPageItemConfig): ScriptConfig
     }
     return {
         native: {
-            type: 'text',
+            type,
             role: '',
             itemId: preItem.itemId,
             data: {
@@ -69,6 +73,8 @@ function deviceWithoutShortPressItem(preItem: AdminPageItemConfig): ScriptConfig
                     },
                 },
                 text: { true: { type: 'const', constVal: preItem.name ?? '' } },
+                // cardEntities shows the text of a button at the right
+                ...(type === 'button' ? { text1: { true: { type: 'const', constVal: 'press' } } } : {}),
             },
         },
     };
@@ -91,8 +97,13 @@ export function adminPageItemToScriptItem(
 ): ScriptConfig.PageItem | undefined {
     let item: ScriptConfig.PageItem | undefined = undefined;
 
-    if (!preItem.useNative && preItem.device && deviceShortPressOf(preItem.device) === 'none') {
-        return deviceWithoutShortPressItem(preItem);
+    const deviceTap = !preItem.useNative && preItem.device ? deviceShortPressOf(preItem.device) : undefined;
+    if (deviceTap === 'none' || (deviceTap === 'devicePage' && !preItem.device?.devicePage)) {
+        // `devicePage` without a device page does nothing, like `none`
+        return deviceWithoutShortPressItem(preItem, 'text');
+    }
+    if (deviceTap === 'devicePage') {
+        return deviceWithoutShortPressItem(preItem, 'button');
     }
     if (preItem.useNative) {
         const raw = isRawItemObject(preItem.native) ? structuredClone(preItem.native) : undefined;

@@ -1,7 +1,9 @@
 /**
  * The device page of a device item (doc/ideas/device-details/README.md, section Geräteseite): layout with a schematic
  * preview, big icon, status line, the slots of the layout and the "i" icon. The states come from the answer of the
- * adapter (`getDeviceDetails`); without it the saved states stay as they are.
+ * adapter (`getDeviceDetails`); without it the saved states stay as they are. A slot shows a state of the device or,
+ * user defined, any data point or an alias channel; its "…" button opens the settings of the element
+ * (DevicePageSlotDialog).
  */
 import React from 'react';
 import {
@@ -11,33 +13,47 @@ import {
     FormControlLabel,
     FormHelperText,
     FormLabel,
+    IconButton,
     InputLabel,
     MenuItem,
     Radio,
     RadioGroup,
     Select,
+    Tooltip,
     Typography,
 } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { I18n, type AdminConnection, type IobTheme, type ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
+import DevicePageSlotDialog from './DevicePageSlotDialog';
+import { CHANNEL_ROLES_LIST } from '../../../src/lib/types/adminShareConfig';
 import {
     DEVICE_PAGE_LAYOUTS,
     deviceDetailNameKey,
     devicePageHasStatusIcons,
+    devicePageSlotAcceptsChannel,
+    devicePageSlotHasLook,
+    devicePageSlotTakesLongPress,
     isDevicePageLayout,
     type DeviceDetailEntryConfig,
     type DevicePageConfig,
     type DevicePageLayout,
     type DevicePageSlotKind,
-    type DevicePageStateRef,
+    type DevicePageSlotRef,
     type DeviceStateInfo,
 } from '../../../src/lib/types/deviceDetails';
+import { channelIdOf, channelRolesOf, isInChannels, roleOfObject, type ChannelRoleMap } from '../channelSelection';
 import {
+    DEVICE_PAGE_CUSTOM,
     DEVICE_PAGE_CUSTOM_STATUS,
     PREVIEW_INFO,
     PREVIEW_MAIN,
+    customDevicePageSlot,
+    devicePageCustomProblem,
     devicePagePreviewAreas,
-    devicePageRefOf,
+    devicePageSlotDialogValue,
+    devicePageSlotOf,
+    devicePageSlotSelectValue,
     devicePageStateOptions,
     devicePageStatusOf,
     devicePageStatusSelectValue,
@@ -45,13 +61,19 @@ import {
     isCustomDevicePageStatus,
     withDevicePageLayout,
     withDevicePageSlot,
+    withDevicePageSlotLook,
     withDevicePageStatus,
+    type DevicePageCustomObject,
     type DevicePageStateOption,
+    type DevicePageStateProblem,
 } from '../devicePageConfig';
 
 export interface DevicePageSectionProps {
-    /** for the object browser of the own data point of the status line */
+    /** for the object browser of the own data points and alias channels */
     socket: AdminConnection;
+    /** for the color theme in the color dialog of a slot */
+    adapterName?: string;
+    instance?: number;
     theme: IobTheme;
     themeType: ThemeType;
     deviceId: string;
@@ -64,12 +86,20 @@ export interface DevicePageSectionProps {
     /** the icon selector of the big icon, rendered by the page item dialog */
     iconSelector: React.ReactNode;
     /**
-     * the icon selector of a status slot, rendered by the page item dialog
+     * an icon selector for the settings of a slot, rendered by the page item dialog
      *
-     * @param index index of the slot (0 = slot 1)
-     * @param icon the saved icon, '' = none
+     * @param label translation key of the label
+     * @param value the chosen icon, '' = none
+     * @param onChange the picked icon
      */
-    slotIconSelector: (index: number, icon: string) => React.ReactNode;
+    iconSelect: (label: string, value: string, onChange: (icon: string) => void) => React.ReactNode;
+}
+
+interface DevicePageSectionState {
+    /** the alias channels with a role the adapter knows (id -> role), null = not read yet */
+    channelRoles: ChannelRoleMap | null;
+    /** the objects behind the user defined slots by id: null = it does not exist, missing = not read yet */
+    objects: Record<string, DevicePageCustomObject | null>;
 }
 
 const LAYOUTS: readonly DevicePageLayout[] = [1, 2, 3];
@@ -87,7 +117,77 @@ const KIND_COLOR: Readonly<Record<DevicePageSlotKind, string>> = {
     status: '#00838f',
 };
 
-export default class DevicePageSection extends React.Component<DevicePageSectionProps> {
+export default class DevicePageSection extends React.Component<DevicePageSectionProps, DevicePageSectionState> {
+    private slotDialogRef = React.createRef<DevicePageSlotDialog>();
+    /** ids being read */
+    private readonly reading = new Set<string>();
+    private unmounted = false;
+
+    constructor(props: DevicePageSectionProps) {
+        super(props);
+        this.state = { channelRoles: null, objects: {} };
+    }
+
+    override componentDidMount(): void {
+        void this.loadChannels();
+        this.loadCustomObjects();
+    }
+
+    override componentDidUpdate(): void {
+        this.loadCustomObjects();
+    }
+
+    override componentWillUnmount(): void {
+        this.unmounted = true;
+    }
+
+    /** reads the alias channels the object browser of a channel slot offers */
+    private async loadChannels(): Promise<void> {
+        let channelRoles: ChannelRoleMap = {};
+        try {
+            channelRoles = channelRolesOf(await this.props.socket.getObjectViewSystem('channel'), CHANNEL_ROLES_LIST);
+        } catch {
+            // without the list the object browser offers no channel, an id can still be entered
+        }
+        if (!this.unmounted) {
+            this.setState({ channelRoles });
+        }
+    }
+
+    /** reads the objects of the user defined slots that are not known yet (for the marks of the slots) */
+    private loadCustomObjects(): void {
+        for (const slot of this.props.value.slots) {
+            const id = slot?.custom ? slot.id : '';
+            if (id && !(id in this.state.objects) && !this.reading.has(id)) {
+                this.reading.add(id);
+                void this.loadCustomObject(id);
+            }
+        }
+    }
+
+    /**
+     * @param id id of a data point or channel of a user defined slot
+     */
+    private async loadCustomObject(id: string): Promise<void> {
+        let found: DevicePageCustomObject | null = null;
+        try {
+            const obj = await this.props.socket.getObject(id);
+            if (obj) {
+                found = { type: obj.type, role: roleOfObject(obj) };
+                if (obj.type === 'state') {
+                    found.valueType = obj.common.type;
+                    found.read = obj.common.read;
+                    found.write = obj.common.write;
+                }
+            }
+        } catch {
+            // not readable counts as missing
+        }
+        this.reading.delete(id);
+        if (!this.unmounted) {
+            this.setState(prev => ({ objects: { ...prev.objects, [id]: found } }));
+        }
+    }
     /**
      * @param layout the layout
      * @returns the label of the layout, e.g. "1 – Steuern"
@@ -236,59 +336,6 @@ export default class DevicePageSection extends React.Component<DevicePageSection
     }
 
     /**
-     * A selection of a state of the device.
-     *
-     * @param label label of the field
-     * @param kind kind of the slot
-     * @param current the saved state
-     * @param onPick the chosen state, null = empty
-     * @param dataDd test marker
-     * @returns the field
-     */
-    private renderStateSelect(
-        label: string,
-        kind: DevicePageSlotKind,
-        current: DevicePageStateRef | null | undefined,
-        onPick: (ref: DevicePageStateRef | null) => void,
-        dataDd: string,
-    ): React.JSX.Element {
-        const { deviceId, states, entries } = this.props;
-        const options = devicePageStateOptions(deviceId, states, kind, current);
-        const value = current?.id ?? '';
-        const problem = options.find(o => o.id === value)?.problem;
-        return (
-            <FormControl
-                variant="standard"
-                size="small"
-                sx={{ flex: 1, minWidth: 0 }}
-                error={problem !== undefined}
-                data-dd={dataDd}
-            >
-                <InputLabel shrink>{label}</InputLabel>
-                <Select
-                    value={value}
-                    displayEmpty
-                    sx={{ '& .MuiSelect-select': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
-                    onChange={e => onPick(devicePageRefOf(String(e.target.value), options, entries, current))}
-                >
-                    <MenuItem value="">
-                        <em>{I18n.t('deviceDetailsDialog_pageEmpty')}</em>
-                    </MenuItem>
-                    {options.map(option => (
-                        <MenuItem
-                            key={option.id}
-                            value={option.id}
-                            sx={option.problem ? { color: 'error.main' } : undefined}
-                        >
-                            {DevicePageSection.optionLabel(option)}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-        );
-    }
-
-    /**
      * The status line: empty, an own data point of the user (any state, entered as id or chosen in the object
      * browser) or a state of the device. An own data point is never marked as missing in the device.
      *
@@ -358,58 +405,238 @@ export default class DevicePageSection extends React.Component<DevicePageSection
         );
     }
 
+    /**
+     * @param index index of the slot (0 = slot 1)
+     * @param ref what the slot shows, null = empty
+     */
+    private setSlot(index: number, ref: DevicePageSlotRef | null): void {
+        this.props.onChange(withDevicePageSlot(this.props.value, index, ref));
+    }
+
+    /**
+     * Opens the settings of the element of a slot.
+     *
+     * @param kind the kind of the slot
+     * @param index index of the slot (0 = slot 1)
+     * @param slot the slot
+     */
+    private openSlotSettings(kind: DevicePageSlotKind, index: number, slot: DevicePageSlotRef): void {
+        const role = slot.custom === 'channel' ? this.state.objects[slot.id]?.role : undefined;
+        this.slotDialogRef.current?.openWith(
+            index,
+            `${index + 1} ${DevicePageSection.kindLabel(kind)}`,
+            devicePageSlotDialogValue(slot),
+            devicePageSlotTakesLongPress(kind, slot, role),
+        );
+    }
+
+    /**
+     * The fields of a user defined slot: an own data point (any state) or an alias channel (the channels with a role
+     * that fits the kind of the slot, picked like in the page item dialog).
+     *
+     * @param kind the kind of the slot
+     * @param index index of the slot (0 = slot 1)
+     * @param slot the slot
+     * @param problem why it is marked
+     * @returns the fields
+     */
+    private renderCustomSlot(
+        kind: DevicePageSlotKind,
+        index: number,
+        slot: DevicePageSlotRef,
+        problem: DevicePageStateProblem | undefined,
+    ): React.JSX.Element {
+        const { socket, theme, themeType } = this.props;
+        const source = slot.custom === 'channel' ? 'channel' : 'state';
+        const roles = this.state.channelRoles ?? {};
+        const channelIds = Object.keys(roles).filter(id => devicePageSlotAcceptsChannel(kind, roles[id]));
+        return (
+            <Box
+                sx={{ display: 'flex', flexDirection: 'column', pl: 4 }}
+                data-dd="device-page-slot-custom"
+            >
+                <RadioGroup
+                    row
+                    value={source}
+                    onChange={e =>
+                        this.setSlot(
+                            index,
+                            customDevicePageSlot(e.target.value === 'channel' ? 'channel' : 'state', ''),
+                        )
+                    }
+                >
+                    <FormControlLabel
+                        value="state"
+                        control={<Radio size="small" />}
+                        label={I18n.t('deviceDetailsDialog_slotCustomState')}
+                    />
+                    <FormControlLabel
+                        value="channel"
+                        control={<Radio size="small" />}
+                        label={I18n.t('deviceDetailsDialog_slotCustomChannel')}
+                    />
+                </RadioGroup>
+                {source === 'channel' ? (
+                    <EntitySelector
+                        key="channel"
+                        label={I18n.t('channelConfigDialog_channelId')}
+                        value={slot.id}
+                        onChange={(id: string) => this.setSlot(index, customDevicePageSlot('channel', id.trim()))}
+                        onTransformSelectedId={(id: string) => channelIdOf(channelIds, id)}
+                        socket={socket}
+                        theme={theme}
+                        themeType={themeType}
+                        dialogName="devicePageSlotChannel"
+                        filterFunc={(obj: ioBroker.Object) => isInChannels(channelIds, obj._id)}
+                    />
+                ) : (
+                    <EntitySelector
+                        key="state"
+                        label={I18n.t('deviceDetailsDialog_slotCustomStateId')}
+                        value={slot.id}
+                        onChange={(id: string) => this.setSlot(index, customDevicePageSlot('state', id.trim()))}
+                        socket={socket}
+                        theme={theme}
+                        themeType={themeType}
+                        dialogName="devicePageSlotState"
+                    />
+                )}
+                {problem ? (
+                    <FormHelperText
+                        error
+                        sx={{ mt: -0.5 }}
+                    >
+                        {I18n.t(
+                            problem === 'unfit'
+                                ? 'deviceDetailsDialog_pageUnfit'
+                                : source === 'channel'
+                                  ? 'deviceDetailsDialog_slotChannelMissing'
+                                  : 'deviceDetailsDialog_slotStateMissing',
+                        )}
+                    </FormHelperText>
+                ) : null}
+            </Box>
+        );
+    }
+
+    /**
+     * A slot: empty, user defined (an own data point or an alias channel) or a state of the device; with something
+     * chosen the "…" button opens the settings of the element.
+     *
+     * @param kind the kind of the slot
+     * @param index index of the slot (0 = slot 1)
+     * @returns the row
+     */
+    private renderSlot(kind: DevicePageSlotKind, index: number): React.JSX.Element {
+        const { deviceId, states, entries, value } = this.props;
+        const slot = value.slots[index] ?? null;
+        const custom = !!slot?.custom;
+        const options = devicePageStateOptions(deviceId, states, kind, custom ? null : slot);
+        const selected = devicePageSlotSelectValue(slot);
+        const problem = custom
+            ? devicePageCustomProblem(kind, slot, slot ? this.state.objects[slot.id] : undefined)
+            : options.find(o => o.id === selected)?.problem;
+        return (
+            <Box
+                key={`${value.layout}-${index}`}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+            >
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                    <Box
+                        sx={{
+                            width: 22,
+                            height: 22,
+                            flexShrink: 0,
+                            borderRadius: 0.5,
+                            bgcolor: KIND_COLOR[kind],
+                            color: '#fff',
+                            fontSize: 12,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mb: 0.5,
+                        }}
+                    >
+                        {index + 1}
+                    </Box>
+                    <Typography
+                        variant="body2"
+                        sx={{ width: 140, flexShrink: 0, mb: 0.5 }}
+                        noWrap
+                    >
+                        {DevicePageSection.kindLabel(kind)}
+                    </Typography>
+                    <FormControl
+                        variant="standard"
+                        size="small"
+                        sx={{ flex: 1, minWidth: 0 }}
+                        error={problem !== undefined}
+                        data-dd="device-page-slot"
+                    >
+                        <InputLabel shrink>{I18n.t('deviceDetailsDialog_state')}</InputLabel>
+                        <Select
+                            value={selected}
+                            displayEmpty
+                            sx={{ '& .MuiSelect-select': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
+                            onChange={e =>
+                                this.setSlot(index, devicePageSlotOf(String(e.target.value), options, entries, slot))
+                            }
+                        >
+                            <MenuItem value="">
+                                <em>{I18n.t('deviceDetailsDialog_pageEmpty')}</em>
+                            </MenuItem>
+                            <MenuItem value={DEVICE_PAGE_CUSTOM}>{I18n.t('deviceDetailsDialog_slotCustom')}</MenuItem>
+                            {options.map(option => (
+                                <MenuItem
+                                    key={option.id}
+                                    value={option.id}
+                                    sx={option.problem ? { color: 'error.main' } : undefined}
+                                >
+                                    {DevicePageSection.optionLabel(option)}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <Tooltip title={I18n.t('deviceDetailsDialog_slotSettings')}>
+                        <span>
+                            <IconButton
+                                size="small"
+                                disabled={!slot || slot.id === ''}
+                                color={devicePageSlotHasLook(slot) ? 'success' : 'default'}
+                                onClick={() => slot && this.openSlotSettings(kind, index, slot)}
+                                data-dd="device-page-slot-settings"
+                                data-set={devicePageSlotHasLook(slot) ? '1' : '0'}
+                            >
+                                <MoreHorizIcon fontSize="small" />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                </Box>
+                {slot && custom ? this.renderCustomSlot(kind, index, slot, problem) : null}
+            </Box>
+        );
+    }
+
     private renderSlots(): React.JSX.Element {
-        const { value, onChange, slotIconSelector } = this.props;
+        const { value, onChange, socket, theme, themeType, iconSelect, adapterName, instance } = this.props;
         const kinds = DEVICE_PAGE_LAYOUTS[value.layout];
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <FormLabel sx={{ fontSize: '0.875rem' }}>{I18n.t('deviceDetailsDialog_pageSlots')}</FormLabel>
-                {kinds.map((kind, index) => (
-                    <Box
-                        key={`${value.layout}-${index}`}
-                        sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}
-                    >
-                        <Box
-                            sx={{
-                                width: 22,
-                                height: 22,
-                                flexShrink: 0,
-                                borderRadius: 0.5,
-                                bgcolor: KIND_COLOR[kind],
-                                color: '#fff',
-                                fontSize: 12,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                mb: 0.5,
-                            }}
-                        >
-                            {index + 1}
-                        </Box>
-                        <Typography
-                            variant="body2"
-                            sx={{ width: 140, flexShrink: 0, mb: 0.5 }}
-                            noWrap
-                        >
-                            {DevicePageSection.kindLabel(kind)}
-                        </Typography>
-                        {this.renderStateSelect(
-                            I18n.t('deviceDetailsDialog_state'),
-                            kind,
-                            value.slots[index],
-                            ref => onChange(withDevicePageSlot(value, index, ref)),
-                            'device-page-slot',
-                        )}
-                        {kind === 'status' && value.slots[index] ? (
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                                {slotIconSelector(index, value.slots[index]?.icon ?? '')}
-                            </Box>
-                        ) : null}
-                    </Box>
-                ))}
+                {kinds.map((kind, index) => this.renderSlot(kind, index))}
                 {kinds.includes('status') ? (
                     <FormHelperText sx={{ mt: 0 }}>{I18n.t('deviceDetailsDialog_pageStatusIconsHint')}</FormHelperText>
                 ) : null}
+                <DevicePageSlotDialog
+                    ref={this.slotDialogRef}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    adapterName={adapterName}
+                    instance={instance}
+                    iconSelect={iconSelect}
+                    onApply={(index, look) => onChange(withDevicePageSlotLook(this.props.value, index, look))}
+                />
             </Box>
         );
     }

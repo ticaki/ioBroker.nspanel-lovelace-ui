@@ -105,12 +105,15 @@ export interface DeviceDetailsSectionProps {
     /** the icon selector of the big icon of the device page, rendered by the page item dialog */
     devicePageIconSelector: React.ReactNode;
     /**
-     * the icon selector of a status slot of the device page, rendered by the page item dialog
+     * an icon selector for the settings of a slot of the device page, rendered by the page item dialog
      *
-     * @param index index of the slot (0 = slot 1)
-     * @param icon the saved icon, '' = none
+     * @param label translation key of the label
+     * @param value the chosen icon, '' = none
+     * @param onChange the picked icon
      */
-    devicePageSlotIconSelector: (index: number, icon: string) => React.ReactNode;
+    devicePageIconSelect: (label: string, value: string, onChange: (icon: string) => void) => React.ReactNode;
+    /** for the color theme in the color dialog of a slot of the device page */
+    adapterName?: string;
 }
 
 interface DeviceDetailsSectionState {
@@ -353,6 +356,13 @@ export default class DeviceDetailsSection extends React.Component<
                             control={<Radio size="small" />}
                             label={I18n.t('deviceDetailsDialog_shortPopup')}
                         />
+                        <FormControlLabel
+                            value="devicePage"
+                            // only with a device page: it is what the tap opens
+                            disabled={!value.devicePage}
+                            control={<Radio size="small" />}
+                            label={I18n.t('deviceDetailsDialog_shortDevicePage')}
+                        />
                     </RadioGroup>
                 </FormControl>
                 {shortPress === 'state' && this.renderStateSelect()}
@@ -411,7 +421,9 @@ export default class DeviceDetailsSection extends React.Component<
                         theme={theme}
                         themeType={themeType}
                         iconSelector={this.props.devicePageIconSelector}
-                        slotIconSelector={this.props.devicePageSlotIconSelector}
+                        iconSelect={this.props.devicePageIconSelect}
+                        adapterName={this.props.adapterName}
+                        instance={Number(this.props.instance) || 0}
                     />
                 )}
                 <DeviceDetailsFilterDialog

@@ -107,7 +107,7 @@ describe('src-admin - pageItemSaveState', () => {
             ).to.equal(false);
         });
         it('every short tap needs the device and no blocking device error', () => {
-            for (const shortPress of ['none', 'navigation', 'state', 'popup'] as const) {
+            for (const shortPress of ['none', 'navigation', 'state', 'popup', 'devicePage'] as const) {
                 const ready = {
                     targetPage: 'main',
                     channelId: 'alias.0.lamp',

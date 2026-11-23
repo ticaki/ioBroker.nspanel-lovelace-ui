@@ -1,17 +1,24 @@
 import {
     DEVICE_PAGE_LAYOUTS,
+    DEVICE_PAGE_SLOT_LOOK_FIELDS,
     defaultDevicePageConfig,
     deviceDetailEntryOfState,
     deviceDetailMaskOf,
     devicePageConfigOf,
     devicePageSlotAccepts,
+    devicePageSlotAcceptsChannel,
+    devicePageSlotLookOf,
+    deviceShortPressOf,
     fitDevicePageSlots,
     type DeviceDetailsConfig,
     type DevicePageConfig,
     type DevicePageLayout,
     type DevicePageSlotKind,
+    type DevicePageSlotLook,
+    type DevicePageSlotRef,
     type DevicePageStateRef,
     type DevicePageStatusRef,
+    type DeviceShortPress,
     type DeviceStateInfo,
 } from '../../src/lib/types/deviceDetails';
 import { switchOption, type OptionStash } from './itemOptionStash';
@@ -97,48 +104,198 @@ export function withDevicePageLayout(config: DevicePageConfig, layout: DevicePag
 }
 
 /**
+ * What the short tap of a device item is saved as: `devicePage` (the tap opens the device page) needs a device page -
+ * without one it is `none`.
+ *
+ * @param device the device configuration of the item
+ * @returns the short tap to save
+ */
+export function shortPressToSave(device: Pick<DeviceDetailsConfig, 'shortPress' | 'devicePage'>): DeviceShortPress {
+    const shortPress = deviceShortPressOf(device);
+    return shortPress === 'devicePage' && !device.devicePage ? 'none' : shortPress;
+}
+
+/**
+ * @param from a slot
+ * @returns its own settings as they are stored (own look, color scale, long press, the older status icon)
+ */
+function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
+    const out: Partial<DevicePageSlotRef> = {};
+    for (const field of DEVICE_PAGE_SLOT_LOOK_FIELDS) {
+        if (from[field]) {
+            out[field] = from[field];
+        }
+    }
+    if (from.scale) {
+        out.scale = from.scale;
+    }
+    if (from.icon) {
+        out.icon = from.icon;
+    }
+    return out;
+}
+
+/**
  * @param config the device page
  * @param index index of the slot (0 = slot 1)
- * @param ref the state of the slot, null = empty
- * @returns the device page with the slot; a status slot keeps its own icon when another state is chosen
+ * @param ref what the slot shows, null = empty
+ * @returns the device page with the slot; the own settings of the slot (icons, colors, color scale, long press) stay
+ * when something else is chosen for it, an emptied slot loses them
  */
 export function withDevicePageSlot(
     config: DevicePageConfig,
     index: number,
-    ref: DevicePageStateRef | null,
+    ref: DevicePageSlotRef | null,
 ): DevicePageConfig {
     const slots = fitDevicePageSlots(config.slots, config.layout);
     if (index < 0 || index >= slots.length) {
         return config;
     }
-    const icon = slots[index]?.icon;
-    const next: DevicePageStateRef | null = ref ? { ...ref } : null;
-    if (next && icon && !next.icon && DEVICE_PAGE_LAYOUTS[config.layout][index] === 'status') {
-        next.icon = icon;
-    }
-    slots[index] = next;
-    // an own icon only on a status slot
+    const before = slots[index];
+    slots[index] = ref ? { ...(before ? slotSettingsOf(before) : {}), ...ref } : null;
+    // the older own icon only on a status slot
     return { ...config, slots: fitDevicePageSlots(slots, config.layout) };
 }
 
 /**
- * The own icon of a status slot; other slots and an empty slot (no state) stay as they are.
+ * The own settings of a slot (dialog "settings of the element"); an empty slot stays as it is. They replace all
+ * settings of the slot - also the older icon of a status slot, which the dialog shows as icon for both states.
  *
  * @param config the device page
  * @param index index of the slot (0 = slot 1)
- * @param icon MDI name, '' = the icon of the mask entry / the kind
- * @returns the device page with the icon
+ * @param look the settings, empty fields = not set
+ * @returns the device page with the settings
  */
-export function withDevicePageSlotIcon(config: DevicePageConfig, index: number, icon: string): DevicePageConfig {
+export function withDevicePageSlotLook(
+    config: DevicePageConfig,
+    index: number,
+    look: DevicePageSlotLook,
+): DevicePageConfig {
     const slot = config.slots[index];
-    if (!slot || DEVICE_PAGE_LAYOUTS[config.layout][index] !== 'status') {
+    if (!slot) {
         return config;
     }
-    const { icon: _old, ...rest } = slot;
-    const trimmed = icon.trim();
+    const next: DevicePageSlotRef = { key: slot.key, id: slot.id };
+    if (slot.subName) {
+        next.subName = slot.subName;
+    }
+    if (slot.custom) {
+        next.custom = slot.custom;
+    }
+    for (const field of DEVICE_PAGE_SLOT_LOOK_FIELDS) {
+        const text = look[field]?.trim();
+        if (text) {
+            next[field] = text;
+        }
+    }
+    if (look.scale) {
+        next.scale = look.scale;
+    }
     const slots = [...config.slots];
-    slots[index] = trimmed ? { ...rest, icon: trimmed } : rest;
+    slots[index] = next;
     return { ...config, slots };
+}
+
+/** value of the entry "user defined" in the selection of a slot and of the status line - no id of a state */
+export const DEVICE_PAGE_CUSTOM = '__custom__';
+
+/**
+ * @param slot a slot
+ * @returns the value of its selection: '' = empty, {@link DEVICE_PAGE_CUSTOM} = user defined, else the id of the
+ * state of the device
+ */
+export function devicePageSlotSelectValue(slot: DevicePageSlotRef | null | undefined): string {
+    if (!slot) {
+        return '';
+    }
+    return slot.custom ? DEVICE_PAGE_CUSTOM : slot.id;
+}
+
+/**
+ * A user defined slot: an own data point or an alias channel. The id may be '' (nothing entered yet).
+ *
+ * @param source data point or alias channel
+ * @param id the id
+ * @returns the slot
+ */
+export function customDevicePageSlot(source: 'state' | 'channel', id: string): DevicePageSlotRef {
+    return { key: '', id, custom: source };
+}
+
+/**
+ * The slot after a choice in its selection: "user defined" keeps what was entered before (else an own data point
+ * without id), a state of the device is saved like before ({@link devicePageRefOf}) - the id of a user defined slot
+ * is not taken over.
+ *
+ * @param value the chosen value ({@link devicePageSlotSelectValue})
+ * @param options the states of the device offered ({@link devicePageStateOptions})
+ * @param entries the ticked rows of the item
+ * @param current the saved slot
+ * @returns the slot, null = empty
+ */
+export function devicePageSlotOf(
+    value: string,
+    options: readonly DevicePageStateOption[],
+    entries: readonly DevicePageStateRef[],
+    current: DevicePageSlotRef | null | undefined,
+): DevicePageSlotRef | null {
+    if (value === DEVICE_PAGE_CUSTOM) {
+        return current?.custom ? customDevicePageSlot(current.custom, current.id) : customDevicePageSlot('state', '');
+    }
+    return devicePageRefOf(value, options, entries, current?.custom ? null : current);
+}
+
+/** what the admin knows of the object behind a user defined slot */
+export interface DevicePageCustomObject {
+    /** type of the object */
+    type: string;
+    /** common.role */
+    role?: string;
+    /** common.type of a state */
+    valueType?: string;
+    read?: boolean;
+    write?: boolean;
+}
+
+/**
+ * Why a user defined slot is marked: the data point / channel does not exist (or is no state), or it does not fit
+ * the kind of the slot ({@link devicePageSlotAccepts} / {@link devicePageSlotAcceptsChannel}). Nothing is marked
+ * while nothing is entered or the object is not read yet.
+ *
+ * @param kind the kind of the slot
+ * @param slot the slot
+ * @param object the object of its id: null = it does not exist, undefined = not read yet
+ * @returns the problem, undefined = none
+ */
+export function devicePageCustomProblem(
+    kind: DevicePageSlotKind,
+    slot: DevicePageSlotRef | null | undefined,
+    object: DevicePageCustomObject | null | undefined,
+): DevicePageStateProblem | undefined {
+    if (!slot?.custom || slot.id === '' || object === undefined) {
+        return undefined;
+    }
+    if (object === null) {
+        return 'missing';
+    }
+    if (slot.custom === 'channel') {
+        return devicePageSlotAcceptsChannel(kind, object.role) ? undefined : 'unfit';
+    }
+    if (object.type !== 'state') {
+        return 'missing';
+    }
+    return devicePageSlotAccepts(kind, { type: object.valueType, read: object.read, write: object.write })
+        ? undefined
+        : 'unfit';
+}
+
+/**
+ * @param slot a slot
+ * @returns the settings the dialog "settings of the element" starts with (the older status icon as icon for both
+ * states)
+ */
+export function devicePageSlotDialogValue(slot: DevicePageSlotRef): DevicePageSlotLook {
+    return devicePageSlotLookOf(slot);
 }
 
 /** an area of the schematic preview in display pixels (480 x 320, doc/ideas/device-details/device-page-hmi.md) */
@@ -246,7 +403,7 @@ export function withDevicePageStatus(config: DevicePageConfig, ref: DevicePageSt
 }
 
 /** value of the entry "own data point" in the selection of the status line - no id of a state */
-export const DEVICE_PAGE_CUSTOM_STATUS = '__custom__';
+export const DEVICE_PAGE_CUSTOM_STATUS = DEVICE_PAGE_CUSTOM;
 
 /**
  * @param status the saved status line
