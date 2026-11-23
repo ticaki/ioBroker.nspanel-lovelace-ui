@@ -23,6 +23,10 @@ __export(device_page_exports, {
   DEVICE_PAGE_EMPTY_ELEMENT: () => DEVICE_PAGE_EMPTY_ELEMENT,
   DEVICE_PAGE_PREFIX: () => DEVICE_PAGE_PREFIX,
   cardDeviceOf: () => cardDeviceOf,
+  devicePageChannelAdminItem: () => devicePageChannelAdminItem,
+  devicePageChannelElement: () => devicePageChannelElement,
+  devicePageChannelSlotItem: () => devicePageChannelSlotItem,
+  devicePageChannels: () => devicePageChannels,
   devicePageElements: () => devicePageElements,
   devicePageInfoItem: () => devicePageInfoItem,
   devicePageMainElement: () => devicePageMainElement,
@@ -34,12 +38,14 @@ __export(device_page_exports, {
   devicePageStatusItem: () => devicePageStatusItem,
   fitDevicePageStatus: () => fitDevicePageStatus,
   optionalValueOf: () => optionalValueOf,
-  supportsCardDevice: () => supportsCardDevice
+  supportsCardDevice: () => supportsCardDevice,
+  withDevicePageSlotLook: () => withDevicePageSlotLook
 });
 module.exports = __toCommonJS(device_page_exports);
 var import_Color = require("../const/Color");
 var import_text_width = require("../const/text-width");
 var import_tools = require("../const/tools");
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_deviceDetails = require("../types/deviceDetails");
 var import_device_details = require("./device-details");
 const DEVICE_PAGE_PREFIX = "dp_";
@@ -109,6 +115,7 @@ function devicePageMainItem(source, details, page, name) {
   if ((page.shortPress === "state" || page.shortPress === "none") && (source.type === "button" || source.type === "switch" || source.type === "text")) {
     const item = structuredClone(source);
     item.deviceDetails = deviceDetails;
+    delete item.devicePageChannels;
     item.dpInit = "";
     item.data.text = text;
     if (item.role === "text.states") {
@@ -148,7 +155,174 @@ function devicePageInfoItem(details) {
     }
   };
 }
+function devicePageChannelAdminItem(ref, role) {
+  const { longPress, ...look } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
+  const item = { channelId: (0, import_adminShareConfig.emptyChannelValueConfig)(ref.id), ...look };
+  if (longPress && (0, import_deviceDetails.devicePageChannelTakesLongPress)(role)) {
+    item.longPress = longPress;
+  }
+  return item;
+}
+async function devicePageChannels(page, getRole, convert) {
+  const channels = {};
+  const errors = [];
+  const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
+  for (let i = 0; i < kinds.length; i++) {
+    const ref = page.slots[i];
+    if (!ref || ref.custom !== "channel" || ref.id === "") {
+      continue;
+    }
+    const where = `Device page slot ${i + 1} (${kinds[i]}): channel ${ref.id}`;
+    try {
+      const role = await getRole(ref.id);
+      if (role === void 0) {
+        errors.push(`${where} not found!`);
+        continue;
+      }
+      if (!(0, import_deviceDetails.devicePageSlotAcceptsChannel)(kinds[i], role)) {
+        errors.push(`${where} with role ${role || "(none)"} does not fit the slot!`);
+        continue;
+      }
+      const item = await convert(devicePageChannelAdminItem(ref, role));
+      if (!item || "template" in item && item.template) {
+        errors.push(`${where} gives no page item!`);
+        continue;
+      }
+      channels[i] = { role, item };
+    } catch (e) {
+      errors.push(`${where}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  return { channels, errors };
+}
+function devicePageChannelSlotItem(kind, channel) {
+  var _a, _b;
+  if (!(0, import_deviceDetails.devicePageSlotAcceptsChannel)(kind, channel.role)) {
+    return void 0;
+  }
+  const item = structuredClone(channel.item);
+  if (item.type === "text" && ((_a = item.data) == null ? void 0 : _a.icon) && (kind === "info" || kind === "value" || kind === "status")) {
+    const icon = item.data.icon;
+    const valueText = (_b = icon.true) == null ? void 0 : _b.text;
+    if (kind !== "status" && (valueText == null ? void 0 : valueText.value) && !item.data.entity2 && !item.data.text1) {
+      item.data.entity2 = { value: valueText.value, unit: valueText.unit };
+    }
+    if (icon.true) {
+      delete icon.true.text;
+    }
+    if (icon.false) {
+      delete icon.false.text;
+    }
+  }
+  return item;
+}
+function devicePageChannelElement(kind, payload, onOff) {
+  const fields = payload.split("~");
+  if (fields.length < 6 || !fields[0]) {
+    return payload;
+  }
+  const type = fields[0];
+  const raw = fields[5];
+  let value = "";
+  switch (kind) {
+    case "info":
+    case "value":
+      switch (type) {
+        case "text":
+        case "input_sel":
+        case "timer":
+          value = raw;
+          break;
+        case "number":
+          value = raw.split("|")[0];
+          break;
+        case "light":
+        case "light2":
+        case "switch":
+        case "fan":
+          value = onOff(raw === "1");
+          break;
+      }
+      break;
+    case "progress": {
+      const [current, min, max] = raw.split("|").map((part) => part === "" ? NaN : Number(part));
+      value = String(
+        (0, import_deviceDetails.devicePageProgressPercent)(
+          current,
+          Number.isFinite(min) ? min : void 0,
+          Number.isFinite(max) ? max : void 0
+        )
+      );
+      break;
+    }
+    case "switch":
+      value = raw === "1" ? "1" : "0";
+      break;
+    case "button":
+      value = raw === "0" || raw === "1" ? raw : "";
+      break;
+    case "status":
+      break;
+  }
+  return [...fields.slice(0, 5), value.replace(/~/g, "")].join("~");
+}
+function colorItem(hex) {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) {
+    return void 0;
+  }
+  return { type: "const", constVal: import_Color.Color.ConvertHexToRgb(hex) };
+}
+function applySlotLook(icon, look, isBoolean) {
+  const branches = [
+    { key: "true", name: look.trueIcon, color: look.trueColor },
+    { key: "false", name: isBoolean ? look.falseIcon : look.trueIcon, color: look.falseColor }
+  ];
+  for (const branch of branches) {
+    const color = branch.color ? colorItem(branch.color) : void 0;
+    if (!branch.name && !color) {
+      continue;
+    }
+    const entry = { ...icon[branch.key] };
+    if (branch.name) {
+      entry.value = { type: "const", constVal: branch.name };
+    }
+    if (color) {
+      entry.color = color;
+    }
+    icon[branch.key] = entry;
+  }
+  if (look.scale) {
+    icon.scale = { type: "const", constVal: look.scale };
+  }
+}
+function withDevicePageSlotLook(item, ref, common) {
+  var _a, _b;
+  const look = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
+  if (Object.keys(look).length === 0) {
+    return item;
+  }
+  const isBoolean = common.type === "boolean";
+  if (item.type === "text" || item.type === "button" || item.type === "switch") {
+    if (!((_a = item.data) == null ? void 0 : _a.icon)) {
+      return item;
+    }
+    applySlotLook(item.data.icon, look, isBoolean);
+    if (look.scale && common.type === "number" && !item.data.entity1) {
+      item.data.entity1 = { value: { type: "triggered", dp: ref.id } };
+    }
+    if (look.longPress && item.type !== "text") {
+      item.data.longPress = { type: "state", dp: look.longPress };
+    }
+  } else if (item.type === "input_sel" && ((_b = item.data) == null ? void 0 : _b.icon)) {
+    applySlotLook(item.data.icon, look, isBoolean);
+  }
+  return item;
+}
 function devicePageSlotItem(deviceId, kind, entry, common, name) {
+  const item = devicePageStateSlotItem(deviceId, kind, entry, common, name);
+  return item ? withDevicePageSlotLook(item, entry, common) : void 0;
+}
+function devicePageStateSlotItem(deviceId, kind, entry, common, name) {
   if (!(0, import_deviceDetails.devicePageSlotAccepts)(kind, common)) {
     return void 0;
   }
@@ -213,7 +387,7 @@ function devicePageStatusItem(deviceId, entry, common) {
   return { ...(0, import_device_details.deviceDetailRowItem)(deviceId, entry, common, "", "all"), dpInit: "" };
 }
 async function devicePageElements(source, details, page, getObject, translate, language) {
-  var _a, _b;
+  var _a, _b, _c;
   const device = await getObject(details.deviceId);
   const headline = (0, import_device_details.nameOfCommon)((_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name, language) || details.deviceId.split(".").pop() || "";
   const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
@@ -230,8 +404,21 @@ async function devicePageElements(source, details, page, getObject, translate, l
     return obj.common;
   };
   const present = [];
+  const slots = kinds.map(() => void 0);
+  const channelSlots = [];
   for (let i = 0; i < kinds.length; i++) {
     const ref = (_b = page.slots[i]) != null ? _b : null;
+    if ((ref == null ? void 0 : ref.custom) === "channel") {
+      const channel = (_c = source.devicePageChannels) == null ? void 0 : _c[i];
+      const item = channel ? devicePageChannelSlotItem(kinds[i], channel) : void 0;
+      if (item) {
+        slots[i] = item;
+        channelSlots.push(i);
+      } else {
+        skipped.push(ref.id);
+      }
+      continue;
+    }
     const common = await readCommon(ref);
     if (ref && common) {
       present.push({ index: i, entry: ref, common });
@@ -246,7 +433,6 @@ async function devicePageElements(source, details, page, getObject, translate, l
     language,
     null
   );
-  const slots = kinds.map(() => void 0);
   present.forEach((p) => {
     var _a2;
     const n = named.indexOf(p);
@@ -269,10 +455,12 @@ async function devicePageElements(source, details, page, getObject, translate, l
       page.showInfo ? devicePageInfoItem(details) : void 0,
       status
     ],
-    skipped
+    skipped,
+    channelSlots
   };
 }
 function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
+  var _a;
   return {
     uniqueID,
     alwaysOn,
@@ -282,7 +470,8 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
       card: cardDeviceOf(layout),
       data: { headline: { type: "const", constVal: content.headline } },
       slotCount: content.slotCount,
-      elements: content.elements
+      elements: content.elements,
+      channelSlots: (_a = content.channelSlots) != null ? _a : []
     }
   };
 }
@@ -293,6 +482,10 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   DEVICE_PAGE_EMPTY_ELEMENT,
   DEVICE_PAGE_PREFIX,
   cardDeviceOf,
+  devicePageChannelAdminItem,
+  devicePageChannelElement,
+  devicePageChannelSlotItem,
+  devicePageChannels,
   devicePageElements,
   devicePageInfoItem,
   devicePageMainElement,
@@ -304,6 +497,7 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   devicePageStatusItem,
   fitDevicePageStatus,
   optionalValueOf,
-  supportsCardDevice
+  supportsCardDevice,
+  withDevicePageSlotLook
 });
 //# sourceMappingURL=device-page.js.map
