@@ -27,7 +27,11 @@ Protocol:
   type 'delete' or empty hides an element completely (main: icon and name; the status line shows field 6 of main
   in any case, empty = empty line).
   main      icon font 4 ('¬<font>' suffix like cardGrid) in iconColor, name below it; optionalValue -> status
-            line tStatus at the bottom (font 0, one line, normal text colour).
+            line tStatus at the bottom (font 0, one line, normal text colour, at most 63 bytes).
+            Scrolling status line (only on pages where RAM_RESERVE bytes stay free, see the output of the script):
+            optionalValue '<text>¬1' (the adapter sends the mark when the text is wider than the line, at most
+            127 bytes with the mark) shows the text in gStatus, a Nextion scrolling text over the status line
+            (pixel steps: dis/tim), and hides tStatus; without the mark tStatus shows it as before.
   info      row: icon (font 1, iconColor), name (font 0), value (font 0, right aligned).
   value     optionalValue in font 4 (Bold 80: digits, ':', '%', '°', ',', '.', letters incl. umlauts; no
             '€'), name below in font 0, optional small icon (font 1) beside it.
@@ -109,6 +113,17 @@ REAL_ICON = 4  # one glyph, UTF-8
 RAM_GLOBAL = 436
 RAM_LIMIT = 3584
 RAM_TARGET = 3400
+
+# scrolling status line gStatus (Nextion 'Scrolling text', type 55). The base HMI has no such object; the attribute
+# list is that of the object Tim put on cardDevice1 with the editor (g0 in his copy of device5, 2026-11-23): a text
+# without 'pw', with dir/dis/tim/en behind ycen and vvs0..3 behind spay (make_scroll, checked against that object).
+SCROLL_TYPE = 55
+SCROLL_LEN = 127  # bytes incl. the mark '¬1' (3): about 2.7 x the ~45 characters that 390 px of font 0 show
+SCROLL_DIR = 1  # as the editor creates it (right to left)
+SCROLL_DIS = 4  # pixels per step (2..50)
+SCROLL_TIM = 100  # ms per step (80..65535) -> 40 px/s, about 4.5 characters per second
+SCROLL_RAM_EXTRA = 12  # assumed on top of a text: tim 2, dir/dis/en 3, vvs0..3 8 - not measured on a TFT yet
+RAM_RESERVE = 150  # a page gets the scrolling status line only if this much stays free
 FIELDS_TABLE = False  # --fields
 
 REMOVE = re.compile(r'(bEntity|tEntity)[1-6]')
@@ -237,7 +252,10 @@ def message_fields(layout, real):
     """[(part, bytes of its fields)] of the longest entityUpd of the page; real False: every field filled up to
     the buffer it lands in (never less than the adapter sends), True: what the adapter really builds"""
     def element(kind):
-        return REAL[kind] if real else tuple(max(b, r) for b, r in zip(BUFFER[kind], REAL[kind]))
+        fields = REAL[kind] if real else tuple(max(b, r) for b, r in zip(BUFFER[kind], REAL[kind]))
+        if kind == 'main' and layout.get('scroll'):
+            fields = fields[:5] + (SCROLL_LEN,)  # the status line may be a scrolling text
+        return fields
     parts = [('entityUpd', (len('entityUpd'),)), ('heading', (HEADING_LEN,)), ('prev', element('nav')),
              ('next', element('nav')), ('main', element('main'))]
     parts += [(f'slot {k} {s["kind"]}', element(s['kind'])) for k, s in enumerate(layout['slots'], 1)]
@@ -294,10 +312,28 @@ def ram(page):
     for o in page.objs:
         if o.has('txt_maxl') and (o.get('type') != 52 or o.get('sta') == 1):
             total += text_cost(o.get('txt_maxl'))
+        if o.get('type') == SCROLL_TYPE:
+            total += SCROLL_RAM_EXTRA
     return total
 
 
 # ---------------------------------------------------------------- objects
+
+def make_scroll(template, name, spec, maxl):
+    """a scrolling text built from a text object: type 55, no 'pw', dir/dis/tim/en behind ycen, vvs0..3 behind spay"""
+    o = make_text(template, name, spec, maxl)
+    o.set('type', SCROLL_TYPE)
+    names = [i[1] for i in o.items if i[0] == 'att']
+    if 'pw' not in names or names.index('pw') != names.index('ycen') + 1 or 'spay' not in names or 'dir' in names:
+        raise SystemExit(f'{template.name}: unexpected attributes of the text template')
+    o.items = [i for i in o.items if not (i[0] == 'att' and i[1] == 'pw')]
+    at = [n for n, i in enumerate(o.items) if i[0] == 'att' and i[1] == 'ycen'][0] + 1
+    o.items[at:at] = [['att', 'dir', bytes([SCROLL_DIR])], ['att', 'dis', bytes([SCROLL_DIS])],
+                      ['att', 'tim', SCROLL_TIM.to_bytes(2, 'little')], ['att', 'en', b'\x01']]
+    at = [n for n, i in enumerate(o.items) if i[0] == 'att' and i[1] == 'spay'][0] + 1
+    o.items[at:at] = [['att', f'vvs{n}', b'\0\0'] for n in range(4)]
+    return o
+
 
 def make_text(template, name, spec, maxl):
     x, y, w, h, font, xcen = spec
@@ -508,6 +544,9 @@ def build_objects(page, layout, switch_template):
         if f'type{k}' not in src:
             variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN)]
     visible.append(make_text(text_t, 'tStatus', (10, STATUS_Y, 390, STATUS_H, 0, layout['statusXcen']), STATUS_LEN))
+    if layout.get('scroll'):
+        # the scrolling twin of the status line, 1 px lower (congruent objects make the editor warn)
+        visible.append(make_scroll(text_t, 'gStatus', (10, STATUS_Y + 1, 390, STATUS_H, 0, 0), SCROLL_LEN))
     info = make_button(button_t, 'bInfo', INFO_ICON)
     info.set_code('down', [])
     info.set_code('up', send_lines('entnInfo'))
@@ -657,8 +696,32 @@ def parser_lines(ind, layout):
     kinds = ','.join(s['kind'] for s in slots)
     out = [f'{ind}// device page (card_device.py): element e (main 0, slots 1..{len(slots)}, info {len(slots) + 1}) '
            f'starts at field {FIRST}+6e; slots: {kinds}',
-           f'{ind}// status line = optionalValue of main, also when main is hidden',
-           f'{ind}spstr strCommand.txt,tStatus.txt,"~",{FIRST + 5}']
+           f'{ind}// status line = optionalValue of main, also when main is hidden']
+    if layout.get('scroll'):
+        i = ind + '  '
+        out += [f'{ind}// "<text>{FONT_MARK}1" (the adapter: the text is wider than the line): scrolling text gStatus',
+                f'{ind}spstr strCommand.txt,gStatus.txt,"~",{FIRST + 5}',
+                f'{ind}strlen gStatus.txt,sys0',
+                f'{ind}tTmp.txt=""',
+                f'{ind}if(sys0>1)',
+                f'{ind}{{',
+                f'{i}substr gStatus.txt,tTmp.txt,sys0-2,1',
+                f'{ind}}}',
+                f'{ind}if(tTmp.txt=="{FONT_MARK}")',
+                f'{ind}{{',
+                f'{i}substr gStatus.txt,gStatus.txt,0,sys0-2',
+                f'{i}vis tStatus,0',
+                f'{i}gStatus.en=1',
+                f'{i}vis gStatus,1',
+                f'{ind}}}else',
+                f'{ind}{{',
+                f'{i}gStatus.en=0',
+                f'{i}vis gStatus,0',
+                f'{i}spstr strCommand.txt,tStatus.txt,"~",{FIRST + 5}',
+                f'{i}vis tStatus,1',
+                f'{ind}}}']
+    else:
+        out.append(f'{ind}spstr strCommand.txt,tStatus.txt,"~",{FIRST + 5}')
     if status_slots(layout):
         out += status_lines(ind, layout)
     body = icon_lines('', FIRST + 2, 'bMain', layout['main'][4])
@@ -719,6 +782,10 @@ def patch_load(page, name, layout):
         hide += slot_names(k, spec['kind'])[1]
     for k in layout.get('narrow', {}):
         hide += narrow_names(k)
+    if layout.get('scroll'):
+        # hidden and stopped until a status with the mark arrives; the loop below only colours buttons and texts
+        hide.append('gStatus')
+        load[i + 1:i + 1] = ['gStatus.en=0', 'gStatus.bco=defaultBcoColor', 'gStatus.pco=defaultFontColor']
     load[j:i + 1] = [f'vis {n},0' for n in hide]
     loops = [n for n, x in enumerate(load) if re.fullmatch(r'for\(sys0=0;sys0<\d+;sys0\+\+\)', x.strip())]
     if len(loops) != 1:
@@ -767,18 +834,19 @@ def check_names(page):
         raise SystemExit('unknown objects in code: ' + ', '.join(sorted(missing)))
 
 
-def build_page(source_bytes, name, switch_template):
+def build_page(source_bytes, name, switch_template, scroll):
+    """scroll: with the scrolling twin gStatus of the status line"""
     page = Page(source_bytes)
     page.objs[0].set('objname', name)
     page.head[0x18:0x28] = name.encode('latin1').ljust(16, b'\0')
-    layout = LAYOUTS[name]
+    layout = dict(LAYOUTS[name], scroll=scroll)
     fix_page_name(page, name)
     build_objects(page, layout, switch_template)
     patch_parser(page, layout)
     clamp_receive(page, str_command_maxl(layout))
     patch_load(page, name, layout)
     check_names(page)
-    return page
+    return page, layout
 
 
 # ---------------------------------------------------------------- pageType switch
@@ -851,7 +919,14 @@ def main(source, target, preview=None):
     main_hmi = hmi.files['main.HMI']
     numbers = [int(s[:-3]) for s in sections.values()]
     for name in PAGES:
-        page = build_page(source_bytes, name, switch_template)
+        # the scrolling status line only where it fits: RAM_RESERVE bytes must stay free
+        page, layout = build_page(source_bytes, name, switch_template, True)
+        if RAM_GLOBAL + ram(page) > RAM_LIMIT - RAM_RESERVE:
+            short = RAM_GLOBAL + ram(page) - (RAM_LIMIT - RAM_RESERVE)
+            page, layout = build_page(source_bytes, name, switch_template, False)
+            print(f'{name}: no scrolling status line - {short} bytes of RAM too many for a reserve of {RAM_RESERVE}')
+        else:
+            print(f'{name}: scrolling status line gStatus, txt_maxl {SCROLL_LEN}')
         if name in sections:
             print(f'{name}: rebuilt in {sections[name]}')
         else:
@@ -865,7 +940,7 @@ def main(source, target, preview=None):
         kinds = ', '.join(s['kind'] for s in LAYOUTS[name]['slots'])
         print(f'{name}: N={len(LAYOUTS[name]["slots"])} ({kinds}), {len(page.objs)} objects, '
               f'RAM (estimate) page {r}, with global {RAM_GLOBAL + r} of {RAM_LIMIT}')
-        hard, real = message_len(LAYOUTS[name], False), message_len(LAYOUTS[name], True)
+        hard, real = message_len(layout, False), message_len(layout, True)
         maxl = page.obj('strCommand').get('txt_maxl')
         print(f'{name}: entityUpd at most {hard} bytes with every buffer full, {real} as the adapter builds it; '
               f'strCommand txt_maxl {maxl} (+{STR_COMMAND_RESERVE} %, 4k-1, max {STR_COMMAND_MAX}), '
@@ -873,7 +948,7 @@ def main(source, target, preview=None):
         if real > PAYLOAD_MAX:
             print(f'{name}: note - that message is longer than a payload can be ({PAYLOAD_MAX})')
         if FIELDS_TABLE:
-            for (part, a), (_, b) in zip(message_fields(LAYOUTS[name], False), message_fields(LAYOUTS[name], True)):
+            for (part, a), (_, b) in zip(message_fields(layout, False), message_fields(layout, True)):
                 print(f'  {part:16} {"+".join(map(str, a)):18} = {sum(a):3}   {"+".join(map(str, b)):16} = {sum(b):3}')
         if RAM_GLOBAL + r > RAM_LIMIT:
             raise SystemExit(f'{name}: RAM {RAM_GLOBAL + r} > {RAM_LIMIT}')

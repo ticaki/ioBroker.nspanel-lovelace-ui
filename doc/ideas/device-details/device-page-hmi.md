@@ -17,8 +17,10 @@ PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspane
 Teststände: `device1` (cardDevice1 mit N=6, ohne Status-Icons), `device2` (N=10, erstes Raster 42 px hoch),
 `device3` (N=10, Raster auf die info-Zeilen ausgerichtet), `device4` (wie device3, zusätzlich senden main und info
 auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main und allen Slots), `device6`
-(`strCommand` je Seite bemessen, Empfang auf die Puffergröße begrenzt – aktuell; alle in
-`/mnt/projekte/nspanel emu/`).
+(`strCommand` je Seite bemessen, Empfang auf die Puffergröße begrenzt, Lauftext-Statuszeile auf cardDevice2 und 3 –
+aktuell; alle in `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein
+Lauftext-Objekt `g0` auf cardDevice1 gelegt und gespeichert (Muster für `gStatus`, siehe „Lauftext“); die vom
+Werkzeug gebaute `device5` liegt unter `/home/tim/device-page-hmi/`.
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
   cardEntities2 und die pageType-Einträge unterscheiden sich). Dort fehlte `swipe_release_fix.py` (#934, keine HMI
@@ -87,9 +89,39 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
   Umkehrung gilt nicht mehr: value, progress, status und Schalter-Icon/-Name senden, zeigen aber **keinen**
   Press-Effekt (Texte bzw. Hotspot, keine Knöpfe).
 - **Statuszeile** `tStatus`: Feld 6 von main, immer (auch wenn main ausgeblendet ist), einzeilig, Font 0, normale
-  Textfarbe. Leeres Feld = leere Zeile.
+  Textfarbe. Leeres Feld = leere Zeile. Höchstens **63 Byte**.
+- **Lauftext** (nur cardDevice2 und cardDevice3): endet Feld 6 von main auf `¬1`, zeigt die Seite den Text davor als
+  Lauftext (siehe „Lauftext der Statuszeile“). Höchstens **127 Byte einschließlich `¬1`**, also 124 Byte Text.
 - **value-Schrift:** Font 4 (NotoSans Bold 80) enthält Ziffern, `:`, `%`, `°`, `,`, `.`, `-`, `/`, Leerzeichen,
   Buchstaben inkl. ä/ö/ü – aber **kein `€`**. Vorschub: Ziffer 33 px, `:` 17 px, `%` 53 px, `°` 25 px, Leerzeichen 15 px.
+
+### Lauftext der Statuszeile
+
+- **Regel:** Der Adapter entscheidet (die HMI kann keine Pixelbreite messen, der Adapter hat die Breitentabelle
+  `text-width.ts`). Passt der Text in die Zeile (≤ 390 px in Font 0 **und** ≤ 63 Byte), schickt er ihn wie bisher:
+  er steht, Ausrichtung wie bisher (cardDevice2 mittig, sonst links). Ist er breiter, hängt der Adapter `¬1` an
+  (dasselbe Zeichen wie beim Icon-Zusatz `¬<Font-ID>`); die Seite schneidet die zwei Zeichen ab und lässt den Text
+  laufen. Kein neues Protokollfeld. Die Ziffer hinter `¬` wertet die HMI nicht aus (der Adapter schickt `1`).
+- **Länge:** In 390 px passen bei Font 0 etwa 45 Zeichen normalen Texts (Mittel 8,75 px je Zeichen; `i`/`l`/Leerzeichen
+  5 px, Ziffern 10 px, `m`/`W` 16 px). Dreifache Zeilenlänge wären ~134 Zeichen; der Puffer hat 127 Byte (das nächste
+  4k−1 darunter; 159 ließe auf cardDevice3 weniger als 150 Byte frei), abzüglich `¬1` (3 Byte) also **124 Byte
+  Text ≈ 2,7 Zeilen**. Längeres kürzt der Adapter (mit `...`) auf 124 Byte.
+- **Umsetzung:** Nextion-Objekt „Scrolling text“ `gStatus` (Typ 55) als Zwilling über der Statuszeile (1 px tiefer,
+  sonst gleiche Fläche), läuft **pixelweise**: `dis` 4 px je Schritt, `tim` 100 ms → 40 px/s (rund 4,5 Zeichen je
+  Sekunde), `dir` 1 (wie der Editor es anlegt). Ohne Kennzeichen: `gStatus` aus (`en=0`, `vis 0`), `tStatus` zeigt
+  den Text – genau der bisherige Weg. Mit Kennzeichen: `tStatus` aus, `gStatus.en=1`, `vis gStatus,1`. Im `load`
+  bekommt `gStatus` Hintergrund- und Textfarbe (`defaultBcoColor`/`defaultFontColor`) und ist ausgeblendet.
+  Geschwindigkeit: Konstanten `SCROLL_DIS`/`SCROLL_TIM` im Werkzeug.
+- **Vorlage:** Die Basis-HMI enthält kein Lauftext-Objekt (Objekttypen dort: 0, 1, 5, 51, 52, 53, 54, 59, 98, 109,
+  112, 116, 121). Muster ist `g0`, das Tim im Editor auf cardDevice1 gelegt hat: ein Textobjekt ohne `pw`, mit
+  `dir`, `dis`, `tim`, `en` hinter `ycen` und `vvs0–3` hinter `spay`. Das Werkzeug baut `gStatus` aus der
+  Textvorlage genau so um (`make_scroll`); verglichen mit `g0`: gleiche Attribute, Reihenfolge und Feldgrößen.
+- **Nur wo es passt:** Das Werkzeug baut den Lauftext nur auf Seiten, auf denen danach noch 150 Byte RAM frei sind.
+  cardDevice1 fällt heraus (es fehlen 191 Byte: `gStatus` 147, dazu der größere `strCommand`). Dort bleibt die
+  Statuszeile wie bisher (63 Byte, der Adapter kürzt mit `...`). Der Lauftext käme auf cardDevice1 automatisch dazu,
+  wenn `vaName7–10` entfielen (−156) und ein weiterer Posten von ~35 Byte.
+- **Zeichenweise per Timer** (Alternative, verworfen): Timer + Positionsvariable + zweiter Puffer wäre nicht
+  günstiger als das Objekt und liefe nicht pixelweise.
 
 ### Ereignisse beim Antippen
 
@@ -151,6 +183,14 @@ Font 0 ist 24 px hoch; die Breite eines Texts liefert `src/lib/const/text-width.
 | cardDevice3 | 100 px | 390 px, 1 Zeile, links | info: 125 px; switch: 125 px | info: 125 px |
 
 Für zwei Statuszeilen (≥ 60 px Höhe) war in keinem Layout Platz: überall **eine** Zeile, 390 px.
+
+Statuszeile für den Adapter in Zahlen:
+
+| Seite | steht (ohne Kennzeichen) | läuft (`<Text>¬1`) |
+|---|---|---|
+| cardDevice1 | ≤ 390 px, ≤ 63 Byte; breiter: kürzen mit `...` | – (kein Lauftext) |
+| cardDevice2 | ≤ 390 px und ≤ 63 Byte | breiter als 390 px oder > 63 Byte: Text ≤ **124 Byte** + `¬1` (= 127) |
+| cardDevice3 | ≤ 390 px und ≤ 63 Byte | wie cardDevice2 |
 
 ## Geometrie
 
@@ -238,6 +278,7 @@ Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den S
 | bEntity6 (button) | 340 | 67 | 100 | 50 | 3 | mittig | 10 |
 | tEntity6 | 340 | 119 | 100 | 26 | 0 | mittig | 31 |
 | tStatus | 10 | 289 | 390 | 30 | 0 | mittig | 63 |
+| gStatus (Lauftext) | 10 | 290 | 390 | 30 | 0 | – | 127 |
 | bInfo | 404 | 288 | 36 | 32 | 1 | mittig | 10 |
 
 Die info-Slots 3–5 sind hier schmale Kacheln (Name oben, Wert rechtsbündig darunter): drei volle Zeilen à 32 px
@@ -258,6 +299,7 @@ passten unter Icon, Wert und Balken nicht mehr über die Statuszeile.
 | tEntity7 / tEntity8 | 46 / 262 | 240 | 125 | 26 | 0 | links | 31 |
 | btOnOff7 / btOnOff8 | 173 / 389 | 228 | 50 | 50 | Bild 1/2 | – | 3 |
 | tStatus | 10 | 289 | 390 | 30 | 0 | links | 63 |
+| gStatus (Lauftext) | 10 | 290 | 390 | 30 | 0 | – | 127 |
 | bInfo | 404 | 288 | 36 | 32 | 1 | mittig | 10 |
 
 Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts oben, Slot 3 links Mitte …
@@ -265,16 +307,21 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 ## Puffer und RAM
 
 - IDs (`entn*`, `entnMain`, `entnInfo`) 23 wie cardEntities2 (Adapter-IDs `<Seitenindex>?<n>`), Namen 31, Werte 31,
-  Status 63, Icons 10, Typen 10, `tSend` 63 (längstes Ereignis `event,buttonPress2,` + ID + `,OnOff,1` = 50).
+  Status 63, Lauftext 127 (cardDevice2/3), Icons 10, Typen 10, `tSend` 63 (längstes Ereignis
+  `event,buttonPress2,` + ID + `,OnOff,1` = 50).
 - `strCommand` wird **je Seite** aus ihren Slots berechnet (siehe unten), höchstens 1019 (das Display nimmt
   höchstens 1017 Byte Nutzlast an).
-- Schätzung wie `entities2_five_rows.py`: 9 + 7 je Objekt + Σ ceil((txt_maxl+1)/4)·4, global 436:
+- Schätzung wie `entities2_five_rows.py`: 9 + 7 je Objekt + Σ ceil((txt_maxl+1)/4)·4, global 436. Für den Lauftext
+  sind 12 Byte mehr als für ein Textobjekt **angenommen** (`tim`, `dir`, `dis`, `en`, `vvs0–3`), also 7 + 12 + 128 =
+  147; gemessen ist das nicht (dazu braucht es eine kompilierte TFT oder die Editor-Anzeige).
 
-| Seite | Objekte | `strCommand` | Seite | mit global | frei bis 3584 | frei in `device5` (1019) |
+| Seite | Objekte | `strCommand` | Seite | mit global | frei bis 3584 | frei in `device5` |
 |---|---|---|---|---|---|---|
-| cardDevice1 (N=10, mit zweitem Zeilensatz und Status-Block) | 80 | 943 | 2970 | 3406 | **178** | 102 |
-| cardDevice2 | 60 | 875 | 2342 | 2778 | **806** | 662 |
-| cardDevice3 | 73 | 1019 | 2821 | 3257 | **327** | 327 |
+| cardDevice1 (N=10, zweiter Zeilensatz, Status-Block; kein Lauftext) | 80 | 943 | 2970 | 3406 | **178** | 102 |
+| cardDevice2 (mit Lauftext) | 61 | 943 | 2557 | 2993 | **591** | 662 |
+| cardDevice3 (mit Lauftext) | 74 | 1019 | 2968 | 3404 | **180** | 327 |
+
+Ohne Lauftext wären es 178 / 806 (`strCommand` 875) / 327 Byte frei.
 
 ### Größe von `strCommand`
 
@@ -310,8 +357,14 @@ Zwei Rechnungen in Byte, je Element die sechs Felder `Typ+ID+Icon+Farbe+Name+Wer
 | Seite | Felder / Trenner `~` | (a) Summe + Trenner | (b) Summe + Trenner | (b) + 10 % | `txt_maxl` (4k−1, ≤ 1019) |
 |---|---|---|---|---|---|
 | cardDevice1 (2 info, 4 button, 4 status) | 86 / 85 | 1191 + 85 = **1276** | 771 + 85 = **856** | 942 | **943** |
-| cardDevice2 (value, progress, 3 info, button) | 62 / 61 | 938 + 61 = **999** | 732 + 61 = **793** | 873 | **875** |
-| cardDevice3 (6 info, 2 switch) | 74 / 73 | 1173 + 73 = **1246** | 921 + 73 = **994** | 1094 | **1019** |
+| cardDevice2 (value, progress, 3 info, button), Status 63 | 62 / 61 | 938 + 61 = **999** | 732 + 61 = **793** | 873 | 875 |
+| cardDevice2 mit Lauftext (Status 127) | 62 / 61 | 1002 + 61 = **1063** | 796 + 61 = **857** | 943 | **943** |
+| cardDevice3 (6 info, 2 switch), Status 63 | 74 / 73 | 1173 + 73 = **1246** | 921 + 73 = **994** | 1094 | 1019 |
+| cardDevice3 mit Lauftext (Status 127) | 74 / 73 | 1237 + 73 = **1310** | 985 + 73 = **1058** | 1164 | **1019** |
+
+- **cardDevice3 mit Lauftext:** (b) = 1058 Byte ist mehr, als das Display annimmt (1017). Das tritt nur ein, wenn
+  alle sechs Namen und Werte 31 Byte und der Lauftext 124 Byte lang sind; der Adapter muss dann den Lauftext
+  so weit kürzen, dass die ganze Nachricht ≤ 1017 Byte bleibt (sonst verwirft er sie).
 
 - (a) liegt auf cardDevice1 und 3 über den 1017 Byte, die das Display überhaupt annimmt – der Adapter verwirft
   solche Nachrichten ohnehin (`MAX_PANEL_PAYLOAD_BYTES`). Maßgeblich ist (b).
@@ -363,8 +416,13 @@ kürzen (−64); `tStatus` 63 → 47 (−16).
    Hotspots `mSlot1/2` (cardDevice2) und `mSlot7/8` (cardDevice3) – meldet der Editor „Component overlap“ für einen
    Hotspot über Texten? –, die Zeilen `if(type7.txt!="delete"&&type7.txt!="")` und das darin verschachtelte
    `if(type7.txt!="text"||entn7.txt!="")`, `pageIcons.tTmp3.txt=""` in `mSlot2`.
-   Neu in `device6`: die fünf Zeilen vor `ucopy strCommand.txt,4,sys0,0` im tmSerial von cardDevice1 und 2.
-3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: 178 Byte Luft).
+   Neu in `device6`: die fünf Zeilen vor `ucopy strCommand.txt,4,sys0,0` im tmSerial von cardDevice1 und 2; das
+   Lauftext-Objekt `gStatus` auf cardDevice2 und 3 (öffnet der Editor es wie ein selbst angelegtes? Attribute
+   `dir`/`dis`/`tim`/`en` im Attributfenster sichtbar? „Component overlap“ mit `tStatus`?), im tmSerial
+   `gStatus.en=1`/`=0`, `vis gStatus,…` und `substr gStatus.txt,gStatus.txt,0,sys0-2`, im `load` `gStatus.bco`/`.pco`.
+3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: 178 Byte Luft, cardDevice3: 180).
+   Wichtig ist der Wert von cardDevice3 und 2: daraus ergibt sich, was ein Lauftext wirklich kostet (angenommen
+   147 Byte).
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
    ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach Rückkehr aus einem Popup (der Adapter schickt nach
    renderCurrentPage neu). cardDevice1: Wechsel mit/ohne Status-Icons in beiden Richtungen (Zeilen springen um,
@@ -390,8 +448,32 @@ kürzen (−64); `tStatus` 63 → 47 (−16).
    ausgeblendet; kein Müll in anderen Feldern. Direkt danach ein normales `entityUpd` und `time~…`: beide werden
    verarbeitet und quittiert (kein hängender Empfang, keine verschobene Folgenachricht). Gegenprobe auf
    cardDevice1 (Puffer 943) mit 1017 Byte.
+8. Lauftext (cardDevice2 und 3; `entityUpd` von Hand, der Adapter schickt das Kennzeichen noch nicht):
+   - Feld 19 kurz ohne Kennzeichen: Text steht wie bisher (cardDevice2 mittig), nichts läuft.
+   - Feld 19 = langer Text + `¬1` (z. B. 120 Zeichen): der Text läuft pixelweise nach links, `¬1` ist nicht zu
+     sehen, Farben wie die übrigen Texte, nichts ragt über die Zeile hinaus (info-Icon rechts bleibt frei).
+     Tempo beurteilen (4 px je 100 ms).
+   - dasselbe `entityUpd` mehrmals im Sekundenabstand: läuft der Text weiter oder springt er jedes Mal an den
+     Anfang?
+   - Wechsel lang → kurz → lang: der kurze Text steht sauber an seinem Platz (kein Rest des Lauftexts, kein
+     versetzter Text), danach läuft der lange wieder.
+   - Lauftext genau 124 Byte + `¬1` und einer mit 140 Byte + `¬1` (abgeschnitten bei 127 Byte, dann ohne
+     erkanntes Kennzeichen: was zeigt die Zeile?).
+   - Popup öffnen und zurück, Seitenwechsel und zurück: der Lauftext erscheint erst mit dem nächsten `entityUpd`.
+   - cardDevice1: `…¬1` wird dort **nicht** ausgewertet (kein Lauftext), der Adapter darf es dort nicht schicken.
 
 ## Bekannte Unsicherheiten / Abweichungen
+
+- **Lauftext:** nichts davon ist im Editor, Simulator oder am Panel gesehen. Offen sind insbesondere: ob der Editor
+  das aus einem Textobjekt umgebaute `gStatus` annimmt (Attribute und Reihenfolge stimmen mit Tims `g0` überein),
+  die Laufrichtung bei `dir` 1, ob ein erneutes Setzen desselben Texts den Lauf neu startet (dann bräuchte es
+  einen zweiten Puffer zum Vergleichen oder ein Kennzeichen „Text unverändert“), ob ein ausgeblendeter Lauftext
+  wirklich nichts zeichnet, wie der Text beim Start steht, und die RAM-Kosten des Objekts.
+- Was der Editor an `device5` beim Speichern verändert hat (Vergleich von Tims Datei mit der gebauten): nur der
+  Abschnitt von cardDevice1 – das neue Objekt `g0` am Ende, im Seitenkopf Länge und Objektzahl. Alle anderen 285
+  Abschnitte, auch cardDevice2 und 3, sind Byte für Byte gleich; die Datei ist kleiner (21,7 statt 34,3 MB), weil
+  der Editor die gelöschten alten Abschnittsstände nicht mitschreibt. Der Editor hat die gebauten Seiten also
+  geöffnet und unverändert zurückgeschrieben (kompiliert ist damit noch nichts).
 
 - Verhalten bei überlanger Nachricht ist nur aus dem Code abgeleitet (Kopie auf `txt_maxl` begrenzt, Rest des
   Empfangs unabhängig vom Puffer), nicht am Display oder im Simulator gesehen.
