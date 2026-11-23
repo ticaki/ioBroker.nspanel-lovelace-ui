@@ -229,7 +229,7 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
 
 ## Geräteseite
 
-Stand: 2026-11-23 – Adapter im Branch `feat/device-page` (Admin und Web-Panel folgen). HMI-Seiten und Feldmaße:
+Stand: 2026-11-23 – Adapter und Admin im Branch `feat/device-page` (Web-Panel folgt). HMI-Seiten und Feldmaße:
 [device-page-hmi.md](device-page-hmi.md) (Branch `feat/device-page-hmi`).
 
 Optional öffnet der Long-Press statt der Detailseite eine **Geräteseite** (cardDevice1/2/3): großes Geräte-Icon
@@ -302,6 +302,18 @@ entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info
 - **info**: `button` mit Icon `information-outline` in der Farbe `deviceInfo`, ohne Namen; Tipp
   `buttonPress2,<intName>,button` öffnet die Detailseite.
 - Kein Long-Press auf der Geräteseite: ein `buttonPress3` gilt als Tipp.
+
+### Admin
+
+- Page-Item-Dialog, Abschnitt „Long-Press öffnet“: Detailseite (Vorgabe) / Geräteseite. Umschalten verliert nichts
+  (Stash wie bei den anderen Radiobuttons, `src-admin/src/devicePageConfig.ts`), gespeichert wird `devicePage` nur bei
+  „Geräteseite“ (normalisiert mit `devicePageConfigOf`). Die erste Geräteseite ist `defaultDevicePageConfig`.
+- Layout mit schematischer Vorschau (MUI-Boxen nach der Geometrie der HMI, nummerierte Slots), Haupt-Icon
+  (IconSelect), Statuszeile (alle States), je Slot die States nach `devicePageSlotAccepts`, „i-Icon anzeigen“.
+- Ein gewählter State wird als Verweis gespeichert: gleicher State behält seinen Verweis, ein angehakter Eintrag der
+  Filterliste gibt `key` und `subName`, sonst der Masken-Eintrag des States. Ein gespeicherter State, den das Gerät nicht
+  (mehr) hat oder der nicht zum Slot passt, bleibt markiert stehen; ohne Antwort des Adapters bleibt alles, wie es ist.
+- Anleitung und Prüftabelle: `doc/Pictures/device-page/README.md`.
 
 ### Navigation und Lebensdauer
 

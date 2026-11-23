@@ -33,7 +33,7 @@ import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
 import PaletteIcon from '@mui/icons-material/Palette';
-import { I18n, type ThemeType } from '@iobroker/gui-components';
+import { I18n, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import { EntitySelector } from './EntitySelector';
@@ -54,6 +54,14 @@ import {
 } from '../itemOptionStash';
 import { applyDeviceAnswer } from '../deviceAnswer';
 import {
+    devicePageToSave,
+    switchLongPressTarget,
+    withDevicePageIcon,
+    type LongPressStash,
+    type LongPressTarget,
+} from '../devicePageConfig';
+import {
+    devicePageConfigOf,
     deviceShortPressOf,
     isDeviceDetailsConfig,
     updatedDeviceDetailsLearned,
@@ -61,6 +69,7 @@ import {
     type DeviceDetailsConfig,
     type DeviceDetailsInfo,
     type DeviceDetailsLearned,
+    type DevicePageConfig,
     type DeviceSelectionError,
     type DeviceShortPress,
 } from '../../../src/lib/types/deviceDetails';
@@ -335,6 +344,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private kindStash: OptionStash<ItemKind, ItemKindFields<ChannelValueConfig>> = {};
     /** fields of the short taps of a device item not chosen right now (itemOptionStash) */
     private shortPressStash: OptionStash<DeviceShortPress, ItemTapFields<ChannelValueConfig>> = {};
+    /** the device page of a device item while its long press opens the detail page (devicePageConfig) */
+    private longPressStash: LongPressStash = {};
     /** the device whose filter list the user saved in this dialog ('' = none) - only that may change the learned ticks */
     private deviceEntriesEdited = '';
     private static iconMap: Map<string, string> | null = null;
@@ -521,13 +532,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             minValueColorTemp: typeof data?.minValueColorTemp === 'number' ? data.minValueColorTemp : undefined,
             maxValueColorTemp: typeof data?.maxValueColorTemp === 'number' ? data.maxValueColorTemp : undefined,
             colormode: data?.colormode === true,
-            device: isDeviceDetailsConfig(data?.device) ? { ...data.device, entries: [...data.device.entries] } : null,
+            device: isDeviceDetailsConfig(data?.device) ? ChannelConfigDialog.deviceOfStored(data.device) : null,
             deviceError: undefined,
             deviceEntriesId: isDeviceDetailsConfig(data?.device) ? data.device.deviceId.trim() : '',
         });
         this.deviceBefore = isDeviceDetailsConfig(data?.device) ? structuredClone(data.device) : undefined;
         this.kindStash = {};
         this.shortPressStash = {};
+        this.longPressStash = {};
         this.deviceEntriesEdited = '';
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -884,6 +896,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                           deviceId: device.deviceId.trim(),
                           shortPress: deviceShortPressOf(device),
                           entries: device.entries,
+                          devicePage: devicePageToSave(device),
                       }
                     : undefined,
             type: isCustom ? 'custom' : undefined,
@@ -1594,6 +1607,42 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         this.recheckChannel(fields);
     };
 
+    /**
+     * The device configuration of a stored item for the dialog: a copy, the device page normalized.
+     *
+     * @param stored the stored device configuration
+     * @returns the copy
+     */
+    private static deviceOfStored(stored: DeviceDetailsConfig): DeviceDetailsConfig {
+        const { devicePage: rawPage, ...rest } = stored;
+        const devicePage = devicePageConfigOf(rawPage);
+        const device: DeviceDetailsConfig = { ...rest, entries: [...stored.entries] };
+        return devicePage ? { ...device, devicePage } : device;
+    }
+
+    /**
+     * What the long press of a device item opens. The device page left is kept until the dialog closes and comes back
+     * with it; the first device page is suggested from the ticked rows ({@link switchLongPressTarget}).
+     *
+     * @param target the new target
+     */
+    private handleLongPressTargetChange = (target: LongPressTarget): void => {
+        const { device } = this.state;
+        if (!device) {
+            return;
+        }
+        const switched = switchLongPressTarget(device, this.longPressStash, target);
+        this.longPressStash = switched.stash;
+        this.setState({ device: switched.device });
+    };
+
+    /**
+     * @param devicePage the changed device page of the device item
+     */
+    private handleDevicePageChange = (devicePage: DevicePageConfig): void => {
+        this.setState(prev => (prev.device ? { device: { ...prev.device, devicePage } } : null));
+    };
+
     private handleDeviceDetailsChange = (
         device: DeviceDetailsConfig,
         error: DeviceSelectionError | undefined,
@@ -1873,6 +1922,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     onChange={this.handleDeviceDetailsChange}
                     onAnswer={this.handleDeviceAnswer}
                     onEntriesChange={this.handleDeviceEntriesChange}
+                    onLongPressTargetChange={this.handleLongPressTargetChange}
+                    onDevicePageChange={this.handleDevicePageChange}
+                    devicePageIconSelector={device.devicePage ? this.renderDevicePageIcon(device.devicePage) : null}
                 />
                 <TextField
                     label={I18n.t('channelConfigDialog_name')}
@@ -1882,6 +1934,68 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     helperText={name === '' ? I18n.t('deviceDetailsDialog_nameHint') : undefined}
                     slotProps={{ formHelperText: { sx: { color: 'text.disabled' } } }}
                 />
+            </Box>
+        );
+    }
+
+    /**
+     * The big icon of the device page: the icon selector of the admin, empty = the icon of the item.
+     *
+     * @param devicePage the device page
+     */
+    private renderDevicePageIcon(devicePage: DevicePageConfig): React.JSX.Element {
+        const iconValue = devicePage.icon ?? '';
+        const themeName: ThemeName = this.props.themeType === 'dark' ? 'dark' : 'light';
+        return (
+            <Box data-dd="device-page-icon">
+                <IconSelect
+                    oContext={this.buildOContext()}
+                    alive={true}
+                    changed={false}
+                    themeName={themeName}
+                    common={EMPTY_COMMON}
+                    attr="devicePageIcon"
+                    data={{ devicePageIcon: iconValue }}
+                    originalData={{ devicePageIcon: iconValue }}
+                    onError={() => {}}
+                    schema={{
+                        type: 'custom',
+                        name: 'IconSelect',
+                        url: '',
+                        label: 'deviceDetailsDialog_pageIcon',
+                        i18n: true,
+                    }}
+                    custom
+                    onChange={(attrOrData, val, cb): void => {
+                        let icon = '';
+                        if (typeof attrOrData === 'object') {
+                            const picked: unknown = attrOrData.devicePageIcon;
+                            icon = typeof picked === 'string' ? picked : '';
+                        } else if (typeof val === 'string') {
+                            icon = val;
+                        }
+                        this.setState(prev =>
+                            prev.device?.devicePage
+                                ? {
+                                      device: {
+                                          ...prev.device,
+                                          devicePage: withDevicePageIcon(prev.device.devicePage, icon),
+                                      },
+                                  }
+                                : null,
+                        );
+                        if (cb) {
+                            cb();
+                        }
+                    }}
+                    theme={this.props.theme}
+                />
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                >
+                    {I18n.t('deviceDetailsDialog_pageIconHint')}
+                </Typography>
             </Box>
         );
     }
