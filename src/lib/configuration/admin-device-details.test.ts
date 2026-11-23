@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { deviceDetailsInfo } from './admin-device-details';
+import { AdminConfiguration, ITEM_MESSAGE_REPEAT_MS, isNewItemMessage } from './admin';
 
 const DEV = 'shelly.0.shellyplus1pm#000000000001#1';
 
@@ -69,5 +70,51 @@ describe('configuration/admin-device-details - sendTo getDeviceDetails', () => {
         expect((await deviceDetailsInfo(adapter, 'shelly.0.none')).error).to.equal('notFound');
         expect((await deviceDetailsInfo(adapter, 42)).error).to.equal('notFound');
         expect((await deviceDetailsInfo(adapter, `${DEV}.rssi`)).states).to.deep.equal([]);
+    });
+});
+
+describe('configuration/admin - messages of the page item conversion', () => {
+    it('the same message is logged once within the repeat time', () => {
+        const logged = new Map<string, number>();
+        expect(isNewItemMessage('a', 1000, logged)).to.equal(true);
+        expect(isNewItemMessage('a', 2000, logged)).to.equal(false);
+        expect(isNewItemMessage('b', 2000, logged)).to.equal(true);
+        expect(isNewItemMessage('a', 1000 + ITEM_MESSAGE_REPEAT_MS, logged)).to.equal(true);
+        expect(isNewItemMessage('a', 1001 + ITEM_MESSAGE_REPEAT_MS, logged)).to.equal(false);
+    });
+    it('a page assigned to two panels: the messages nobody logged yet are warned once, with page and item', async () => {
+        const warnings: string[] = [];
+        const noop = (): void => undefined;
+        const page = `msg-${Date.now()}`;
+        const adapter: any = {
+            log: { debug: noop, info: noop, error: noop, silly: noop, warn: (t: string) => warnings.push(t) },
+            config: {
+                pageConfig: [
+                    {
+                        card: 'cardGrid',
+                        uniqueName: page,
+                        headline: 'x',
+                        navigationAssignment: [{ topic: 'nspanel/a' }, { topic: 'nspanel/b' }],
+                        pageItems: [{ channelId: 'alias.0.x' }],
+                    },
+                ],
+            },
+            convertAdminPageItemToPageItemConfig: async () =>
+                Promise.resolve({
+                    pageItem: { type: 'text', data: {} },
+                    // the config manager has logged this one itself
+                    messages: ['logged before', 'Device page slot 3 (button): channel alias.0.gone not found!'],
+                    error: undefined,
+                    unloggedMessages: ['Device page slot 3 (button): channel alias.0.gone not found!'],
+                }),
+        };
+        for (const topic of ['nspanel/a', 'nspanel/b']) {
+            const admin = new AdminConfiguration(adapter);
+            await admin.processentrys({ topic, name: topic, pages: [], navigation: [] } as never);
+        }
+        const found = warnings.filter(w => w.includes('alias.0.gone'));
+        expect(found.length).to.equal(1);
+        expect(found[0]).to.contain(`Page '${page}', page item 0:`);
+        expect(warnings.some(w => w.includes('logged before'))).to.equal(false);
     });
 });

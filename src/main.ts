@@ -3809,8 +3809,14 @@ class NspanelLovelaceUi extends utils.Adapter {
         error: string | undefined;
         /** page the config manager generated from the item (`media-<id>` behind a media item) - the caller adds it */
         pageConfig?: ScriptConfig.PageType;
+        /**
+         * the messages nobody has logged yet (the config manager logs its own): the slots of a device page that were
+         * left out - the admin configuration logs them with page and item
+         */
+        unloggedMessages?: string[];
     }> {
         let error: string | undefined = undefined;
+        const unloggedMessages: string[] = [];
         let pageItem: NSPanel.PageItemDataItemsOptions | undefined = undefined;
         let pageConfig: ScriptConfig.PageType | undefined = undefined;
         if (preItem && prePage) {
@@ -3888,13 +3894,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                             pageItem.devicePageChannels = built.channels;
                         }
                         messages.push(...built.errors);
+                        unloggedMessages.push(...built.errors);
                     }
                 }
             } catch (e: any) {
                 error = `Error in configuration: ${e.message}`;
             }
         }
-        return { pageItem, messages, error, pageConfig };
+        return { pageItem, messages, error, pageConfig, unloggedMessages };
     }
 }
 if (require.main !== module) {

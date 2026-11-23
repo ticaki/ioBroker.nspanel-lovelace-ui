@@ -153,8 +153,53 @@ function shallowDescribe(value: unknown): string {
     return JSON.stringify(value);
 }
 
+/** how long the same message of a page item is not logged again: a page is built once per panel it is assigned to */
+export const ITEM_MESSAGE_REPEAT_MS = 60_000;
+
+/** when a message of a page item was logged last, by its text */
+const loggedItemMessages = new Map<string, number>();
+
+/**
+ * Whether a message of the conversion of a page item is to be logged now: the same text is logged once within
+ * {@link ITEM_MESSAGE_REPEAT_MS} - a page assigned to several panels is converted once per panel.
+ *
+ * @param text the complete log text (with page and item)
+ * @param now the time in ms
+ * @param logged when a text was logged last (default: shared by all panels of the adapter)
+ * @returns true when it was not logged within the time
+ */
+export function isNewItemMessage(text: string, now: number, logged: Map<string, number> = loggedItemMessages): boolean {
+    for (const [key, time] of logged) {
+        if (now - time >= ITEM_MESSAGE_REPEAT_MS) {
+            logged.delete(key);
+        }
+    }
+    if (logged.has(text)) {
+        return false;
+    }
+    logged.set(text, now);
+    return true;
+}
+
 export class AdminConfiguration extends BaseClass {
     private pageConfig: ShareConfig.PageContentEntry[] = [];
+
+    /**
+     * Logs the messages of the conversion of a page item that nobody logged yet (e.g. a slot of a device page that
+     * was left out) as warnings with page and item - once, also when the page is assigned to several panels.
+     *
+     * @param page unique name of the page
+     * @param index index of the item on the page
+     * @param messages the messages, undefined = none
+     */
+    private logItemMessages(page: string, index: number, messages: readonly string[] | undefined): void {
+        for (const message of messages ?? []) {
+            const text = `Page '${page}', page item ${index}: ${message}`;
+            if (isNewItemMessage(text, Date.now())) {
+                this.log.warn(text);
+            }
+        }
+    }
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'AdminConfiguration');
         this.adapter = adapter;
@@ -322,6 +367,7 @@ export class AdminConfiguration extends BaseClass {
                 { card: 'cardThermo2', uniqueName: entry.uniqueName },
                 [],
             );
+            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
@@ -423,6 +469,7 @@ export class AdminConfiguration extends BaseClass {
                 { card: 'cardMedia', uniqueName: entry.uniqueName },
                 [],
             );
+            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
@@ -677,6 +724,7 @@ export class AdminConfiguration extends BaseClass {
                                 { card: entry.card, uniqueName: entry.uniqueName },
                                 [],
                             );
+                            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
@@ -731,6 +779,7 @@ export class AdminConfiguration extends BaseClass {
                                 { card: entry.card, uniqueName: entry.uniqueName },
                                 [],
                             );
+                            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);

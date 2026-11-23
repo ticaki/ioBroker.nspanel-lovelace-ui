@@ -356,7 +356,8 @@ Jeder Slot kann statt eines States des Geräts etwas Eigenes zeigen (`custom`); 
   (`devicePageChannels` in `convertAdminPageItemToPageItemConfig`), abgelegt am Laufzeit-Item als
   `devicePageChannels` (Slot-Index → `{ role, item }`); die Geräteseite selbst entsteht weiter erst beim Öffnen. Ein
   Kanal, den es nicht gibt, dessen Rolle nicht zum Slot passt oder den der ConfigManager ablehnt (fehlende
-  Datenpunkte), lässt den Slot leer und steht in den Meldungen der Konvertierung; das Item bleibt gültig.
+  Datenpunkte), lässt den Slot leer und steht in den Meldungen der Konvertierung (beim Start als Warnung im Log,
+  siehe „Meldungen der Konvertierung“); das Item bleibt gültig.
 - **Navigation** (`custom: 'navigation'`): kein State, nur Icon, Name und Zielseite – siehe „Navigation aus einem
   Slot“.
 
@@ -462,6 +463,15 @@ Knoten der Zielseite, ihre Pfeile sind die dort eingerichteten (prev / parent / 
 man nur wieder über das Item (Long-Press bzw. kurzer Tipp). Wer von der Zielseite zurück zur Seite mit dem Geräte-Item
 will, trägt diese als parent der Zielseite ein. Die verlassene Geräteseite bleibt bis zum nächsten Öffnen als
 Unterseite der Item-Seite bestehen (wie bisher beim Verlassen über den Screensaver).
+
+### Meldungen der Konvertierung
+
+`convertAdminPageItemToPageItemConfig` gibt neben `messages` jetzt `unloggedMessages` zurück: die Meldungen, die noch
+niemand geloggt hat – heute die ausgelassenen Kanal-Slots einer Geräteseite (`devicePageChannels`). Die Meldungen des
+ConfigManagers stehen schon selbst im Log und werden nicht doppelt ausgegeben. `AdminConfiguration` loggt sie beim
+Aufbau der Seiten als `warn` mit Seite und Item (`Page '<Seite>', page item <n>: …`). Eine Seite, die mehreren Panels
+zugeordnet ist, wird je Panel umgewandelt – derselbe Text wird innerhalb von 60 s nur einmal geloggt
+(`isNewItemMessage`).
 
 ### Long-Press auf der Geräteseite
 

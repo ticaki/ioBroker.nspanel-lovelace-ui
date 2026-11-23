@@ -23,5 +23,7 @@ declare class NspanelLovelaceUi extends utils.Adapter {
         error: string | undefined;
         /** page generated from the item (`media-<id>` behind a media item), see main.ts */
         pageConfig?: ScriptConfig.PageType;
+        /** the messages nobody has logged yet, see main.ts */
+        unloggedMessages?: string[];
     }>;
 }
