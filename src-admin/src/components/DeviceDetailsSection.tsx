@@ -27,6 +27,8 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { I18n, type AdminConnection, type IobTheme, type ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import DeviceDetailsFilterDialog from './DeviceDetailsFilterDialog';
+import DevicePageSection from './DevicePageSection';
+import { isLongPressTarget, longPressTargetOf, type LongPressTarget } from '../devicePageConfig';
 import { ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 import {
     buildDeviceDetailRows,
@@ -36,6 +38,7 @@ import {
     type DeviceDetailEntryConfig,
     type DeviceDetailsConfig,
     type DeviceDetailsInfo,
+    type DevicePageConfig,
     type DeviceSelectionError,
     type DeviceShortPress,
 } from '../../../src/lib/types/deviceDetails';
@@ -87,6 +90,20 @@ export interface DeviceDetailsSectionProps {
      * @param entries the ticked rows in their order
      */
     onEntriesChange: (entries: DeviceDetailEntryConfig[]) => void;
+    /**
+     * what the long press opens: the detail page or the device page
+     *
+     * @param target the new target
+     */
+    onLongPressTargetChange: (target: LongPressTarget) => void;
+    /**
+     * the device page was changed
+     *
+     * @param devicePage the new device page
+     */
+    onDevicePageChange: (devicePage: DevicePageConfig) => void;
+    /** the icon selector of the big icon of the device page, rendered by the page item dialog */
+    devicePageIconSelector: React.ReactNode;
 }
 
 interface DeviceDetailsSectionState {
@@ -353,6 +370,39 @@ export default class DeviceDetailsSection extends React.Component<
                         {I18n.t('deviceDetailsDialog_longPressHint')}
                     </Typography>
                 </Box>
+                <FormControl>
+                    <FormLabel sx={{ fontSize: '0.875rem' }}>{I18n.t('deviceDetailsDialog_longPress')}</FormLabel>
+                    <RadioGroup
+                        row
+                        value={longPressTargetOf(value)}
+                        onChange={e => {
+                            if (isLongPressTarget(e.target.value)) {
+                                this.props.onLongPressTargetChange(e.target.value);
+                            }
+                        }}
+                    >
+                        <FormControlLabel
+                            value="details"
+                            control={<Radio size="small" />}
+                            label={I18n.t('deviceDetailsDialog_longDetails')}
+                        />
+                        <FormControlLabel
+                            value="devicePage"
+                            control={<Radio size="small" />}
+                            label={I18n.t('deviceDetailsDialog_longDevicePage')}
+                        />
+                    </RadioGroup>
+                </FormControl>
+                {value.devicePage && (
+                    <DevicePageSection
+                        deviceId={value.deviceId.trim()}
+                        entries={value.entries}
+                        value={value.devicePage}
+                        states={info?.ok ? info.states : null}
+                        onChange={this.props.onDevicePageChange}
+                        iconSelector={this.props.devicePageIconSelector}
+                    />
+                )}
                 <DeviceDetailsFilterDialog
                     ref={this.filterDialogRef}
                     onSave={this.handleFilterSave}
