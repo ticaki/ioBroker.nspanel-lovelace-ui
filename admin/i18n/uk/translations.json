@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "порожньо: автоматично",
     "deviceDetailsDialog_pageSlots": "Слоти",
     "deviceDetailsDialog_pageStatus": "Рядок стану",
+    "deviceDetailsDialog_pageStatusCustom": "Користувацька точка даних",
+    "deviceDetailsDialog_pageStatusCustomId": "Точка даних рядка стану",
     "deviceDetailsDialog_pageStatusIconsHint": "Значки стану показують лише значок у його кольорі (увімк./вимк. у кольорах «активно»/«неактивно»). Щойно задано хоча б один значок стану, обидва інформаційні рядки стають вужчими.",
     "deviceDetailsDialog_pageUnfit": "не підходить для цього слота",
     "deviceDetailsDialog_pushButton": "кнопка, пише true",

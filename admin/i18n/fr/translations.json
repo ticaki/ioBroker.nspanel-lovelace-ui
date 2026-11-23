@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "vide : automatique",
     "deviceDetailsDialog_pageSlots": "Emplacements",
     "deviceDetailsDialog_pageStatus": "Ligne d'état",
+    "deviceDetailsDialog_pageStatusCustom": "Point de données personnalisé",
+    "deviceDetailsDialog_pageStatusCustomId": "Point de données de la ligne d'état",
     "deviceDetailsDialog_pageStatusIconsHint": "Les icônes d'état n'affichent qu'une icône dans sa couleur (marche/arrêt dans les couleurs activé/désactivé). Dès qu'une icône d'état est définie, les deux lignes d'info deviennent plus étroites.",
     "deviceDetailsDialog_pageUnfit": "ne convient pas à cet emplacement",
     "deviceDetailsDialog_pushButton": "bouton, écrit true",

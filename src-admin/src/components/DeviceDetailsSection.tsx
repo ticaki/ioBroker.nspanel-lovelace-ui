@@ -407,6 +407,9 @@ export default class DeviceDetailsSection extends React.Component<
                         value={value.devicePage}
                         states={info?.ok ? info.states : null}
                         onChange={this.props.onDevicePageChange}
+                        socket={socket}
+                        theme={theme}
+                        themeType={themeType}
                         iconSelector={this.props.devicePageIconSelector}
                         slotIconSelector={this.props.devicePageSlotIconSelector}
                     />

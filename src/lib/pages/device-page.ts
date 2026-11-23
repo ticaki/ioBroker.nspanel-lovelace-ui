@@ -360,6 +360,8 @@ export function devicePageStatusIconItem(
 /**
  * The hidden status item: a read only text row of the state of the status line - its field 6 (value with unit, the
  * translated text of common.states, a boolean on/off) becomes field 6 of main. It is never sent as an element.
+ * The state may be any state, also one outside the device (own data point, `DevicePageStatusRef.custom`): only its
+ * id and common are used, the device only for the look of the row (icon and color, never shown).
  *
  * @param deviceId id of the device
  * @param entry the state of the status line
@@ -451,9 +453,11 @@ export async function devicePageElements(
         }
         slots[p.index] = item;
     });
-    const statusCommon = await readCommon(page.status ?? null);
+    // an own data point without id (not entered yet): no status line, nothing to report
+    const statusRef = page.status && page.status.id !== '' ? page.status : null;
+    const statusCommon = await readCommon(statusRef);
     const status =
-        page.status && statusCommon ? devicePageStatusItem(details.deviceId, page.status, statusCommon) : undefined;
+        statusRef && statusCommon ? devicePageStatusItem(details.deviceId, statusRef, statusCommon) : undefined;
     return {
         headline,
         slotCount: kinds.length,

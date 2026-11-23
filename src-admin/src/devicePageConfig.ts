@@ -11,6 +11,7 @@ import {
     type DevicePageLayout,
     type DevicePageSlotKind,
     type DevicePageStateRef,
+    type DevicePageStatusRef,
     type DeviceStateInfo,
 } from '../../src/lib/types/deviceDetails';
 import { switchOption, type OptionStash } from './itemOptionStash';
@@ -239,9 +240,63 @@ export function devicePagePreviewAreas(layout: DevicePageLayout, withStatusIcons
  * @param ref the state of the status line, null = none
  * @returns the device page with the status line
  */
-export function withDevicePageStatus(config: DevicePageConfig, ref: DevicePageStateRef | null): DevicePageConfig {
+export function withDevicePageStatus(config: DevicePageConfig, ref: DevicePageStatusRef | null): DevicePageConfig {
     const { status: _old, ...rest } = config;
     return ref ? { ...rest, status: { ...ref } } : rest;
+}
+
+/** value of the entry "own data point" in the selection of the status line - no id of a state */
+export const DEVICE_PAGE_CUSTOM_STATUS = '__custom__';
+
+/**
+ * @param status the saved status line
+ * @returns true when it is an own data point of the user (also one without id yet)
+ */
+export function isCustomDevicePageStatus(status: DevicePageStatusRef | null | undefined): boolean {
+    return status?.custom === true;
+}
+
+/**
+ * @param id the id of the own data point, '' = not entered yet
+ * @returns the status line with an own data point
+ */
+export function customDevicePageStatus(id: string): DevicePageStatusRef {
+    return { key: '', id, custom: true };
+}
+
+/**
+ * @param status the saved status line
+ * @returns the value of the selection: '' = empty, {@link DEVICE_PAGE_CUSTOM_STATUS} = own data point, else the id of
+ * the state of the device
+ */
+export function devicePageStatusSelectValue(status: DevicePageStatusRef | null | undefined): string {
+    if (!status) {
+        return '';
+    }
+    return isCustomDevicePageStatus(status) ? DEVICE_PAGE_CUSTOM_STATUS : status.id;
+}
+
+/**
+ * The status line after a choice in the selection: "own data point" keeps the id entered before (else ''), a state
+ * of the device is saved like the state of a slot ({@link devicePageRefOf}) - the id of an own data point is not
+ * taken over.
+ *
+ * @param value the chosen value of the selection ({@link devicePageStatusSelectValue})
+ * @param options the states of the device offered ({@link devicePageStateOptions})
+ * @param entries the ticked rows of the item
+ * @param current the saved status line
+ * @returns the status line, null = empty
+ */
+export function devicePageStatusOf(
+    value: string,
+    options: readonly DevicePageStateOption[],
+    entries: readonly DevicePageStateRef[],
+    current: DevicePageStatusRef | null | undefined,
+): DevicePageStatusRef | null {
+    if (value === DEVICE_PAGE_CUSTOM_STATUS) {
+        return customDevicePageStatus(current && isCustomDevicePageStatus(current) ? current.id : '');
+    }
+    return devicePageRefOf(value, options, entries, isCustomDevicePageStatus(current) ? null : current);
 }
 
 /**

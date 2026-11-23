@@ -18,7 +18,8 @@ import {
     Select,
     Typography,
 } from '@mui/material';
-import { I18n } from '@iobroker/gui-components';
+import { I18n, type AdminConnection, type IobTheme, type ThemeType } from '@iobroker/gui-components';
+import { EntitySelector } from './EntitySelector';
 import {
     DEVICE_PAGE_LAYOUTS,
     deviceDetailNameKey,
@@ -32,11 +33,16 @@ import {
     type DeviceStateInfo,
 } from '../../../src/lib/types/deviceDetails';
 import {
+    DEVICE_PAGE_CUSTOM_STATUS,
     PREVIEW_INFO,
     PREVIEW_MAIN,
     devicePagePreviewAreas,
     devicePageRefOf,
     devicePageStateOptions,
+    devicePageStatusOf,
+    devicePageStatusSelectValue,
+    customDevicePageStatus,
+    isCustomDevicePageStatus,
     withDevicePageLayout,
     withDevicePageSlot,
     withDevicePageStatus,
@@ -44,6 +50,10 @@ import {
 } from '../devicePageConfig';
 
 export interface DevicePageSectionProps {
+    /** for the object browser of the own data point of the status line */
+    socket: AdminConnection;
+    theme: IobTheme;
+    themeType: ThemeType;
     deviceId: string;
     /** the ticked rows of the detail page */
     entries: DeviceDetailEntryConfig[];
@@ -229,7 +239,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      * A selection of a state of the device.
      *
      * @param label label of the field
-     * @param kind kind of the slot, null = status line (all states)
+     * @param kind kind of the slot
      * @param current the saved state
      * @param onPick the chosen state, null = empty
      * @param dataDd test marker
@@ -237,7 +247,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      */
     private renderStateSelect(
         label: string,
-        kind: DevicePageSlotKind | null,
+        kind: DevicePageSlotKind,
         current: DevicePageStateRef | null | undefined,
         onPick: (ref: DevicePageStateRef | null) => void,
         dataDd: string,
@@ -275,6 +285,76 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                     ))}
                 </Select>
             </FormControl>
+        );
+    }
+
+    /**
+     * The status line: empty, an own data point of the user (any state, entered as id or chosen in the object
+     * browser) or a state of the device. An own data point is never marked as missing in the device.
+     *
+     * @returns the selection and, for an own data point, the field of its id
+     */
+    private renderStatus(): React.JSX.Element {
+        const { deviceId, states, entries, value, onChange, socket, theme, themeType } = this.props;
+        const current = value.status;
+        const custom = isCustomDevicePageStatus(current);
+        const options = devicePageStateOptions(deviceId, states, null, custom ? null : current);
+        const selected = devicePageStatusSelectValue(current);
+        const problem = options.find(o => o.id === selected)?.problem;
+        return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <FormControl
+                    variant="standard"
+                    size="small"
+                    sx={{ minWidth: 0 }}
+                    error={problem !== undefined}
+                    data-dd="device-page-status"
+                >
+                    <InputLabel shrink>{I18n.t('deviceDetailsDialog_pageStatus')}</InputLabel>
+                    <Select
+                        value={selected}
+                        displayEmpty
+                        sx={{ '& .MuiSelect-select': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
+                        onChange={e =>
+                            onChange(
+                                withDevicePageStatus(
+                                    value,
+                                    devicePageStatusOf(String(e.target.value), options, entries, current),
+                                ),
+                            )
+                        }
+                    >
+                        <MenuItem value="">
+                            <em>{I18n.t('deviceDetailsDialog_pageEmpty')}</em>
+                        </MenuItem>
+                        <MenuItem value={DEVICE_PAGE_CUSTOM_STATUS}>
+                            {I18n.t('deviceDetailsDialog_pageStatusCustom')}
+                        </MenuItem>
+                        {options.map(option => (
+                            <MenuItem
+                                key={option.id}
+                                value={option.id}
+                                sx={option.problem ? { color: 'error.main' } : undefined}
+                            >
+                                {DevicePageSection.optionLabel(option)}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+                {custom ? (
+                    <Box data-dd="device-page-status-custom">
+                        <EntitySelector
+                            label={I18n.t('deviceDetailsDialog_pageStatusCustomId')}
+                            value={current?.id ?? ''}
+                            onChange={(id: string) => onChange(withDevicePageStatus(value, customDevicePageStatus(id)))}
+                            socket={socket}
+                            theme={theme}
+                            themeType={themeType}
+                            dialogName="devicePageStatusCustom"
+                        />
+                    </Box>
+                ) : null}
+            </Box>
         );
     }
 
@@ -356,13 +436,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                 </Typography>
                 {this.renderLayoutChoice()}
                 {iconSelector}
-                {this.renderStateSelect(
-                    I18n.t('deviceDetailsDialog_pageStatus'),
-                    null,
-                    value.status,
-                    ref => onChange(withDevicePageStatus(value, ref)),
-                    'device-page-status',
-                )}
+                {this.renderStatus()}
                 {this.renderSlots()}
                 <FormControl>
                     <FormControlLabel

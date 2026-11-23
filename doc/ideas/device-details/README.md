@@ -247,10 +247,13 @@ devicePage?: {
     slots: (DevicePageStateRef | null)[];      // ein Eintrag je Slot des Layouts, null = leer
     showInfo: boolean;                         // „i“ zur Detailseite
     icon?: string;                             // MDI-Name des großen Icons, fehlt = Icon des Items
-    status?: DevicePageStateRef;               // State der Statuszeile, fehlt = leere Zeile
+    status?: DevicePageStatusRef;              // State der Statuszeile, fehlt = leere Zeile
 }
 // DevicePageStateRef = DeviceDetailEntryConfig & { icon?: string }:
 //   { key: Masken-Eintrag ('' = ohne), id: State, subName?: eigener Zusatz, icon?: eigenes Icon (nur status-Slots) }
+// DevicePageStatusRef = DevicePageStateRef & { custom?: true }:
+//   custom: true = benutzerdefinierter Datenpunkt (beliebiger State, auch außerhalb des Geräts, key ''),
+//   id darf dann '' sein (gewählt, aber noch nichts eingetragen); ohne custom = State des Geräts wie bisher
 ```
 
 - Verweisform wie die Zeilen der Detailseite: Icon, Name und Farbgruppe kommen aus der Maske (`key`), der State aus
@@ -261,6 +264,11 @@ devicePage?: {
   `icon` eines Verweises bleibt nur auf einem `status`-Slot (getrimmt, leer entfällt), Statuszeile und andere Slots
   verlieren es. Beim Layoutwechsel (`fitDevicePageSlots`) bleiben die Slots nach Position, nichts wird neu geraten
   (auch dort fällt das Icon weg, wenn der Slot keine `status`-Art mehr ist).
+- Statuszeile mit `custom: true`: bleibt auch mit leerer `id` gespeichert (die Auswahl im Admin springt nicht auf
+  „leer“ zurück), die `id` wird getrimmt, `key` ist immer `''`. Zur Laufzeit gibt es mit leerer `id` keine Statuszeile
+  (`deviceDetailsRuntimeOf` lässt `status` weg). Der Adapter liest nur `id` und `common` des States – ob er unter
+  `deviceId` liegt, spielt keine Rolle; ein nicht vorhandener State wird wie ein fehlender Slot gemeldet (warn), die
+  Zeile bleibt leer.
 - Laufzeit (`deviceDetailsRuntimeOf` → `DeviceDetailsRuntime.devicePage`, `DevicePageRuntime`): zusätzlich der Kurz-Tipp
   des Items; `showInfo` nur, wenn das Gerät angehakte Detail-Einträge hat.
 - Vorbelegung (`defaultDevicePageConfig` / `defaultDevicePageSlots`): nur die `info`-/`value`-Slots der Reihe nach aus
@@ -336,6 +344,11 @@ entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimme
 - Layout mit schematischer Vorschau (MUI-Boxen nach der Geometrie der HMI, nummerierte Slots,
   `devicePagePreviewAreas`), Haupt-Icon (IconSelect), Statuszeile (alle States), je Slot die States nach
   `devicePageSlotAccepts`, „i-Icon anzeigen“.
+- Statuszeile: die Auswahl beginnt mit „leer“ und „Benutzerdefinierter Datenpunkt“, danach die States des Geräts.
+  Bei „Benutzerdefinierter Datenpunkt“ erscheint darunter der `EntitySelector` (Textfeld + Objekt-Browser, nur States)
+  für eine beliebige ID, z. B. `0_userdata.0.…`. Gespeichert als `status: { key: '', id, custom: true }`
+  (`devicePageStatusOf`, `customDevicePageStatus`); ein eigener Datenpunkt steht nie in der Liste der Geräte-States und
+  wird nie als „nicht im Gerät gefunden“ markiert. Nur die Statuszeile hat das, die Slots nicht.
 - Status-Slots (Layout 1): Art „Status-Icon“, mit gewähltem State zusätzlich ein IconSelect für das eigene Icon
   (`withDevicePageSlotIcon`, leer = automatisch); ein anderer State im selben Slot behält das Icon. Hinweis unter den
   Slots, dass die Info-Zeilen schmaler werden. Die Vorschau zeichnet das Raster (2 Spalten, Zeilen = Anzahl/2) und die

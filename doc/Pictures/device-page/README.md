@@ -18,6 +18,10 @@ Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Rasenmähe
 4. **Haupt-Icon**: das große Icon oben links. Leer lassen = das Icon des Items.
 5. **Statuszeile**: ein beliebiger Wert des Geräts als Text in der breiten Zeile unten, z. B. das Programm der
    Waschmaschine. Leer = leere Zeile.
+   - Ganz oben in der Auswahl steht **Benutzerdefinierter Datenpunkt**. Damit zeigt die Statuszeile einen eigenen
+     Datenpunkt, der nicht zum Gerät gehören muss – z. B. einen Text unter `0_userdata.0`, den du per Skript selbst
+     zusammenbaust. Nach der Auswahl erscheint darunter ein Feld: ID eintippen oder mit dem Knopf **...** im
+     Objektbaum aussuchen. Solange das Feld leer ist oder es den Datenpunkt nicht gibt, bleibt die Zeile leer.
 6. **Slots**: Für jeden Slot steht die Nummer, die Art und eine Auswahl der Werte des Geräts. Angeboten werden nur
    Werte, die zur Art passen – „leer“ geht immer.
    - **Status-Icon** (nur Layout 1, Slots 7–10): zeigt nur ein kleines Icon in seiner Farbe, ohne Name und Wert, und
@@ -91,6 +95,7 @@ Screenshots des Dialogs fehlen noch (ohne laufenden Dev-Server nicht möglich).
 | 4 | Layout 3 wählen, dann Layout 1 | Slots bleiben nach Position; Slots 7/8 fallen bei Layout 1 weg |
 | 5 | Auswahl eines Knopf-/Schalter-/Fortschritts-Slots aufklappen | nur passende States (Knopf: Taster und schaltbare boolean, Schalter: schaltbare boolean, Balken: Zahlen), „leer“ oben |
 | 6 | Statuszeile aufklappen | alle States des Geräts, Name + ID wie in der Filterliste |
+| 6a | Statuszeile: **Benutzerdefinierter Datenpunkt** wählen (zweiter Eintrag nach „leer“) | darunter erscheint das Feld für die ID mit Knopf „...“; mit leerem Feld bleibt die Auswahl stehen (springt nicht auf „leer“), nichts ist rot markiert. ID außerhalb des Geräts eintragen (z. B. `0_userdata.0.status`), übernehmen, neu öffnen: Auswahl und ID sind da; am Panel zeigt die Statuszeile den Wert und folgt Änderungen |
 | 7 | Haupt-Icon wählen und wieder leeren | Icon wird gespeichert bzw. entfällt |
 | 8 | Übernehmen, Dialog neu öffnen | Geräteseite mit allen Einstellungen da; Rohdaten zeigen `device.devicePage` |
 | 9 | Auf **Detailseite** stellen und übernehmen | `device.devicePage` ist aus den Rohdaten verschwunden |
