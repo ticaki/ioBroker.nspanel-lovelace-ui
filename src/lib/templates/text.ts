@@ -5,6 +5,48 @@ import type { NSPanel } from '../types/NSPanel';
 import type { TemplateItems } from '../types/types';
 
 /**
+ * Read script of an icon that follows the charge level of a battery in percent (Dataitem `read`, `val` = the value):
+ * rounded to tens - below 5 `battery-outline`, 5 to below 15 `battery-10` ... 85 to below 95 `battery-90`, from 95
+ * (and without a number) `battery`.
+ */
+export const BATTERY_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-' + v + '0';
+    case 10:
+    default:
+        return 'battery';}`;
+
+/** like {@link BATTERY_ICON_READ} while the battery is charging: `battery-charging-outline`, `-10` ... `-90`, `battery-charging` */
+export const BATTERY_CHARGING_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-charging-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-charging-' + v + '0';
+    case 10:
+    default:
+        return 'battery-charging';}`;
+
+/**
  * Brightsky delivers ready-to-use MDI names in `icon_special`.
  * Unknown names fall back to `alert-circle-outline`.
  */
@@ -312,23 +354,7 @@ export const textTemplates: TemplateItems = {
                         mode: 'auto',
                         role: 'value.battery',
                         dp: '',
-                        read: `const v = Math.round(val / 10)
-                        switch (v) {
-                            case 0:
-                                return 'battery-charging-outline';
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                                return 'battery-charging-' + v + '0';
-                            case 10:
-                            default:
-                                return 'battery-charging';}`,
+                        read: BATTERY_CHARGING_ICON_READ,
                     },
                     text: {
                         value: {
@@ -353,23 +379,7 @@ export const textTemplates: TemplateItems = {
                         mode: 'auto',
                         role: 'value.battery',
                         dp: '',
-                        read: `const v = Math.round(val / 10)
-                            switch (v) {
-                                case 0:
-                                    return 'battery-outline';
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                case 5:
-                                case 6:
-                                case 7:
-                                case 8:
-                                case 9:
-                                    return 'battery-' + v + '0';
-                                case 10:
-                                default:
-                                    return 'battery';}`,
+                        read: BATTERY_ICON_READ,
                     },
                     color: {
                         type: 'const',
@@ -432,23 +442,7 @@ export const textTemplates: TemplateItems = {
                         const max = options?.max != null ?  options.max : 100;
                         val = Math.min(Math.max(val, min), max);
                         val = (val - min) * 100 / (max - min);
-                        const v = Math.round(val / 10)
-                        switch (v) {
-                            case 0:
-                                return 'battery-charging-outline';
-                            case 1:
-                            case 2:
-                            case 3:
-                            case 4:
-                            case 5:
-                            case 6:
-                            case 7:
-                            case 8:
-                            case 9:
-                                return 'battery-charging-' + v + '0';
-                            case 10:
-                            default:
-                                return 'battery-charging';}`,
+${BATTERY_CHARGING_ICON_READ}`,
                     },
                     text: {
                         value: {
@@ -483,23 +477,7 @@ export const textTemplates: TemplateItems = {
                             const max = options?.max != null ?  options.max : 100;
                             val = Math.min(Math.max(val, min), max);
                             val = (val - min) * 100 / (max - min);
-                            const v = Math.round(val / 10)
-                            switch (v) {
-                                case 0:
-                                    return 'battery-outline';
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                case 5:
-                                case 6:
-                                case 7:
-                                case 8:
-                                case 9:
-                                    return 'battery-' + v + '0';
-                                case 10:
-                                default:
-                                    return 'battery';}`,
+${BATTERY_ICON_READ}`,
                     },
                     color: undefined,
                 },

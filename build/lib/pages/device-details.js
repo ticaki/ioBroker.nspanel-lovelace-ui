@@ -18,6 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var device_details_exports = {};
 __export(device_details_exports, {
+  DEVICE_DETAIL_BATTERY_KEY: () => DEVICE_DETAIL_BATTERY_KEY,
   DEVICE_DETAIL_NAME_FIELD: () => DEVICE_DETAIL_NAME_FIELD,
   DEVICE_DETAIL_NAME_FONT: () => DEVICE_DETAIL_NAME_FONT,
   DEVICE_DETAIL_PAGE_PREFIX: () => DEVICE_DETAIL_PAGE_PREFIX,
@@ -25,6 +26,7 @@ __export(device_details_exports, {
   deviceDetailGroupColor: () => deviceDetailGroupColor,
   deviceDetailNameWithSuffix: () => deviceDetailNameWithSuffix,
   deviceDetailPageConfig: () => deviceDetailPageConfig,
+  deviceDetailRowIcon: () => deviceDetailRowIcon,
   deviceDetailRowItem: () => deviceDetailRowItem,
   deviceDetailRowLook: () => deviceDetailRowLook,
   deviceDetailRowNames: () => deviceDetailRowNames,
@@ -35,6 +37,7 @@ __export(device_details_exports, {
 });
 module.exports = __toCommonJS(device_details_exports);
 var import_Color = require("../const/Color");
+var import_text = require("../templates/text");
 var import_text_width = require("../const/text-width");
 var import_deviceDetails = require("../types/deviceDetails");
 const DEVICE_DETAIL_PAGE_PREFIX = "dd_";
@@ -48,6 +51,7 @@ function beginDeviceDetailsRun(panel) {
 function isLatestDeviceDetailsRun(panel, run) {
   return deviceDetailsRuns.get(panel) === run;
 }
+const DEVICE_DETAIL_BATTERY_KEY = "battery";
 const fallbackIcon = {
   button: "gesture-tap-button",
   switch: "toggle-switch",
@@ -155,13 +159,17 @@ function deviceDetailRowLook(deviceId, entry, common, kind) {
   });
   return {
     icon: (_b = maskEntry == null ? void 0 : maskEntry.icon) != null ? _b : fallbackIcon[kind],
-    color: deviceDetailGroupColor((_c = maskEntry == null ? void 0 : maskEntry.group) != null ? _c : "info")
+    color: deviceDetailGroupColor((_c = maskEntry == null ? void 0 : maskEntry.group) != null ? _c : "info"),
+    batteryLevel: (maskEntry == null ? void 0 : maskEntry.key) === DEVICE_DETAIL_BATTERY_KEY && common.type === "number"
   };
+}
+function deviceDetailRowIcon(look, id) {
+  return look.batteryLevel ? { type: "triggered", dp: id, read: import_text.BATTERY_ICON_READ } : { type: "const", constVal: look.icon };
 }
 function deviceDetailRowItem(deviceId, entry, common, name, readOnly = false, iconName = "") {
   const kind = readOnlyRowKind((0, import_deviceDetails.deviceDetailRowKind)(common), readOnly);
   const look = deviceDetailRowLook(deviceId, entry, common, kind);
-  const icon = { type: "const", constVal: iconName || look.icon };
+  const icon = iconName ? { type: "const", constVal: iconName } : deviceDetailRowIcon(look, entry.id);
   const valueColor = { type: "const", constVal: look.color };
   const nameItem = { type: "const", constVal: name };
   const text = { true: nameItem, false: nameItem };
@@ -290,6 +298,7 @@ async function deviceDetailRows(details, getObject, translate, language, model) 
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  DEVICE_DETAIL_BATTERY_KEY,
   DEVICE_DETAIL_NAME_FIELD,
   DEVICE_DETAIL_NAME_FONT,
   DEVICE_DETAIL_PAGE_PREFIX,
@@ -297,6 +306,7 @@ async function deviceDetailRows(details, getObject, translate, language, model) 
   deviceDetailGroupColor,
   deviceDetailNameWithSuffix,
   deviceDetailPageConfig,
+  deviceDetailRowIcon,
   deviceDetailRowItem,
   deviceDetailRowLook,
   deviceDetailRowNames,

@@ -450,7 +450,7 @@ function devicePageStateSlotItem(deviceId, kind, entry, common, name) {
     }
     case "progress": {
       const look = (0, import_device_details.deviceDetailRowLook)(deviceId, entry, common, "number");
-      const icon = { type: "const", constVal: look.icon };
+      const icon = (0, import_device_details.deviceDetailRowIcon)(look, entry.id);
       const color = { type: "const", constVal: look.color };
       return {
         type: "text",

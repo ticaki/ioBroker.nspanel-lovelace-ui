@@ -62,6 +62,31 @@ Ein Tipp links (Icon/Name) sendet auf diesen Zeilen `buttonPress3` und tut nicht
 - Icon aus der Maske bzw. Rolle (Thermometer, Blitz, WLAN, Batterie …), Name übersetzt über `getTranslation`.
 - Nicht pro Zeile einstellbar (erste Version): Icon und Farbe.
 
+#### Batterie-Füllstand: Icon nach Wert
+
+Der Maskeneintrag `battery` (Rolle `value.battery`, Zahl in Prozent) zeigt kein festes Icon, sondern eines nach dem
+Füllstand. Dafür wird das Lese-Skript des vorhandenen Batterie-Templates wiederverwendet (`BATTERY_ICON_READ` in
+`src/lib/templates/text.ts`, dieselbe Konstante nutzt `text.battery`): das Icon der Zeile ist ein `triggered`-Datenpunkt
+auf dem State mit diesem Skript (`deviceDetailRowIcon`), es wird also bei jeder Wertänderung neu gesendet.
+
+| Wert (auf Zehner gerundet) | Icon |
+|---|---|
+| unter 5 | `battery-outline` |
+| 5 bis unter 15 | `battery-10` |
+| 15 bis unter 25 | `battery-20` |
+| … je 10 weiter … | `battery-30` … `battery-80` |
+| 85 bis unter 95 | `battery-90` |
+| ab 95 (und ohne Zahlenwert) | `battery` |
+
+- Gilt für jede Zeile, deren Eintrag `battery` ist und deren State eine Zahl ist: Detailseite, auf der Geräteseite
+  info-, value-, progress- und status-Slots. Ein State ohne Schlüssel mit Rolle `value.battery` (z. B. ein
+  benutzerdefinierter Datenpunkt, `custom: 'state'`) wird über die allgemeine Maske genauso erkannt.
+- Die Farbe bleibt die der Gruppe (Energie) – sie hängt nicht vom Wert ab. Wer das will, setzt im „…“-Dialog des Slots
+  einen Farbverlauf.
+- Ein eigenes Icon des Slots (`trueIcon`, das ältere `icon` eines status-Slots) hat Vorrang: dann gibt es keine Stufen.
+- Keine Ladeerkennung, `batteryVoltage` und `lowBattery` behalten ihr festes Icon. Der Wert wird als Prozent gelesen,
+  `common.min/max` zählen nicht.
+
 ### Zweite Namenszeile
 
 - Haben mehrere angehakte Zeilen einer Detailseite denselben angezeigten Namen (Shelly Plus 1PM: `Relay0.temperatureC`
@@ -306,7 +331,7 @@ Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (beide 
 | progress | number | `text` (Rolle `devicePageProgress`), Feld 4 = Balkenfarbe (Farbgruppe) | ganze Zahl 0–100: über `common.min/max` skaliert, ohne direkt, begrenzt (`devicePageProgressPercent`) | keiner |
 | button | `read: false` oder schreibbarer boolean | `button` | wie cardGrid (`1`/`0`) | `read: false` schreibt `true`, boolean wird umgeschaltet |
 | switch | schreibbarer boolean | `switch` | `0`/`1` | `OnOff` wie cardEntities |
-| status | alle | `text`, nur Icon (Feld 3) und Farbe (Feld 4) wie die Info-Zeile desselben States (boolean: Farbe aktiviert/deaktiviert), eigenes Icon `icon` ersetzt es; Name (Feld 5) leer | leer | keiner |
+| status | alle | `text`, nur Icon (Feld 3) und Farbe (Feld 4) wie die Info-Zeile desselben States (boolean: Farbe aktiviert/deaktiviert), eigenes Icon `icon` ersetzt es; Batterie-Füllstand: Icon nach Wert (siehe „Batterie-Füllstand: Icon nach Wert“); Name (Feld 5) leer | leer | keiner |
 
 - **Status-Icons (Layout 1):** die Anzahl folgt nur aus `DEVICE_PAGE_LAYOUTS[1]` (HMI: 2×2-Raster rechts neben main).
   Sind alle leer, zeigt die HMI die Seite wie bisher (Info-Zeilen breit); ist mindestens einer belegt
@@ -366,7 +391,8 @@ Standard-Page-Item und nutzen dessen Bausteine.
 
 - **Icon und Farbe für true / false** (`trueIcon`, `falseIcon`, `trueColor`, `falseColor`): ersetzen Icon/Farbe aus
   Maske bzw. Art (`withDevicePageSlotLook`), nur was gesetzt ist. Eine Zahl oder ein Text kennt kein false und zeigt
-  Icon und Farbe von true (wie ohne Einstellung). Beispiel „ein Knopf für go/pause“: button-Slot mit lesbarem,
+  Icon und Farbe von true (wie ohne Einstellung). Ein eigenes Icon ersetzt auch das Stufen-Icon des
+  Batterie-Füllstands, eine eigene Farbe allein lässt die Stufen stehen. Beispiel „ein Knopf für go/pause“: button-Slot mit lesbarem,
   schreibbarem boolean, `trueIcon: 'pause'`, `falseIcon: 'play'` – der Tipp schaltet um (das tat er schon vorher:
   `entity1.value` → `onDeviceDetailTap` → `setStateFlip`; nur `read: false` schreibt `true`), Icon und Farbe folgen
   dem State.

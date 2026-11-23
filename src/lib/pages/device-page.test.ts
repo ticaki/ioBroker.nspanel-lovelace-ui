@@ -62,6 +62,7 @@ import { emptyChannelValueConfig } from '../types/adminShareConfig';
 import { isCardDeviceType } from '../types/function-and-const';
 import { Page } from '../classes/Page';
 import { Color } from '../const/Color';
+import { BATTERY_ICON_READ } from '../templates/text';
 
 const DEV = 'shelly.0.wm';
 
@@ -1281,6 +1282,42 @@ describe('lib/pages/device-page - settings of a slot on a state', () => {
         expect(own.role).to.equal(DEVICE_PAGE_PROGRESS_ROLE);
         const text = devicePageSlotItem(DEV, 'info', { ...ref('phase'), scale }, c('phase'), 'F') as any;
         expect(text.data.entity1).to.equal(undefined);
+    });
+    it('charge level of a battery: the icon follows the value in status, info, value and progress', () => {
+        const bat = { key: 'battery', id: `${DEV}.battery` };
+        const common = { type: 'number', role: 'value.battery', write: false, unit: '%', min: 0, max: 100 };
+        const levelIcon = { type: 'triggered', dp: bat.id, read: BATTERY_ICON_READ };
+        const energy = { type: 'const', constVal: Color.deviceEnergy };
+        for (const kind of ['status', 'info', 'value', 'progress'] as const) {
+            const item = devicePageSlotItem(DEV, kind, bat, common, 'B') as any;
+            expect(item.data.icon.true.value, kind).to.deep.equal(levelIcon);
+            expect(item.data.icon.false.value, kind).to.deep.equal(levelIcon);
+            // the color as before: the group of the entry
+            expect(item.data.icon.true.color, kind).to.deep.equal(energy);
+            expect(item.data.icon.false.color, kind).to.deep.equal(energy);
+        }
+        // an own data point with the role value.battery behaves the same
+        const ownRef = { key: '', id: '0_userdata.0.wm.battery', custom: 'state' as const };
+        const own = devicePageSlotItem(DEV, 'status', ownRef, common, '') as any;
+        expect(own.data.icon.true.value).to.deep.equal({ ...levelIcon, dp: ownRef.id });
+        expect(own.data.icon.true.color).to.deep.equal(energy);
+    });
+    it('charge level of a battery: an own icon of the slot wins, own colors go with the level icon', () => {
+        const bat = { key: 'battery', id: `${DEV}.battery` };
+        const common = { type: 'number', role: 'value.battery', write: false, unit: '%' };
+        const levelIcon = { type: 'triggered', dp: bat.id, read: BATTERY_ICON_READ };
+        for (const kind of ['status', 'info'] as const) {
+            const icon = devicePageSlotItem(DEV, kind, { ...bat, trueIcon: 'heart' }, common, 'B') as any;
+            expect(icon.data.icon.true.value, kind).to.deep.equal({ type: 'const', constVal: 'heart' });
+            expect(icon.data.icon.false.value, kind).to.deep.equal({ type: 'const', constVal: 'heart' });
+            const color = devicePageSlotItem(DEV, kind, { ...bat, trueColor: '#00ff00' }, common, 'B') as any;
+            expect(color.data.icon.true.value, kind).to.deep.equal(levelIcon);
+            expect(color.data.icon.true.color.constVal, kind).to.deep.equal(rgb('#00ff00'));
+        }
+        // the older icon of a status slot
+        const old = devicePageSlotItem(DEV, 'status', { ...bat, icon: 'star' }, common, '') as any;
+        expect(old.data.icon.true.value).to.deep.equal({ type: 'const', constVal: 'star' });
+        expect(old.data.icon.false.value).to.deep.equal({ type: 'const', constVal: 'star' });
     });
     it('long press: on a button and a switch item, not on a text', () => {
         const lp = { longPress: '0_userdata.0.lp' };
