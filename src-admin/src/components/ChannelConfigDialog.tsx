@@ -57,6 +57,7 @@ import {
     devicePageToSave,
     switchLongPressTarget,
     withDevicePageIcon,
+    withDevicePageSlotIcon,
     type LongPressStash,
     type LongPressTarget,
 } from '../devicePageConfig';
@@ -1925,6 +1926,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     onLongPressTargetChange={this.handleLongPressTargetChange}
                     onDevicePageChange={this.handleDevicePageChange}
                     devicePageIconSelector={device.devicePage ? this.renderDevicePageIcon(device.devicePage) : null}
+                    devicePageSlotIconSelector={this.renderDevicePageSlotIcon}
                 />
                 <TextField
                     label={I18n.t('channelConfigDialog_name')}
@@ -1944,10 +1946,49 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param devicePage the device page
      */
     private renderDevicePageIcon(devicePage: DevicePageConfig): React.JSX.Element {
-        const iconValue = devicePage.icon ?? '';
+        return this.renderDevicePageIconSelect(
+            'device-page-icon',
+            devicePage.icon ?? '',
+            'deviceDetailsDialog_pageIcon',
+            'deviceDetailsDialog_pageIconHint',
+            (page, icon) => withDevicePageIcon(page, icon),
+        );
+    }
+
+    /**
+     * The own icon of a status slot of the device page, empty = the icon of the mask entry / the state.
+     *
+     * @param index index of the slot (0 = slot 1)
+     * @param icon the saved icon, '' = none
+     */
+    private renderDevicePageSlotIcon = (index: number, icon: string): React.JSX.Element =>
+        this.renderDevicePageIconSelect(
+            'device-page-slot-icon',
+            icon,
+            'deviceDetailsDialog_pageSlotIcon',
+            'deviceDetailsDialog_pageSlotIconHint',
+            (page, picked) => withDevicePageSlotIcon(page, index, picked),
+        );
+
+    /**
+     * An icon selector of the device page.
+     *
+     * @param dataDd test marker
+     * @param iconValue the saved icon, '' = none
+     * @param label translation key of the label
+     * @param hint translation key of the hint below
+     * @param apply puts the picked icon into the device page
+     */
+    private renderDevicePageIconSelect(
+        dataDd: string,
+        iconValue: string,
+        label: string,
+        hint: string,
+        apply: (devicePage: DevicePageConfig, icon: string) => DevicePageConfig,
+    ): React.JSX.Element {
         const themeName: ThemeName = this.props.themeType === 'dark' ? 'dark' : 'light';
         return (
-            <Box data-dd="device-page-icon">
+            <Box data-dd={dataDd}>
                 <IconSelect
                     oContext={this.buildOContext()}
                     alive={true}
@@ -1962,7 +2003,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         type: 'custom',
                         name: 'IconSelect',
                         url: '',
-                        label: 'deviceDetailsDialog_pageIcon',
+                        label,
                         i18n: true,
                     }}
                     custom
@@ -1979,7 +2020,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 ? {
                                       device: {
                                           ...prev.device,
-                                          devicePage: withDevicePageIcon(prev.device.devicePage, icon),
+                                          devicePage: apply(prev.device.devicePage, icon),
                                       },
                                   }
                                 : null,
@@ -1994,7 +2035,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     variant="caption"
                     color="text.secondary"
                 >
-                    {I18n.t('deviceDetailsDialog_pageIconHint')}
+                    {I18n.t(hint)}
                 </Typography>
             </Box>
         );

@@ -8,6 +8,8 @@ import {
     devicePageMainItem,
     devicePagePageConfig,
     devicePageSlotItem,
+    devicePageStatusIconElement,
+    devicePageStatusIconItem,
     devicePageStatusItem,
     fitDevicePageStatus,
     supportsCardDevice,
@@ -22,8 +24,10 @@ import {
     defaultDevicePageConfig,
     defaultDevicePageSlots,
     devicePageConfigOf,
+    devicePageHasStatusIcons,
     devicePageProgressPercent,
     devicePageSlotAccepts,
+    devicePageSlotFields,
     deviceDetailsRuntimeOf,
     fitDevicePageSlots,
     type DeviceDetailsRuntime,
@@ -33,6 +37,7 @@ import { textWidth } from '../const/text-width';
 import { PageDevice } from './pageDevice';
 import { PageItem } from './pageItem';
 import { Page } from '../classes/Page';
+import { Color } from '../const/Color';
 
 const DEV = 'shelly.0.wm';
 
@@ -57,6 +62,11 @@ const objects: Record<string, any> = {
 };
 const getObject = async (id: string): Promise<ioBroker.Object | null> => Promise.resolve(objects[id] ?? null);
 const ref = (id: string): { key: string; id: string } => ({ key: '', id: `${DEV}.${id}` });
+/**
+ * @param used status slots of layout 1 that are already given
+ * @returns nulls for the other status slots of layout 1 (their number comes from DEVICE_PAGE_LAYOUTS only)
+ */
+const statusNulls = (used: number): null[] => DEVICE_PAGE_LAYOUTS[1].slice(6 + used).map(() => null);
 
 const sourceSwitch = {
     type: 'switch' as const,
@@ -74,7 +84,7 @@ const sourceSwitch = {
 function runtime(page: Partial<DevicePageRuntime>): { details: DeviceDetailsRuntime; page: DevicePageRuntime } {
     const p: DevicePageRuntime = {
         layout: 1,
-        slots: [null, null, null, null, null, null],
+        slots: DEVICE_PAGE_LAYOUTS[page.layout ?? 1].map(() => null),
         showInfo: true,
         shortPress: 'state',
         ...page,
@@ -84,7 +94,19 @@ function runtime(page: Partial<DevicePageRuntime>): { details: DeviceDetailsRunt
 
 describe('lib/types/deviceDetails - device page configuration', () => {
     it('layouts: kinds and number of slots', () => {
-        expect(DEVICE_PAGE_LAYOUTS[1]).to.deep.equal(['info', 'info', 'button', 'button', 'button', 'button']);
+        expect(DEVICE_PAGE_LAYOUTS[1].slice(0, 6)).to.deep.equal([
+            'info',
+            'info',
+            'button',
+            'button',
+            'button',
+            'button',
+        ]);
+        // the status icons follow the six slots, how many comes from the table only
+        expect(DEVICE_PAGE_LAYOUTS[1].slice(6).length).to.be.above(0);
+        expect(DEVICE_PAGE_LAYOUTS[1].slice(6).every(k => k === 'status')).to.equal(true);
+        expect(DEVICE_PAGE_LAYOUTS[2].includes('status')).to.equal(false);
+        expect(DEVICE_PAGE_LAYOUTS[3].includes('status')).to.equal(false);
         expect(DEVICE_PAGE_LAYOUTS[2]).to.deep.equal(['value', 'progress', 'info', 'info', 'info', 'button']);
         expect(DEVICE_PAGE_LAYOUTS[3]).to.have.length(8);
         expect(DEVICE_PAGE_LAYOUTS[3].slice(6)).to.deep.equal(['switch', 'switch']);
@@ -101,7 +123,7 @@ describe('lib/types/deviceDetails - device page configuration', () => {
         });
         expect(c).to.deep.equal({
             layout: 1,
-            slots: [ref('power'), null, null, null, null, ref('on')],
+            slots: [ref('power'), null, null, null, null, ref('on'), ref('door'), ref('start'), ...statusNulls(2)],
             showInfo: true,
         });
         const d = devicePageConfigOf({
@@ -119,8 +141,51 @@ describe('lib/types/deviceDetails - device page configuration', () => {
     });
     it('a layout change keeps the slots by position', () => {
         const slots = [ref('power'), null, ref('door'), null, null, ref('start'), ref('on'), ref('on')];
-        expect(fitDevicePageSlots(slots, 1)).to.deep.equal(slots.slice(0, 6));
+        expect(fitDevicePageSlots(slots, 1)).to.deep.equal([...slots, ...statusNulls(2)]);
         expect(fitDevicePageSlots(slots.slice(0, 6), 3)).to.deep.equal([...slots.slice(0, 6), null, null]);
+        expect(fitDevicePageSlots(slots, 2)).to.deep.equal(slots.slice(0, 6));
+    });
+    it('an older layout 1 with 6 slots stays valid: the status slots are empty', () => {
+        const old = {
+            layout: 1,
+            slots: [ref('power'), ref('door'), ref('start'), null, null, ref('on')],
+            showInfo: true,
+        };
+        const c = devicePageConfigOf(old);
+        expect(c?.slots).to.have.length(DEVICE_PAGE_LAYOUTS[1].length);
+        expect(c?.slots.slice(0, 6)).to.deep.equal(old.slots);
+        expect(c?.slots.slice(6).every(s => s === null)).to.equal(true);
+        expect(devicePageHasStatusIcons(1, c?.slots ?? [])).to.equal(false);
+        const runtimePage = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [], devicePage: old })?.devicePage;
+        expect(runtimePage?.slots).to.have.length(DEVICE_PAGE_LAYOUTS[1].length);
+    });
+    it('own icon: kept (trimmed) only on a status slot, an empty one is left out', () => {
+        const first = DEVICE_PAGE_LAYOUTS[1].indexOf('status');
+        const slots: unknown[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
+        slots[0] = { ...ref('power'), icon: 'filter' };
+        slots[first] = { ...ref('door'), icon: ' delete-empty ' };
+        slots[first + 1] = { ...ref('on'), icon: '  ' };
+        const c = devicePageConfigOf({ layout: 1, slots, status: { ...ref('phase'), icon: 'x' } });
+        expect(c?.slots[0]).to.deep.equal(ref('power'));
+        expect(c?.slots[first]).to.deep.equal({ ...ref('door'), icon: 'delete-empty' });
+        expect(c?.slots[first + 1]).to.deep.equal(ref('on'));
+        expect(c?.status).to.deep.equal(ref('phase'));
+        // a layout change by position: the icon does not travel to another kind
+        expect(fitDevicePageSlots(c?.slots ?? [], 3)[first]).to.deep.equal(ref('door'));
+        expect(fitDevicePageSlots(c?.slots ?? [], 1)[first]).to.deep.equal({ ...ref('door'), icon: 'delete-empty' });
+    });
+    it('status icons: shown when at least one status slot is set; narrower info rows then', () => {
+        const slots: ({ key: string; id: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
+        slots[0] = ref('power');
+        expect(devicePageHasStatusIcons(1, slots)).to.equal(false);
+        slots[DEVICE_PAGE_LAYOUTS[1].length - 1] = ref('door');
+        expect(devicePageHasStatusIcons(1, slots)).to.equal(true);
+        expect(devicePageHasStatusIcons(3, [ref('power')])).to.equal(false);
+        expect(devicePageSlotFields(1, 'info', false)).to.deep.equal({ name: 164, value: 110 });
+        expect(devicePageSlotFields(1, 'info', true)).to.deep.equal({ name: 86, value: 110 });
+        expect(devicePageSlotFields(1, 'button', true)).to.deep.equal({ name: 104 });
+        expect(devicePageSlotFields(1, 'status', true)).to.equal(undefined);
+        expect(devicePageSlotFields(3, 'info', true)).to.deep.equal({ name: 125, value: 125 });
     });
     it('suggestion: only info / value slots, from the ticked rows in order, no status', () => {
         const entries = [ref('power'), ref('progress'), ref('phase'), { key: 'x', id: '' }, ref('door')];
@@ -131,6 +196,7 @@ describe('lib/types/deviceDetails - device page configuration', () => {
             null,
             null,
             null,
+            ...statusNulls(0),
         ]);
         expect(defaultDevicePageSlots(entries, 2)).to.deep.equal([
             ref('power'),
@@ -180,7 +246,7 @@ describe('lib/types/deviceDetails - device page configuration', () => {
             true,
             false,
         ]);
-        for (const kind of ['info', 'value'] as const) {
+        for (const kind of ['info', 'value', 'status'] as const) {
             expect([button, bool, roBool, num, str].every(s => devicePageSlotAccepts(kind, s))).to.equal(true);
         }
     });
@@ -254,7 +320,7 @@ describe('lib/pages/device-page - status line', () => {
     it('field widths of the HMI: status line 390 px in every layout, a field per slot kind of the layout', () => {
         for (const layout of [1, 2, 3] as const) {
             expect(DEVICE_PAGE_FIELDS[layout].status).to.equal(390);
-            for (const kind of DEVICE_PAGE_LAYOUTS[layout]) {
+            for (const kind of DEVICE_PAGE_LAYOUTS[layout].filter(k => k !== 'status')) {
                 expect(DEVICE_PAGE_FIELDS[layout].slots[kind], `${layout} ${kind}`).to.not.equal(undefined);
             }
         }
@@ -324,6 +390,43 @@ describe('lib/pages/device-page - slots', () => {
         expect(item.role).to.equal(DEVICE_DETAIL_ROW_ROLE);
         expect(devicePageSlotItem(DEV, 'switch', ref('start'), c('start'), 'x')).to.equal(undefined);
     });
+    it('status: a text with icon and color only - no name, no value, any state', () => {
+        for (const id of ['power', 'program', 'phase', 'start', 'on', 'door']) {
+            const item = devicePageSlotItem(DEV, 'status', ref(id), c(id), 'ignored') as any;
+            expect(item.type, id).to.equal('text');
+            expect(item.role, id).to.equal(DEVICE_DETAIL_ROW_ROLE);
+            expect(item.data.entity2, id).to.equal(undefined);
+            expect(item.data.text1, id).to.equal(undefined);
+            expect(item.data.text.true.constVal, id).to.equal('');
+        }
+        // a number: icon and color of the mask entry / the kind, same as the info row
+        const num = devicePageStatusIconItem(DEV, ref('power'), c('power')) as any;
+        const row = devicePageSlotItem(DEV, 'info', ref('power'), c('power'), 'P') as any;
+        expect(num.data.icon).to.deep.equal(row.data.icon);
+    });
+    it('status of a boolean: colors activated / deactivated by the value (entity1)', () => {
+        const item = devicePageStatusIconItem(DEV, ref('door'), c('door')) as any;
+        expect(item.data.entity1.value.dp).to.equal(`${DEV}.door`);
+        expect(item.data.icon.true.color.constVal).to.deep.equal(Color.activated);
+        expect(item.data.icon.false.color.constVal).to.deep.equal(Color.deactivated);
+        expect(item.data.icon.true.value.constVal).to.equal(item.data.icon.false.value.constVal);
+    });
+    it('status with an own icon: replaces the icon for on and off, the colors stay', () => {
+        const auto = devicePageStatusIconItem(DEV, ref('door'), c('door')) as any;
+        const own = devicePageStatusIconItem(DEV, { ...ref('door'), icon: 'delete-empty' }, c('door')) as any;
+        expect(own.data.icon.true.value.constVal).to.equal('delete-empty');
+        expect(own.data.icon.false.value.constVal).to.equal('delete-empty');
+        expect(own.data.icon.true.color).to.deep.equal(auto.data.icon.true.color);
+        expect(own.data.icon.false.color).to.deep.equal(auto.data.icon.false.color);
+        // other kinds ignore an own icon
+        const info = devicePageSlotItem(DEV, 'info', { ...ref('door'), icon: 'delete-empty' }, c('door'), 'x') as any;
+        expect(info.data.icon.true.value.constVal).to.not.equal('delete-empty');
+    });
+    it('status element: name and value always empty, empty payload = empty element', () => {
+        expect(devicePageStatusIconElement('text~dp_3?7~I~123~Tür~offen')).to.equal('text~dp_3?7~I~123~~');
+        expect(devicePageStatusIconElement('')).to.equal(DEVICE_PAGE_EMPTY_ELEMENT);
+        expect(devicePageStatusIconElement(DEVICE_PAGE_EMPTY_ELEMENT)).to.equal(DEVICE_PAGE_EMPTY_ELEMENT);
+    });
 });
 
 describe('lib/pages/device-page - elements', () => {
@@ -383,6 +486,22 @@ describe('lib/pages/device-page - elements', () => {
         const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
         const item = content.elements[1] as any;
         expect(item.data.text.true.constVal).to.equal('power Pumpe mit einem sehr langen Namen');
+    });
+    it('status slots: an item without name, they do not count for the duplicates of the named slots', async () => {
+        const first = DEVICE_PAGE_LAYOUTS[1].indexOf('status');
+        const slots: ({ key: string; id: string; icon?: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
+        slots[0] = ref('power');
+        slots[first] = ref('power');
+        slots[first + 1] = { ...ref('door'), icon: 'door-open' };
+        const { details, page } = runtime({ slots });
+        const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
+        // the same state in a status slot: no automatic suffix for the info row
+        expect((content.elements[1] as any).data.text.true.constVal).to.equal('power');
+        const status = content.elements[first + 1] as any;
+        expect(status.type).to.equal('text');
+        expect(status.data.text.true.constVal).to.equal('');
+        expect((content.elements[first + 2] as any).data.icon.true.value.constVal).to.equal('door-open');
+        expect(content.skipped).to.deep.equal([]);
     });
 });
 
@@ -481,14 +600,19 @@ describe('lib/pages/device-page - main', () => {
  *
  * @param slotCount number of slots
  * @param payloads payloads of the page items (index = item number), undefined = no item
+ * @param layout the layout
  */
-function fakeDevicePage(slotCount: number, payloads: (string | undefined)[]): { page: PageDevice; sent: string[] } {
+function fakeDevicePage(
+    slotCount: number,
+    payloads: (string | undefined)[],
+    layout: 1 | 2 | 3 = 1,
+): { page: PageDevice; sent: string[] } {
     const sent: string[] = [];
     const page = Object.create(PageDevice.prototype) as PageDevice;
     Object.assign(page, {
         headline: 'Waschmaschine',
         slotCount,
-        layout: 1,
+        layout,
         visibility: true,
         refreshTimeout: null,
         adapter: { setTimeout: (): number => 1, clearTimeout: (): void => undefined },
@@ -515,7 +639,7 @@ describe('lib/pages/pageDevice - payload', () => {
             }
             payloads.push(`button~dp_3?${n + 1}~i~3~~1`);
             payloads.push(`text~dp_3?${n + 2}~x~4~~Schleudern`);
-            const { page, sent } = fakeDevicePage(n, payloads);
+            const { page, sent } = fakeDevicePage(n, payloads, layout);
             await page.update();
             expect(sent).to.have.length(1);
             const fields = sent[0].split('~');
@@ -532,12 +656,61 @@ describe('lib/pages/pageDevice - payload', () => {
         });
     }
     it('no info and no status: empty element, field 6 of main empty', async () => {
-        const { page, sent } = fakeDevicePage(6, ['text~dp_3?0~M~1~WM~5 W']);
+        const n = DEVICE_PAGE_LAYOUTS[1].length;
+        const { page, sent } = fakeDevicePage(n, ['text~dp_3?0~M~1~WM~5 W']);
         await page.update();
         const elements = sent[0].split('~').slice(14);
         expect(elements.slice(0, 6)).to.deep.equal(['text', 'dp_3?0', 'M', '1', 'WM', '']);
-        expect(elements).to.have.length(6 * 8);
-        expect(elements.slice(42)).to.deep.equal(['', '', '', '', '', '']);
+        expect(elements).to.have.length(6 * (n + 2));
+        expect(elements.slice(6 * (n + 1))).to.deep.equal(['', '', '', '', '', '']);
+    });
+    describe('layout 1 with status icons', () => {
+        const kinds = DEVICE_PAGE_LAYOUTS[1];
+        const n = kinds.length;
+        const statusIndexes = kinds.map((k, i) => (k === 'status' ? i + 1 : 0)).filter(i => i > 0);
+        /**
+         * @param filled item numbers of the filled status slots
+         * @returns the elements after the navigation
+         */
+        async function send(filled: number[]): Promise<string[]> {
+            const payloads: (string | undefined)[] = ['switch~dp_3?0~M~1~WM~1'];
+            for (let i = 1; i <= n; i++) {
+                if (kinds[i - 1] === 'status') {
+                    payloads.push(filled.includes(i) ? `text~dp_3?${i}~S${i}~${100 + i}~Name${i}~Wert${i}` : undefined);
+                } else {
+                    payloads.push(`text~dp_3?${i}~I~2~S${i}~${i} W`);
+                }
+            }
+            payloads.push(`button~dp_3?${n + 1}~i~3~~1`);
+            const { page, sent } = fakeDevicePage(n, payloads, 1);
+            await page.update();
+            return sent[0].split('~').slice(14);
+        }
+        const element = (elements: string[], e: number): string[] => elements.slice(6 * e, 6 * e + 6);
+        it('none: every status slot is the empty element, the order main, slots, info stays', async () => {
+            const elements = await send([]);
+            expect(elements).to.have.length(6 * (n + 2));
+            for (const e of statusIndexes) {
+                expect(element(elements, e)).to.deep.equal(['', '', '', '', '', '']);
+            }
+            expect(element(elements, 1)).to.deep.equal(['text', 'dp_3?1', 'I', '2', 'S1', '1 W']);
+            expect(element(elements, n + 1).slice(0, 2)).to.deep.equal(['button', `dp_3?${n + 1}`]);
+        });
+        it('one: icon and color, name and value empty', async () => {
+            const e = statusIndexes[0];
+            const elements = await send([e]);
+            expect(element(elements, e)).to.deep.equal(['text', `dp_3?${e}`, `S${e}`, String(100 + e), '', '']);
+            for (const other of statusIndexes.slice(1)) {
+                expect(element(elements, other)).to.deep.equal(['', '', '', '', '', '']);
+            }
+        });
+        it('all: every status slot with icon and color only', async () => {
+            const elements = await send(statusIndexes);
+            for (const e of statusIndexes) {
+                expect(element(elements, e)).to.deep.equal(['text', `dp_3?${e}`, `S${e}`, String(100 + e), '', '']);
+            }
+            expect(element(elements, n + 1).slice(0, 2)).to.deep.equal(['button', `dp_3?${n + 1}`]);
+        });
     });
     it('no long press on the device page: buttonPress3 falls back to the tap', async () => {
         const { page } = fakeDevicePage(6, []);

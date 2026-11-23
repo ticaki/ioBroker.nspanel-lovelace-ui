@@ -290,6 +290,7 @@ export function deviceDetailRowLook(
  * @param name name of the row
  * @param readOnly false = the controls of the detail page, `all` = every row as text, `keepSelect` = every row as text
  * except a selection
+ * @param iconName MDI name that replaces the icon of the mask entry / kind (status icon of the device page), '' = none
  * @returns the page item
  */
 export function deviceDetailRowItem(
@@ -298,10 +299,11 @@ export function deviceDetailRowItem(
     common: DeviceDetailStateCommon,
     name: string,
     readOnly: false | 'all' | 'keepSelect' = false,
+    iconName = '',
 ): NSPanel.PageItemDataItemsOptions {
     const kind = readOnlyRowKind(deviceDetailRowKind(common), readOnly);
     const look = deviceDetailRowLook(deviceId, entry, common, kind);
-    const icon: NSPanel.DataItemsOptions = { type: 'const', constVal: look.icon };
+    const icon: NSPanel.DataItemsOptions = { type: 'const', constVal: iconName || look.icon };
     const valueColor: NSPanel.DataItemsOptions = { type: 'const', constVal: look.color };
     const nameItem: NSPanel.DataItemsOptions = { type: 'const', constVal: name };
     const text = { true: nameItem, false: nameItem };

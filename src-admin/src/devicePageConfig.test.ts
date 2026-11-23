@@ -1,5 +1,9 @@
 import { expect } from 'chai';
 import {
+    PREVIEW_INFO,
+    PREVIEW_MAIN,
+    PREVIEW_STATUS_LINE,
+    devicePagePreviewAreas,
     devicePageRefOf,
     devicePageStateOptions,
     devicePageToSave,
@@ -9,12 +13,23 @@ import {
     withDevicePageIcon,
     withDevicePageLayout,
     withDevicePageSlot,
+    withDevicePageSlotIcon,
     withDevicePageStatus,
     type LongPressStash,
 } from './devicePageConfig';
-import type { DeviceDetailsConfig, DevicePageConfig, DeviceStateInfo } from '../../src/lib/types/deviceDetails';
+import {
+    DEVICE_PAGE_LAYOUTS,
+    type DeviceDetailsConfig,
+    type DevicePageConfig,
+    type DeviceStateInfo,
+} from '../../src/lib/types/deviceDetails';
 
 const DEV = 'shelly.0.dev1';
+
+/** the status slots of layout 1 (indexes) - their number comes from DEVICE_PAGE_LAYOUTS only */
+const STATUS = DEVICE_PAGE_LAYOUTS[1].flatMap((kind, i) => (kind === 'status' ? [i] : []));
+/** nulls for the status slots of layout 1 */
+const STATUS_NULLS: null[] = STATUS.map(() => null);
 
 function state(rest: string, extra: Partial<DeviceStateInfo> = {}): DeviceStateInfo {
     return { id: `${DEV}.${rest}`, name: rest, role: 'state', type: 'number', read: true, write: false, ...extra };
@@ -61,6 +76,7 @@ describe('devicePageConfig - device page of the page item dialog', () => {
                 null,
                 null,
                 null,
+                ...STATUS_NULLS,
             ],
             showInfo: true,
         });
@@ -115,7 +131,18 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         };
         const one = withDevicePageLayout(page, 1);
         expect(one.layout).to.equal(1);
-        expect(one.slots).to.deep.equal([{ key: 'a', id: 'x.1' }, null, null, null, null, null]);
+        // slots 7/8 (switch) stay by position in the first status slots
+        expect(one.slots).to.deep.equal([
+            { key: 'a', id: 'x.1' },
+            null,
+            null,
+            null,
+            null,
+            null,
+            { key: 'b', id: 'x.7' },
+            { key: 'c', id: 'x.8' },
+            ...STATUS_NULLS.slice(2),
+        ]);
         expect(withDevicePageLayout(page, 3)).to.equal(page);
         expect(withDevicePageLayout(one, 3).slots).to.have.length(8);
     });
@@ -123,9 +150,9 @@ describe('devicePageConfig - device page of the page item dialog', () => {
     it('withDevicePageSlot / withDevicePageStatus / withDevicePageIcon', () => {
         const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
         const withSlot = withDevicePageSlot(page, 2, { key: '', id: 'x.3' });
-        expect(withSlot.slots).to.deep.equal([null, null, { key: '', id: 'x.3' }, null, null, null]);
+        expect(withSlot.slots).to.deep.equal([null, null, { key: '', id: 'x.3' }, null, null, null, ...STATUS_NULLS]);
         expect(withDevicePageSlot(withSlot, 2, null).slots[2]).to.equal(null);
-        expect(withDevicePageSlot(page, 6, { key: '', id: 'x' })).to.equal(page);
+        expect(withDevicePageSlot(page, DEVICE_PAGE_LAYOUTS[1].length, { key: '', id: 'x' })).to.equal(page);
 
         const withStatus = withDevicePageStatus(page, { key: '', id: 'x.s' });
         expect(withStatus.status).to.deep.equal({ key: '', id: 'x.s' });
@@ -133,6 +160,56 @@ describe('devicePageConfig - device page of the page item dialog', () => {
 
         expect(withDevicePageIcon(page, ' robot ').icon).to.equal('robot');
         expect(withDevicePageIcon({ ...page, icon: 'robot' }, '')).to.not.have.property('icon');
+    });
+
+    it('status slots: own icon only with a state, kept when another state is chosen', () => {
+        const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
+        const s = STATUS[0];
+        expect(withDevicePageSlotIcon(page, s, 'filter')).to.equal(page);
+        const withState = withDevicePageSlot(page, s, { key: '', id: 'x.door' });
+        const withIcon = withDevicePageSlotIcon(withState, s, ' filter ');
+        expect(withIcon.slots[s]).to.deep.equal({ key: '', id: 'x.door', icon: 'filter' });
+        // another state keeps the icon, removing the state removes it
+        expect(withDevicePageSlot(withIcon, s, { key: 'k', id: 'x.bin' }).slots[s]).to.deep.equal({
+            key: 'k',
+            id: 'x.bin',
+            icon: 'filter',
+        });
+        expect(withDevicePageSlot(withIcon, s, null).slots[s]).to.equal(null);
+        expect(withDevicePageSlotIcon(withIcon, s, '').slots[s]).to.deep.equal({ key: '', id: 'x.door' });
+        // no own icon on other kinds
+        const info = withDevicePageSlot(page, 0, { key: '', id: 'x.p' });
+        expect(withDevicePageSlotIcon(info, 0, 'filter')).to.equal(info);
+        expect(withDevicePageSlot(info, 0, { key: '', id: 'x.p', icon: 'filter' }).slots[0]).to.deep.equal({
+            key: '',
+            id: 'x.p',
+        });
+    });
+
+    it('preview: the status grid only with a status slot filled, 2 columns, narrow info rows then', () => {
+        const plain = devicePagePreviewAreas(1, false);
+        expect(plain.filter(a => STATUS.includes(a.slot - 1))).to.deep.equal([]);
+        expect(plain.find(a => a.slot === 1)).to.deep.include({ x: 126, w: 314 });
+        const grid = devicePagePreviewAreas(1, true);
+        const cells = grid.filter(a => STATUS.includes(a.slot - 1));
+        expect(cells.map(a => a.slot)).to.deep.equal(STATUS.map(i => i + 1));
+        expect(cells.slice(0, 4).map(a => [a.x, a.y, a.w, a.h])).to.deep.equal([
+            [124, 71, 38, 45],
+            [161, 71, 38, 45],
+            [124, 115, 38, 45],
+            [161, 115, 38, 45],
+        ]);
+        const rows = new Set(cells.map(a => a.y));
+        expect(rows.size).to.equal(STATUS.length / 2);
+        expect(grid.find(a => a.slot === 1)).to.deep.include({ x: 204, w: 236 });
+        for (const layout of [1, 2, 3] as const) {
+            const areas = devicePagePreviewAreas(layout, layout === 1);
+            const slots = areas.filter(a => a.slot > 0).map(a => a.slot);
+            expect(slots.sort((a, b) => a - b)).to.deep.equal(DEVICE_PAGE_LAYOUTS[layout].map((_, i) => i + 1));
+            expect(areas.some(a => a.slot === PREVIEW_MAIN)).to.equal(true);
+            expect(areas.some(a => a.slot === PREVIEW_INFO)).to.equal(true);
+            expect(areas.some(a => a.slot === PREVIEW_STATUS_LINE)).to.equal(true);
+        }
     });
 
     describe('devicePageStateOptions', () => {

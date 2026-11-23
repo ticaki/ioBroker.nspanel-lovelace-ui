@@ -104,6 +104,13 @@ export interface DeviceDetailsSectionProps {
     onDevicePageChange: (devicePage: DevicePageConfig) => void;
     /** the icon selector of the big icon of the device page, rendered by the page item dialog */
     devicePageIconSelector: React.ReactNode;
+    /**
+     * the icon selector of a status slot of the device page, rendered by the page item dialog
+     *
+     * @param index index of the slot (0 = slot 1)
+     * @param icon the saved icon, '' = none
+     */
+    devicePageSlotIconSelector: (index: number, icon: string) => React.ReactNode;
 }
 
 interface DeviceDetailsSectionState {
@@ -401,6 +408,7 @@ export default class DeviceDetailsSection extends React.Component<
                         states={info?.ok ? info.states : null}
                         onChange={this.props.onDevicePageChange}
                         iconSelector={this.props.devicePageIconSelector}
+                        slotIconSelector={this.props.devicePageSlotIconSelector}
                     />
                 )}
                 <DeviceDetailsFilterDialog

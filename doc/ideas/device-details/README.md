@@ -249,18 +249,22 @@ devicePage?: {
     icon?: string;                             // MDI-Name des großen Icons, fehlt = Icon des Items
     status?: DevicePageStateRef;               // State der Statuszeile, fehlt = leere Zeile
 }
-// DevicePageStateRef = DeviceDetailEntryConfig: { key: Masken-Eintrag ('' = ohne), id: State, subName?: eigener Zusatz }
+// DevicePageStateRef = DeviceDetailEntryConfig & { icon?: string }:
+//   { key: Masken-Eintrag ('' = ohne), id: State, subName?: eigener Zusatz, icon?: eigenes Icon (nur status-Slots) }
 ```
 
 - Verweisform wie die Zeilen der Detailseite: Icon, Name und Farbgruppe kommen aus der Maske (`key`), der State aus
   `id`. Ein Slot darf jeden State des Geräts zeigen, er muss nicht für die Detailseite angehakt sein.
 - Normalisierung `devicePageConfigOf`: unbekanntes Layout → 1, Slots auf die Länge des Layouts gekürzt/mit `null`
   aufgefüllt (ungültige oder ohne State → `null`), `showInfo` nur bei `false` aus, leeres Icon/leerer Status entfällt.
-  Beim Layoutwechsel (`fitDevicePageSlots`) bleiben die Slots nach Position, nichts wird neu geraten.
+  Ein gespeichertes Layout 1 von vor den Status-Icons (6 Slots) bekommt so die Status-Slots leer dazu. Das eigene
+  `icon` eines Verweises bleibt nur auf einem `status`-Slot (getrimmt, leer entfällt), Statuszeile und andere Slots
+  verlieren es. Beim Layoutwechsel (`fitDevicePageSlots`) bleiben die Slots nach Position, nichts wird neu geraten
+  (auch dort fällt das Icon weg, wenn der Slot keine `status`-Art mehr ist).
 - Laufzeit (`deviceDetailsRuntimeOf` → `DeviceDetailsRuntime.devicePage`, `DevicePageRuntime`): zusätzlich der Kurz-Tipp
   des Items; `showInfo` nur, wenn das Gerät angehakte Detail-Einträge hat.
 - Vorbelegung (`defaultDevicePageConfig` / `defaultDevicePageSlots`): nur die `info`-/`value`-Slots der Reihe nach aus
-  den angehakten Einträgen; `button`, `switch`, `progress` und der Status bleiben leer – nicht raten.
+  den angehakten Einträgen; `button`, `switch`, `progress`, `status` und die Statuszeile bleiben leer – nicht raten.
 
 ### Layouts und Slot-Arten
 
@@ -268,7 +272,7 @@ Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (beide 
 
 | Layout | Slots |
 |---|---|
-| 1 „Steuern“ | info, info, button, button, button, button |
+| 1 „Steuern“ | info, info, button, button, button, button, status, status, status, status |
 | 2 „Fortschritt“ | value, progress, info, info, info, button |
 | 3 „Werte“ | info × 6, switch, switch |
 
@@ -279,6 +283,15 @@ Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (beide 
 | progress | number | `text` (Rolle `devicePageProgress`), Feld 4 = Balkenfarbe (Farbgruppe) | ganze Zahl 0–100: über `common.min/max` skaliert, ohne direkt, begrenzt (`devicePageProgressPercent`) | keiner |
 | button | `read: false` oder schreibbarer boolean | `button` | wie cardGrid (`1`/`0`) | `read: false` schreibt `true`, boolean wird umgeschaltet |
 | switch | schreibbarer boolean | `switch` | `0`/`1` | `OnOff` wie cardEntities |
+| status | alle | `text`, nur Icon (Feld 3) und Farbe (Feld 4) wie die Info-Zeile desselben States (boolean: Farbe aktiviert/deaktiviert), eigenes Icon `icon` ersetzt es; Name (Feld 5) leer | leer | keiner |
+
+- **Status-Icons (Layout 1):** die Anzahl folgt nur aus `DEVICE_PAGE_LAYOUTS[1]` (HMI: 2×2-Raster rechts neben main).
+  Sind alle leer, zeigt die HMI die Seite wie bisher (Info-Zeilen breit); ist mindestens einer belegt
+  (`devicePageHasStatusIcons`), stehen alle Rasterzellen (leere als leere Zelle) und die Info-Zeilen werden schmal.
+  Die Feldbreiten dafür stehen in `DEVICE_PAGE_FIELDS[1].slotsWithStatus` (info: Name 86 px, Wert 110 px; sonst 164/110),
+  `devicePageSlotFields(layout, kind, withStatusIcons)` wählt die passende Angabe.
+- Die Namen der Slots (Dubletten-Zusatz) werden nur unter den Slots mit Namen bestimmt – ein Status-Icon zählt nicht mit.
+- `PageDevice` leert Feld 5/6 jedes `status`-Elements zusätzlich (`devicePageStatusIconElement`), leer → `~~~~~`.
 
 Ein State, der nicht (mehr) existiert oder nicht zur Art passt, lässt den Slot leer (Warnung im Log).
 
@@ -287,6 +300,17 @@ Ein State, der nicht (mehr) existiert oder nicht zur Art passt, lässt den Slot 
 ```
 pageType~cardDevice<1|2|3>
 entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info>
+```
+
+Beispiel Layout 1 (N = 10) mit zwei Status-Icons (Slot 7 Tür als boolean an, Slot 9 mit eigenem Icon), Slots 8/10 leer
+(Zeilenumbrüche nur zur Lesbarkeit):
+
+```
+entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimmer
+~text~dp_3?1~<icon>~<farbe>~Akku~80 %~text~dp_3?2~<icon>~<farbe>~Fläche~34 m²
+~button~dp_3?3~<icon>~<farbe>~Start~1~…~button~dp_3?6~<icon>~<farbe>~Suchen~1
+~text~dp_3?7~<icon door>~<aktiviert>~~~~~~~~~text~dp_3?9~<icon air-filter>~<farbe der Gruppe>~~~~~~~~
+~button~dp_3?11~<information-outline>~<deviceInfo>~~1
 ```
 
 - Jedes Element hat die 6 Felder einer cardGrid-Zelle `type~intName~icon~iconColor~displayName~optionalValue`, leere
@@ -309,8 +333,13 @@ entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info
 - Page-Item-Dialog, Abschnitt „Long-Press öffnet“: Detailseite (Vorgabe) / Geräteseite. Umschalten verliert nichts
   (Stash wie bei den anderen Radiobuttons, `src-admin/src/devicePageConfig.ts`), gespeichert wird `devicePage` nur bei
   „Geräteseite“ (normalisiert mit `devicePageConfigOf`). Die erste Geräteseite ist `defaultDevicePageConfig`.
-- Layout mit schematischer Vorschau (MUI-Boxen nach der Geometrie der HMI, nummerierte Slots), Haupt-Icon
-  (IconSelect), Statuszeile (alle States), je Slot die States nach `devicePageSlotAccepts`, „i-Icon anzeigen“.
+- Layout mit schematischer Vorschau (MUI-Boxen nach der Geometrie der HMI, nummerierte Slots,
+  `devicePagePreviewAreas`), Haupt-Icon (IconSelect), Statuszeile (alle States), je Slot die States nach
+  `devicePageSlotAccepts`, „i-Icon anzeigen“.
+- Status-Slots (Layout 1): Art „Status-Icon“, mit gewähltem State zusätzlich ein IconSelect für das eigene Icon
+  (`withDevicePageSlotIcon`, leer = automatisch); ein anderer State im selben Slot behält das Icon. Hinweis unter den
+  Slots, dass die Info-Zeilen schmaler werden. Die Vorschau zeichnet das Raster (2 Spalten, Zeilen = Anzahl/2) und die
+  schmalen Info-Zeilen nur, wenn mindestens ein Status-Slot belegt ist.
 - Ein gewählter State wird als Verweis gespeichert: gleicher State behält seinen Verweis, ein angehakter Eintrag der
   Filterliste gibt `key` und `subName`, sonst der Masken-Eintrag des States. Ein gespeicherter State, den das Gerät nicht
   (mehr) hat oder der nicht zum Slot passt, bleibt markiert stehen; ohne Antwort des Adapters bleibt alles, wie es ist.
