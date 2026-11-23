@@ -209,6 +209,12 @@ function devicePageStateRefOf(value, keepIcon) {
   }
   return ref;
 }
+function devicePageStatusRefOf(value) {
+  if (isDeviceDetailEntryConfig(value) && "custom" in value && value.custom === true) {
+    return { key: "", id: value.id.trim(), custom: true };
+  }
+  return devicePageStateRefOf(value, false);
+}
 function devicePageConfigOf(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return void 0;
@@ -228,7 +234,7 @@ function devicePageConfigOf(value) {
   if (icon) {
     config.icon = icon;
   }
-  const status = "status" in value ? devicePageStateRefOf(value.status, false) : null;
+  const status = "status" in value ? devicePageStatusRefOf(value.status) : null;
   if (status) {
     config.status = status;
   }
@@ -713,7 +719,7 @@ function deviceDetailsRuntimeOf(config) {
     if (page.icon) {
       devicePage.icon = page.icon;
     }
-    if (page.status) {
+    if (page.status && page.status.id !== "") {
       devicePage.status = page.status;
     }
     runtime.devicePage = devicePage;

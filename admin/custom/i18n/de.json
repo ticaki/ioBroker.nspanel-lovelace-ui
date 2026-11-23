@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "leer: automatisch",
     "deviceDetailsDialog_pageSlots": "Slots",
     "deviceDetailsDialog_pageStatus": "Statuszeile",
+    "deviceDetailsDialog_pageStatusCustom": "Benutzerdefinierter Datenpunkt",
+    "deviceDetailsDialog_pageStatusCustomId": "Datenpunkt der Statuszeile",
     "deviceDetailsDialog_pageStatusIconsHint": "Status-Icons zeigen nur ein Icon in seiner Farbe (an/aus in den Farben aktiviert/deaktiviert). Sobald ein Status-Icon belegt ist, werden die beiden Info-Zeilen schmaler.",
     "deviceDetailsDialog_pageUnfit": "passt nicht zu diesem Slot",
     "deviceDetailsDialog_pushButton": "Taster, schreibt true",

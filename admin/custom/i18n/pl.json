@@ -634,6 +634,8 @@
     "deviceDetailsDialog_pageSlotIconHint": "puste: automatycznie",
     "deviceDetailsDialog_pageSlots": "Sloty",
     "deviceDetailsDialog_pageStatus": "Wiersz stanu",
+    "deviceDetailsDialog_pageStatusCustom": "Własny punkt danych",
+    "deviceDetailsDialog_pageStatusCustomId": "Punkt danych wiersza stanu",
     "deviceDetailsDialog_pageStatusIconsHint": "Ikony stanu pokazują tylko ikonę w jej kolorze (wł./wył. w kolorach aktywny/nieaktywny). Gdy tylko ustawiona jest jedna ikona stanu, oba wiersze informacyjne stają się węższe.",
     "deviceDetailsDialog_pageUnfit": "nie pasuje do tego slotu",
     "deviceDetailsDialog_pushButton": "przycisk, zapisuje true",
