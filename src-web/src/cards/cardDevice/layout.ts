@@ -156,7 +156,7 @@ export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
             status1(161, 115),
         ],
         status: STATUS,
-        statusAlign: 0,
+        statusAlign: 1,
         info: INFO,
     },
     2: {
@@ -177,7 +177,7 @@ export const DEVICE_GEOMETRY: Readonly<Record<DeviceLayout, DeviceGeometry>> = {
         main: { icon: box(10, 67, 100, 82), name: box(10, 151, 100, 26) },
         slots: [info3(0), info3(1), info3(2), info3(3), info3(4), info3(5), switch3(10), switch3(226)],
         status: STATUS,
-        statusAlign: 0,
+        statusAlign: 1,
         info: INFO,
     },
 };

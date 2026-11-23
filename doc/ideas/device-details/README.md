@@ -492,7 +492,7 @@ Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `de
 `src-web/src/cards/cardDevice`: die drei Seiten in der Geometrie der eu-HMI.
 
 - **Statuszeile:** Feld 6 von main, ein stehender Text, an der Feldgrenze abgeschnitten (keine eigenen „…“),
-  Ausrichtung wie in der HMI (Layout 2 mittig). `devStatus~<text>` ersetzt nur diesen Text (`handleCommand` in
+  Ausrichtung wie in der HMI (auf allen drei Layouts mittig). `devStatus~<text>` ersetzt nur diesen Text (`handleCommand` in
   `parse.ts`, verteilt vom `default`-Zweig des `PanelStore`); alles andere der Seite bleibt.
 - **Tipp und Long-Press** wie in der HMI (`deviceTouch`, Tabelle „Ereignisse beim Antippen“ in
   [device-page-hmi.md](device-page-hmi.md)): main und **jede** Slot-Art sind eine Grid-Zelle – dieselbe Tippfläche

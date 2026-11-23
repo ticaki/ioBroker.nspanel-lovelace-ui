@@ -100,10 +100,10 @@ describe('cardDevice layouts', () => {
         }
     });
 
-    it('places the status line left on cardDevice1/3 and centred on cardDevice2', () => {
-        expect(DEVICE_GEOMETRY[1].statusAlign).toBe(0);
+    it('centres the status line on every page', () => {
+        expect(DEVICE_GEOMETRY[1].statusAlign).toBe(1);
         expect(DEVICE_GEOMETRY[2].statusAlign).toBe(1);
-        expect(DEVICE_GEOMETRY[3].statusAlign).toBe(0);
+        expect(DEVICE_GEOMETRY[3].statusAlign).toBe(1);
         for (const layout of [1, 2, 3] as const) {
             expect(DEVICE_GEOMETRY[layout].status).toEqual({ x: 10, y: 289, w: 390, h: 30 });
             expect(DEVICE_GEOMETRY[layout].info).toEqual({ x: 404, y: 288, w: 36, h: 32 });
