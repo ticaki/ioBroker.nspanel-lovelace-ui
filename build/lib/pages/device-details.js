@@ -26,9 +26,12 @@ __export(device_details_exports, {
   deviceDetailNameWithSuffix: () => deviceDetailNameWithSuffix,
   deviceDetailPageConfig: () => deviceDetailPageConfig,
   deviceDetailRowItem: () => deviceDetailRowItem,
+  deviceDetailRowLook: () => deviceDetailRowLook,
   deviceDetailRowNames: () => deviceDetailRowNames,
   deviceDetailRows: () => deviceDetailRows,
-  isLatestDeviceDetailsRun: () => isLatestDeviceDetailsRun
+  fallbackIcon: () => fallbackIcon,
+  isLatestDeviceDetailsRun: () => isLatestDeviceDetailsRun,
+  nameOfCommon: () => nameOfCommon
 });
 module.exports = __toCommonJS(device_details_exports);
 var import_Color = require("../const/Color");
@@ -136,22 +139,30 @@ function deviceDetailRowNames(deviceId, entries, commons, translate, language, m
   const subs = (0, import_deviceDetails.deviceDetailSubNames)(deviceId, rows);
   return rows.map((r, index) => {
     var _a, _b;
-    return deviceDetailNameWithSuffix(r.name, (_b = (_a = subs[index]) == null ? void 0 : _a.text) != null ? _b : "", model);
+    const suffix = (_b = (_a = subs[index]) == null ? void 0 : _a.text) != null ? _b : "";
+    if (model === null) {
+      return suffix ? `${r.name} ${suffix}` : r.name;
+    }
+    return deviceDetailNameWithSuffix(r.name, suffix, model);
   });
 }
-function deviceDetailRowItem(deviceId, entry, common, name) {
+function deviceDetailRowLook(deviceId, entry, common, kind) {
   var _a, _b, _c;
-  const kind = (0, import_deviceDetails.deviceDetailRowKind)(common);
   const maskEntry = (0, import_deviceDetails.deviceDetailEntryOfRow)(deviceId, entry.key, {
     id: entry.id,
     role: (_a = common.role) != null ? _a : "",
     unit: common.unit
   });
-  const icon = { type: "const", constVal: (_b = maskEntry == null ? void 0 : maskEntry.icon) != null ? _b : fallbackIcon[kind] };
-  const valueColor = {
-    type: "const",
-    constVal: deviceDetailGroupColor((_c = maskEntry == null ? void 0 : maskEntry.group) != null ? _c : "info")
+  return {
+    icon: (_b = maskEntry == null ? void 0 : maskEntry.icon) != null ? _b : fallbackIcon[kind],
+    color: deviceDetailGroupColor((_c = maskEntry == null ? void 0 : maskEntry.group) != null ? _c : "info")
   };
+}
+function deviceDetailRowItem(deviceId, entry, common, name, readOnly = false) {
+  const kind = readOnlyRowKind((0, import_deviceDetails.deviceDetailRowKind)(common), readOnly);
+  const look = deviceDetailRowLook(deviceId, entry, common, kind);
+  const icon = { type: "const", constVal: look.icon };
+  const valueColor = { type: "const", constVal: look.color };
   const nameItem = { type: "const", constVal: name };
   const text = { true: nameItem, false: nameItem };
   const value = { type: "triggered", dp: entry.id };
@@ -228,6 +239,21 @@ function deviceDetailRowItem(deviceId, entry, common, name) {
       };
   }
 }
+function readOnlyRowKind(kind, readOnly) {
+  if (!readOnly) {
+    return kind;
+  }
+  switch (kind) {
+    case "switch":
+      return "boolean";
+    case "button":
+      return "text";
+    case "select":
+      return readOnly === "keepSelect" ? "select" : "text";
+    default:
+      return kind;
+  }
+}
 function deviceDetailPageConfig(uniqueID, headline, alwaysOn, rows) {
   return {
     uniqueID,
@@ -272,8 +298,11 @@ async function deviceDetailRows(details, getObject, translate, language, model) 
   deviceDetailNameWithSuffix,
   deviceDetailPageConfig,
   deviceDetailRowItem,
+  deviceDetailRowLook,
   deviceDetailRowNames,
   deviceDetailRows,
-  isLatestDeviceDetailsRun
+  fallbackIcon,
+  isLatestDeviceDetailsRun,
+  nameOfCommon
 });
 //# sourceMappingURL=device-details.js.map

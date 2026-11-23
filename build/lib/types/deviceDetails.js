@@ -20,8 +20,16 @@ var deviceDetails_exports = {};
 __export(deviceDetails_exports, {
   DEVICE_DETAIL_NAME_PREFIX: () => DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE: () => DEVICE_DETAIL_ROW_ROLE,
+  DEVICE_PAGE_FIELDS: () => DEVICE_PAGE_FIELDS,
+  DEVICE_PAGE_INFO_ROLE: () => DEVICE_PAGE_INFO_ROLE,
+  DEVICE_PAGE_LAYOUTS: () => DEVICE_PAGE_LAYOUTS,
+  DEVICE_PAGE_PROGRESS_ROLE: () => DEVICE_PAGE_PROGRESS_ROLE,
+  DEVICE_PAGE_STATUS_MAX_BYTES: () => DEVICE_PAGE_STATUS_MAX_BYTES,
+  DEVICE_PAGE_TEXT_FONT: () => DEVICE_PAGE_TEXT_FONT,
   SENDTO_GET_DEVICE_DETAILS_COMMAND: () => SENDTO_GET_DEVICE_DETAILS_COMMAND,
   buildDeviceDetailRows: () => buildDeviceDetailRows,
+  defaultDevicePageConfig: () => defaultDevicePageConfig,
+  defaultDevicePageSlots: () => defaultDevicePageSlots,
   deviceDetailEntriesOfRows: () => deviceDetailEntriesOfRows,
   deviceDetailEntryByKey: () => deviceDetailEntryByKey,
   deviceDetailEntryOfRow: () => deviceDetailEntryOfRow,
@@ -38,14 +46,20 @@ __export(deviceDetails_exports, {
   deviceDetailsAdapter: () => deviceDetailsAdapter,
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf: () => deviceDetailsRuntimeOf,
+  devicePageConfigOf: () => devicePageConfigOf,
+  devicePageProgressPercent: () => devicePageProgressPercent,
+  devicePageSlotAccepts: () => devicePageSlotAccepts,
+  devicePageSlotCount: () => devicePageSlotCount,
   deviceSelectionError: () => deviceSelectionError,
   deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
+  fitDevicePageSlots: () => fitDevicePageSlots,
   generalDeviceDetailMask: () => generalDeviceDetailMask,
   hasCommonStatesList: () => hasCommonStatesList,
   hasOwnDeviceDetailMask: () => hasOwnDeviceDetailMask,
   isDeviceDetailState: () => isDeviceDetailState,
   isDeviceDetailsConfig: () => isDeviceDetailsConfig,
+  isDevicePageLayout: () => isDevicePageLayout,
   isDeviceShortPressState: () => isDeviceShortPressState,
   tickDeviceDetailRow: () => tickDeviceDetailRow,
   tickedDeviceDetailRowsFirst: () => tickedDeviceDetailRowsFirst,
@@ -54,6 +68,7 @@ __export(deviceDetails_exports, {
 module.exports = __toCommonJS(deviceDetails_exports);
 const SENDTO_GET_DEVICE_DETAILS_COMMAND = "getDeviceDetails";
 const DEVICE_DETAIL_ROW_ROLE = "deviceDetail";
+const DEVICE_PAGE_INFO_ROLE = "devicePageInfo";
 const DEVICE_DETAIL_NAME_PREFIX = "deviceDetail_";
 const deviceDetailGroupColorKey = {
   energy: "deviceEnergy",
@@ -73,6 +88,124 @@ function deviceShortPressOf(config) {
     default:
       return "state";
   }
+}
+const DEVICE_PAGE_LAYOUTS = {
+  /** "Steuern" (control) */
+  1: ["info", "info", "button", "button", "button", "button"],
+  /** "Fortschritt" (progress) */
+  2: ["value", "progress", "info", "info", "info", "button"],
+  /** "Werte" (values) */
+  3: ["info", "info", "info", "info", "info", "info", "switch", "switch"]
+};
+const DEVICE_PAGE_TEXT_FONT = 0;
+const DEVICE_PAGE_STATUS_MAX_BYTES = 63;
+const DEVICE_PAGE_FIELDS = {
+  1: {
+    mainName: 110,
+    status: 390,
+    slots: { info: { name: 164, value: 110 }, button: { name: 104 } }
+  },
+  2: {
+    mainName: 96,
+    status: 390,
+    slots: {
+      value: { name: 190, value: 190, valueFont: 4 },
+      progress: { name: 429 },
+      info: { name: 104, value: 104 },
+      button: { name: 100 }
+    }
+  },
+  3: {
+    mainName: 100,
+    status: 390,
+    slots: { info: { name: 125, value: 125 }, switch: { name: 125 } }
+  }
+};
+function devicePageSlotCount(layout) {
+  return DEVICE_PAGE_LAYOUTS[layout].length;
+}
+function devicePageSlotAccepts(kind, state) {
+  const writable = state.write !== false;
+  const button = state.read === false;
+  switch (kind) {
+    case "info":
+    case "value":
+      return true;
+    case "button":
+      return button || state.type === "boolean" && writable;
+    case "switch":
+      return !button && state.type === "boolean" && writable;
+    case "progress":
+      return !button && state.type === "number";
+  }
+}
+const DEVICE_PAGE_PROGRESS_ROLE = "devicePageProgress";
+function devicePageProgressPercent(value, min, max) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 0;
+  }
+  let percent = value;
+  if (typeof min === "number" && typeof max === "number" && max > min) {
+    percent = (value - min) / (max - min) * 100;
+  }
+  return Math.min(100, Math.max(0, Math.round(percent)));
+}
+function fitDevicePageSlots(slots, layout) {
+  const out = [];
+  for (let i = 0; i < devicePageSlotCount(layout); i++) {
+    const slot = slots[i];
+    out.push(slot ? { ...slot } : null);
+  }
+  return out;
+}
+function defaultDevicePageSlots(entries, layout) {
+  const rows = entries.filter((e) => e.id !== "");
+  let next = 0;
+  return DEVICE_PAGE_LAYOUTS[layout].map((kind) => {
+    if ((kind === "info" || kind === "value") && next < rows.length) {
+      return { ...rows[next++] };
+    }
+    return null;
+  });
+}
+function defaultDevicePageConfig(entries, layout = 1) {
+  return { layout, slots: defaultDevicePageSlots(entries, layout), showInfo: true };
+}
+function isDevicePageLayout(value) {
+  return value === 1 || value === 2 || value === 3;
+}
+function devicePageStateRefOf(value) {
+  var _a;
+  if (!isDeviceDetailEntryConfig(value) || value.id === "") {
+    return null;
+  }
+  const subName = (_a = value.subName) == null ? void 0 : _a.trim();
+  return subName ? { key: value.key, id: value.id, subName } : { key: value.key, id: value.id };
+}
+function devicePageConfigOf(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return void 0;
+  }
+  const layout = "layout" in value && isDevicePageLayout(value.layout) ? value.layout : 1;
+  const rawSlots = "slots" in value && Array.isArray(value.slots) ? value.slots : [];
+  const slots = [];
+  for (let i = 0; i < devicePageSlotCount(layout); i++) {
+    slots.push(devicePageStateRefOf(rawSlots[i]));
+  }
+  const config = {
+    layout,
+    slots,
+    showInfo: !("showInfo" in value) || value.showInfo !== false
+  };
+  const icon = "icon" in value && typeof value.icon === "string" ? value.icon.trim() : "";
+  if (icon) {
+    config.icon = icon;
+  }
+  const status = "status" in value ? devicePageStateRefOf(value.status) : null;
+  if (status) {
+    config.status = status;
+  }
+  return config;
 }
 function hasCommonStatesList(states) {
   if (Array.isArray(states)) {
@@ -533,7 +666,7 @@ function deviceDetailsRuntimeOf(config) {
   if (!isDeviceDetailsConfig(config)) {
     return void 0;
   }
-  return {
+  const runtime = {
     deviceId: config.deviceId,
     entries: config.entries.filter((e) => e.id !== "").map((e) => {
       var _a;
@@ -541,6 +674,24 @@ function deviceDetailsRuntimeOf(config) {
       return subName ? { key: e.key, id: e.id, subName } : { key: e.key, id: e.id };
     })
   };
+  const page = devicePageConfigOf(config.devicePage);
+  if (page) {
+    const devicePage = {
+      layout: page.layout,
+      slots: page.slots,
+      // without rows the detail page would be empty: no info icon
+      showInfo: page.showInfo && runtime.entries.length > 0,
+      shortPress: deviceShortPressOf(config)
+    };
+    if (page.icon) {
+      devicePage.icon = page.icon;
+    }
+    if (page.status) {
+      devicePage.status = page.status;
+    }
+    runtime.devicePage = devicePage;
+  }
+  return runtime;
 }
 function deviceDetailsLearnedOf(value) {
   const out = {};
@@ -614,8 +765,16 @@ function deviceDetailSubNames(deviceId, rows) {
 0 && (module.exports = {
   DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE,
+  DEVICE_PAGE_FIELDS,
+  DEVICE_PAGE_INFO_ROLE,
+  DEVICE_PAGE_LAYOUTS,
+  DEVICE_PAGE_PROGRESS_ROLE,
+  DEVICE_PAGE_STATUS_MAX_BYTES,
+  DEVICE_PAGE_TEXT_FONT,
   SENDTO_GET_DEVICE_DETAILS_COMMAND,
   buildDeviceDetailRows,
+  defaultDevicePageConfig,
+  defaultDevicePageSlots,
   deviceDetailEntriesOfRows,
   deviceDetailEntryByKey,
   deviceDetailEntryOfRow,
@@ -632,14 +791,20 @@ function deviceDetailSubNames(deviceId, rows) {
   deviceDetailsAdapter,
   deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf,
+  devicePageConfigOf,
+  devicePageProgressPercent,
+  devicePageSlotAccepts,
+  devicePageSlotCount,
   deviceSelectionError,
   deviceShortPressOf,
   exchangeDeviceDetailRowState,
+  fitDevicePageSlots,
   generalDeviceDetailMask,
   hasCommonStatesList,
   hasOwnDeviceDetailMask,
   isDeviceDetailState,
   isDeviceDetailsConfig,
+  isDevicePageLayout,
   isDeviceShortPressState,
   tickDeviceDetailRow,
   tickedDeviceDetailRowsFirst,

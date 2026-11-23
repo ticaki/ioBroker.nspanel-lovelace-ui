@@ -42,6 +42,7 @@ var definition = __toESM(require("../const/definition"));
 var adminShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
+var import_pageDevice = require("../pages/pageDevice");
 var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
@@ -517,6 +518,11 @@ class Panel extends import_library.BaseClass {
       case "cardGrid": {
         pageConfig = Panel.getPage(pageConfig, this);
         return new import_pageGrid.PageGrid(pmconfig, pageConfig);
+      }
+      case "cardDevice1":
+      case "cardDevice2":
+      case "cardDevice3": {
+        return new import_pageDevice.PageDevice(pmconfig, pageConfig);
       }
       case "cardThermo": {
         pageConfig = Panel.getPage(pageConfig, this);
