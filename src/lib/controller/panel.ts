@@ -26,6 +26,7 @@ import { PageMedia } from '../pages/pageMedia';
 import type { IClientPublishOptions } from 'mqtt';
 import type { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
+import { PageDevice } from '../pages/pageDevice';
 import { Navigation, SCREENSAVER_NAV_INDEX, type NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
@@ -645,6 +646,11 @@ export class Panel extends BaseClass {
                 return new PageGrid(pmconfig, pageConfig);
             }
 
+            case 'cardDevice1':
+            case 'cardDevice2':
+            case 'cardDevice3': {
+                return new PageDevice(pmconfig, pageConfig);
+            }
             case 'cardThermo': {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PageThermo(pmconfig, pageConfig);

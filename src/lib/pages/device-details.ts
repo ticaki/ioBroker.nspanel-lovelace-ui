@@ -69,7 +69,7 @@ export type DeviceDetailStateCommon = {
 };
 
 /** icon of a row without mask entry, by its kind */
-const fallbackIcon: Readonly<Record<ReturnType<typeof deviceDetailRowKind>, string>> = {
+export const fallbackIcon: Readonly<Record<ReturnType<typeof deviceDetailRowKind>, string>> = {
     button: 'gesture-tap-button',
     switch: 'toggle-switch',
     boolean: 'toggle-switch',
@@ -102,7 +102,7 @@ export function deviceDetailGroupColor(group: DeviceDetailGroup): RGB | string {
  * @param language the language of the system
  * @returns the name as text, '' without one
  */
-function nameOfCommon(name: ioBroker.StringOrTranslated | undefined, language: ioBroker.Languages): string {
+export function nameOfCommon(name: ioBroker.StringOrTranslated | undefined, language: ioBroker.Languages): string {
     if (typeof name === 'string') {
         return name;
     }
@@ -217,7 +217,8 @@ export function deviceDetailNameWithSuffix(name: string, suffix: string, model: 
  * @param commons common of the state of every row, same order
  * @param translate translates a key (library.getTranslation)
  * @param language the language of the system
- * @param model model of the panel (width of the name field)
+ * @param model model of the panel (width of the name field of cardEntities), null = the suffix is appended without
+ * shortening (device page: the field of the element cuts the text)
  * @returns the names, same order
  */
 export function deviceDetailRowNames(
@@ -226,7 +227,7 @@ export function deviceDetailRowNames(
     commons: readonly (DeviceDetailStateCommon | undefined)[],
     translate: (key: string) => string,
     language: ioBroker.Languages,
-    model: NSpanelModel,
+    model: NSpanelModel | null,
 ): string[] {
     const rows = entries.map((e, index) => ({
         id: e.id,
@@ -236,7 +237,40 @@ export function deviceDetailRowNames(
         subName: e.subName,
     }));
     const subs = deviceDetailSubNames(deviceId, rows);
-    return rows.map((r, index) => deviceDetailNameWithSuffix(r.name, subs[index]?.text ?? '', model));
+    return rows.map((r, index) => {
+        const suffix = subs[index]?.text ?? '';
+        if (model === null) {
+            return suffix ? `${r.name} ${suffix}` : r.name;
+        }
+        return deviceDetailNameWithSuffix(r.name, suffix, model);
+    });
+}
+
+/**
+ * Icon and value color of a row: from the mask entry (icon, color of its group), a row without entry gets the icon of
+ * its kind and the color of the group info.
+ *
+ * @param deviceId id of the device
+ * @param entry the row
+ * @param common common of its state
+ * @param kind the kind the row is shown as (icon without mask entry)
+ * @returns MDI name of the icon and the theme color of the value
+ */
+export function deviceDetailRowLook(
+    deviceId: string,
+    entry: DeviceDetailEntryConfig,
+    common: DeviceDetailStateCommon,
+    kind: ReturnType<typeof deviceDetailRowKind>,
+): { icon: string; color: RGB | string } {
+    const maskEntry = deviceDetailEntryOfRow(deviceId, entry.key, {
+        id: entry.id,
+        role: common.role ?? '',
+        unit: common.unit,
+    });
+    return {
+        icon: maskEntry?.icon ?? fallbackIcon[kind],
+        color: deviceDetailGroupColor(maskEntry?.group ?? 'info'),
+    };
 }
 
 /**
@@ -247,10 +281,15 @@ export function deviceDetailRowNames(
  * text of the current value); everything else a read only text with the formatted value and its unit - a value of
  * `common.states` shows its text. Values take the color of the group of their entry.
  *
+ * The device page uses the same rows read only (`readOnly`): a switch shows on/off, a button its value as text, a
+ * selection the text of its value - `keepSelect` keeps the selection (info slot).
+ *
  * @param deviceId id of the device
  * @param entry the row
  * @param common common of its state
  * @param name name of the row
+ * @param readOnly false = the controls of the detail page, `all` = every row as text, `keepSelect` = every row as text
+ * except a selection
  * @returns the page item
  */
 export function deviceDetailRowItem(
@@ -258,18 +297,12 @@ export function deviceDetailRowItem(
     entry: DeviceDetailEntryConfig,
     common: DeviceDetailStateCommon,
     name: string,
+    readOnly: false | 'all' | 'keepSelect' = false,
 ): NSPanel.PageItemDataItemsOptions {
-    const kind = deviceDetailRowKind(common);
-    const maskEntry = deviceDetailEntryOfRow(deviceId, entry.key, {
-        id: entry.id,
-        role: common.role ?? '',
-        unit: common.unit,
-    });
-    const icon: NSPanel.DataItemsOptions = { type: 'const', constVal: maskEntry?.icon ?? fallbackIcon[kind] };
-    const valueColor: NSPanel.DataItemsOptions = {
-        type: 'const',
-        constVal: deviceDetailGroupColor(maskEntry?.group ?? 'info'),
-    };
+    const kind = readOnlyRowKind(deviceDetailRowKind(common), readOnly);
+    const look = deviceDetailRowLook(deviceId, entry, common, kind);
+    const icon: NSPanel.DataItemsOptions = { type: 'const', constVal: look.icon };
+    const valueColor: NSPanel.DataItemsOptions = { type: 'const', constVal: look.color };
     const nameItem: NSPanel.DataItemsOptions = { type: 'const', constVal: name };
     const text = { true: nameItem, false: nameItem };
     const value: NSPanel.DataItemsOptions = { type: 'triggered', dp: entry.id };
@@ -346,6 +379,30 @@ export function deviceDetailRowItem(
                     text,
                 },
             };
+    }
+}
+
+/**
+ * @param kind the kind of a row
+ * @param readOnly see deviceDetailRowItem
+ * @returns the kind shown: read only a switch is on/off, a button a text, a selection a text (unless `keepSelect`)
+ */
+function readOnlyRowKind(
+    kind: ReturnType<typeof deviceDetailRowKind>,
+    readOnly: false | 'all' | 'keepSelect',
+): ReturnType<typeof deviceDetailRowKind> {
+    if (!readOnly) {
+        return kind;
+    }
+    switch (kind) {
+        case 'switch':
+            return 'boolean';
+        case 'button':
+            return 'text';
+        case 'select':
+            return readOnly === 'keepSelect' ? 'select' : 'text';
+        default:
+            return kind;
     }
 }
 

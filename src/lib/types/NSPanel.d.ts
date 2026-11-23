@@ -1717,6 +1717,10 @@ export namespace NSPanel {
         // Popup Cards
         | 'popupNotify'
         | 'popupNotify2'
+        // generated device page of a device item (device-page.ts), not selectable in the admin
+        | 'cardDevice1'
+        | 'cardDevice2'
+        | 'cardDevice3'
         | 'cardItemSpecial';
 
     type SerialTypePageElements =

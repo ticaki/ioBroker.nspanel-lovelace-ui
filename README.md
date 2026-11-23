@@ -163,6 +163,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) cardEntities: an unhandled long press no longer falls back to the short press
 - (ticaki) device with details: the detail page is a cardEntities page (rows per page as on every cardEntities page, classic paging) with real controls - switch for a writable boolean, button for `read: false`, a selection popup for a writable number or string with `common.states`, value with unit (or the text of `common.states`) for every other state - numbers are not edited with a slider
 - (ticaki) device with details: rows with the same name show their difference (or an own text) behind the name; if both do not fit the name field, the name is shortened so the appended text stays visible (e.g. "Luftfeuchti... Ext 100")
+- (ticaki) device with details: optionally the long press opens a device page (cardDevice1 "control", cardDevice2 "progress", cardDevice3 "values"; needs a new TFT, eu and web-l) with a big device icon, fixed slots (info, value, progress bar, button, switch), a status line and an info icon that opens the detail page - other panels open the detail page as before
 - (ticaki) cardEntities, cardGrid, cardGrid2, cardGrid3, cardSchedule, cardThermo2, cardMedia: closing a popup no longer jumps back to the first items, the page stays where it was scrolled to
 
 ### 2.6.0 (2026-11-22)
