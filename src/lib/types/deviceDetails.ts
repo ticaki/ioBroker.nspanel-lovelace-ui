@@ -16,6 +16,9 @@ export const SENDTO_GET_DEVICE_DETAILS_COMMAND = 'getDeviceDetails';
 /** role of the generated rows of the detail page (PageItem) */
 export const DEVICE_DETAIL_ROW_ROLE = 'deviceDetail';
 
+/** role of the info item of the device page: a tap opens the detail page */
+export const DEVICE_PAGE_INFO_ROLE = 'devicePageInfo';
+
 /** prefix of the translation keys of the mask entries, used on the panel and in the admin */
 export const DEVICE_DETAIL_NAME_PREFIX = 'deviceDetail_';
 
@@ -153,7 +156,307 @@ export type DeviceDetailsConfig = {
     shortPress?: DeviceShortPress;
     /** the ticked rows of the filter list in the order of the detail page */
     entries: DeviceDetailEntryConfig[];
+    /**
+     * the long press opens the device page (cardDevice1..3) instead of the detail page; missing = the detail page as
+     * before. Normalize with {@link devicePageConfigOf}.
+     */
+    devicePage?: DevicePageConfig;
 };
+
+/** layout of the device page: HMI page cardDevice1 / cardDevice2 / cardDevice3 */
+export type DevicePageLayout = 1 | 2 | 3;
+
+/**
+ * What a slot of the device page is (field 6 = optionalValue of the element):
+ * - `info`: like a text row of the detail page (value as text with unit, a boolean on/off, the text of
+ *   `common.states`); a writable state with `common.states` is an `input_sel` (tap → popupInSel),
+ * - `value`: `text`, field 6 = the value short like a text row (number with unit or text), no tap,
+ * - `progress`: `text`, field 6 = whole number 0-100 (the value scaled from common.min/max, without them as it is,
+ *   clamped), field 4 = color of the bar - number states only,
+ * - `button`: `button`; a state with `read: false` is written with true, a writable boolean is switched,
+ * - `switch`: `switch`, field 6 = 0/1, the tap comes as `OnOff` like on cardEntities - writable boolean only.
+ */
+export type DevicePageSlotKind = 'info' | 'value' | 'progress' | 'button' | 'switch';
+
+/**
+ * The slots of every layout in the order of the payload (slot1 … slotN). The single place for the number and kind of
+ * the slots (HMI doc/ideas/device-details/device-page-hmi.md, section "Art je Slot").
+ */
+export const DEVICE_PAGE_LAYOUTS: Readonly<Record<DevicePageLayout, readonly DevicePageSlotKind[]>> = {
+    /** "Steuern" (control) */
+    1: ['info', 'info', 'button', 'button', 'button', 'button'],
+    /** "Fortschritt" (progress) */
+    2: ['value', 'progress', 'info', 'info', 'info', 'button'],
+    /** "Werte" (values) */
+    3: ['info', 'info', 'info', 'info', 'info', 'info', 'switch', 'switch'],
+};
+
+/** width of the text fields of a slot kind in px */
+export type DevicePageSlotFields = {
+    /** name (field 5), font 0 */
+    name: number;
+    /** value (field 6), font {@link DevicePageSlotFields.valueFont} - missing = the kind shows no value text */
+    value?: number;
+    /** font of the value, default 0 */
+    valueFont?: number;
+};
+
+/** the text fields of a layout in px (HMI doc/ideas/device-details/device-page-hmi.md, section Feldbreiten) */
+export type DevicePageLayoutFields = {
+    /** name of main, font 0 */
+    mainName: number;
+    /** the status line (field 6 of main), font 0, one line */
+    status: number;
+    /** the fields of the kinds of slots the layout has */
+    slots: Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>;
+};
+
+/** font of the names, values and the status line of the device page: font 0 (Noto Sans 24) */
+export const DEVICE_PAGE_TEXT_FONT = 0;
+
+/** maximum bytes of the status line (txt_maxl of tStatus) */
+export const DEVICE_PAGE_STATUS_MAX_BYTES = 63;
+
+/**
+ * The text fields of the device pages (EU HMI). Only the status line is shortened by the adapter (with "..."), every
+ * other field is cut by the HMI at its edge - the widths are here for the admin and the web panel.
+ *
+ * The `value` slot of layout 2 draws field 6 in font 4 (Noto Sans Bold 80) in 190 px: a digit is 33 px, ':' 17 px,
+ * '%' 53 px, '°' 25 px, a space 15 px - about 5 digits fit. The font has digits, `: % ° , . - /`, letters with
+ * umlauts, but no '€'.
+ */
+export const DEVICE_PAGE_FIELDS: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
+    1: {
+        mainName: 110,
+        status: 390,
+        slots: { info: { name: 164, value: 110 }, button: { name: 104 } },
+    },
+    2: {
+        mainName: 96,
+        status: 390,
+        slots: {
+            value: { name: 190, value: 190, valueFont: 4 },
+            progress: { name: 429 },
+            info: { name: 104, value: 104 },
+            button: { name: 100 },
+        },
+    },
+    3: {
+        mainName: 100,
+        status: 390,
+        slots: { info: { name: 125, value: 125 }, switch: { name: 125 } },
+    },
+};
+
+/**
+ * @param layout the layout
+ * @returns number of slots of the layout
+ */
+export function devicePageSlotCount(layout: DevicePageLayout): number {
+    return DEVICE_PAGE_LAYOUTS[layout].length;
+}
+
+/**
+ * Whether a state of the device may be shown in a slot of this kind.
+ *
+ * @param kind the kind of the slot
+ * @param state the state (DeviceStateInfo of the admin or the common of the object)
+ * @param state.type common.type
+ * @param state.read common.read (undefined counts as true)
+ * @param state.write common.write (undefined counts as true)
+ * @returns true for `info` / `value` always, `button` a button (`read: false`) or a writable boolean, `switch` a
+ * writable (readable) boolean, `progress` a number
+ */
+export function devicePageSlotAccepts(
+    kind: DevicePageSlotKind,
+    state: { type?: string; read?: boolean; write?: boolean },
+): boolean {
+    const writable = state.write !== false;
+    const button = state.read === false;
+    switch (kind) {
+        case 'info':
+        case 'value':
+            return true;
+        case 'button':
+            return button || (state.type === 'boolean' && writable);
+        case 'switch':
+            return !button && state.type === 'boolean' && writable;
+        case 'progress':
+            return !button && state.type === 'number';
+    }
+}
+
+/** role of a `progress` slot of the device page (PageItem): field 6 is {@link devicePageProgressPercent} */
+export const DEVICE_PAGE_PROGRESS_ROLE = 'devicePageProgress';
+
+/**
+ * The value of a `progress` slot: the value scaled from common.min/max to 0-100, without both (or with max <= min) the
+ * value as it is; rounded to a whole number and clamped to 0-100.
+ *
+ * @param value the value of the state, null = none (0)
+ * @param min common.min
+ * @param max common.max
+ * @returns whole number 0-100
+ */
+export function devicePageProgressPercent(value: number | null | undefined, min?: number, max?: number): number {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0;
+    }
+    let percent = value;
+    if (typeof min === 'number' && typeof max === 'number' && max > min) {
+        percent = ((value - min) / (max - min)) * 100;
+    }
+    return Math.min(100, Math.max(0, Math.round(percent)));
+}
+
+/**
+ * A state of the device on the device page (a slot or the status line). The same form as a row of the detail page
+ * ({@link DeviceDetailEntryConfig}): `key` of the mask entry (icon, name, color group; '' = a state without entry, named
+ * by the state), `id` = full id of the state, `subName` = own text appended to the name. A slot may show any state of
+ * the device, it does not have to be ticked for the detail page.
+ */
+export type DevicePageStateRef = DeviceDetailEntryConfig;
+
+/** admin configuration of the device page ({@link DeviceDetailsConfig.devicePage}) */
+export type DevicePageConfig = {
+    /** HMI page: 1 = cardDevice1, 2 = cardDevice2, 3 = cardDevice3 */
+    layout: DevicePageLayout;
+    /**
+     * one entry per slot of the layout ({@link DEVICE_PAGE_LAYOUTS}, same order), null = empty slot. A change of the
+     * layout keeps the entries by position (cut or filled with null), nothing is guessed again.
+     */
+    slots: (DevicePageStateRef | null)[];
+    /** the "i" icon bottom right opens the detail page - only if the device has ticked rows ({@link DeviceDetailsConfig.entries}) */
+    showInfo: boolean;
+    /** MDI name of the big device icon, missing = the icon of the item */
+    icon?: string;
+    /**
+     * the state shown as text in the wide status line (field 6 of the main item), missing = empty status line - no
+     * suggestion, the user chooses it
+     */
+    status?: DevicePageStateRef;
+};
+
+/** the device page at runtime ({@link DeviceDetailsRuntime.devicePage}) */
+export type DevicePageRuntime = {
+    layout: DevicePageLayout;
+    /** one entry per slot of the layout, null = empty slot */
+    slots: (DevicePageStateRef | null)[];
+    /** the info icon is shown (configured and the device has rows for the detail page) */
+    showInfo: boolean;
+    icon?: string;
+    status?: DevicePageStateRef;
+    /** the short tap of the item: `navigation` and `popup` make the main item a text without action */
+    shortPress: DeviceShortPress;
+};
+
+/**
+ * @param slots slots of a device page
+ * @param layout the layout
+ * @returns the slots cut or filled with null to the number of slots of the layout - by position, nothing is guessed
+ */
+export function fitDevicePageSlots(
+    slots: readonly (DevicePageStateRef | null)[],
+    layout: DevicePageLayout,
+): (DevicePageStateRef | null)[] {
+    const out: (DevicePageStateRef | null)[] = [];
+    for (let i = 0; i < devicePageSlotCount(layout); i++) {
+        const slot = slots[i];
+        out.push(slot ? { ...slot } : null);
+    }
+    return out;
+}
+
+/**
+ * The suggestion for the slots of a new device page: only the `info` / `value` slots are filled, one after the other
+ * with the ticked rows of the detail page (learned ticks / mask) - every state fits them. `button`, `switch` and
+ * `progress` stay empty, the user chooses them.
+ *
+ * @param entries the ticked rows of the item in their order
+ * @param layout the layout
+ * @returns the slots
+ */
+export function defaultDevicePageSlots(
+    entries: readonly DeviceDetailEntryConfig[],
+    layout: DevicePageLayout,
+): (DevicePageStateRef | null)[] {
+    const rows = entries.filter(e => e.id !== '');
+    let next = 0;
+    return DEVICE_PAGE_LAYOUTS[layout].map(kind => {
+        if ((kind === 'info' || kind === 'value') && next < rows.length) {
+            return { ...rows[next++] };
+        }
+        return null;
+    });
+}
+
+/**
+ * A new device page for the admin: the slots of {@link defaultDevicePageSlots}, info shown, no own icon, no status.
+ *
+ * @param entries the ticked rows of the item in their order
+ * @param layout the layout, default 1
+ * @returns the configuration
+ */
+export function defaultDevicePageConfig(
+    entries: readonly DeviceDetailEntryConfig[],
+    layout: DevicePageLayout = 1,
+): DevicePageConfig {
+    return { layout, slots: defaultDevicePageSlots(entries, layout), showInfo: true };
+}
+
+/**
+ * @param value anything
+ * @returns true for a layout of the device page
+ */
+export function isDevicePageLayout(value: unknown): value is DevicePageLayout {
+    return value === 1 || value === 2 || value === 3;
+}
+
+/**
+ * @param value a stored slot / status
+ * @returns the reference with a trimmed own text, null when it is no usable reference (no state)
+ */
+function devicePageStateRefOf(value: unknown): DevicePageStateRef | null {
+    if (!isDeviceDetailEntryConfig(value) || value.id === '') {
+        return null;
+    }
+    const subName = value.subName?.trim();
+    return subName ? { key: value.key, id: value.id, subName } : { key: value.key, id: value.id };
+}
+
+/**
+ * The normalized device page of a stored configuration: an unknown layout becomes 1, the slots are cut or filled to
+ * the slots of the layout (an invalid slot or one without state is empty), `showInfo` is true unless it is false, an
+ * empty icon or status is left out.
+ *
+ * @param value the field `devicePage` of a device configuration
+ * @returns the device page, undefined when there is none (not an object)
+ */
+export function devicePageConfigOf(value: unknown): DevicePageConfig | undefined {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return undefined;
+    }
+    const layout = 'layout' in value && isDevicePageLayout(value.layout) ? value.layout : 1;
+    const rawSlots: unknown[] = 'slots' in value && Array.isArray(value.slots) ? value.slots : [];
+    const slots: (DevicePageStateRef | null)[] = [];
+    for (let i = 0; i < devicePageSlotCount(layout); i++) {
+        slots.push(devicePageStateRefOf(rawSlots[i]));
+    }
+    const config: DevicePageConfig = {
+        layout,
+        slots,
+        showInfo: !('showInfo' in value) || value.showInfo !== false,
+    };
+    const icon = 'icon' in value && typeof value.icon === 'string' ? value.icon.trim() : '';
+    if (icon) {
+        config.icon = icon;
+    }
+    const status = 'status' in value ? devicePageStateRefOf(value.status) : null;
+    if (status) {
+        config.status = status;
+    }
+    return config;
+}
 
 /**
  * The learned ticks per adapter (native `deviceDetailsLearned`): adapter -> identifiers ({@link deviceDetailIdentifier})
@@ -161,10 +464,14 @@ export type DeviceDetailsConfig = {
  */
 export type DeviceDetailsLearned = Record<string, string[]>;
 
-/** the device part of a runtime page item: a long press opens the detail page with these rows */
+/**
+ * the device part of a runtime page item: a long press opens the detail page with these rows - or the device page when
+ * `devicePage` is set and the panel has it
+ */
 export type DeviceDetailsRuntime = {
     deviceId: string;
     entries: DeviceDetailEntryConfig[];
+    devicePage?: DevicePageRuntime;
 };
 
 /** a row of the filter list of the admin */
@@ -885,7 +1192,7 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
     if (!isDeviceDetailsConfig(config)) {
         return undefined;
     }
-    return {
+    const runtime: DeviceDetailsRuntime = {
         deviceId: config.deviceId,
         entries: config.entries
             .filter(e => e.id !== '')
@@ -894,6 +1201,24 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
                 return subName ? { key: e.key, id: e.id, subName } : { key: e.key, id: e.id };
             }),
     };
+    const page = devicePageConfigOf(config.devicePage);
+    if (page) {
+        const devicePage: DevicePageRuntime = {
+            layout: page.layout,
+            slots: page.slots,
+            // without rows the detail page would be empty: no info icon
+            showInfo: page.showInfo && runtime.entries.length > 0,
+            shortPress: deviceShortPressOf(config),
+        };
+        if (page.icon) {
+            devicePage.icon = page.icon;
+        }
+        if (page.status) {
+            devicePage.status = page.status;
+        }
+        runtime.devicePage = devicePage;
+    }
+    return runtime;
 }
 
 /**

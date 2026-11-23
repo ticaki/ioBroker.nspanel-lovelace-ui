@@ -227,6 +227,95 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
   Zurückschalten wieder (`src-admin/src/itemOptionStash.ts`). Der Dialog hält immer nur die Felder der gewählten
   Option; Übernehmen speichert nur diese, Abbrechen verwirft alles.
 
+## Geräteseite
+
+Stand: 2026-11-23 – Adapter im Branch `feat/device-page` (Admin und Web-Panel folgen). HMI-Seiten und Feldmaße:
+[device-page-hmi.md](device-page-hmi.md) (Branch `feat/device-page-hmi`).
+
+Optional öffnet der Long-Press statt der Detailseite eine **Geräteseite** (cardDevice1/2/3): großes Geräte-Icon
+(main), feste Slots, eine breite Statuszeile und unten rechts ein „i“, das die Detailseite öffnet. Die Seite ist
+generisch (Waschmaschine, Saugroboter, Rasenmäher, Pkw …), Icons und Farben kommen vom Adapter.
+
+### Konfiguration
+
+`AdminPageItemConfig.device.devicePage` (`DevicePageConfig` in `src/lib/types/deviceDetails.ts`); fehlt das Feld,
+bleibt alles wie bisher.
+
+```ts
+devicePage?: {
+    layout: 1 | 2 | 3;                         // cardDevice1 / cardDevice2 / cardDevice3
+    slots: (DevicePageStateRef | null)[];      // ein Eintrag je Slot des Layouts, null = leer
+    showInfo: boolean;                         // „i“ zur Detailseite
+    icon?: string;                             // MDI-Name des großen Icons, fehlt = Icon des Items
+    status?: DevicePageStateRef;               // State der Statuszeile, fehlt = leere Zeile
+}
+// DevicePageStateRef = DeviceDetailEntryConfig: { key: Masken-Eintrag ('' = ohne), id: State, subName?: eigener Zusatz }
+```
+
+- Verweisform wie die Zeilen der Detailseite: Icon, Name und Farbgruppe kommen aus der Maske (`key`), der State aus
+  `id`. Ein Slot darf jeden State des Geräts zeigen, er muss nicht für die Detailseite angehakt sein.
+- Normalisierung `devicePageConfigOf`: unbekanntes Layout → 1, Slots auf die Länge des Layouts gekürzt/mit `null`
+  aufgefüllt (ungültige oder ohne State → `null`), `showInfo` nur bei `false` aus, leeres Icon/leerer Status entfällt.
+  Beim Layoutwechsel (`fitDevicePageSlots`) bleiben die Slots nach Position, nichts wird neu geraten.
+- Laufzeit (`deviceDetailsRuntimeOf` → `DeviceDetailsRuntime.devicePage`, `DevicePageRuntime`): zusätzlich der Kurz-Tipp
+  des Items; `showInfo` nur, wenn das Gerät angehakte Detail-Einträge hat.
+- Vorbelegung (`defaultDevicePageConfig` / `defaultDevicePageSlots`): nur die `info`-/`value`-Slots der Reihe nach aus
+  den angehakten Einträgen; `button`, `switch`, `progress` und der Status bleiben leer – nicht raten.
+
+### Layouts und Slot-Arten
+
+Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (beide geteilt mit Admin/Web):
+
+| Layout | Slots |
+|---|---|
+| 1 „Steuern“ | info, info, button, button, button, button |
+| 2 „Fortschritt“ | value, progress, info, info, info, button |
+| 3 „Werte“ | info × 6, switch, switch |
+
+| Art | zulässige States (`devicePageSlotAccepts`) | Element | Feld 6 | Tipp |
+|---|---|---|---|---|
+| info | alle | Textzeile der Detailseite (nur lesbar); schreibbar mit `common.states` → `input_sel` | Wert mit Einheit / Text aus `common.states` / An-Aus | `input_sel` öffnet popupInSel, sonst nichts |
+| value | alle | `text` | Wert wie die Textzeile (keine eigene Dauer-Formatierung) | keiner |
+| progress | number | `text` (Rolle `devicePageProgress`), Feld 4 = Balkenfarbe (Farbgruppe) | ganze Zahl 0–100: über `common.min/max` skaliert, ohne direkt, begrenzt (`devicePageProgressPercent`) | keiner |
+| button | `read: false` oder schreibbarer boolean | `button` | wie cardGrid (`1`/`0`) | `read: false` schreibt `true`, boolean wird umgeschaltet |
+| switch | schreibbarer boolean | `switch` | `0`/`1` | `OnOff` wie cardEntities |
+
+Ein State, der nicht (mehr) existiert oder nicht zur Art passt, lässt den Slot leer (Warnung im Log).
+
+### Protokoll
+
+```
+pageType~cardDevice<1|2|3>
+entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info>
+```
+
+- Jedes Element hat die 6 Felder einer cardGrid-Zelle `type~intName~icon~iconColor~displayName~optionalValue`, leere
+  Elemente `~~~~~` (wie leere cardGrid-Zellen, die HMI blendet sie aus). Überschrift = Name des Geräts.
+- **main** = das Geräte-Item: Icon `devicePage.icon`, sonst das des Items; Farbe und Name wie auf der Ursprungsseite.
+  Kurz-Tipp „State des Geräts“ → das Item selbst (Tipp schaltet / drückt), „Keine“ → `text`. „Navigation“ und „Popup
+  eines Alias-Kanals“ → `text` mit Icon, Name und An/Aus des Items, ohne Aktion.
+- **Feld 6 von main = Statuszeile**: der State `devicePage.status` wie eine Textzeile der Detailseite (Text aus
+  `common.states` übersetzt, sonst Wert mit Einheit, boolean An/Aus übersetzt), sonst leer. Auch ohne main wird die
+  Statuszeile gesendet (`~~~~~<status>`). Zu lang → mit `text-width.ts` (Font 0) auf 390 px gekürzt, am Ende „...“,
+  höchstens 63 Byte (`fitDevicePageStatus`). Nur die Statuszeile kürzt der Adapter; alle anderen Felder schneidet die
+  HMI an ihrer Grenze ab (Slot-Namen bekommen den Dubletten-Zusatz ungekürzt angehängt).
+- **info**: `button` mit Icon `information-outline` in der Farbe `deviceInfo`, ohne Namen; Tipp
+  `buttonPress2,<intName>,button` öffnet die Detailseite.
+- Kein Long-Press auf der Geräteseite: ein `buttonPress3` gilt als Tipp.
+
+### Navigation und Lebensdauer
+
+- Long-Press auf das Item der Seite `<P>` → Geräteseite `dp_<P>` (`directParentPage` = P). Zurück → P.
+- „i“ → Detailseite `dd_<P>` unter der Geräteseite. Zurück → Geräteseite → Zurück → P.
+- Wie die Detailseite: zur Laufzeit erzeugt, nicht editierbar, States nur abonniert solange sichtbar, eine neue
+  Geräte-/Detailseite ersetzt die alte erst nach dem Wechsel, von zwei überlappenden Long-Presses gewinnt der letzte.
+
+### Rückfall auf die Detailseite
+
+`supportsCardDevice`: nur Modell `eu` und `web-l`; ein Web-Panel (web-l, Web-Klon eines eu-Panels) immer, ein
+Hardware-Panel ab `CARD_DEVICE_MIN_TFT` (vorerst `6.2.0` wie popupNotify3 – **zum Release anheben**). us-l, us-p,
+web-p und ältere oder unbekannte TFT öffnen die Detailseite wie bisher.
+
 ## Offen
 
 - Detailseite mit echten Geräten am Panel prüfen (Schalter, Knopf, Auswahl-Popup, Textwerte).

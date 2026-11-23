@@ -191,6 +191,10 @@ export type DeviceRole =
     | 'textRawValue'
     /** a generated row of the detail page of a device (device-details.ts): a tap on a button row writes true */
     | 'deviceDetail'
+    /** the info icon of the device page of a device (device-page.ts): a tap opens the detail page */
+    | 'devicePageInfo'
+    /** a progress slot of the device page (device-page.ts): field 6 is the value scaled to 0-100 */
+    | 'devicePageProgress'
     | 'timer'
     | 'window'
     | 'info'
@@ -238,7 +242,24 @@ export type PageOthersConfigs =
     | cardPopup2DataItemOptions
     | cardQRDataItemOptions
     | cardChartDataItemOptions
-    | cardChartPieDataItemOptions;
+    | cardChartPieDataItemOptions
+    | cardDeviceDataItemOptions;
+
+/** the HMI pages of the generated device page (device-page.ts) */
+export type cardDeviceTypes = Extract<PageTypeCards, 'cardDevice1' | 'cardDevice2' | 'cardDevice3'>;
+
+/**
+ * generated device page of a device item (device-page.ts): the page items are `elements` - main, the slots of the
+ * layout, info and the hidden status item (undefined = empty slot / no info / no status)
+ */
+export type cardDeviceDataItemOptions = {
+    card: cardDeviceTypes;
+    /** name of the device as const headline */
+    data: { headline: NSPanel.DataItemsOptions };
+    /** number of slots of the layout */
+    slotCount: number;
+    elements: (NSPanel.PageItemDataItemsOptions | undefined)[];
+};
 
 type PageBaseTemplate = {
     uniqueID: string;

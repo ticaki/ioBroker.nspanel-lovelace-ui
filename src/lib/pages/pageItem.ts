@@ -14,7 +14,14 @@ import type { Screensaver } from './screensaver';
 import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
 import type { NSPanel } from '../types/NSPanel';
-import { DEVICE_DETAIL_ROW_ROLE, type DeviceDetailsRuntime } from '../types/deviceDetails';
+import {
+    DEVICE_DETAIL_ROW_ROLE,
+    DEVICE_PAGE_INFO_ROLE,
+    DEVICE_PAGE_PROGRESS_ROLE,
+    devicePageProgressPercent,
+    type DeviceDetailsRuntime,
+    type DevicePageRuntime,
+} from '../types/deviceDetails';
 import {
     beginDeviceDetailsRun,
     DEVICE_DETAIL_PAGE_PREFIX,
@@ -22,6 +29,13 @@ import {
     deviceDetailRows,
     isLatestDeviceDetailsRun,
 } from './device-details';
+import {
+    cardDeviceOf,
+    DEVICE_PAGE_PREFIX,
+    devicePageElements,
+    devicePagePageConfig,
+    supportsCardDevice,
+} from './device-page';
 import {
     alarmClockOf,
     isCountdownCommon,
@@ -644,6 +658,18 @@ export class PageItem extends BaseTriggeredPage {
                                     } else {
                                         message.optionalValue = '';
                                     }
+                                    break;
+                                }
+                                case DEVICE_PAGE_PROGRESS_ROLE: {
+                                    // progress slot of the device page: the value scaled to 0-100
+                                    const progress = item.entity2?.value;
+                                    message.optionalValue = String(
+                                        devicePageProgressPercent(
+                                            progress ? await progress.getNumber() : null,
+                                            progress?.common.min,
+                                            progress?.common.max,
+                                        ),
+                                    );
                                     break;
                                 }
                                 default: {
@@ -2529,9 +2555,15 @@ export class PageItem extends BaseTriggeredPage {
         if (value === undefined || this.dataItems === undefined) {
             return false;
         }
-        // device with details: the long press opens the detail page, before every other long press of the item
+        // device with details: the long press opens the device page or the detail page, before every other long press
+        // of the item
         if (action === 'button' && this.config?.deviceDetails) {
-            await this.openDeviceDetails(this.config.deviceDetails);
+            const details = this.config.deviceDetails;
+            if (details.devicePage && this.panelHasDevicePage()) {
+                await this.openDevicePage(details, details.devicePage);
+            } else {
+                await this.openDeviceDetails(details);
+            }
             return true;
         }
         const entry = this.dataItems;
@@ -2574,8 +2606,10 @@ export class PageItem extends BaseTriggeredPage {
      * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
      *
      * @param details the device part of the item
+     * @param originId id of the page the device was opened from (id of the detail page `dd_<originId>`), default the
+     * page of this item - the info item of a device page passes the page below the device page
      */
-    private async openDeviceDetails(details: DeviceDetailsRuntime): Promise<void> {
+    private async openDeviceDetails(details: DeviceDetailsRuntime, originId: string = this.parent.id): Promise<void> {
         const parent = this.parent;
         const panel = parent.basePanel;
         const run = beginDeviceDetailsRun(panel);
@@ -2593,11 +2627,78 @@ export class PageItem extends BaseTriggeredPage {
             this.log.warn(`Device details of ${details.deviceId}: none of the chosen states exists (any more)!`);
         }
         // short id: the ids of the rows (<page>?<n>) must fit the id buffers of the HMI
-        const id = `${DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
-        const page = panel.newPage(
+        const id = `${DEVICE_DETAIL_PAGE_PREFIX}${originId}`;
+        await this.showGeneratedPage(
+            run,
             { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: 'cardEntities' },
             deviceDetailPageConfig(id, headline, parent.alwaysOn, rows),
         );
+    }
+
+    /**
+     * @returns true if the panel of this item can show the device page (cardDevice1..3), else the detail page opens
+     */
+    private panelHasDevicePage(): boolean {
+        const panel = this.parent.basePanel;
+        return supportsCardDevice({
+            model: panel.info.nspanel.model,
+            isVirtual: panel.isVirtual,
+            displayVersion: panel.info.nspanel.displayVersion ?? '',
+        });
+    }
+
+    /**
+     * Opens the device page of the device of this item (device-page.ts): cardDevice1..3 below the page of the item,
+     * back leads here again; like the detail page it replaces a page opened before and only the last of two
+     * overlapping long presses opens its page.
+     *
+     * @param details the device part of the item
+     * @param devicePage the device page
+     */
+    private async openDevicePage(details: DeviceDetailsRuntime, devicePage: DevicePageRuntime): Promise<void> {
+        const parent = this.parent;
+        const panel = parent.basePanel;
+        const source = this.config;
+        if (!source) {
+            return;
+        }
+        const run = beginDeviceDetailsRun(panel);
+        const content = await devicePageElements(
+            source,
+            details,
+            devicePage,
+            id => panel.statesControler.getObjectAsync(id),
+            key => this.library.getTranslation(key),
+            this.library.getLocalLanguage(),
+        );
+        if (!isLatestDeviceDetailsRun(panel, run) || panel.getActivePage() !== parent) {
+            return;
+        }
+        if (content.skipped.length > 0) {
+            this.log.warn(
+                `Device page of ${details.deviceId}: missing state or not fitting its slot, left empty: ${content.skipped.join(', ')}`,
+            );
+        }
+        const id = `${DEVICE_PAGE_PREFIX}${parent.id}`;
+        await this.showGeneratedPage(
+            run,
+            { id, name: `${parent.name}-device`, adapter: this.adapter, panel, card: cardDeviceOf(devicePage.layout) },
+            devicePagePageConfig(id, devicePage.layout, parent.alwaysOn, content),
+        );
+    }
+
+    /**
+     * Creates a generated page (detail page, device page) below the page of this item and shows it. The child page
+     * opened before is deleted after the new one is shown, never while it is active.
+     *
+     * @param run the number of this opening (beginDeviceDetailsRun)
+     * @param pageInterface the page
+     * @param pageConfig its configuration
+     */
+    private async showGeneratedPage(run: number, pageInterface: PageInterface, pageConfig: PageBase): Promise<void> {
+        const parent = this.parent;
+        const panel = parent.basePanel;
+        const page = panel.newPage(pageInterface, pageConfig);
         if (!page) {
             return;
         }
@@ -2627,6 +2728,12 @@ export class PageItem extends BaseTriggeredPage {
             const set = entry.data.entity1?.set;
             if (set?.writeable) {
                 await set.setStateTrue();
+                return;
+            }
+            // a button slot of the device page with a writable boolean: switched
+            const value = entry.data.entity1?.value;
+            if (value?.writeable) {
+                await value.setStateFlip();
             }
         }
     }
@@ -2686,6 +2793,16 @@ export class PageItem extends BaseTriggeredPage {
             case 'button': {
                 if (entry.role === DEVICE_DETAIL_ROW_ROLE) {
                     await this.onDeviceDetailTap();
+                    break;
+                }
+                // the info icon of a device page: the detail page, back leads to the device page
+                if (entry.role === DEVICE_PAGE_INFO_ROLE) {
+                    if (this.config?.deviceDetails) {
+                        await this.openDeviceDetails(
+                            this.config.deviceDetails,
+                            this.parent.directParentPage?.id ?? this.parent.id,
+                        );
+                    }
                     break;
                 }
                 if (this.parent.isScreensaver && !(this.parent as Screensaver).isIndicatorKey(this)) {
