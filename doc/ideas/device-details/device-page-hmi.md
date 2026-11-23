@@ -9,19 +9,23 @@ Nur EU; us-l und us-p sind nicht angepasst.
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device5.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device6.HMI --preview doc/Pictures/device-page
 ```
+
+`--fields` gibt zusätzlich die Rechnung der längsten Nachricht je Seite aus (siehe „Puffer und RAM“).
 
 Teststände: `device1` (cardDevice1 mit N=6, ohne Status-Icons), `device2` (N=10, erstes Raster 42 px hoch),
 `device3` (N=10, Raster auf die info-Zeilen ausgerichtet), `device4` (wie device3, zusätzlich senden main und info
-auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main und allen Slots – aktuell; alle in
+auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main und allen Slots), `device6`
+(`strCommand` je Seite bemessen, Empfang auf die Puffergröße begrenzt – aktuell; alle in
 `/mnt/projekte/nspanel emu/`).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
   cardEntities2 und die pageType-Einträge unterscheiden sich). Dort fehlte `swipe_release_fix.py` (#934, keine HMI
   hatte ihn bisher). Er läuft deshalb vorher, die neuen Seiten erben ihn von cardGrid.
 - Jede Seite ist eine frische Kopie von cardGrid: Kopfzeile, Pfeile samt Long-Press/Blinken, Swipe-Streifen,
-  tmSerial (Empfang, Quittung/CRC, pageType-Umschalter), Sleep-Timer und renderCurrentPage bleiben unverändert.
+  tmSerial (Empfang, Quittung/CRC, pageType-Umschalter), Sleep-Timer und renderCurrentPage bleiben unverändert –
+  bis auf die eine Zeile, die die Nachricht nach `strCommand` kopiert (siehe „Puffer und RAM“).
   Entfernt sind die sechs Zellen (`bEntity1–6`, `tEntity1–6`); `tmLP` und `LPState` (Long-Press der Zellen) bleiben
   unverändert.
 - Die Seiten werden **hinten** an die Seitenliste von main.HMI angehängt (Abschnitte 37/38/39.pa). Keine bestehende
@@ -261,26 +265,96 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 ## Puffer und RAM
 
 - IDs (`entn*`, `entnMain`, `entnInfo`) 23 wie cardEntities2 (Adapter-IDs `<Seitenindex>?<n>`), Namen 31, Werte 31,
-  Status 63, Icons 10, Typen 10, `tSend` 63 (längstes Ereignis `event,buttonPress2,` + ID + `,OnOff,1` = 50),
-  `strCommand` 1019 (= Empfangspuffer des Displays; ein längeres `entityUpd` kommt ohnehin nicht an, die Nutzlast
-  bleibt ≤ 1017 Byte).
+  Status 63, Icons 10, Typen 10, `tSend` 63 (längstes Ereignis `event,buttonPress2,` + ID + `,OnOff,1` = 50).
+- `strCommand` wird **je Seite** aus ihren Slots berechnet (siehe unten), höchstens 1019 (das Display nimmt
+  höchstens 1017 Byte Nutzlast an).
 - Schätzung wie `entities2_five_rows.py`: 9 + 7 je Objekt + Σ ceil((txt_maxl+1)/4)·4, global 436:
 
-| Seite | Objekte | Seite | mit global | Grenze 3584 |
-|---|---|---|---|---|
-| cardDevice1 (N=10, mit zweitem Zeilensatz und Status-Block) | 80 | 3046 | 3482 | 102 frei |
-| cardDevice2 | 60 | 2486 | 2922 | 662 frei |
-| cardDevice3 | 73 | 2821 | 3257 | 327 frei |
+| Seite | Objekte | `strCommand` | Seite | mit global | frei bis 3584 | frei in `device5` (1019) |
+|---|---|---|---|---|---|---|
+| cardDevice1 (N=10, mit zweitem Zeilensatz und Status-Block) | 80 | 943 | 2970 | 3406 | **178** | 102 |
+| cardDevice2 | 60 | 875 | 2342 | 2778 | **806** | 662 |
+| cardDevice3 | 73 | 1019 | 2821 | 3257 | **327** | 327 |
+
+### Größe von `strCommand`
+
+Vorgabe: Der Puffer muss eine nicht kaputte Nachricht gut fassen; was der Adapter darüber hinaus anhängt, fällt weg.
+Längste Nachricht der Seite ist `entityUpd~<heading>~<prev>~<next>~<main>~<slot 1…N>~<info>`; `time`, `date`,
+`timeout`, `dimmode` und `pageType` (die übrigen Nachrichten, die der Parser der Seite annimmt) sind weit kürzer.
+Das CRC-Präfix `^XXXX^` des Adapters wertet der Berry-Treiber aus, es kommt nicht am Display an.
+
+Zwei Rechnungen in Byte, je Element die sechs Felder `Typ+ID+Icon+Farbe+Name+Wert` (`card_device.py --fields`):
+
+- **(a) alle Puffer voll:** jedes Feld so lang wie der Puffer, in dem es landet (Typ 10, ID 23, Icon 10, Farbe 5,
+  Name 31, Wert 31 bzw. `tTmp` 10 bei progress/switch, Status 63, Überschrift 40); Felder, die die Seite nicht liest,
+  mit dem, was der Adapter schickt.
+- **(b) wie der Adapter baut:** ID 12 (`dp_<Seitenindex>?<n>`), ein Icon 4, Farbe 5, längster Typ der Art (`input_sel`
+  9 bei info, `button`/`switch` 6, `text` 4), Name und Wert bis zum Puffer, Wert eines Knopfs/Schalters 1 (`0`/`1`),
+  progress 3 (`100`), Status-Icons ohne Name und Wert (der Adapter schickt beide Felder leer), Pfeile und info-Icon
+  ohne Name und Wert.
+
+| Teil | (a) | (b) |
+|---|---|---|
+| `entityUpd` | 9 | 9 |
+| Überschrift | 40 | 40 |
+| Pfeil (je, zweimal) | 10+23+10+5+0+0 = 48 | 6+12+4+5+0+0 = 27 |
+| main | 10+23+10+5+31+63 = 142 | 6+12+4+5+31+63 = 121 |
+| info | 10+23+10+5+31+31 = 110 | 9+12+4+5+31+31 = 92 |
+| value | 10+23+10+5+31+31 = 110 | 4+12+4+5+31+31 = 87 |
+| progress | 10+23+4+5+31+10 = 83 | 4+12+4+5+31+3 = 59 |
+| button | 10+23+10+5+31+1 = 80 | 6+12+4+5+31+1 = 59 |
+| switch | 10+23+10+5+31+10 = 89 | 6+12+4+5+31+1 = 59 |
+| status | 10+23+10+5+31+0 = 79 | 4+12+4+5+0+0 = 25 |
+| info-Icon | 10+23+10+5+0+0 = 48 | 6+12+4+5+0+0 = 27 |
+
+| Seite | Felder / Trenner `~` | (a) Summe + Trenner | (b) Summe + Trenner | (b) + 10 % | `txt_maxl` (4k−1, ≤ 1019) |
+|---|---|---|---|---|---|
+| cardDevice1 (2 info, 4 button, 4 status) | 86 / 85 | 1191 + 85 = **1276** | 771 + 85 = **856** | 942 | **943** |
+| cardDevice2 (value, progress, 3 info, button) | 62 / 61 | 938 + 61 = **999** | 732 + 61 = **793** | 873 | **875** |
+| cardDevice3 (6 info, 2 switch) | 74 / 73 | 1173 + 73 = **1246** | 921 + 73 = **994** | 1094 | **1019** |
+
+- (a) liegt auf cardDevice1 und 3 über den 1017 Byte, die das Display überhaupt annimmt – der Adapter verwirft
+  solche Nachrichten ohnehin (`MAX_PANEL_PAYLOAD_BYTES`). Maßgeblich ist (b).
+- Der Adapter kürzt Namen und Werte nicht auf 31 Byte (die HMI schneidet beim Einlesen ab). Schickt er längere,
+  wächst die Nachricht über (b) hinaus; reicht der Puffer nicht, fehlen die **letzten** Elemente (zuerst das
+  info-Icon). Wer das ausschließen will, kürzt im Adapter Namen und Werte der Geräteseite auf 31 Byte.
+- Würden die Status-Icons einen Namen bekommen (Popup-Überschrift, je 31 Byte), wäre (b) auf cardDevice1 980 und
+  der Puffer bliebe 1019.
+
+### Empfang einer zu langen Nachricht
+
+Der Empfang (tmSerial, von cardGrid) hängt an keiner Stelle an der Größe von `strCommand`: Rahmenlänge, CRC-Prüfung
+(`crcputu 0,payloadLength-1` über den seriellen Puffer `u[]`), `udelete payloadLength+1` und die Quittung
+`event,ack,<recvCrc>` arbeiten nur mit `u[]` und `payloadLength`; die festen Zahlen 1023 dort sind die Größe des
+seriellen Puffers. `strCommand` wird an genau einer Stelle beschrieben: `ucopy strCommand.txt,4,payloadLength-5,0`.
+Was die Nextion tut, wenn dabei mehr Byte kommen als `txt_maxl`, ist nicht belegt. Auf Seiten mit kleinerem Puffer
+als 1017 begrenzt das Werkzeug deshalb die Kopie (`clamp_receive`):
+
+```
+sys0=payloadLength-5
+if(sys0>943)
+{
+  sys0=943
+}
+ucopy strCommand.txt,4,sys0,0
+```
+
+`sys0` ist an der Stelle frei (die Rahmenende-Prüfung davor ist ausgewertet, alles dahinter setzt es vor dem Lesen;
+das Werkzeug prüft das). Folge einer zu langen Nachricht: sie wird vollständig aus `u[]` gelöscht und mit ihrer
+echten CRC quittiert, der Adapter wartet also nicht; der Parser sieht nur die ersten `txt_maxl` Byte, die Felder
+dahinter sind leer (Element ausgeblendet). Ein Mehrbyte-Zeichen an der Schnittstelle kann halb sein.
+cardDevice3 (1019) behält die Zeile von cardGrid.
 
 Gegenüber `device4` kamen dazu: `LPState` (7, alle Seiten), je Hotspot 7 (cardDevice2 und 3 je zwei), auf cardDevice1
 je Status-Slot `type<k>` (7 + 12), `entn<k>` (7 + 24) und `vaName<k>` (7 + 32) = 89, viermal 356 (Seite gesamt +363). Code kostet kein
-RAM. cardDevice1 ist damit eng (das Werkzeug meldet Stände über 3400 und bricht über 3584 ab). Sparmöglichkeiten,
-falls der Editor mehr anzeigt: `vaName7–10` weglassen (−156, Popups aus Status-Zellen dann ohne Überschrift) oder auf
-`txt_maxl` 15 kürzen (−64); `tStatus` 63 → 47 (−16).
+RAM. cardDevice1 bleibt die engste Seite (das Werkzeug meldet Stände über 3400 und bricht über 3584 ab).
+Sparmöglichkeiten, falls der Editor mehr anzeigt: `vaName7–10` weglassen (−156; der Adapter schickt den Namen der
+Status-Icons heute ohnehin leer, Popups aus Status-Zellen haben dann nie eine Überschrift) oder auf `txt_maxl` 15
+kürzen (−64); `tStatus` 63 → 47 (−16).
 
 ## Im Nextion-Editor prüfen
 
-1. `nspanel-v6.2.0.device5.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
+1. `nspanel-v6.2.0.device6.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
 2. Kompilieren: keine Fehler in den Seiten cardDevice1–3 (Code ist nur Klartext, nicht kompiliert getestet).
    Besonders: `fill`/`draw` mit `defaultBcoColor`/`defaultFontColor`/`sys2` im tmSerial von cardDevice2,
@@ -289,7 +363,8 @@ falls der Editor mehr anzeigt: `vaName7–10` weglassen (−156, Popups aus Stat
    Hotspots `mSlot1/2` (cardDevice2) und `mSlot7/8` (cardDevice3) – meldet der Editor „Component overlap“ für einen
    Hotspot über Texten? –, die Zeilen `if(type7.txt!="delete"&&type7.txt!="")` und das darin verschachtelte
    `if(type7.txt!="text"||entn7.txt!="")`, `pageIcons.tTmp3.txt=""` in `mSlot2`.
-3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: nur 102 Byte Luft).
+   Neu in `device6`: die fünf Zeilen vor `ucopy strCommand.txt,4,sys0,0` im tmSerial von cardDevice1 und 2.
+3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen (cardDevice1: 178 Byte Luft).
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
    ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach Rückkehr aus einem Popup (der Adapter schickt nach
    renderCurrentPage neu). cardDevice1: Wechsel mit/ohne Status-Icons in beiden Richtungen (Zeilen springen um,
@@ -308,8 +383,18 @@ falls der Editor mehr anzeigt: `vaName7–10` weglassen (−156, Popups aus Stat
    Halten; kurzer Tipp → `buttonPress2`). Jeweils prüfen: `event,pageOpenDetail,<popup>,<intName>` mit der richtigen
    ID, Überschrift = Name des Platzes (Status-Zelle: Feld 5), Schließen → `event,buttonPress2,<popup>,bExit` und nach
    dem `pageType` des Adapters wieder die Geräteseite. progress: Popup ohne Icon.
+7. Überlange Nachricht (Panel oder Simulator, am einfachsten auf cardDevice2, Puffer 875): ein `entityUpd` mit
+   etwa 950–1000 Byte schicken, z. B. die Überschrift oder die Namen mit Füllzeichen verlängern (über
+   `CustomSend` direkt, der Adapter baut so etwas nicht). Erwartet: genau eine Quittung `event,ack,<crc>` mit der
+   CRC der ganzen Nachricht; die Seite zeigt die vorderen Elemente, die hinteren (zuletzt das info-Icon) sind
+   ausgeblendet; kein Müll in anderen Feldern. Direkt danach ein normales `entityUpd` und `time~…`: beide werden
+   verarbeitet und quittiert (kein hängender Empfang, keine verschobene Folgenachricht). Gegenprobe auf
+   cardDevice1 (Puffer 943) mit 1017 Byte.
 
 ## Bekannte Unsicherheiten / Abweichungen
+
+- Verhalten bei überlanger Nachricht ist nur aus dem Code abgeleitet (Kopie auf `txt_maxl` begrenzt, Rest des
+  Empfangs unabhängig vom Puffer), nicht am Display oder im Simulator gesehen.
 
 - **Kein Nextion-Progress-Bar-Objekt:** Keine HMI-Datei des Projekts (alle Versionen, EU/us-l/us-p) enthält eine
   Fortschrittsanzeige, die sich als Vorlage kopieren ließe; ein Objekt ohne Vorlage zu erfinden riskiert eine defekte

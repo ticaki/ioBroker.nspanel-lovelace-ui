@@ -1,7 +1,8 @@
 """HMI 6.2.0 (EU): the device pages cardDevice1 'control', cardDevice2 'progress' and cardDevice3 'values'.
 
 Usage (from the repository root):
-  PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py <in.HMI> <out.HMI> [--preview <dir>]
+  PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py <in.HMI> <out.HMI> [--preview <dir>] [--fields]
+--fields prints the bytes of every part of the longest entityUpd (all buffers full / as the adapter builds it).
 Input: a 6.2.0 EU project (480x320) with the pages cardGrid and cardEntities. The output must not exist.
 With --preview the script also writes <dir>/hmi-cardDevice{1,2,3}.png: a true-to-scale mock-up drawn from the objects
 of each built page with example content (robot vacuum, washing machine, car) and the fonts of the project
@@ -59,8 +60,16 @@ Touch: main and every slot behave like a cell of cardGrid (its down/up code and 
   The switch btOnOff itself and the status line are not touched.
 
 Buffers: ids (entn*) 23 like cardEntities2, names 31, values 31, status 63, icons 10, tSend 63 (longest event
-'event,buttonPress2,' + id + ',OnOff,1'), strCommand 1019 (the receive buffer of the display, a longer entityUpd
-cannot arrive anyway). RAM per page (9 + 7 per object + text buffers) is printed and must stay <= 3584 with global.
+'event,buttonPress2,' + id + ',OnOff,1'). RAM per page (9 + 7 per object + text buffers) is printed and must stay
+<= 3584 with global.
+
+strCommand is sized per page from its slots (message_fields, str_command_maxl): the longest entityUpd the adapter
+really builds (ids '<page>?<n>' 12 bytes, one icon 4 bytes, colour 5, the longest type of the kind, names and values
+up to their buffers, button/switch value 0/1, status icons without name and value) plus 10 %, rounded up to 4k-1, at
+most 1019 (the display takes 1017 bytes of payload). The other messages of the page (time, date, timeout, dimmode,
+pageType) are far shorter. The receive code copies at most txt_maxl bytes into strCommand (clamp_receive): a longer
+message loses its end, the CRC check, the delete of the frame and the acknowledgement use the whole frame in the
+serial buffer and do not depend on the size of strCommand.
 """
 import os
 import re
@@ -89,10 +98,18 @@ STATUS_LEN = 63
 ICON_LEN = 10
 TYPE_LEN = 10
 TSEND_LEN = 63
-STR_COMMAND = 1019
+STR_COMMAND_MAX = 1019  # the serial buffer of the display holds 1023 bytes, a payload is at most 1017
+PAYLOAD_MAX = 1017
+STR_COMMAND_RESERVE = 10  # percent on top of the longest real entityUpd
+HEADING_LEN = 40  # tHeading
+TMP_LEN = 10  # tTmp: types of the navigation and of the info icon, numbers
+COLOR_LEN = 5  # 65535
+REAL_ID = 12  # ids of the adapter 'dp_<page index>?<n>'
+REAL_ICON = 4  # one glyph, UTF-8
 RAM_GLOBAL = 436
 RAM_LIMIT = 3584
 RAM_TARGET = 3400
+FIELDS_TABLE = False  # --fields
 
 REMOVE = re.compile(r'(bEntity|tEntity)[1-6]')
 
@@ -180,6 +197,95 @@ LAYOUTS = {
 
 TAPPED = ('info', 'button')
 HOTSPOT = ('value', 'progress', 'switch')  # elements without a button: a hotspot carries the cell code
+
+
+# ---------------------------------------------------------------- size of strCommand
+# the 6 fields of an element in bytes: (type, intName, icon, iconColor, displayName, optionalValue)
+# BUFFER: what the page keeps of every field (txt_maxl of its target, 0 = the field is not read)
+# REAL:   what the adapter really sends (longest type of the kind, id 12, one icon, names/values up to the buffer)
+BUFFER = {
+    'nav': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
+    'main': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, STATUS_LEN),
+    'info': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'value': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'progress': (TYPE_LEN, ID_LEN, 0, COLOR_LEN, NAME_LEN, TMP_LEN),
+    'button': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, 0),
+    'switch': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, TMP_LEN),
+    'status': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, 0),
+    'infoIcon': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
+}
+REAL = {
+    'nav': (len('button'), REAL_ID, REAL_ICON, COLOR_LEN, 0, 0),
+    'main': (len('switch'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, STATUS_LEN),
+    'info': (len('input_sel'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'value': (len('text'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'progress': (len('text'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, len('100')),
+    'button': (len('button'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, 1),
+    'switch': (len('switch'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, 1),
+    # the adapter sends a status icon without name and value (devicePageStatusIconElement)
+    'status': (len('text'), REAL_ID, REAL_ICON, COLOR_LEN, 0, 0),
+    'infoIcon': (len('button'), REAL_ID, REAL_ICON, COLOR_LEN, 0, 0),
+}
+
+
+def next_4k1(n):
+    """smallest 4k-1 >= n (a text buffer costs ceil((txt_maxl + 1) / 4) * 4 bytes)"""
+    return n + (3 - n) % 4
+
+
+def message_fields(layout, real):
+    """[(part, bytes of its fields)] of the longest entityUpd of the page; real False: every field filled up to
+    the buffer it lands in (never less than the adapter sends), True: what the adapter really builds"""
+    def element(kind):
+        return REAL[kind] if real else tuple(max(b, r) for b, r in zip(BUFFER[kind], REAL[kind]))
+    parts = [('entityUpd', (len('entityUpd'),)), ('heading', (HEADING_LEN,)), ('prev', element('nav')),
+             ('next', element('nav')), ('main', element('main'))]
+    parts += [(f'slot {k} {s["kind"]}', element(s['kind'])) for k, s in enumerate(layout['slots'], 1)]
+    return parts + [('info', element('infoIcon'))]
+
+
+def message_len(layout, real):
+    """bytes of that message: the fields plus one '~' between two fields"""
+    fields = [n for _, part in message_fields(layout, real) for n in part]
+    return sum(fields) + len(fields) - 1
+
+
+def str_command_maxl(layout):
+    """txt_maxl of strCommand: the longest real entityUpd plus the reserve, 4k-1, at most STR_COMMAND_MAX"""
+    need = -(-message_len(layout, True) * (100 + STR_COMMAND_RESERVE) // 100)
+    return min(STR_COMMAND_MAX, next_4k1(need))
+
+
+def clamp_receive(page, maxl):
+    """tmSerial copies at most maxl bytes of the payload into strCommand, so a longer message never writes more
+    than the buffer holds; CRC, udelete and the acknowledgement work on the frame in u[] as before. A page whose
+    buffer takes the longest possible payload keeps the code of cardGrid."""
+    if maxl >= PAYLOAD_MAX:
+        return
+    serial = page.obj('tmSerial')
+    lines = serial.code('timer')
+    at = find(lines, 'ucopy strCommand.txt,4,payloadLength-5,0')
+    if lines[at - 5].strip() != 'if(crcval==recvCrc)' or lines[at - 4].strip() != '{':
+        raise SystemExit('tmSerial: unexpected code in front of the copy into strCommand')
+    # sys0 is free here: the frame end check in front has used it, everything behind sets it before reading it
+    for line in lines[at + 1:]:
+        code = line.split('//')[0].strip()
+        if re.search(r'\bsys0\b', code):
+            if not re.fullmatch(r'(covx|strlen|btlen) [\w.]+,sys0(,0,0)?', code):
+                raise SystemExit(f'tmSerial: sys0 is read behind the copy into strCommand: {code}')
+            break
+    ind = lines[at][:len(lines[at]) - len(lines[at].lstrip())]
+    lines[at:at + 1] = [
+        f'{ind}// at most txt_maxl of strCommand (card_device.py): a longer message loses its end here; CRC check,',
+        f'{ind}// delete and acknowledgement use the whole frame in the serial buffer',
+        f'{ind}sys0=payloadLength-5',
+        f'{ind}if(sys0>{maxl})',
+        f'{ind}{{',
+        f'{ind}  sys0={maxl}',
+        f'{ind}}}',
+        f'{ind}ucopy strCommand.txt,4,sys0,0',
+    ]
+    serial.set_code('timer', lines)
 
 
 def ram(page):
@@ -427,7 +533,7 @@ def build_objects(page, layout, switch_template):
         if o.name.startswith('entn'):
             o.set('txt_maxl', ID_LEN)
     page.obj('tSend').set('txt_maxl', TSEND_LEN)
-    page.obj('strCommand').set('txt_maxl', STR_COMMAND)
+    page.obj('strCommand').set('txt_maxl', str_command_maxl(layout))
 
 
 # ---------------------------------------------------------------- code
@@ -669,6 +775,7 @@ def build_page(source_bytes, name, switch_template):
     fix_page_name(page, name)
     build_objects(page, layout, switch_template)
     patch_parser(page, layout)
+    clamp_receive(page, str_command_maxl(layout))
     patch_load(page, name, layout)
     check_names(page)
     return page
@@ -758,6 +865,16 @@ def main(source, target, preview=None):
         kinds = ', '.join(s['kind'] for s in LAYOUTS[name]['slots'])
         print(f'{name}: N={len(LAYOUTS[name]["slots"])} ({kinds}), {len(page.objs)} objects, '
               f'RAM (estimate) page {r}, with global {RAM_GLOBAL + r} of {RAM_LIMIT}')
+        hard, real = message_len(LAYOUTS[name], False), message_len(LAYOUTS[name], True)
+        maxl = page.obj('strCommand').get('txt_maxl')
+        print(f'{name}: entityUpd at most {hard} bytes with every buffer full, {real} as the adapter builds it; '
+              f'strCommand txt_maxl {maxl} (+{STR_COMMAND_RESERVE} %, 4k-1, max {STR_COMMAND_MAX}), '
+              f'{RAM_LIMIT - RAM_GLOBAL - r} bytes of RAM free')
+        if real > PAYLOAD_MAX:
+            print(f'{name}: note - that message is longer than a payload can be ({PAYLOAD_MAX})')
+        if FIELDS_TABLE:
+            for (part, a), (_, b) in zip(message_fields(LAYOUTS[name], False), message_fields(LAYOUTS[name], True)):
+                print(f'  {part:16} {"+".join(map(str, a)):18} = {sum(a):3}   {"+".join(map(str, b)):16} = {sum(b):3}')
         if RAM_GLOBAL + r > RAM_LIMIT:
             raise SystemExit(f'{name}: RAM {RAM_GLOBAL + r} > {RAM_LIMIT}')
         if RAM_GLOBAL + r > RAM_TARGET:
@@ -965,6 +1082,9 @@ def render_all(hmi, out_dir):
 if __name__ == '__main__':
     args = sys.argv[1:]
     out_dir = None
+    if '--fields' in args:
+        args.remove('--fields')
+        FIELDS_TABLE = True
     if '--preview' in args:
         i = args.index('--preview')
         out_dir = args[i + 1]
