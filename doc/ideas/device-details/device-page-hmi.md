@@ -2,14 +2,18 @@
 
 Drei neue Seiten für **ein** Gerät (Saugroboter, Waschmaschine, Pkw …): großes Geräte-Icon, feste Anzahl Slots mit
 festen Elementarten, Statuszeile unten, info-Icon unten rechts. Gebaut mit `HMI/tools/card_device.py`, Vorschau unter
-`doc/Pictures/device-page/hmi-cardDevice{1,2,3}.png`. Nur EU; us-l und us-p sind nicht angepasst.
+`doc/Pictures/device-page/hmi-cardDevice{1,2,3}.png` (cardDevice1 mit Status-Icons, ohne: `hmi-cardDevice1-plain.png`).
+Nur EU; us-l und us-p sind nicht angepasst.
 
 ## Bauen
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device1.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/swipe.HMI nspanel-v6.2.0.device3.HMI --preview doc/Pictures/device-page
 ```
+
+Teststände: `device1` (cardDevice1 mit N=6, ohne Status-Icons), `device2` (N=10, erstes Raster 42 px hoch),
+`device3` (N=10, Raster auf die info-Zeilen ausgerichtet – aktuell; beide in `/mnt/projekte/nspanel emu/`).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
   cardEntities2 und die pageType-Einträge unterscheiden sich). Dort fehlte `swipe_release_fix.py` (#934, keine HMI
@@ -37,7 +41,7 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
 
 | Seite | N | main | Slots | info |
 |---|---|---|---|---|
-| cardDevice1 „Steuern“ | 6 | 14–19 | 20–55 | 56–61 |
+| cardDevice1 „Steuern“ | 10 | 14–19 | 20–79 | 80–85 |
 | cardDevice2 „Fortschritt“ | 6 | 14–19 | 20–55 | 56–61 |
 | cardDevice3 „Werte“ | 8 | 14–19 | 20–67 | 68–73 |
 
@@ -46,11 +50,11 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
 
 ### Art je Slot
 
-| Seite | Slot 1 | Slot 2 | Slot 3 | Slot 4 | Slot 5 | Slot 6 | Slot 7 | Slot 8 |
-|---|---|---|---|---|---|---|---|---|
-| cardDevice1 | info | info | button | button | button | button | – | – |
-| cardDevice2 | value | progress | info | info | info | button | – | – |
-| cardDevice3 | info | info | info | info | info | info | switch | switch |
+| Seite | Slot 1 | Slot 2 | Slot 3 | Slot 4 | Slot 5 | Slot 6 | Slot 7 | Slot 8 | Slot 9 | Slot 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| cardDevice1 | info | info | button | button | button | button | status | status | status | status |
+| cardDevice2 | value | progress | info | info | info | button | – | – | – | – |
+| cardDevice3 | info | info | info | info | info | info | switch | switch | – | – |
 
 ### Elementarten
 
@@ -62,6 +66,7 @@ entityUpd~<heading>~<prev: 6 Felder>~<next: 6 Felder>~<main>~<slot 1>~…~<slot 
 | progress | Name Font 0 darüber, Balken über die volle Breite; Feld 6 = ganze Zahl 0–100 (wird begrenzt), Füllung in iconColor, Rahmen in der Textfarbe | keiner |
 | button | Icon Font 3 in iconColor, Name Font 0 darunter | genau wie eine cardGrid-Zelle (auch `text` sendet) |
 | switch | Icon Font 1, Name Font 0, Schalter `btOnOff` (Kopie von cardEntities, Bilder 1/2 bzw. 10/11 bei schwarzem Hintergrund); Zustand aus Feld 6 `0`/`1` | `event,buttonPress2,<intName>,OnOff,<0\|1>` wie cardEntities |
+| status | nur Icon (Feld 3) Font 1 in iconColor, in einem 2×2-Block mit Raster (nur cardDevice1, siehe unten); Name/Wert ungenutzt | keiner |
 | info-Icon | Icon Font 1 in iconColor unten rechts; Name/Wert werden nicht genutzt | `event,buttonPress2,<intName>,button` |
 
 - „Wie eine cardGrid-Zelle“: `shutter`, `shutter2`, `input_sel`, `timer` öffnen ihr Popup sofort beim Berühren,
@@ -80,7 +85,7 @@ Font 0 ist 24 px hoch; die Breite eines Texts liefert `src/lib/const/text-width.
 
 | Seite | main-Name | Statuszeile | Slot-Name | Slot-Wert |
 |---|---|---|---|---|
-| cardDevice1 | 110 px | 390 px, 1 Zeile, links | info: 164 px; button: 104 px | info: 110 px (rechtsbündig) |
+| cardDevice1 | 110 px | 390 px, 1 Zeile, links | info: 164 px, **mit Status-Icons 86 px**; button: 104 px | info: 110 px (rechtsbündig, in beiden Varianten) |
 | cardDevice2 | 96 px | 390 px, 1 Zeile, mittig | value: 190 px; progress: 429 px; info: 104 px; button: 100 px | value: 190 px **Font 4**; info: 104 px |
 | cardDevice3 | 100 px | 390 px, 1 Zeile, links | info: 125 px; switch: 125 px | info: 125 px |
 
@@ -94,22 +99,63 @@ x 404–439 / y 288–319. Ausrichtung: links = xcen 0, mittig = 1, rechts = 2; 
 
 ### cardDevice1 „Steuern“ (Saugroboter, Rasenmäher)
 
-![cardDevice1](../../Pictures/device-page/hmi-cardDevice1.png)
+Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den Status-Icons):
+
+![cardDevice1 mit Status-Icons](../../Pictures/device-page/hmi-cardDevice1.png)
+![cardDevice1 ohne Status-Icons](../../Pictures/device-page/hmi-cardDevice1-plain.png)
 
 | Objekt | x | y | w | h | Font | Ausrichtung | txt_maxl |
 |---|---|---|---|---|---|---|---|
 | bMain | 10 | 68 | 110 | 86 | 4 | mittig | 10 |
 | tMainName | 10 | 156 | 110 | 26 | 0 | mittig | 31 |
-| bEntity1 (info) | 126 | 76 | 36 | 34 | 1 | mittig | 10 |
+| bEntity1 (info, breit) | 126 | 76 | 36 | 34 | 1 | mittig | 10 |
 | tEntity1 | 164 | 80 | 164 | 26 | 0 | links | 31 |
 | tValue1 | 330 | 80 | 110 | 26 | 0 | rechts | 31 |
-| bEntity2 (info) | 126 | 120 | 36 | 34 | 1 | mittig | 10 |
+| bEntity2 (info, breit) | 126 | 120 | 36 | 34 | 1 | mittig | 10 |
 | tEntity2 | 164 | 124 | 164 | 26 | 0 | links | 31 |
 | tValue2 | 330 | 124 | 110 | 26 | 0 | rechts | 31 |
+| bEntityS1 (info, schmal) | 204 | 76 | 36 | 34 | 1 | mittig | 10 |
+| tEntityS1 | 242 | 80 | 86 | 26 | 0 | links | 31 |
+| tValueS1 | 330 | 81 | 110 | 26 | 0 | rechts | 31 |
+| bEntityS2 (info, schmal) | 204 | 120 | 36 | 34 | 1 | mittig | 10 |
+| tEntityS2 | 242 | 124 | 86 | 26 | 0 | links | 31 |
+| tValueS2 | 330 | 125 | 110 | 26 | 0 | rechts | 31 |
+| tStat7 (status, oben links) | 124 | 71 | 38 | 45 | 1 | mittig | 10 |
+| tStat8 (oben rechts) | 161 | 71 | 38 | 45 | 1 | mittig | 10 |
+| tStat9 (unten links) | 124 | 115 | 38 | 45 | 1 | mittig | 10 |
+| tStat10 (unten rechts) | 161 | 115 | 38 | 45 | 1 | mittig | 10 |
 | bEntity3–6 (button) | 10 / 118 / 226 / 334 | 190 | 104 | 52 | 3 | mittig | 10 |
 | tEntity3–6 | 10 / 118 / 226 / 334 | 244 | 104 | 26 | 0 | mittig | 31 |
 | tStatus | 10 | 289 | 390 | 30 | 0 | links | 63 |
 | bInfo | 404 | 288 | 36 | 32 | 1 | mittig | 10 |
+
+**Status-Block (Slots 7–10):**
+
+- Block x 124–198, y 71–159 (zwei Spalten à 38 px, zwei Zeilen à 45 px, Nachbarn 1 px überlappend → Raster 44 px),
+  direkt rechts vom Haupt-Icon.
+- **Maße aus der zi-Tabelle:** Die Font-1-Icons haben ihre Farbe in den Zeilen 6–28 der 32-px-Glyphe (Median über
+  alle 7459 Icons; 6 px Luft oben, 3 px unten, sichtbar 23 px). Die Icons der info-Zeilen (Box y 76/120, h 34,
+  vertikal zentriert) zeigen sich damit bei y 83–105 und 127–149, Zeilenabstand 44. Die Status-Zellen haben denselben
+  Abstand (44) und liegen so, dass ihre Icons auf **genau denselben Zeilen** stehen (83–105 / 127–149): je Rasterreihe
+  eine info-Zeile. Der Rahmen hat 12 px Abstand über und 10 px unter der Icon-Farbe (Ungleichheit durch die Glyphe).
+- **2 × 3 verworfen:** drei Reihen mit Font 1 brauchen je ≥ 32 px Zelle (kleinere Box zeichnet die Nextion nicht) →
+  Raster ≥ 97 px hoch (z. B. 71–167). Das passt zwar über die Knopfreihe (y 190), ist aber 30 px höher als der
+  optische Bereich der beiden info-Zeilen (83–149, 67 px), keine Reihe stünde auf einer info-Zeile, und in 32 px
+  bleiben 6 px Luft oben, 3 px unten – die Icons säßen am Rahmen. Deshalb **2 × 2, N = 10**.
+- **Raster aus Objekt-Rahmen**, nicht gezeichnet: die vier Zellen sind Textfelder mit `style` 1 (Rahmen),
+  `borderw` 1, `borderc` 14823 (das Grau der Tortenlinien auf cardPChart und der gedrückten Knöpfe). Vorlage dafür
+  sind die Icons auf cardPower (`style` 1, Rahmen 2 px). Nachbarzellen überlappen um 1 px, ihre Rahmen liegen also
+  aufeinander und ergeben Außenrahmen plus Kreuz. Die Nextion zeichnet die Rahmen mit dem Objekt, es muss nichts
+  nachgezeichnet werden. Die Rahmenfarbe ist fest im Objekt (die Lade-Schleife setzt nur `bco`/`pco`).
+- Auswertung im tmSerial **vor** den info-Zeilen: leerer oder `delete`-Slot → Zelle bleibt mit leerem Text (Rahmen
+  bleibt stehen, das Icon ist unsichtbar); belegter Slot → Icon/Farbe und Merker `vStatus` = 1. Danach: `vStatus` 0 →
+  alle vier Zellen `vis 0`, sonst `vis 1`.
+- Die info-Zeilen 1–2 gibt es zweimal: breit (`bEntity/tEntity/tValue1–2`) und schmal (`bEntityS/tEntityS/tValueS1–2`).
+  Der Parser schreibt in den breiten Satz, kopiert Text, Icon-Schrift und Farbe in den schmalen und schaltet per `vis`
+  den passenden Satz sichtbar. Position/Breite werden zur Laufzeit nie geändert (keine Seite des Projekts tut das).
+  Beide Sätze haben den gleichen Tipp-Code (cardGrid-Zelle, `text` sendet nichts) mit Typ/ID von Slot 1 bzw. 2.
+- `tValueS1/2` liegen 1 px tiefer als `tValue1/2`, sonst wären die Rechtecke deckungsgleich und der Editor meldet
+  „Component overlap“.
 
 ### cardDevice2 „Fortschritt“ (Waschmaschine, Trockner, Geschirrspüler)
 
@@ -164,21 +210,23 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 
 | Seite | Objekte | Seite | mit global | Grenze 3584 |
 |---|---|---|---|---|
-| cardDevice1 | 56 | 2406 | 2842 | 742 frei |
+| cardDevice1 (N=10, mit zweitem Zeilensatz und Status-Block) | 67 | 2683 | 3119 | 465 frei |
 | cardDevice2 | 57 | 2465 | 2901 | 683 frei |
 | cardDevice3 | 70 | 2800 | 3236 | 348 frei |
 
 ## Im Nextion-Editor prüfen
 
-1. `nspanel-v6.2.0.device1.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
+1. `nspanel-v6.2.0.device3.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
 2. Kompilieren: keine Fehler in den Seiten cardDevice1–3 (Code ist nur Klartext, nicht kompiliert getestet).
    Besonders: `fill`/`draw` mit `defaultBcoColor`/`defaultFontColor`/`sys2` im tmSerial von cardDevice2,
-   `click`-Weiterleitung der Texte, `btOnOff7/8` auf cardDevice3.
+   `click`-Weiterleitung der Texte, `btOnOff7/8` auf cardDevice3, `vStatus` und die Rahmen der Status-Zellen auf
+   cardDevice1 (1 px breit, aneinanderliegend).
 3. RAM-Anzeige des Editors je Seite mit der Tabelle oben vergleichen.
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
    Popups (input_sel sofort, light nach Halten), ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach
-   Rückkehr aus einem Popup (der Adapter schickt nach renderCurrentPage neu).
+   Rückkehr aus einem Popup (der Adapter schickt nach renderCurrentPage neu). cardDevice1: Wechsel mit/ohne
+   Status-Icons in beiden Richtungen (Zeilen springen um, Raster erscheint/verschwindet), Tipp auf die schmalen Zeilen.
 
 ## Bekannte Unsicherheiten / Abweichungen
 
@@ -191,4 +239,7 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 - Langes Halten auf info/button/main: die Popups von light/light2/fan/number öffnen wie auf cardGrid nach 500 ms;
   ohne Popup sendet auch langes Halten nur `buttonPress2`.
 - Die Statuszeile hat nur eine Zeile (für zwei war kein Platz).
+- Status-Raster: ob die Nextion bei `style` 1 und `borderw` 1 genau 1 px zeichnet und die überlappenden Rahmen sauber
+  aufeinanderliegen, ist nur aus der Vorlage cardPower (2 px) abgeleitet, nicht am Gerät gesehen. Beim Umschalten
+  der Zeilensätze kann es kurz flackern (der breite Satz wird erst beschrieben, dann ausgeblendet).
 - Kompilierung, RAM-Wert des Editors und Verhalten am Panel sind ungeprüft.
