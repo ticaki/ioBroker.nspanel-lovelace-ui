@@ -13,6 +13,15 @@ import webL2 from '../../../scripts/examples/web-l-cardDevice2.txt?raw';
 import webL2Plain from '../../../scripts/examples/web-l-cardDevice2-plain.txt?raw';
 import webL3 from '../../../scripts/examples/web-l-cardDevice3.txt?raw';
 import webL3Plain from '../../../scripts/examples/web-l-cardDevice3-plain.txt?raw';
+import webP1 from '../../../scripts/examples/web-p-cardDevice1.txt?raw';
+import webP1Plain from '../../../scripts/examples/web-p-cardDevice1-plain.txt?raw';
+import webP2 from '../../../scripts/examples/web-p-cardDevice2.txt?raw';
+import webP2Plain from '../../../scripts/examples/web-p-cardDevice2-plain.txt?raw';
+import webP3 from '../../../scripts/examples/web-p-cardDevice3.txt?raw';
+import webP3Plain from '../../../scripts/examples/web-p-cardDevice3-plain.txt?raw';
+import usP1 from '../../../scripts/examples/us-p-cardDevice1.txt?raw';
+import usP2 from '../../../scripts/examples/us-p-cardDevice2.txt?raw';
+import usP3 from '../../../scripts/examples/us-p-cardDevice3.txt?raw';
 
 const EXAMPLES: Readonly<Record<string, string>> = {
     cardDevice1: device1,
@@ -25,6 +34,15 @@ const EXAMPLES: Readonly<Record<string, string>> = {
     'web-l-cardDevice2-plain': webL2Plain,
     'web-l-cardDevice3': webL3,
     'web-l-cardDevice3-plain': webL3Plain,
+    'web-p-cardDevice1': webP1,
+    'web-p-cardDevice1-plain': webP1Plain,
+    'web-p-cardDevice2': webP2,
+    'web-p-cardDevice2-plain': webP2Plain,
+    'web-p-cardDevice3': webP3,
+    'web-p-cardDevice3-plain': webP3Plain,
+    'us-p-cardDevice1': usP1,
+    'us-p-cardDevice2': usP2,
+    'us-p-cardDevice3': usP3,
 };
 
 const NAV = ['button', 'bSubPrev', '<', '65535', '', '', 'button', 'bSubNext', '>', '65535', '', ''];
@@ -289,7 +307,7 @@ describe('cardDevice parse: additional slots of the web models', () => {
     it('a web model reads them behind the info icon: 2 / 3 / 3 per page', () => {
         for (const page of PAGES) {
             for (const model of WEB) {
-                const m = parseEntityUpd(example(`web-l-${page.pageType}`), initial(), ctx(page.pageType, model));
+                const m = parseEntityUpd(example(`${model}-${page.pageType}`), initial(), ctx(page.pageType, model));
                 expect(m.slots, page.pageType).toHaveLength(page.slots);
                 expect(m.info.id, page.pageType).toBe('9?0?info');
                 expect(
@@ -297,8 +315,8 @@ describe('cardDevice parse: additional slots of the web models', () => {
                     page.pageType,
                 ).toEqual(page.extras);
                 expect(m.extras.every(e => !isEmptySlot(e))).toBe(true);
-                // the ids go on behind those of the standard slots
-                expect(m.extras.map(e => e.id)).toEqual(page.extras.map((_, j) => `9?0?${page.slots + 1 + j}`));
+                // numbered like the adapter does: behind info (N + 1) and the status item (N + 2)
+                expect(m.extras.map(e => e.id)).toEqual(page.extras.map((_, j) => `9?0?${page.slots + 3 + j}`));
             }
         }
     });
@@ -324,11 +342,13 @@ describe('cardDevice parse: additional slots of the web models', () => {
 
     it('a web model without additional slots in the payload gets empty ones', () => {
         for (const page of PAGES) {
-            for (const name of [page.pageType, `web-l-${page.pageType}-plain`]) {
-                const m = parseEntityUpd(example(name), initial(), ctx(page.pageType, 'web-l'));
-                expect(m.extras, name).toHaveLength(page.extras.length);
-                expect(m.extras.every(isEmptySlot), name).toBe(true);
-                expect(m.info.id, name).toBe('9?0?info');
+            for (const model of WEB) {
+                for (const name of [page.pageType, `${model}-${page.pageType}-plain`]) {
+                    const m = parseEntityUpd(example(name), initial(), ctx(page.pageType, model));
+                    expect(m.extras, name).toHaveLength(page.extras.length);
+                    expect(m.extras.every(isEmptySlot), name).toBe(true);
+                    expect(m.info.id, name).toBe('9?0?info');
+                }
             }
         }
     });
@@ -351,6 +371,20 @@ describe('cardDevice parse: additional slots of the web models', () => {
         expect(m.info.id).toBe('info');
         expect(m.extras).toHaveLength(2);
         expect(m.extras.every(isEmptySlot)).toBe(true);
+    });
+
+    it('us-p reads its example like eu: the standard part, the first part of the status text', () => {
+        for (const page of PAGES) {
+            const m = parseEntityUpd(example(`us-p-${page.pageType}`), initial(), ctx(page.pageType, 'us-p'));
+            const eu = parseEntityUpd(example(page.pageType), initial(), ctx(page.pageType, 'eu'));
+            expect(m.extras).toEqual([]);
+            expect({ ...m, main: { ...m.main, optionalValue: '' }, status: '' }).toEqual({
+                ...eu,
+                main: { ...eu.main, optionalValue: '' },
+                status: '',
+            });
+            expect(eu.status.startsWith(m.status.split(',')[0])).toBe(true);
+        }
     });
 
     it('devStatus keeps the additional slots', () => {

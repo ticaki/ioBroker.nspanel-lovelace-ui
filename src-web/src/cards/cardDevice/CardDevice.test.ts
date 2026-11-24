@@ -13,6 +13,16 @@ import webL1Plain from '../../../scripts/examples/web-l-cardDevice1-plain.txt?ra
 import webL2 from '../../../scripts/examples/web-l-cardDevice2.txt?raw';
 import webL3 from '../../../scripts/examples/web-l-cardDevice3.txt?raw';
 import webL3Plain from '../../../scripts/examples/web-l-cardDevice3-plain.txt?raw';
+import webP1 from '../../../scripts/examples/web-p-cardDevice1.txt?raw';
+import webP1Plain from '../../../scripts/examples/web-p-cardDevice1-plain.txt?raw';
+import webP2 from '../../../scripts/examples/web-p-cardDevice2.txt?raw';
+import webP2Plain from '../../../scripts/examples/web-p-cardDevice2-plain.txt?raw';
+import webP3 from '../../../scripts/examples/web-p-cardDevice3.txt?raw';
+import webP3Plain from '../../../scripts/examples/web-p-cardDevice3-plain.txt?raw';
+import usP1 from '../../../scripts/examples/us-p-cardDevice1.txt?raw';
+import usP1Plain from '../../../scripts/examples/us-p-cardDevice1-plain.txt?raw';
+import usP2 from '../../../scripts/examples/us-p-cardDevice2.txt?raw';
+import usP3 from '../../../scripts/examples/us-p-cardDevice3.txt?raw';
 
 interface Sent {
     press: unknown[][];
@@ -429,9 +439,9 @@ describe('cardDevice on the models', () => {
         expect(tag(out, 'slot-3')).toContain('left:8px;top:190px;width:104px;height:80px');
         expect(tag(out, 'slot-6')).toContain('left:320px;top:190px;width:104px;height:80px');
         expect(tag(out, 'extra-1')).toContain('data-pressable');
-        expect(tag(out, 'extra-1')).toContain('data-id="9?0?11"');
+        expect(tag(out, 'extra-1')).toContain('data-id="9?0?13"');
         expect(tag(out, 'extra-1')).toContain('left:424px;top:190px;width:104px;height:80px');
-        expect(tag(out, 'extra-2')).toContain('data-id="9?0?12"');
+        expect(tag(out, 'extra-2')).toContain('data-id="9?0?14"');
         expect(tag(out, 'extra-2')).toContain('left:528px;top:190px;width:104px;height:80px');
         expect(out).toContain('Zone<');
         expect(out).toContain('Leeren<');
@@ -461,7 +471,7 @@ describe('cardDevice on the models', () => {
         const car = render(webL3, 'cardDevice3', 'web-l');
         expect(tag(car, 'extra-1')).toContain('left:469px;top:67px;width:161px;height:51px');
         expect(tag(car, 'extra-2')).toContain('left:469px;top:119px');
-        expect(tag(car, 'extra-3-label')).toContain('data-id="9?0?11"');
+        expect(tag(car, 'extra-3-label')).toContain('data-id="9?0?13"');
         expect(tag(car, 'extra-3-label')).toContain('left:424px;top:236px;width:159px;height:34px');
         expect(car.match(/data-role="toggle"/g) ?? []).toHaveLength(3);
         expect(car).not.toContain('…');
@@ -490,12 +500,68 @@ describe('cardDevice on the models', () => {
         expect(tag(usl, 'info')).toContain('left:419px;top:288px');
     });
 
-    it('PHASE 2 - us-p and web-p: the provisional fallback draws the eu page scaled to the stage', () => {
-        for (const model of ['us-p', 'web-p'] as const) {
-            const out = render(webL1, 'cardDevice1', model);
-            expect(out, model).toContain(`transform:scale(${320 / 450});transform-origin:0 62px`);
-            expect(tag(out, 'main'), model).toContain('left:10px;top:68px;width:110px;height:114px');
-            expect(out, model).not.toContain('data-role="extra-');
-        }
+    it('us-p: the page of the us-p HMI - status block right of main, rows below, status line 262 px', () => {
+        const out = render(usP1, 'cardDevice1', 'us-p');
+        expect(out).not.toContain('transform');
+        expect(out).not.toContain('data-role="extra-');
+        expect(tag(out, 'main')).toContain('left:10px;top:70px;width:150px;height:114px');
+        expect(out.match(/data-kind="status"/g) ?? []).toHaveLength(4);
+        expect(tag(out, 'slot-7')).toContain('left:166px;top:70px;width:72px;height:57px');
+        expect(tag(out, 'slot-10')).toContain('left:237px;top:126px;width:72px;height:57px');
+        // the info rows do not move with the status icons
+        expect(tag(out, 'slot-1')).toContain('left:10px;top:190px;width:300px;height:34px');
+        expect(tag(render(usP1Plain, 'cardDevice1', 'us-p'), 'slot-1')).toContain(
+            'left:10px;top:190px;width:300px;height:34px',
+        );
+        expect(tag(out, 'slot-6')).toContain('left:162px;top:358px;width:148px;height:80px');
+        expect(out).toContain('left:10px;top:447px;width:262px;height:30px');
+        expect(tag(out, 'info')).toContain('left:274px;top:446px;width:36px;height:32px');
+        // a payload with additional slots shows only the standard part
+        expect(render(webP1, 'cardDevice1', 'us-p')).toBe(out);
+    });
+
+    it('us-p cardDevice2 and cardDevice3: hotspots of the HMI, switch rows over the width', () => {
+        const washer = render(usP2, 'cardDevice2', 'us-p');
+        expect(tag(washer, 'slot-1')).toContain('left:102px;top:68px;width:208px;height:110px');
+        expect(tag(washer, 'slot-2')).toContain('left:10px;top:184px;width:300px;height:42px');
+        expect(tag(washer, 'slot-6')).toContain('left:10px;top:356px;width:300px;height:80px');
+        const car = render(usP3, 'cardDevice3', 'us-p');
+        expect(tag(car, 'main')).toContain('left:10px;top:67px;width:300px;height:110px');
+        expect(tag(car, 'slot-2')).toContain('left:162px;top:182px;width:148px;height:51px');
+        expect(tag(car, 'slot-7-label')).toContain('left:10px;top:350px;width:248px;height:34px');
+        expect(car.match(/data-role="toggle"/g) ?? []).toHaveLength(2);
+    });
+
+    it('web-p: the additional slots as a third row of buttons, a fourth info row / row of tiles, a third switch', () => {
+        const robot = render(webP1, 'cardDevice1', 'web-p');
+        expect(robot).not.toContain('transform');
+        expect(tag(robot, 'extra-1')).toContain('data-id="9?0?13"');
+        expect(tag(robot, 'extra-1')).toContain('left:10px;top:501px;width:148px;height:80px');
+        expect(tag(robot, 'extra-2')).toContain('left:162px;top:501px;width:148px;height:80px');
+        expect(robot).toContain('left:10px;top:607px;width:262px;height:30px');
+        expect(tag(robot, 'info')).toContain('left:274px;top:606px;width:36px;height:32px');
+        const washer = render(webP2, 'cardDevice2', 'web-p');
+        expect(tag(washer, 'extra-1')).toContain('left:10px;top:431px;width:300px;height:34px');
+        expect(tag(washer, 'slot-6')).toContain('left:10px;top:496px;width:100px;height:80px');
+        expect(tag(washer, 'extra-2')).toContain('left:110px;top:496px;width:100px;height:80px');
+        expect(tag(washer, 'extra-3')).toContain('left:210px;top:496px;width:100px;height:80px');
+        const car = render(webP3, 'cardDevice3', 'web-p');
+        expect(tag(car, 'extra-1')).toContain('left:10px;top:365px;width:148px;height:51px');
+        expect(tag(car, 'extra-2')).toContain('left:162px;top:365px;width:148px;height:51px');
+        expect(tag(car, 'extra-3-label')).toContain('left:10px;top:551px;width:248px;height:34px');
+        expect(car.match(/data-role="toggle"/g) ?? []).toHaveLength(3);
+        expect(car).not.toContain('…');
+    });
+
+    it('web-p without additional slots: nothing is drawn for them, the rows share the height', () => {
+        const robot = render(webP1Plain, 'cardDevice1', 'web-p');
+        expect(robot).not.toContain('data-role="extra-');
+        expect(tag(robot, 'slot-5')).toContain('left:10px;top:478px;width:148px;height:80px');
+        const washer = render(webP2Plain, 'cardDevice2', 'web-p');
+        expect(washer).not.toContain('data-role="extra-');
+        expect(tag(washer, 'slot-6')).toContain('left:10px;top:486px;width:300px;height:80px');
+        const car = render(webP3Plain, 'cardDevice3', 'web-p');
+        expect(car).not.toContain('data-role="extra-');
+        expect(tag(car, 'slot-8-label')).toContain('left:10px;top:526px;width:248px;height:34px');
     });
 });

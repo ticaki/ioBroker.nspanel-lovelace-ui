@@ -136,6 +136,31 @@ export const DEVICE_EXTRA_KINDS: Readonly<Record<DeviceLayout, readonly DeviceSl
     3: ['info', 'info', 'switch'],
 };
 
+/** Font and alignment of a text box */
+export interface BoxStyle {
+    /** Nextion font id */
+    font: number;
+    /** `xcen` of the component: 0 left, 1 centre, 2 right */
+    align: NextionAlign;
+}
+
+/**
+ * Font and alignment of the text boxes of every element kind, as the HMI pages of all models have them
+ * (`doc/ideas/device-details/device-page-geometry.json`); a {@link Box} with `font` / `align` overrides them.
+ * The status line takes its alignment from {@link DeviceGeometry.statusAlign}.
+ */
+export const BOX_STYLES = {
+    main: { icon: { font: 4, align: 1 }, name: { font: 0, align: 1 } },
+    info: { icon: { font: 1, align: 1 }, name: { font: 0, align: 0 }, value: { font: 0, align: 2 } },
+    value: { icon: { font: 1, align: 1 }, name: { font: 0, align: 0 }, value: { font: 4, align: 0 } },
+    progress: { name: { font: 0, align: 0 } },
+    button: { icon: { font: 3, align: 1 }, name: { font: 0, align: 1 } },
+    switch: { icon: { font: 1, align: 1 }, name: { font: 0, align: 0 } },
+    status: { cell: { font: 1, align: 1 } },
+    statusLine: { font: 0, align: 1 },
+    infoIcon: { font: 1, align: 1 },
+} as const satisfies Record<string, BoxStyle | Record<string, BoxStyle>>;
+
 /** frame colour of the status cells: rgb565 14823 (the grey of the pie lines on cardPChart) */
 export const STATUS_FRAME_COLOR = 14823;
 

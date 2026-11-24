@@ -1,24 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { emptyEntity } from '../../protocol/split';
-import { PANEL_MODELS, type Entity6, type PanelModel } from '../../protocol/types';
+import { PANEL_MODELS, type Entity6 } from '../../protocol/types';
 import { stageSize, theme } from '../../style/theme';
+import type { NextionAlign } from '../cardEntities/shared/widgets';
 import { US_L_GEOMETRY, US_L_SHIFT } from './geometryHmi';
-import { WEB_L_STATUS_WIDTH, spread } from './geometryWeb';
+import { WEB_L_STATUS_WIDTH, WEB_P_STATUS_WIDTH, spread, stack } from './geometryWeb';
 import {
+    BOX_STYLES,
     DEVICE_EXTRA_KINDS,
     DEVICE_GEOMETRY,
     DEVICE_SLOT_KINDS,
     deviceExtraKinds,
-    deviceFallbackScale,
     deviceGeometry,
-    hasDeviceGeometry,
     slotBoxes,
     statusBlockVisible,
     type Box,
+    type BoxStyle,
     type DeviceGeometry,
     type DeviceLayout,
     type SlotGeometry,
 } from './layout';
+import hmiGeometry from '../../../../doc/ideas/device-details/device-page-geometry.json';
 
 const LAYOUTS: readonly DeviceLayout[] = [1, 2, 3];
 
@@ -116,10 +118,6 @@ function textWidths(slot: SlotGeometry): Record<string, number> {
 }
 
 describe('device page geometry: models', () => {
-    it('eu, us-l and web-l have a geometry of their own; us-p and web-p draw the provisional fallback', () => {
-        expect(PANEL_MODELS.filter(hasDeviceGeometry)).toEqual(['eu', 'us-l', 'web-l']);
-    });
-
     it('has the slot kinds of the protocol on every model', () => {
         for (const model of PANEL_MODELS) {
             for (const layout of LAYOUTS) {
@@ -149,7 +147,7 @@ describe('device page geometry: models', () => {
     });
 
     it('keeps every page inside the stage and below the title bar, without overlapping elements', () => {
-        for (const model of PANEL_MODELS.filter(hasDeviceGeometry)) {
+        for (const model of PANEL_MODELS) {
             const stage = stageSize(model);
             for (const layout of LAYOUTS) {
                 for (const v of variants(layout)) {
@@ -315,7 +313,7 @@ describe('device page geometry: web-l', () => {
         }
     });
 
-    it('never makes a text box narrower than on eu (the adapter cuts names and values to the eu widths)', () => {
+    it('never makes a text box narrower than on eu (more elements, not more text)', () => {
         for (const layout of LAYOUTS) {
             for (const v of variants(layout)) {
                 const web = deviceGeometry(layout, v.slots, 'web-l', v.extras);
@@ -446,29 +444,371 @@ describe('device page geometry: web-l', () => {
     });
 });
 
-describe('device page geometry: PHASE 2 - provisional fallback of us-p and web-p', () => {
-    const FALLBACK_MODELS: readonly PanelModel[] = ['us-p', 'web-p'];
+/** a box of the geometry file of the HMI tooling */
+interface HmiBox {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    font?: number;
+    align?: string;
+}
 
-    it('draws the eu page without additional slots, scaled to the width of the stage', () => {
-        for (const model of FALLBACK_MODELS) {
-            expect(hasDeviceGeometry(model)).toBe(false);
-            expect(deviceFallbackScale(model)).toBeCloseTo(320 / 450, 6);
+interface HmiSlot {
+    slot: number;
+    kind: string;
+    icon?: HmiBox;
+    name?: HmiBox;
+    value?: HmiBox;
+    bar?: HmiBox;
+    toggle?: HmiBox;
+    cell?: HmiBox;
+    /** the hotspot of the HMI over the element */
+    touch?: HmiBox;
+    /** the second set of components next to a visible status block */
+    narrow?: { icon: HmiBox; name: HmiBox; value: HmiBox };
+}
+
+interface HmiPage {
+    slotCount: number;
+    statusWidth: number;
+    main: { icon: HmiBox; name: HmiBox };
+    slots: HmiSlot[];
+    status: HmiBox;
+    info: HmiBox;
+}
+
+const HMI_MODELS = ['eu', 'us-l', 'us-p'] as const;
+const HMI_ALIGN: Readonly<Record<string, NextionAlign>> = { left: 0, center: 1, right: 2 };
+
+describe('device page geometry: the tables are the HMI pages (device-page-geometry.json)', () => {
+    const page = (model: (typeof HMI_MODELS)[number], layout: DeviceLayout): HmiPage =>
+        hmiGeometry[model].pages[`cardDevice${layout}`];
+
+    /** position and size of a box of the file */
+    const rect = (b: HmiBox): Box => ({ x: b.x, y: b.y, w: b.w, h: b.h });
+
+    /** a box of the web panel with the font and alignment it is drawn with, in the terms of the file */
+    function drawn(b: Box, style: BoxStyle): HmiBox {
+        const align = b.align ?? style.align;
+        const name = Object.keys(HMI_ALIGN).find(k => HMI_ALIGN[k] === align);
+        return { x: b.x, y: b.y, w: b.w, h: b.h, font: b.font ?? style.font, align: name };
+    }
+
+    /** a text box of the file: position, size, font and alignment */
+    const text = (b: HmiBox): HmiBox => ({ ...rect(b), font: b.font, align: b.align });
+
+    function union(boxes: readonly Box[]): Box {
+        const x = Math.min(...boxes.map(b => b.x));
+        const y = Math.min(...boxes.map(b => b.y));
+        return {
+            x,
+            y,
+            w: Math.max(...boxes.map(b => b.x + b.w)) - x,
+            h: Math.max(...boxes.map(b => b.y + b.h)) - y,
+        };
+    }
+
+    /** compares a slot of the web panel with the boxes of the file */
+    function expectSlot(slot: SlotGeometry, hmi: Omit<HmiSlot, 'slot' | 'kind'>, at: string): void {
+        const pick = (b: HmiBox | undefined): HmiBox => {
+            expect(b, at).toBeDefined();
+            return b ?? { x: -1, y: -1, w: -1, h: -1 };
+        };
+        switch (slot.kind) {
+            case 'info':
+            case 'value':
+                expect(drawn(slot.icon, BOX_STYLES[slot.kind].icon), `${at} icon`).toEqual(text(pick(hmi.icon)));
+                expect(drawn(slot.name, BOX_STYLES[slot.kind].name), `${at} name`).toEqual(text(pick(hmi.name)));
+                expect(drawn(slot.value, BOX_STYLES[slot.kind].value), `${at} value`).toEqual(text(pick(hmi.value)));
+                break;
+            case 'progress':
+                expect(drawn(slot.name, BOX_STYLES.progress.name), `${at} name`).toEqual(text(pick(hmi.name)));
+                expect(slot.bar, `${at} bar`).toEqual(rect(pick(hmi.bar)));
+                break;
+            case 'button':
+                expect(drawn(slot.icon, BOX_STYLES.button.icon), `${at} icon`).toEqual(text(pick(hmi.icon)));
+                expect(drawn(slot.name, BOX_STYLES.button.name), `${at} name`).toEqual(text(pick(hmi.name)));
+                break;
+            case 'switch':
+                expect(drawn(slot.icon, BOX_STYLES.switch.icon), `${at} icon`).toEqual(text(pick(hmi.icon)));
+                expect(drawn(slot.name, BOX_STYLES.switch.name), `${at} name`).toEqual(text(pick(hmi.name)));
+                expect(slot.toggle, `${at} toggle`).toEqual(rect(pick(hmi.toggle)));
+                break;
+            case 'status':
+                expect(drawn(slot.cell, BOX_STYLES.status.cell), `${at} cell`).toEqual(text(pick(hmi.cell)));
+                break;
+        }
+    }
+
+    it('has the three hardware models with the three pages', () => {
+        expect(Object.keys(hmiGeometry)).toEqual([...HMI_MODELS]);
+        for (const model of HMI_MODELS) {
+            expect(hmiGeometry[model].stage).toEqual({ w: stageSize(model).width, h: stageSize(model).height });
+            expect(Object.keys(hmiGeometry[model].pages)).toEqual(['cardDevice1', 'cardDevice2', 'cardDevice3']);
+        }
+        expect(hmiGeometry['us-l'].shiftX).toBe(US_L_SHIFT);
+    });
+
+    it('every box, font and alignment of eu, us-l and us-p is the one of the HMI page', () => {
+        for (const model of HMI_MODELS) {
             for (const layout of LAYOUTS) {
-                const slots = standard(layout, true);
-                const g = deviceGeometry(layout, slots, model, additional(layout, 0b111));
-                expect(g).toEqual(deviceGeometry(layout, slots, 'eu'));
-                expect(g.extras).toEqual([]);
-                // scaled, the page fits the stage
-                const scale = deviceFallbackScale(model);
-                const right = Math.max(...elements(g).flatMap(e => e.boxes.map(b => b.x + b.w)));
-                expect(right * scale).toBeLessThanOrEqual(stageSize(model).width);
+                const hmi = page(model, layout);
+                const at = `${model} cardDevice${layout}`;
+                // without status icons: the first set of components
+                const g = deviceGeometry(layout, standard(layout, false), model);
+                expect(hmi.slotCount, at).toBe(DEVICE_SLOT_KINDS[layout].length);
+                expect(
+                    hmi.slots.map(s => s.kind),
+                    at,
+                ).toEqual(DEVICE_SLOT_KINDS[layout]);
+                expect(
+                    hmi.slots.map(s => s.slot),
+                    at,
+                ).toEqual(g.slots.map((_, i) => i + 1));
+                expect(g.extras, at).toEqual([]);
+                expect(drawn(g.main.icon, BOX_STYLES.main.icon), `${at} main icon`).toEqual(text(hmi.main.icon));
+                expect(drawn(g.main.name, BOX_STYLES.main.name), `${at} main name`).toEqual(text(hmi.main.name));
+                expect(
+                    drawn(g.status, { font: BOX_STYLES.statusLine.font, align: g.statusAlign }),
+                    `${at} status`,
+                ).toEqual(text(hmi.status));
+                expect(g.status.w, at).toBe(hmi.statusWidth);
+                expect(drawn(g.info, BOX_STYLES.infoIcon), `${at} info`).toEqual(text(hmi.info));
+                g.slots.forEach((slot, i) => expectSlot(slot, hmi.slots[i], `${at} slot ${i + 1}`));
+                // with status icons: the narrow set where the page has one, else the same boxes
+                const withIcons = deviceGeometry(layout, standard(layout, true), model);
+                withIcons.slots.forEach((slot, i) =>
+                    expectSlot(slot, hmi.slots[i].narrow ?? hmi.slots[i], `${at} slot ${i + 1} with status icons`),
+                );
             }
         }
     });
 
-    it('does not scale a model with a geometry of its own', () => {
-        for (const model of ['eu', 'us-l', 'web-l'] as const) {
-            expect(deviceFallbackScale(model)).toBe(1);
+    it('the touch area of an element (the box around its texts) is the hotspot of the HMI', () => {
+        let hotspots = 0;
+        for (const model of HMI_MODELS) {
+            for (const layout of LAYOUTS) {
+                const hmi = page(model, layout);
+                deviceGeometry(layout, standard(layout, false), model).slots.forEach((slot, i) => {
+                    const touch = hmi.slots[i].touch;
+                    if (!touch) {
+                        return;
+                    }
+                    hotspots++;
+                    // of a switch slot icon and name - the switch itself sends OnOff
+                    const boxes = slot.kind === 'switch' ? [slot.icon, slot.name] : slotBoxes(slot);
+                    expect(union(boxes), `${model} cardDevice${layout} slot ${i + 1}`).toEqual(rect(touch));
+                });
+            }
         }
+        // value and progress of cardDevice2, the two switches of cardDevice3, on three models
+        expect(hotspots).toBe(12);
+    });
+
+    it('only eu and us-l have the narrow info rows of cardDevice1; us-p keeps its rows below main', () => {
+        for (const model of HMI_MODELS) {
+            const narrow = page(model, 1)
+                .slots.filter(s => s.narrow !== undefined)
+                .map(s => s.slot);
+            expect(narrow, model).toEqual(model === 'us-p' ? [] : [1, 2]);
+        }
+        expect(deviceGeometry(1, standard(1, true), 'us-p')).toBe(deviceGeometry(1, standard(1, false), 'us-p'));
+    });
+});
+
+describe('device page geometry: us-p', () => {
+    it('has the status line of 262 px and the content in x 10-309 of the 320 px display', () => {
+        for (const layout of LAYOUTS) {
+            const g = deviceGeometry(layout, standard(layout, true), 'us-p', additional(layout, 0b111));
+            expect(g.status).toEqual({ x: 10, y: 447, w: 262, h: 30 });
+            expect(g.info).toEqual({ x: 274, y: 446, w: 36, h: 32 });
+            expect(g.extras).toEqual([]);
+            for (const b of elements(g).flatMap(e => e.boxes)) {
+                expect(b.x, `layout ${layout}`).toBeGreaterThanOrEqual(10);
+                expect(b.x + b.w, `layout ${layout}`).toBeLessThanOrEqual(310);
+            }
+        }
+    });
+});
+
+describe('device page geometry: web-p', () => {
+    const geometry = (layout: DeviceLayout, mask: number, statusIcons = true): DeviceGeometry =>
+        deviceGeometry(layout, standard(layout, statusIcons), 'web-p', additional(layout, mask));
+    const usP = (layout: DeviceLayout): DeviceGeometry => deviceGeometry(layout, standard(layout, true), 'us-p');
+    const ys = (slots: readonly (SlotGeometry | undefined)[]): (number | undefined)[] =>
+        slots.map(s => (s ? Math.min(...slotBoxes(s).map(b => b.y)) : undefined));
+    const xs = (slots: readonly (SlotGeometry | undefined)[]): (number | undefined)[] =>
+        slots.map(s => (s ? slotBoxes(s)[0].x : undefined));
+
+    it('has the status line (262 px like us-p) and the info icon at the bottom of the 640 px stage', () => {
+        expect(WEB_P_STATUS_WIDTH).toBe(262);
+        for (const layout of LAYOUTS) {
+            for (const v of variants(layout)) {
+                const g = deviceGeometry(layout, v.slots, 'web-p', v.extras);
+                expect(g.status, v.name).toEqual({ x: 10, y: 607, w: 262, h: 30 });
+                expect(g.statusAlign).toBe(1);
+                expect(g.info, v.name).toEqual({ x: 274, y: 606, w: 36, h: 32 });
+                for (const b of elements(g).flatMap(e => e.boxes)) {
+                    expect(b.x, v.name).toBeGreaterThanOrEqual(10);
+                    expect(b.x + b.w, v.name).toBeLessThanOrEqual(310);
+                }
+            }
+        }
+    });
+
+    it('stacks rows from the top to the status line: group gaps twice the row gaps', () => {
+        // 607 - 100 - 3 * 100 = 207 free, weights 1 + 1 + 2 (status line) = 4
+        expect(
+            stack(100, [
+                { h: 100, gap: 0 },
+                { h: 100, gap: 1 },
+                { h: 100, gap: 1 },
+            ]),
+        ).toEqual([100, 252, 404]);
+        // one group gap in front of the second row
+        expect(
+            stack(107, [
+                { h: 100, gap: 0 },
+                { h: 100, gap: 2 },
+            ]),
+        ).toEqual([107, 357]);
+    });
+
+    it('gives every filled additional slot a place of its kind, an empty one at the end none', () => {
+        for (const layout of LAYOUTS) {
+            const kinds = DEVICE_EXTRA_KINDS[layout];
+            expect(geometry(layout, 0).extras, `layout ${layout}`).toEqual(kinds.map(() => undefined));
+            expect(geometry(layout, 0b111).extras.map(s => s?.kind)).toEqual(kinds);
+            for (let mask = 0; mask < 1 << kinds.length; mask++) {
+                geometry(layout, mask).extras.forEach((s, j) => {
+                    if ((mask >> j) & 1) {
+                        expect(s?.kind, `layout ${layout} mask ${mask} extra ${j + 1}`).toBe(kinds[j]);
+                    }
+                });
+            }
+        }
+    });
+
+    it('draws every element with the size it has on us-p - only the buttons of cardDevice2 share their row', () => {
+        const size = (b: Box): { w: number; h: number } => ({ w: b.w, h: b.h });
+        for (const layout of LAYOUTS) {
+            const hmi = usP(layout);
+            for (const v of variants(layout)) {
+                const web = deviceGeometry(layout, v.slots, 'web-p', v.extras);
+                const at = `${v.name}`;
+                if (statusBlockVisible(layout, v.slots) || layout !== 1) {
+                    expect(size(web.main.icon), at).toEqual(size(hmi.main.icon));
+                    expect(size(web.main.name), at).toEqual(size(hmi.main.name));
+                } else {
+                    // cardDevice1 without status icons: main in the middle, its name over the width
+                    expect(web.main.icon, at).toMatchObject({ x: 85, w: 150, h: 86 });
+                    expect(web.main.name, at).toMatchObject({ x: 10, w: 300, h: 26 });
+                }
+                const all = [...web.slots, ...web.extras];
+                all.forEach((slot, i) => {
+                    if (!slot) {
+                        return;
+                    }
+                    // an additional slot is drawn like the last standard slot of its kind
+                    const like =
+                        i < hmi.slots.length ? hmi.slots[i] : hmi.slots.filter(s => s.kind === slot.kind).pop();
+                    expect(like, `${at} ${i}`).toBeDefined();
+                    if (!like) {
+                        return;
+                    }
+                    if (layout === 2 && slot.kind === 'button') {
+                        // 1 button 300 px like us-p, 2 share the width (148), 3 have the 100 px of eu
+                        const w = slotBoxes(slot)[0].w;
+                        expect([300, 148, 100], `${at} ${i}`).toContain(w);
+                        expect(slotBoxes(slot).map(b => b.h)).toEqual(slotBoxes(like).map(b => b.h));
+                        return;
+                    }
+                    expect(slotBoxes(slot).map(size), `${at} ${i}`).toEqual(slotBoxes(like).map(size));
+                });
+            }
+        }
+    });
+
+    it('cardDevice1: 2 or 3 rows of two buttons; without additional buttons the rows share the height', () => {
+        const full = geometry(1, 0b11);
+        expect(xs([...full.slots.slice(2, 6), ...full.extras])).toEqual([10, 162, 10, 162, 10, 162]);
+        expect(ys([full.slots[0], full.slots[1]])).toEqual([210, 256]);
+        expect(ys([...full.slots.slice(2, 6), ...full.extras])).toEqual([316, 316, 409, 409, 501, 501]);
+        expect(full.extras[1]).toEqual({
+            kind: 'button',
+            icon: { x: 162, y: 501, w: 148, h: 52 },
+            name: { x: 162, y: 555, w: 148, h: 26 },
+        });
+        // the status block stands right of main, like on us-p
+        expect(full.main).toEqual(usP(1).main);
+        expect(full.slots.slice(6)).toEqual(usP(1).slots.slice(6));
+        // only the first additional button: the third row with one button
+        expect(xs(geometry(1, 0b01).extras)).toEqual([10, undefined]);
+        expect(ys(geometry(1, 0b01).extras)).toEqual([501, undefined]);
+        const plain = geometry(1, 0b00);
+        expect(plain.extras).toEqual([undefined, undefined]);
+        expect(ys(plain.slots.slice(0, 6))).toEqual([233, 291, 374, 374, 478, 478]);
+        // the last row ends two gaps above the status line
+        expect(478 + 80).toBeLessThan(plain.status.y);
+    });
+
+    it('cardDevice1 without status icons: main in the middle', () => {
+        const g = geometry(1, 0b11, false);
+        expect(g.main).toEqual({ icon: { x: 85, y: 70, w: 150, h: 86 }, name: { x: 10, y: 158, w: 300, h: 26 } });
+        expect(geometry(1, 0b11, true).main.icon).toEqual({ x: 10, y: 70, w: 150, h: 86 });
+    });
+
+    it('cardDevice2: 3 or 4 info rows, one row of 1-3 buttons', () => {
+        const full = geometry(2, 0b111);
+        expect(full.main).toEqual(usP(2).main);
+        expect(full.slots[0]).toEqual(usP(2).slots[0]);
+        expect(ys([full.slots[1], full.slots[2], full.slots[3], full.slots[4], full.extras[0]])).toEqual([
+            209, 282, 332, 381, 431,
+        ]);
+        expect(full.extras[0]).toEqual({
+            kind: 'info',
+            icon: { x: 10, y: 431, w: 36, h: 34 },
+            name: { x: 48, y: 435, w: 156, h: 26 },
+            value: { x: 206, y: 435, w: 104, h: 26 },
+        });
+        expect(xs([full.slots[5], full.extras[1], full.extras[2]])).toEqual([10, 110, 210]);
+        expect(full.extras[2]).toEqual({
+            kind: 'button',
+            icon: { x: 210, y: 496, w: 100, h: 52 },
+            name: { x: 210, y: 550, w: 100, h: 26 },
+        });
+        const two = geometry(2, 0b010);
+        expect(xs([two.slots[5], two.extras[1], two.extras[2]])).toEqual([10, 162, undefined]);
+        expect(two.extras[1]).toMatchObject({ icon: { w: 148 }, name: { w: 148 } });
+        const plain = geometry(2, 0b000);
+        expect(plain.extras).toEqual([undefined, undefined, undefined]);
+        expect(plain.slots[5]).toMatchObject({ icon: { x: 10, w: 300 }, name: { x: 10, w: 300 } });
+        expect(ys(plain.slots.slice(1))).toEqual([219, 302, 357, 411, 486]);
+    });
+
+    it('cardDevice3: 3 or 4 rows of two info tiles, 2 or 3 switch rows', () => {
+        const full = geometry(3, 0b111);
+        expect(full.main).toEqual(usP(3).main);
+        expect(xs([...full.slots.slice(0, 6), full.extras[0], full.extras[1]])).toEqual([
+            10, 162, 10, 162, 10, 162, 10, 162,
+        ]);
+        expect(ys([...full.slots.slice(0, 6), full.extras[0], full.extras[1]])).toEqual([
+            191, 191, 249, 249, 307, 307, 365, 365,
+        ]);
+        expect(ys([full.slots[6], full.slots[7], full.extras[2]])).toEqual([429, 486, 543]);
+        expect(full.extras[2]).toEqual({
+            kind: 'switch',
+            icon: { x: 10, y: 551, w: 34, h: 34 },
+            name: { x: 46, y: 555, w: 212, h: 26 },
+            toggle: { x: 260, y: 543, w: 50, h: 50 },
+        });
+        const plain = geometry(3, 0b000);
+        expect(plain.extras).toEqual([undefined, undefined, undefined]);
+        expect(ys(plain.slots)).toEqual([216, 216, 287, 287, 358, 358, 448, 518]);
+        // only the additional switch: three info rows, three switch rows
+        const onlySwitch = geometry(3, 0b100);
+        expect(onlySwitch.extras.slice(0, 2)).toEqual([undefined, undefined]);
+        expect(onlySwitch.extras[2]?.kind).toBe('switch');
     });
 });
