@@ -658,7 +658,6 @@
     "deviceDetailsDialog_slotLongPressHint": "Ein langer Druck setzt den Datenpunkt bei einem Knopf auf true, bei einem Schalter schaltet er ihn um.",
     "deviceDetailsDialog_slotLook": "Icon und Farbe",
     "deviceDetailsDialog_slotLookHint": "Zahlen und Texte kennen kein „unwahr“: sie zeigen Icon und Farbe von „wahr“.",
-    "deviceDetailsDialog_slotName": "Name",
     "deviceDetailsDialog_slotNameHint": "Leer = automatischer Name. Ein langer Name wird an der Feldbreite abgeschnitten.",
     "deviceDetailsDialog_slotNameNavigationHint": "Leer = Name der Zielseite. Ein langer Name wird an der Feldbreite abgeschnitten.",
     "deviceDetailsDialog_slotScale": "Farbverlauf …",

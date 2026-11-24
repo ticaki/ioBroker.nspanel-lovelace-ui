@@ -658,7 +658,6 @@
     "deviceDetailsDialog_slotLongPressHint": "长按时，按钮将数据点设为 true，开关则切换它。",
     "deviceDetailsDialog_slotLook": "图标和颜色",
     "deviceDetailsDialog_slotLookHint": "数字和文本没有“假”：它们显示“真”的图标和颜色。",
-    "deviceDetailsDialog_slotName": "名称",
     "deviceDetailsDialog_slotNameHint": "留空 = 自动名称。过长的名称会按字段宽度截断。",
     "deviceDetailsDialog_slotNameNavigationHint": "留空 = 目标页面的名称。过长的名称会按字段宽度截断。",
     "deviceDetailsDialog_slotScale": "颜色渐变 …",

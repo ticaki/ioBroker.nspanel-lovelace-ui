@@ -20,6 +20,7 @@ var deviceDetails_exports = {};
 __export(deviceDetails_exports, {
   DEVICE_DETAIL_NAME_PREFIX: () => DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE: () => DEVICE_DETAIL_ROW_ROLE,
+  DEVICE_PAGE_CHANNEL_ITEM_FIELDS: () => DEVICE_PAGE_CHANNEL_ITEM_FIELDS,
   DEVICE_PAGE_CHANNEL_ROLES: () => DEVICE_PAGE_CHANNEL_ROLES,
   DEVICE_PAGE_FIELDS: () => DEVICE_PAGE_FIELDS,
   DEVICE_PAGE_INFO_ROLE: () => DEVICE_PAGE_INFO_ROLE,
@@ -54,6 +55,7 @@ __export(deviceDetails_exports, {
   deviceDetailsAdapter: () => deviceDetailsAdapter,
   deviceDetailsLearnedOf: () => deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf: () => deviceDetailsRuntimeOf,
+  devicePageChannelItemFieldsOf: () => devicePageChannelItemFieldsOf,
   devicePageChannelTakesLongPress: () => devicePageChannelTakesLongPress,
   devicePageChannelTakesNavigation: () => devicePageChannelTakesNavigation,
   devicePageConfigOf: () => devicePageConfigOf,
@@ -68,6 +70,7 @@ __export(deviceDetails_exports, {
   devicePageSlotLookOf: () => devicePageSlotLookOf,
   devicePageSlotTakesLongPress: () => devicePageSlotTakesLongPress,
   devicePageSlotTakesNavigation: () => devicePageSlotTakesNavigation,
+  devicePageSlotTakesTextSize: () => devicePageSlotTakesTextSize,
   devicePageSlotTargetOf: () => devicePageSlotTargetOf,
   deviceSelectionError: () => deviceSelectionError,
   deviceShortPressOf: () => deviceShortPressOf,
@@ -247,6 +250,22 @@ function devicePageProgressPercent(value, min, max) {
   }
   return Math.min(100, Math.max(0, Math.round(percent)));
 }
+const DEVICE_PAGE_CHANNEL_ITEM_FIELDS = [
+  "useValue",
+  "useValueConditions",
+  "valueEntry",
+  "inSel_Alias",
+  "modeList",
+  "minValue",
+  "maxValue",
+  "secondRow",
+  "useScreensaverTimer",
+  "minValueBrightness",
+  "maxValueBrightness",
+  "minValueColorTemp",
+  "maxValueColorTemp",
+  "colormode"
+];
 const DEVICE_PAGE_SLOT_LOOK_FIELDS = [
   "trueIcon",
   "falseIcon",
@@ -255,6 +274,9 @@ const DEVICE_PAGE_SLOT_LOOK_FIELDS = [
   "longPress",
   "name"
 ];
+function devicePageSlotTakesTextSize(kind) {
+  return kind !== "status" && kind !== "progress";
+}
 const DEVICE_PAGE_NAVIGATION_ICON = "gesture-tap-button";
 function devicePageSlotAcceptsNavigation(kind) {
   return kind === "info" || kind === "button" || kind === "status";
@@ -303,13 +325,16 @@ function devicePageSlotLookOf(ref, withOlderIcon = true) {
   if (ref.name) {
     look.name = ref.name;
   }
+  if (ref.textSize !== void 0) {
+    look.textSize = ref.textSize;
+  }
   if (ref.isNavigation && ref.custom !== "navigation") {
     look.isNavigation = true;
     if (ref.targetPage) {
       look.targetPage = ref.targetPage;
     }
   }
-  return look;
+  return ref.custom === "channel" ? { ...look, ...devicePageChannelItemFieldsOf(ref) } : look;
 }
 function devicePageSlotHasLook(ref) {
   return !!ref && Object.keys(devicePageSlotLookOf(ref)).length > 0;
@@ -359,10 +384,59 @@ function devicePageStateRefOf(value, keepIcon) {
   }
   return ref;
 }
-function trimmedField(value, key) {
+function fieldOf(value, key) {
   var _a;
-  const found = (_a = Object.entries(value).find(([k]) => k === key)) == null ? void 0 : _a[1];
+  return (_a = Object.entries(value).find(([k]) => k === key)) == null ? void 0 : _a[1];
+}
+function trimmedField(value, key) {
+  const found = fieldOf(value, key);
   return typeof found === "string" ? found.trim() : "";
+}
+function numberField(value, key) {
+  const found = fieldOf(value, key);
+  return typeof found === "number" && Number.isFinite(found) ? found : void 0;
+}
+function devicePageChannelItemFieldsOf(value) {
+  const out = {};
+  for (const key of ["useValue", "useScreensaverTimer", "colormode"]) {
+    if (fieldOf(value, key) === true) {
+      out[key] = true;
+    }
+  }
+  for (const key of ["useValueConditions", "inSel_Alias", "secondRow"]) {
+    const text = trimmedField(value, key);
+    if (text) {
+      out[key] = text;
+    }
+  }
+  for (const key of [
+    "minValue",
+    "maxValue",
+    "minValueBrightness",
+    "maxValueBrightness",
+    "minValueColorTemp",
+    "maxValueColorTemp"
+  ]) {
+    const n = numberField(value, key);
+    if (n !== void 0) {
+      out[key] = n;
+    }
+  }
+  const modeList = fieldOf(value, "modeList");
+  if (Array.isArray(modeList)) {
+    const entries = modeList.filter((e) => typeof e === "string" && e !== "");
+    if (entries.length > 0) {
+      out.modeList = entries;
+    }
+  }
+  const valueEntry = fieldOf(value, "valueEntry");
+  if (valueEntry && typeof valueEntry === "object") {
+    const entry = (0, import_adminShareConfig.normalizeChannelId)(valueEntry);
+    if (entry.valueStateId.trim() !== "") {
+      out.valueEntry = entry;
+    }
+  }
+  return out;
 }
 function devicePageSlotRefOf(value, kind) {
   if (!isDeviceDetailEntryConfig(value)) {
@@ -392,6 +466,13 @@ function devicePageSlotRefOf(value, kind) {
   }
   if (ref.trueIcon || ref.falseIcon) {
     delete ref.icon;
+  }
+  const textSize = fieldOf(value, "textSize");
+  if ((0, import_adminShareConfig.isHmiTextSize)(textSize)) {
+    ref.textSize = textSize;
+  }
+  if (ref.custom === "channel") {
+    Object.assign(ref, devicePageChannelItemFieldsOf(value));
   }
   const scale = "scale" in value ? value.scale : void 0;
   if ((0, import_adminShareConfig.isIconColorScaleElement)(scale)) {
@@ -1005,6 +1086,7 @@ function deviceDetailSubNames(deviceId, rows) {
 0 && (module.exports = {
   DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE,
+  DEVICE_PAGE_CHANNEL_ITEM_FIELDS,
   DEVICE_PAGE_CHANNEL_ROLES,
   DEVICE_PAGE_FIELDS,
   DEVICE_PAGE_INFO_ROLE,
@@ -1039,6 +1121,7 @@ function deviceDetailSubNames(deviceId, rows) {
   deviceDetailsAdapter,
   deviceDetailsLearnedOf,
   deviceDetailsRuntimeOf,
+  devicePageChannelItemFieldsOf,
   devicePageChannelTakesLongPress,
   devicePageChannelTakesNavigation,
   devicePageConfigOf,
@@ -1053,6 +1136,7 @@ function deviceDetailSubNames(deviceId, rows) {
   devicePageSlotLookOf,
   devicePageSlotTakesLongPress,
   devicePageSlotTakesNavigation,
+  devicePageSlotTakesTextSize,
   devicePageSlotTargetOf,
   deviceSelectionError,
   deviceShortPressOf,
