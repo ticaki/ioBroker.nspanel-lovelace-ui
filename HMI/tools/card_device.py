@@ -1,12 +1,40 @@
-"""HMI 6.2.0 (EU): the device pages cardDevice1 'control', cardDevice2 'progress' and cardDevice3 'values'.
+"""HMI 6.2.0 (EU, us-l, us-p): the device pages cardDevice1 'control', cardDevice2 'progress' and cardDevice3 'values'.
 
 Usage (from the repository root):
-  PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py <in.HMI> <out.HMI> [--preview <dir>] [--fields]
+  PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py <in.HMI> <out.HMI> [--preview <dir>]
+                                                              [--geometry <file.json>] [--fields]
 --fields prints the bytes of every part of the longest entityUpd (all buffers full / as the adapter builds it).
-Input: a 6.2.0 EU project (480x320) with the pages cardGrid and cardEntities. The output must not exist.
-With --preview the script also writes <dir>/hmi-cardDevice{1,2,3}.png: a true-to-scale mock-up drawn from the objects
-of each built page with example content (robot vacuum, washing machine, car) and the fonts of the project
-(zilib.py); the area under the frame (x >= 450) is hatched.
+Input: a 6.2.0 project of any model with the pages cardGrid and cardEntities. The output must not exist.
+With --preview the script also writes a true-to-scale mock-up per page, drawn from the objects of each built page
+with example content (robot vacuum, washing machine, car) and the fonts of the project (zilib.py); the area under
+the frame is hatched. File names: EU <dir>/hmi-cardDevice{1,2,3}.png, the other models with their name
+(hmi-us-l-cardDevice1.png, hmi-us-p-cardDevice1.png); cardDevice1 also as ...-plain.png without status icons.
+With --geometry the script sets the key of the model ('eu', 'us-l', 'us-p') in the JSON file and keeps the other
+keys: stage size, visible x range and per page every element with its boxes as they are in the built page
+(x, y, w, h, font, alignment, buffer; roles: header prev/heading/next, main icon/name, per slot icon/name/value/
+bar/toggle/cell/touch and the narrow set of an info row, status, info) plus statusWidth, the width of the status
+line in px. doc/ideas/device-details/device-page-geometry.json is that file for the three models; the web panel
+builds its layouts from it.
+
+Models. The model is read from the project (detect_model: pageStartup sends event,startup,<version>,<model>,..),
+never from the file name; the page size of cardGrid must fit it.
+  eu    480 x 320, visible x 0..449: LAYOUTS.
+  us-l  480 x 320, visible x 15..464: LAYOUTS with every x shifted. The shift is measured on the project: the
+        header of cardGrid (bPrev, tHeading, bNext) lies 15 px right of the EU header (model_layouts stops if the
+        three differ or do not match the visible area). Everything else is the EU page.
+  us-p  320 x 480, all visible: LAYOUTS_PORTRAIT, the same elements in an arrangement of its own (header of
+        cardGrid us-p, content x 10..309, status line 262 px wide instead of 390 with the info icon right of it):
+        cardDevice1  icon top left with the name below, the 2 x 2 status block right of it, the two info rows
+                     over the full width, the four buttons as 2 x 2. No second (narrow) set of info rows.
+        cardDevice2  icon and large value on top, bar over the full width, the three infos as rows, the button
+                     over the full width.
+        cardDevice3  icon on top in the middle, 2 x 3 info tiles, the two switches as rows.
+The same on every model (the adapter has constants for it): protocol and field order, number and kind of the slots,
+devStatus, the text buffers and strCommand of every page (943 / 875 / 1019), fonts per role (font ids are the same
+on all models; us-p fonts 0/2 are another face with other widths), touch behaviour. What differs is geometry only -
+the adapter has to measure names, values and the status line with the widths of the model (geometry file).
+check_area stops when a box leaves the visible area or lies on a swipe strip and reports overlapping boxes.
+Copies never keep the editor group of their template (ungroup; us-p has grouped objects on cardGrid/cardEntities).
 
 Each page is a fresh copy of cardGrid: header, arrows, swipe strips, tmSerial (receive, ack/CRC, pageType switch),
 sleep timer, the long press of the arrows and the long press of the cells (tmLP, LPState) stay as they are; the six
@@ -78,6 +106,7 @@ pageType) are far shorter. The receive code copies at most txt_maxl bytes into s
 message loses its end, the CRC check, the delete of the frame and the acknowledgement use the whole frame in the
 serial buffer and do not depend on the size of strCommand.
 """
+import json
 import os
 import re
 import struct
@@ -124,10 +153,21 @@ FIELDS_TABLE = False  # --fields
 
 REMOVE = re.compile(r'(bEntity|tEntity)[1-6]')
 
+# ---------------------------------------------------------------- models
+# the model is the one pageStartup reports: event,startup,<tVersion>,<model>,<tRelease>
+MODELS = ('eu', 'us-l', 'us-p')
+STAGE = {'eu': (480, 320), 'us-l': (480, 320), 'us-p': (320, 480)}
+VISIBLE = {'eu': (0, 449), 'us-l': (15, 464), 'us-p': (0, 319)}  # x range that is not under the frame
+STARTUP_MODEL = re.compile(r'"event,startup,"\+tVersion\.txt\+",([\w-]+),"\+tRelease\.txt')
+# x of the header objects of cardGrid EU: a landscape model has its pages shifted by the distance of its header
+EU_HEADER_X = {'bPrev': 9, 'tHeading': 65, 'bNext': 391}
+
 # ---------------------------------------------------------------- layouts
 # EU: visible x 0..449, touch of the content x 10..439 (swipe strips), content y 67..287 under the header of cardGrid.
-# text = (x, y, w, h, font, xcen); icon = (x, y, w, h, font); bar / switch = (x, y, w, h)
-STATUS_Y, STATUS_H = 289, 30
+# us-l: the EU layout shifted to its visible area (x 15..464), see model_layouts.
+# us-p (320 x 480, all of it visible): content x 10..309 between the swipe strips, y 67..477, see LAYOUTS_PORTRAIT.
+# text = (x, y, w, h, font, xcen); icon = (x, y, w, h, font); bar / switch / status line = (x, y, w, h)
+STATUS_LINE = (10, 289, 390, 30)
 INFO_ICON = (404, 288, 36, 32, 1)
 
 
@@ -172,12 +212,13 @@ STATUS_X, STATUS_Y0 = 124, 71
 GRID_COLOR = 14823  # the grey of the pie lines of cardPChart and of the pressed buttons (bco2)
 
 
-def status_cell(i):
-    x = STATUS_X + (STATUS_CELL_W - 1) * (i % 2)
-    y = STATUS_Y0 + (STATUS_CELL_H - 1) * (i // 2)
-    return {'kind': 'status', 'icon': (x, y, STATUS_CELL_W, STATUS_CELL_H, 1)}
+def status_cell(i, x0=STATUS_X, y0=STATUS_Y0, w=STATUS_CELL_W, h=STATUS_CELL_H):
+    x = x0 + (w - 1) * (i % 2)
+    y = y0 + (h - 1) * (i // 2)
+    return {'kind': 'status', 'icon': (x, y, w, h, 1)}
 
 
+# landscape (EU; us-l with every x shifted)
 LAYOUTS = {
     # control: icon top left, two info rows right of it, four buttons, optional 2 x 2 status icons between icon and
     # info rows (the info rows switch to a narrower second set of objects while the block is shown)
@@ -188,6 +229,7 @@ LAYOUTS = {
         'slots': [info_row(126, 76, 314), info_row(126, 120, 314)] + [button(10 + 108 * k, 190, 104) for k in range(4)]
         + [status_cell(i) for i in range(4)],
         'narrow': {1: narrow_row(204, 76, 236), 2: narrow_row(204, 120, 236)},
+        'status': STATUS_LINE, 'info': INFO_ICON,
     },
     # progress: icon top left, large value beside it, button top right, bar over the full width, three info tiles
     'cardDevice2': {
@@ -199,14 +241,141 @@ LAYOUTS = {
             info_tile(10, 226, 140), info_tile(154, 226, 140), info_tile(298, 226, 140),
             {'kind': 'button', 'icon': (340, 67, 100, 50, 3), 'name': (340, 119, 100, 26, 0, 1)},
         ],
+        'status': STATUS_LINE, 'info': INFO_ICON,
     },
     # values: icon left, 2 x 3 info tiles, two switches
     'cardDevice3': {
         'main': (10, 67, 100, 82, 4), 'mainName': (10, 151, 100, 26, 0, 1), 'statusXcen': 1,
         'slots': [info_tile(114 + 163 * (k % 2), 67 + 52 * (k // 2), 161) for k in range(6)]
         + [switch_row(10, 228, 213), switch_row(226, 228, 213)],
+        'status': STATUS_LINE, 'info': INFO_ICON,
     },
 }
+
+# portrait (us-p, 320 x 480): the same elements, kinds, fonts and buffers in an arrangement of its own.
+# Header of cardGrid us-p (bPrev 9/16, tHeading 60/24 200x30, bNext 261/16); content x 10..309 (300 px), y 67..443;
+# at the bottom the status line (262 px - narrower than landscape, the adapter needs the width per model) and the
+# info icon right of it.
+PORTRAIT_STATUS = (10, 447, 262, 30)
+PORTRAIT_INFO = (274, 446, 36, 32, 1)
+LAYOUTS_PORTRAIT = {
+    # control: icon top left with the name below, right of it the 2 x 2 status block (72 x 57 cells, as high as
+    # icon + name), two info rows over the full width, the four buttons as 2 x 2 (148 px each).
+    # No second set of info rows: the rows do not depend on the status block (6 objects less than landscape).
+    'cardDevice1': {
+        'main': (10, 70, 150, 86, 4), 'mainName': (10, 158, 150, 26, 0, 1), 'statusXcen': 1,
+        'iconLen': ICON_NEED,
+        'slots': [info_row(10, 190, 300), info_row(10, 230, 300)]
+        + [button(10 + 152 * (k % 2), 272 + 86 * (k // 2), 148) for k in range(4)]
+        + [status_cell(i, 166, 70, 72, 57) for i in range(4)],
+        'status': PORTRAIT_STATUS, 'info': PORTRAIT_INFO,
+    },
+    # progress: icon top left, large value beside it (icon 34 px, value 172 px in font 4), bar over the full width,
+    # the three infos as rows, the button over the full width
+    'cardDevice2': {
+        'main': (10, 68, 90, 82, 4), 'mainName': (10, 152, 90, 26, 0, 1), 'statusXcen': 1,
+        'slots': [
+            {'kind': 'value', 'icon': (102, 91, 34, 36, 1), 'value': (138, 68, 172, 82, 4, 0),
+             'name': (138, 152, 172, 26, 0, 0)},
+            {'kind': 'progress', 'name': (10, 184, 300, 26, 0, 0), 'bar': (10, 212, 300, 14)},
+            info_row(10, 234, 300), info_row(10, 274, 300), info_row(10, 314, 300),
+            {'kind': 'button', 'icon': (10, 356, 300, 52, 3), 'name': (10, 410, 300, 26, 0, 1)},
+        ],
+        'status': PORTRAIT_STATUS, 'info': PORTRAIT_INFO,
+    },
+    # values: icon top in the middle, name below over the full width, 2 x 3 info tiles (148 px), the two switches
+    # as rows
+    'cardDevice3': {
+        'main': (85, 67, 150, 82, 4), 'mainName': (10, 151, 300, 26, 0, 1), 'statusXcen': 1,
+        'slots': [info_tile(10 + 152 * (k % 2), 182 + 52 * (k // 2), 148) for k in range(6)]
+        + [switch_row(10, 342, 300), switch_row(10, 394, 300)],
+        'status': PORTRAIT_STATUS, 'info': PORTRAIT_INFO,
+    },
+}
+
+
+def shift_layout(layout, dx):
+    """the layout with every box moved by dx to the right"""
+    def move(value):
+        if isinstance(value, tuple):
+            return (value[0] + dx,) + value[1:]
+        if isinstance(value, dict):
+            return {k: move(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [move(v) for v in value]
+        return value
+    return {k: (move(v) if k in ('main', 'mainName', 'slots', 'narrow', 'status', 'info') else v)
+            for k, v in layout.items()}
+
+
+def detect_model(pages):
+    """the model of the project: what pageStartup sends in event,startup"""
+    if 'pageStartup' not in pages:
+        raise SystemExit('no page pageStartup')
+    found = {m.group(1) for o in pages['pageStartup'].objs for item in o.items if item[0] == 'code'
+             for line in item[2] for m in [STARTUP_MODEL.search(line.split('//')[0])] if m}
+    if len(found) != 1 or not found <= set(MODELS):
+        raise SystemExit(f'pageStartup: no single known model in event,startup: {sorted(found)}')
+    return found.pop()
+
+
+def model_layouts(model, grid):
+    """(layouts, x shift against EU or None) for the model; grid: its page cardGrid.
+    Landscape: the EU layout, shifted by the distance of the header of cardGrid (bPrev, tHeading, bNext) from the
+    EU header - that is the offset of the visible area (us-l 15: x 15..464 instead of 0..449; cardEntities of us-l
+    lies exactly 15 px right of EU as well). Portrait: LAYOUTS_PORTRAIT."""
+    page = grid.objs[0]
+    stage = (page.get('w'), page.get('h'))
+    if stage != STAGE[model]:
+        raise SystemExit(f'{SOURCE}: {stage[0]}x{stage[1]}, model {model} is {STAGE[model][0]}x{STAGE[model][1]}')
+    if stage[0] < stage[1]:
+        return LAYOUTS_PORTRAIT, None
+    shifts = {n: grid.obj(n).get('x') - x for n, x in EU_HEADER_X.items()}
+    dx = shifts['tHeading']
+    if set(shifts.values()) != {dx} or dx != VISIBLE[model][0] - VISIBLE['eu'][0]:
+        raise SystemExit(f'{SOURCE}: header shifted by {shifts} against EU, the visible area of {model} starts at '
+                         f'x {VISIBLE[model][0]}')
+    return {name: shift_layout(layout, dx) for name, layout in LAYOUTS.items()}, dx
+
+
+def check_area(page, layout, model):
+    """every box of the layout lies on the stage, in the visible x range and off the swipe strips; returns notes
+    about boxes of different elements that overlap (the two sets of an info row and neighbouring status cells are
+    meant to)"""
+    width, height = STAGE[model]
+    x0, x1 = VISIBLE[model]
+    name = page.objs[0].name
+    strips = [(o.name, (o.get('x'), o.get('y'), o.get('w'), o.get('h'))) for o in page.objs
+              if o.name.startswith('mSwipe')]
+    boxes = [('main', layout['main'][:4]), ('main', layout['mainName'][:4]), ('status', layout['status'][:4]),
+             ('info', layout['info'][:4])]
+    for k, spec in enumerate(layout['slots'], 1):
+        group = 'status block' if spec['kind'] == 'status' else f'slot {k}'
+        boxes += [(group, spec[n][:4]) for n in ('icon', 'name', 'value', 'bar', 'switch') if n in spec]
+    for k, spec in layout.get('narrow', {}).items():
+        boxes += [(f'slot {k} narrow', spec[n][:4]) for n in ('icon', 'name', 'value')]
+
+    def hit(a, b):
+        return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
+    for group, box in boxes:
+        if box[0] < x0 or box[0] + box[2] - 1 > x1 or box[1] < 0 or box[1] + box[3] > height or box[0] + box[2] > width:
+            raise SystemExit(f'{name}: {group} {box} is outside of the visible area x {x0}..{x1}, y 0..{height - 1}')
+        for strip, rect in strips:
+            if hit(box, rect):
+                raise SystemExit(f'{name}: {group} {box} lies on {strip} {rect}')
+    notes = []
+    wide = {f'slot {k}' for k in layout.get('narrow', {})}
+    for i, (ga, a) in enumerate(boxes):
+        for gb, b in boxes[i + 1:]:
+            if ga == gb or not hit(a, b):
+                continue
+            # never shown together: a wide info row and the narrow rows / the status block
+            if (ga in wide and (gb.endswith(' narrow') or gb == 'status block')
+                    or gb in wide and (ga.endswith(' narrow') or ga == 'status block')):
+                continue
+            notes.append(f'{ga} {a} / {gb} {b}')
+    return notes
+
 
 TAPPED = ('info', 'button')
 HOTSPOT = ('value', 'progress', 'switch')  # elements without a button: a hotspot carries the cell code
@@ -315,9 +484,18 @@ def ram(page):
 
 # ---------------------------------------------------------------- objects
 
+def ungroup(o):
+    """a copy does not belong to the editor group of its template (us-p: tEntity<k> of cardGrid and the rows of
+    cardEntities carry group ids; EU and us-l have none there)"""
+    for att in ('groupid0', 'groupid1'):
+        if o.has(att) and o.get(att):
+            o.set(att, 0)
+    return o
+
+
 def make_text(template, name, spec, maxl):
     x, y, w, h, font, xcen = spec
-    o = template.copy()
+    o = ungroup(template.copy())
     o.set('objname', name)
     o.geometry(x, y, w, h)
     o.set('font', font)
@@ -333,7 +511,7 @@ def make_text(template, name, spec, maxl):
 
 def make_button(template, name, spec):
     x, y, w, h, font = spec
-    o = template.copy()
+    o = ungroup(template.copy())
     o.set('objname', name)
     o.geometry(x, y, w, h)
     o.set('font', font)
@@ -345,7 +523,7 @@ def make_button(template, name, spec):
 
 
 def make_var(template, name, maxl):
-    o = template.copy()
+    o = ungroup(template.copy())
     o.set('objname', name)
     o.set('txt', '')
     o.set('txt_maxl', maxl)
@@ -511,7 +689,7 @@ def build_objects(page, layout, switch_template):
             if 'value' in spec:
                 forward(visible[-1], icon)
         if kind == 'switch':
-            sw = switch_template.copy()
+            sw = ungroup(switch_template.copy())
             sw.set('objname', f'btOnOff{k}')
             sw.geometry(*spec['switch'])
             sw.set('txt_maxl', 3)
@@ -520,7 +698,7 @@ def build_objects(page, layout, switch_template):
             visible.append(sw)
         if kind in HOTSPOT:
             # one hotspot over the texts (and the bar) of the element, above them in the z order
-            spot = spot_t.copy()
+            spot = ungroup(spot_t.copy())
             spot.set('objname', f'mSlot{k}')
             spot.geometry(*hotspot_rect(spec))
             spot.set_code('down', if_shown(f'type{k}', cell_down(
@@ -529,8 +707,8 @@ def build_objects(page, layout, switch_template):
             hotspots.append(spot)
         if f'type{k}' not in src:
             variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN)]
-    visible.append(make_text(text_t, 'tStatus', (10, STATUS_Y, 390, STATUS_H, 0, layout['statusXcen']), STATUS_LEN))
-    info = make_button(button_t, 'bInfo', INFO_ICON)
+    visible.append(make_text(text_t, 'tStatus', layout['status'] + (0, layout['statusXcen']), STATUS_LEN))
+    info = make_button(button_t, 'bInfo', layout['info'])
     info.set_code('down', [])
     info.set_code('up', send_lines('entnInfo'))
     visible.append(info)
@@ -544,7 +722,7 @@ def build_objects(page, layout, switch_template):
     visible += hotspots
     if status_slots(layout):
         # number variable (like vLPNavState): 1 while at least one status icon is set
-        flag = src['vLPNavState'].copy()
+        flag = ungroup(src['vLPNavState'].copy())
         flag.set('objname', 'vStatus')
         variables.append(flag)
 
@@ -710,7 +888,7 @@ def parser_lines(ind, layout):
             f'{ind}}}else',
             f'{ind}{{',
             f'{i}spstr strCommand.txt,entnInfo.txt,"~",{info_first + 1}']
-    out += icon_lines(i, info_first + 2, 'bInfo', INFO_ICON[4])
+    out += icon_lines(i, info_first + 2, 'bInfo', layout['info'][4])
     out += [f'{i}vis bInfo,1', f'{ind}}}']
     return out
 
@@ -801,12 +979,11 @@ def check_names(page):
         raise SystemExit('unknown objects in code: ' + ', '.join(sorted(missing)))
 
 
-def build_page(source_bytes, name, switch_template):
+def build_page(source_bytes, name, switch_template, layout):
     page = Page(source_bytes)
     feedback.remove(page)  # the cells are built from the plain long press code of cardGrid
     page.objs[0].set('objname', name)
     page.head[0x18:0x28] = name.encode('latin1').ljust(16, b'\0')
-    layout = LAYOUTS[name]
     fix_page_name(page, name)
     build_objects(page, layout, switch_template)
     patch_parser(page, layout)
@@ -868,7 +1045,7 @@ def main_entries(main_hmi, kind):
     return out
 
 
-def main(source, target, preview=None):
+def main(source, target, preview=None, geometry=None):
     if os.path.exists(target):
         raise SystemExit(f'{target} exists')
     hmi = Hmi(open(source, 'rb').read())
@@ -886,11 +1063,19 @@ def main(source, target, preview=None):
     if switch_template.get('type') != 53:
         raise SystemExit(f'{SWITCH_SOURCE}.btOnOff1 is not a dual state button')
     source_bytes = hmi.files[sections[SOURCE]]
+    model = detect_model(pages)
+    layouts, shift = model_layouts(model, pages[SOURCE])
+    print(f'model {model} (pageStartup): stage {STAGE[model][0]}x{STAGE[model][1]}, visible x {VISIBLE[model][0]}..'
+          f'{VISIBLE[model][1]}, ' + ('portrait layouts' if shift is None else
+                                      f'landscape layouts shifted by {shift} px (header of {SOURCE})'))
+    before = ram(Page(source_bytes))
     changes, added = {}, {}
     main_hmi = hmi.files['main.HMI']
     numbers = [int(s[:-3]) for s in sections.values()]
     for name in PAGES:
-        page, layout, blink = build_page(source_bytes, name, switch_template)
+        page, layout, blink = build_page(source_bytes, name, switch_template, layouts[name])
+        for note in check_area(page, layout, model):
+            print(f'{name}: note - boxes overlap: {note}')
         if name in sections:
             print(f'{name}: rebuilt in {sections[name]}')
         else:
@@ -901,9 +1086,11 @@ def main(source, target, preview=None):
             print(f'{name}: new section {section}, appended to the page list of main.HMI')
         pages[name] = page
         r = ram(page)
-        kinds = ', '.join(s['kind'] for s in LAYOUTS[name]['slots'])
-        print(f'{name}: N={len(LAYOUTS[name]["slots"])} ({kinds}), {len(page.objs)} objects, '
-              f'RAM (estimate) page {r}, with global {RAM_GLOBAL + r} of {RAM_LIMIT}')
+        kinds = ', '.join(s['kind'] for s in layout['slots'])
+        print(f'{name}: N={len(layout["slots"])} ({kinds}), {len(page.objs)} objects, '
+              f'RAM (estimate) page {r}, with global {RAM_GLOBAL + r} of {RAM_LIMIT} '
+              f'(the copy of {SOURCE} it is built from: page {before}, with global {RAM_GLOBAL + before}); '
+              f'status line {layout["status"][2]} px')
         print(f'{name}: long press feedback (blinking background): {", ".join(blink)}')
         hard, real = message_len(layout, False), message_len(layout, True)
         maxl = page.obj('strCommand').get('txt_maxl')
@@ -939,8 +1126,12 @@ def main(source, target, preview=None):
     open(target, 'wb').write(out)
     print(f'changed sections: {len(changes)}, new: {", ".join(sorted(added)) or "-"}')
     print(f'{target}: {len(hmi.d)} -> {len(out)} bytes')
+    built = Hmi(out)
     if preview:
-        render_all(Hmi(out), preview)
+        render_all(built, preview, model, layouts)
+    if geometry:
+        write_geometry(geometry, model, shift, layouts,
+                       {name: Page(built.files[sections[name]]) for name in PAGES})
 
 
 # ---------------------------------------------------------------- preview (PNG mock-up)
@@ -959,7 +1150,7 @@ BG, FG = 6371, 65535
 EXAMPLES = {
     'cardDevice1': {
         'heading': 'Saugroboter', 'main': ('robot-vacuum', color565(0, 200, 255), 'Robbi'),
-        'status': 'Reinigt Wohnzimmer, noch 12 min (Wischen)',
+        'status': 'Reinigt Wohnzimmer, noch 12 min (Wischen)', 'statusShort': 'Reinigt Wohnzimmer',
         'slots': [('battery-80', color565(0, 220, 0), 'Akku', '80 %'),
                   ('map-marker', FG, 'Fläche', '34 m²'),
                   ('play', color565(0, 220, 0), 'Start', ''), ('pause', FG, 'Pause', ''),
@@ -969,7 +1160,7 @@ EXAMPLES = {
     },
     'cardDevice2': {
         'heading': 'Waschküche', 'main': ('washing-machine', color565(0, 160, 255), 'Waschm.'),
-        'status': 'Schleudern, noch 23 min - Fertig um 14:35',
+        'status': 'Schleudern, noch 23 min - Fertig um 14:35', 'statusShort': 'Schleudern, noch 23 min',
         'slots': [('timer-outline', FG, 'Restzeit', '1:23'),
                   (None, color565(0, 160, 255), 'Fortschritt 62 %', '62'),
                   ('washing-machine', FG, 'Programm', 'Baumwolle'), ('thermometer', color565(255, 140, 0),
@@ -978,7 +1169,7 @@ EXAMPLES = {
     },
     'cardDevice3': {
         'heading': 'Auto', 'main': ('car', color565(255, 255, 255), 'ID.3'),
-        'status': 'Lädt an Wallbox, 11 kW - voll um 17:40',
+        'status': 'Lädt an Wallbox, 11 kW - voll um 17:40', 'statusShort': 'Lädt, voll um 17:40',
         'slots': [('battery-80', color565(0, 220, 0), 'Akku', '78 %'), ('map-marker', FG, 'Reichw.', '312 km'),
                   ('thermometer', FG, 'Innen', '21,5 °C'), ('lock', color565(0, 220, 0), 'Türen', 'zu'),
                   ('flash', color565(255, 220, 0), 'Laden', '11 kW'), ('gas-station', FG, 'km-Stand', '23.456'),
@@ -1000,6 +1191,7 @@ class Canvas:
     def __init__(self, w, h, bg):
         self.w, self.h = w, h
         self.px = [list(bg) for _ in range(w * h)]
+        self.missing = set()  # (font, character) that the font does not have
 
     def fill(self, x, y, w, h, c):
         for yy in range(max(0, y), min(self.h, y + h)):
@@ -1009,6 +1201,7 @@ class Canvas:
     def text(self, fonts, rect, font, s, color, xcen, ycen=1):
         x, y, w, h = rect
         z = fonts[font]
+        self.missing |= {(font, ch) for ch in s if ord(ch) not in z.chars}
         chars = [z.chars[ord(ch)] for ch in s if ord(ch) in z.chars]
         tw = sum(c[0] + c[1] + c[2] for c in chars)
         px = x + (0 if xcen == 0 else (w - tw) // 2 if xcen == 1 else w - tw)
@@ -1036,16 +1229,21 @@ class Canvas:
         open(path, 'wb').write(data)
 
 
-def render_page(page, name, fonts, icons, plain=False):
+def text_width(fonts, font, s):
+    z = fonts[font]
+    return sum(sum(z.chars[ord(ch)][:3]) for ch in s if ord(ch) in z.chars)
+
+
+def render_page(page, name, layout, model, fonts, icons, plain=False):
     """plain: the status slots empty (the page without status block)"""
     ex = EXAMPLES[name]
-    layout = LAYOUTS[name]
     if plain:
         ex = dict(ex, slots=[(None, FG, '', '') if s['kind'] == 'status' else e
                              for s, e in zip(layout['slots'], ex['slots'])])
     status_on = any(e[0] for s, e in zip(layout['slots'], ex['slots']) if s['kind'] == 'status')
     bg, fg = rgb565(BG), rgb565(FG)
-    cv = Canvas(480, 320, bg)
+    width, height = STAGE[model]
+    cv = Canvas(width, height, bg)
     objs = {o.name: o for o in page.objs}
 
     def rect(n):
@@ -1062,7 +1260,11 @@ def render_page(page, name, fonts, icons, plain=False):
     icon, color, label = ex['main']
     put('bMain', icons[icon], rgb565(color))
     put('tMainName', label)
-    put('tStatus', ex['status'])
+    # a status text that does not fit the line of the model: the short one (the adapter splits a long text)
+    status = ex['status']
+    if text_width(fonts, objs['tStatus'].get('font'), status) > objs['tStatus'].get('w'):
+        status = ex['statusShort']
+    put('tStatus', status)
     put('bInfo', icons['information-outline'], rgb565(FG))
     for k, (spec, (icon, color, label, value)) in enumerate(zip(layout['slots'], ex['slots']), 1):
         kind = spec['kind']
@@ -1097,38 +1299,128 @@ def render_page(page, name, fonts, icons, plain=False):
             cv.fill(x + 3, y + 13, 44, 24, rgb565(color565(0, 200, 0) if on else color565(120, 120, 120)))
             cv.fill(x + (25 if on else 5), y + 15, 20, 20, (255, 255, 255))
     # area under the frame
-    for yy in range(320):
-        for xx in range(450, 480):
+    x0, x1 = VISIBLE[model]
+    for yy in range(height):
+        for xx in list(range(0, x0)) + list(range(x1 + 1, width)):
             if (xx + yy) % 8 < 4:
-                cv.px[yy * 480 + xx] = [90, 90, 90]
+                cv.px[yy * width + xx] = [90, 90, 90]
     return cv
 
 
-def render_all(hmi, out_dir):
+def preview_name(model, name, plain=False):
+    """EU keeps its file names, the other models carry theirs: hmi-us-p-cardDevice1.png"""
+    return f'hmi-{"" if model == "eu" else model + "-"}{name}{"-plain" if plain else ""}.png'
+
+
+def render_all(hmi, out_dir, model, layouts):
     os.makedirs(out_dir, exist_ok=True)
     fonts = [Zi(hmi.files[s]) for s in main_entries(hmi.files['main.HMI'], 'zi')]
     icons = icon_codes()
     pages = {Page(d).objs[0].name: Page(d) for n, d in hmi.files.items() if n.endswith('.pa')}
     for name in PAGES:
-        path = os.path.join(out_dir, f'hmi-{name}.png')
-        render_page(pages[name], name, fonts, icons).png(path)
-        print(f'preview {path}')
-        if status_slots(LAYOUTS[name]):
-            path = os.path.join(out_dir, f'hmi-{name}-plain.png')
-            render_page(pages[name], name, fonts, icons, plain=True).png(path)
+        for plain in (False, True) if status_slots(layouts[name]) else (False,):
+            path = os.path.join(out_dir, preview_name(model, name, plain))
+            cv = render_page(pages[name], name, layouts[name], model, fonts, icons, plain)
+            cv.png(path)
             print(f'preview {path}')
+            if cv.missing:
+                print(f'preview {path}: note - glyphs missing in the fonts of the project: '
+                      + ', '.join(f'font {f} {ch!r}' for f, ch in sorted(cv.missing)))
+
+
+# ---------------------------------------------------------------- geometry (JSON for the web panel)
+
+ALIGN = ('left', 'center', 'right')
+
+
+def box(objs, name, text=True):
+    """the box of an object as it is in the built page; text: with font, alignment and buffer"""
+    o = objs[name]
+    out = {'object': name, 'x': o.get('x'), 'y': o.get('y'), 'w': o.get('w'), 'h': o.get('h')}
+    if text:
+        out.update(font=o.get('font'), align=ALIGN[o.get('xcen')], maxBytes=o.get('txt_maxl'))
+    return out
+
+
+def page_geometry(page, layout):
+    """every element of a built device page with its boxes, read from the objects (the bar from the layout: it is
+    drawn by the parser)"""
+    objs = {o.name: o for o in page.objs}
+    slots = []
+    for k, spec in enumerate(layout['slots'], 1):
+        kind = spec['kind']
+        icon, _ = slot_names(k, kind)
+        slot = {'slot': k, 'kind': kind}
+        if kind == 'status':
+            slot['cell'] = dict(box(objs, icon), border=objs[icon].get('borderw'))
+        else:
+            if 'icon' in spec:
+                slot['icon'] = box(objs, icon)
+            slot['name'] = box(objs, f'tEntity{k}')
+            if 'value' in spec:
+                slot['value'] = box(objs, f'tValue{k}')
+            if kind == 'progress':
+                slot['bar'] = dict(zip('xywh', spec['bar']), border=1)
+            if kind == 'switch':
+                slot['toggle'] = box(objs, f'btOnOff{k}', False)
+            if kind in HOTSPOT:
+                slot['touch'] = box(objs, f'mSlot{k}', False)
+            if k in layout.get('narrow', {}):
+                # the second set of the row, shown instead of icon/name/value while the status block is shown
+                slot['narrow'] = dict(zip(('icon', 'name', 'value'), (box(objs, n) for n in narrow_names(k))))
+        slots.append(slot)
+    return {
+        'slotCount': len(slots), 'statusWidth': objs['tStatus'].get('w'),
+        'strCommand': objs['strCommand'].get('txt_maxl'),
+        'header': {'prev': box(objs, 'bPrev'), 'heading': box(objs, 'tHeading'), 'next': box(objs, 'bNext')},
+        'main': {'icon': box(objs, 'bMain'), 'name': box(objs, 'tMainName')},
+        'slots': slots,
+        'status': box(objs, 'tStatus'), 'info': box(objs, 'bInfo'),
+    }
+
+
+def dump_json(value, indent=0):
+    """JSON with a dict or list of plain values on one line"""
+    pad = '  ' * (indent + 1)
+    if isinstance(value, dict) and any(isinstance(v, (dict, list)) for v in value.values()):
+        items = [f'{pad}{json.dumps(k)}: {dump_json(v, indent + 1)}' for k, v in value.items()]
+        return '{\n' + ',\n'.join(items) + '\n' + '  ' * indent + '}'
+    if isinstance(value, list) and any(isinstance(v, (dict, list)) for v in value):
+        return '[\n' + ',\n'.join(pad + dump_json(v, indent + 1) for v in value) + '\n' + '  ' * indent + ']'
+    return json.dumps(value, ensure_ascii=False)
+
+
+def write_geometry(path, model, shift, layouts, pages):
+    """sets the key of the model in the JSON file (the keys of the other models stay): stage, visible x range and
+    per page every element with its boxes"""
+    data = {}
+    if os.path.exists(path):
+        data = json.load(open(path, encoding='utf-8'))
+    width, height = STAGE[model]
+    data[model] = {
+        'stage': {'w': width, 'h': height},
+        'visible': {'x': VISIBLE[model][0], 'w': VISIBLE[model][1] - VISIBLE[model][0] + 1},
+        'layout': 'portrait' if shift is None else 'landscape',
+        'shiftX': shift or 0,
+        'pages': {name: page_geometry(pages[name], layouts[name]) for name in PAGES},
+    }
+    data = {m: data[m] for m in MODELS if m in data}
+    with open(path, 'w', encoding='utf-8') as out:
+        out.write(dump_json(data) + '\n')
+    print(f'geometry of {model} written to {path} (models in the file: {", ".join(data)})')
 
 
 if __name__ == '__main__':
     args = sys.argv[1:]
-    out_dir = None
+    options = {}
     if '--fields' in args:
         args.remove('--fields')
         FIELDS_TABLE = True
-    if '--preview' in args:
-        i = args.index('--preview')
-        out_dir = args[i + 1]
-        del args[i:i + 2]
+    for option in ('--preview', '--geometry'):
+        if option in args:
+            i = args.index(option)
+            options[option] = args[i + 1]
+            del args[i:i + 2]
     if len(args) != 2:
         raise SystemExit(__doc__)
-    main(args[0], args[1], out_dir)
+    main(args[0], args[1], options.get('--preview'), options.get('--geometry'))

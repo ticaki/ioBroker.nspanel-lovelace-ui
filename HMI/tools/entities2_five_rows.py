@@ -26,6 +26,7 @@ Input: a 6.2.0 EU project (480x320) with the page cardEntities2, made in the edi
    every other type (text, switch, button, unknown) sends event,buttonPress3,<entn>,button; an empty row or 'delete'
    sends nothing. The popup branches become one if/else-if chain so the last branch is 'everything else'.
    The controls on the right (btOnOff, bText, slider, shutter buttons) are not touched. cardSchedule is not changed.
+   The same change without cardEntities2, for every model (us-l, us-p do not get that page): entities_left_tap.py.
 
 The pageType switch of every page with tmSerial must have the branch for cardEntities2; a missing one is added behind
 the cardEntities branch (same pattern).

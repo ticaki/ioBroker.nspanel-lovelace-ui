@@ -2,7 +2,8 @@
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py <in.HMI> <out.HMI> [<ref.tft>]
-Input: a 6.2.0 project with the pages cardGrid, cardGrid2 and cardGrid3, the output must not exist. <ref.tft>:
+Input: a 6.2.0 project (EU, us-l or us-p - the long press code of the grid pages is the same on all three, us-p
+cardGrid2 has 9 cells) with the pages cardGrid, cardGrid2 and cardGrid3, the output must not exist. <ref.tft>:
 optional, a TFT compiled from a project whose grid pages are identical to the input - its page RAM table gives the
 exact RAM before the change (nav_long_press_blink.tft_ram).
 card_device.py uses remove()/add() of this module: the device pages cardDevice1-3 get the same feedback when they

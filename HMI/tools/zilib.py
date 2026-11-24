@@ -12,6 +12,10 @@ Format (see Docs/"Nextion Font Format Specification ZI version 6" of hagronnesta
       010nnnnn  n transparent, 1 opaque 011nnnnn  n transparent, 2 opaque
       10nnnaaa  n transparent, 1 pixel alpha a
       11aaabbb  2 pixels alpha a, b
+    mode 1 (no anti-aliasing; simple glyphs of the text fonts, e.g. '.', '-', '_' of us-p font 0): the codes
+    below 0x80 as in mode 3, the others (derived from the glyphs with exactly one such byte, us-l font 0):
+      100nnnnn  n transparent, 3 opaque 101nnnnn  n transparent, 4 opaque
+      11nnnmmm  n transparent, m opaque
 
 encode() writes the same bytes as the Nextion Editor (checked against all glyphs of the icon fonts).
 """
@@ -53,10 +57,16 @@ class Zi:
 
 
 def decode(g, total=0):
-    """glyph bytes (mode 3) -> list of alpha values 0..7, row-major"""
+    """glyph bytes (mode 3 or 1) -> list of alpha values 0..7, row-major"""
     px = []
+    plain = g[:1] == b'\x01'
     for b in g[1:]:
-        if b & 0x80:
+        if b & 0x80 and plain:
+            if b & 0x40:
+                px += [0] * ((b >> 3) & 7) + [7] * (b & 7)
+            else:
+                px += [0] * (b & 31) + [7] * (3 + ((b >> 5) & 1))
+        elif b & 0x80:
             if b & 0x40:
                 px += [(b >> 3) & 7, b & 7]
             else:
