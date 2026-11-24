@@ -4,8 +4,9 @@ import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import {
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_STATUS_INTERVAL_MS,
-    isDevicePageLayout,
+    devicePageExtraSlotKinds,
     type DevicePageLayout,
+    type DevicePageSlotKind,
 } from '../types/deviceDetails';
 import type * as pages from '../types/pages';
 import type * as types from '../types/types';
@@ -14,22 +15,16 @@ import {
     DEVICE_PAGE_EMPTY_ELEMENT,
     devicePageChannelElement,
     devicePageClampElement,
+    devicePageOfModel,
     devicePagePayload,
+    devicePageSlotItemIndex,
     devicePageStatusIconElement,
     devicePageStatusMessage,
+    isCardDeviceConfig,
+    layoutOfCardDevice,
     optionalValueOf,
     splitDevicePageStatus,
 } from './device-page';
-
-/**
- * @param config the configuration of a page
- * @returns true for the configuration of a device page
- */
-function isCardDeviceConfig(config: pages.PageBase['config']): config is pages.cardDeviceDataItemOptions {
-    return (
-        !!config && (config.card === 'cardDevice1' || config.card === 'cardDevice2' || config.card === 'cardDevice3')
-    );
-}
 
 /**
  * The device page of a device item (device-page.ts): main, the slots of the layout and info as elements of the HMI
@@ -37,6 +32,11 @@ function isCardDeviceConfig(config: pages.PageBase['config']): config is pages.c
  * are created only while the page is shown (Page.onVisibilityChange), a tap on an element is the tap of a cardGrid
  * cell; an empty page item is an empty element. A long press (`buttonPress3`) runs the long press action of a
  * slot, anything else does nothing - it never acts like the tap.
+ *
+ * A web model (`web-l`, `web-p`) shows the extra slots of the layout (DEVICE_PAGE_EXTRA_SLOTS): their elements are
+ * appended behind info, always all of them (an empty one as the empty element), and they act like a slot of the
+ * layout of the same kind. Their page items stand behind the status item (devicePageSlotItemIndex). An HMI model
+ * gets the message without them and has no page items for them (devicePageOfModel).
  *
  * A status text that does not fit the status line is split into parts (splitDevicePageStatus). The `entityUpd`
  * carries the part that is shown; while the page is visible and there is more than one part, the next one follows
@@ -58,14 +58,15 @@ export class PageDevice extends Page {
     /** the interval that shows the next part; only while there is more than one */
     private statusTimer: ioBroker.Interval | undefined = undefined;
 
-    constructor(config: PageInterface, options: pages.PageBase) {
+    constructor(config: PageInterface, pageConfig: pages.PageBase) {
+        // a panel that shows no extra slots gets no page items for them
+        const options = devicePageOfModel(pageConfig, config.panel.info.nspanel.model);
         super(config, options);
         const card = options.config;
         if (!isCardDeviceConfig(card)) {
             throw new Error('PageDevice: invalid config card');
         }
-        const layout = Number(card.card.slice('cardDevice'.length));
-        this.layout = isDevicePageLayout(layout) ? layout : 1;
+        this.layout = layoutOfCardDevice(card.card);
         const headline = card.data.headline;
         this.headline = headline.type === 'const' && typeof headline.constVal === 'string' ? headline.constVal : '';
         this.slotCount = DEVICE_PAGE_LAYOUTS[this.layout].length;
@@ -83,6 +84,31 @@ export class PageDevice extends Page {
             return DEVICE_PAGE_EMPTY_ELEMENT;
         }
         return (await item.getPageItemPayload()) || DEVICE_PAGE_EMPTY_ELEMENT;
+    }
+
+    /**
+     * @returns the kinds of the extra slots this panel shows behind info: those of the layout on a web model, none on
+     * an HMI model
+     */
+    private extraKinds(): readonly DevicePageSlotKind[] {
+        return devicePageExtraSlotKinds(this.layout, this.basePanel.info.nspanel.model);
+    }
+
+    /**
+     * The element of a slot: a status icon never shows name or value, field 6 of an alias channel follows the kind of
+     * its slot; names and values are cut to the text buffers of the HMI.
+     *
+     * @param slot index of the slot (0 = slot 1, the extra slots follow the slots of the layout)
+     * @param kind the kind of the slot
+     * @param onOff the text of on (true) / off (false) in the language of the panel
+     * @returns the element
+     */
+    private async slotElement(slot: number, kind: DevicePageSlotKind, onOff: (on: boolean) => string): Promise<string> {
+        let element = await this.elementAt(devicePageSlotItemIndex(this.layout, slot));
+        if (this.channelSlots.has(slot)) {
+            element = devicePageChannelElement(kind, element, onOff);
+        }
+        return kind === 'status' ? devicePageStatusIconElement(element) : devicePageClampElement(element);
     }
 
     /**
@@ -168,21 +194,20 @@ export class PageDevice extends Page {
         const statusItem = this.itemAt(this.slotCount + 2);
         const status = statusItem ? optionalValueOf(await statusItem.getPageItemPayload()) : '';
         const mainItem = this.itemAt(0);
-        // slots and info; a status icon never shows name or value, field 6 of an alias channel follows the kind of
-        // its slot; names and values are cut to the text buffers of the HMI
+        // the slots of the layout, info, then - on a web model only - the extra slots (always all of them)
         const elements: string[] = [];
         const kinds = DEVICE_PAGE_LAYOUTS[this.layout];
         const onOff = (on: boolean): string => this.library.getTranslation(on ? 'on' : 'off');
-        for (let index = 1; index <= this.slotCount + 1; index++) {
-            let element = await this.elementAt(index);
-            const kind = kinds[index - 1];
-            if (kind && this.channelSlots.has(index - 1)) {
-                element = devicePageChannelElement(kind, element, onOff);
-            }
-            elements.push(kind === 'status' ? devicePageStatusIconElement(element) : devicePageClampElement(element));
+        for (let slot = 0; slot < this.slotCount; slot++) {
+            elements.push(await this.slotElement(slot, kinds[slot], onOff));
+        }
+        elements.push(devicePageClampElement(await this.elementAt(this.slotCount + 1)));
+        const extraKinds = this.extraKinds();
+        for (let extra = 0; extra < extraKinds.length; extra++) {
+            elements.push(await this.slotElement(this.slotCount + extra, extraKinds[extra], onOff));
         }
         // the status line shows the current part of the status text; it gives way to keep the message inside the
-        // buffer of the HMI page
+        // buffer of the HMI page (a web model has none)
         this.sendToPanel(
             devicePagePayload(
                 getPayload(
@@ -200,10 +225,10 @@ export class PageDevice extends Page {
     }
 
     /**
-     * A long press on an element: a slot runs the long press of its page item (the action configured for the slot, a
-     * channel item what it does on cardGrid). main and the info icon have none - they keep the device part of the
-     * item, whose long press would open the detail page from here. Without an action nothing happens: the press is
-     * always handled, the caller (Panel) never treats it as a tap.
+     * A long press on an element: a slot (also an extra slot of a web model) runs the long press of its page item (the
+     * action configured for the slot, a channel item what it does on cardGrid). main and the info icon have none -
+     * they keep the device part of the item, whose long press would open the detail page from here. Without an action
+     * nothing happens: the press is always handled, the caller (Panel) never treats it as a tap.
      *
      * @param id number of the element
      * @param popup popup of the event
@@ -221,7 +246,11 @@ export class PageDevice extends Page {
         event: types.IncomingEvent | null = null,
     ): Promise<boolean> {
         const index = typeof id === 'number' ? id : parseInt(id);
-        if (index >= 1 && index <= this.slotCount) {
+        // the items of the extra slots stand behind info and the status item
+        const firstExtra = devicePageSlotItemIndex(this.layout, this.slotCount);
+        const isSlot = index >= 1 && index <= this.slotCount;
+        const isExtraSlot = index >= firstExtra && index < firstExtra + this.extraKinds().length;
+        if (isSlot || isExtraSlot) {
             await super.onButtonPress3(id, popup, action, value, event);
         }
         return true;

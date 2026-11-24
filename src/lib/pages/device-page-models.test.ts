@@ -1,0 +1,536 @@
+/**
+ * The device page on every model and the extra slots of the web models (doc/ideas/device-details/README.md, section
+ * "Modelle und Zusatz-Slots"): the HMI models (eu, us-l, us-p) get the message as it always was, the web models
+ * (web-l, web-p) the same message with the elements of the extra slots appended.
+ */
+import { expect } from 'chai';
+import { hasGlyph, textWidth } from '../const/text-width';
+import { panelModels } from '../types/adminShareConfig';
+import {
+    DEVICE_PAGE_EXTRA_SLOTS,
+    DEVICE_PAGE_FIELDS,
+    DEVICE_PAGE_FIELDS_PROVISIONAL,
+    DEVICE_PAGE_LAYOUTS,
+    DEVICE_PAGE_STATUS_MAX_BYTES,
+    DEVICE_PAGE_TEXT_FONT,
+    deviceDetailsRuntimeOf,
+    devicePageConfigOf,
+    devicePageConfigSlotKinds,
+    devicePageExtraSlotCount,
+    devicePageExtraSlotKinds,
+    devicePageFields,
+    devicePageSlotFields,
+    fitDevicePageSlots,
+    type DeviceDetailsRuntime,
+    type DevicePageLayout,
+    type DevicePageRuntime,
+} from '../types/deviceDetails';
+import type { PageBase } from '../types/pages';
+import type { NSpanelModel } from '../types/types';
+import {
+    DEVICE_PAGE_EMPTY_ELEMENT,
+    buildDevicePage,
+    devicePageMaxPayloadBytes,
+    devicePageOfModel,
+    devicePagePayload,
+    devicePageSlotItemIndex,
+    splitDevicePageStatus,
+    type DevicePageBuildContext,
+} from './device-page';
+import { PageDevice } from './pageDevice';
+
+const LAYOUTS: readonly DevicePageLayout[] = [1, 2, 3];
+const HMI_MODELS: readonly NSpanelModel[] = ['eu', 'us-l', 'us-p'];
+const WEB_MODELS: readonly NSpanelModel[] = ['web-l', 'web-p'];
+const ALL_MODELS: readonly NSpanelModel[] = [...HMI_MODELS, ...WEB_MODELS];
+
+const DEV = 'shelly.0.wm';
+const objects: Record<string, any> = {
+    [DEV]: { type: 'device', common: { name: 'Waschmaschine' } },
+    [`${DEV}.power`]: { type: 'state', common: { type: 'number', role: 'value.power', write: false, unit: 'W' } },
+    [`${DEV}.energy`]: { type: 'state', common: { type: 'number', role: 'value.energy', write: false, unit: 'Wh' } },
+    [`${DEV}.start`]: { type: 'state', common: { type: 'boolean', role: 'button', read: false, write: true } },
+    [`${DEV}.on`]: { type: 'state', common: { type: 'boolean', role: 'switch', write: true } },
+    'alias.0.socket': { type: 'channel', common: { name: 'Dose', role: 'socket' } },
+};
+const getObject = async (id: string): Promise<ioBroker.Object | null> => Promise.resolve(objects[id] ?? null);
+const ref = (id: string): { key: string; id: string } => ({ key: '', id: `${DEV}.${id}` });
+const nulls = (count: number): null[] => new Array<null>(count).fill(null);
+const bytes = (text: string): number => Buffer.byteLength(text, 'utf8');
+
+/**
+ * @param devicePage the stored device page
+ * @returns its runtime part
+ */
+function runtimeOf(devicePage: Record<string, unknown>): { details: DeviceDetailsRuntime; page: DevicePageRuntime } {
+    const details = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [ref('power')], devicePage });
+    if (!details?.devicePage) {
+        throw new Error('no device page');
+    }
+    return { details, page: details.devicePage };
+}
+
+/**
+ * @param page the device page at runtime
+ * @param details the device part of the item
+ * @param pageItemOf builds the page item of an alias channel
+ * @returns the page built
+ */
+async function build(
+    page: DevicePageRuntime,
+    details: DeviceDetailsRuntime,
+    pageItemOf: DevicePageBuildContext['pageItemOf'] = async () => Promise.resolve(undefined),
+): Promise<{ page: PageBase; messages: string[] }> {
+    return buildDevicePage(
+        'device-test',
+        'none',
+        { deviceId: details.deviceId, entries: details.entries, page },
+        { getObject, translate: k => k, language: 'de', pageItemOf },
+    );
+}
+
+describe('lib/types/deviceDetails - models of the device page', () => {
+    it('text fields per model: eu as before, us-l like eu, every model and layout has its fields', () => {
+        for (const layout of LAYOUTS) {
+            expect(devicePageFields(layout, 'eu')).to.equal(DEVICE_PAGE_FIELDS[layout]);
+            expect(devicePageFields(layout, 'us-l')).to.equal(DEVICE_PAGE_FIELDS[layout]);
+            for (const model of ALL_MODELS) {
+                const fields = devicePageFields(layout, model);
+                expect(fields.status, `${model} ${layout}`).to.be.above(0);
+                expect(fields.mainName, `${model} ${layout}`).to.be.above(0);
+                for (const kind of DEVICE_PAGE_LAYOUTS[layout].filter(k => k !== 'status')) {
+                    expect(devicePageSlotFields(layout, kind, false, model), `${model} ${layout} ${kind}`).to.not.equal(
+                        undefined,
+                    );
+                }
+            }
+        }
+        expect(devicePageFields(1, 'eu').status).to.equal(390);
+        expect(devicePageSlotFields(1, 'info', true)).to.deep.equal({ name: 86, value: 110 });
+    });
+    it('the models not measured yet stand in one table', () => {
+        expect(Object.keys(DEVICE_PAGE_FIELDS_PROVISIONAL).sort()).to.deep.equal(['us-p', 'web-l', 'web-p']);
+        for (const model of ['us-p', 'web-l', 'web-p'] as const) {
+            for (const layout of LAYOUTS) {
+                expect(devicePageFields(layout, model)).to.equal(DEVICE_PAGE_FIELDS_PROVISIONAL[model][layout]);
+            }
+        }
+    });
+    it('the widths of font 0 can be measured for every model', () => {
+        for (const model of panelModels) {
+            expect(textWidth('Schleudern, noch 23 min', DEVICE_PAGE_TEXT_FONT, model), model).to.be.above(0);
+            expect(hasGlyph('a'.codePointAt(0) ?? 0, DEVICE_PAGE_TEXT_FONT, model), model).to.equal(true);
+            // whether the font has the ellipsis differs, it only must not throw
+            expect(hasGlyph(0x20_26, DEVICE_PAGE_TEXT_FONT, model), model).to.be.a('boolean');
+        }
+    });
+    it('the status line is split to the width of the model', () => {
+        const text = 'Reinigung läuft, Wohnzimmer und Küche fertig, noch 23 min bis zur Rückkehr an die Ladestation';
+        for (const model of ALL_MODELS) {
+            for (const layout of LAYOUTS) {
+                const width = devicePageFields(layout, model).status;
+                const parts = splitDevicePageStatus(text, layout, model);
+                expect(parts.length, `${model} ${layout}`).to.be.above(1);
+                for (const part of parts) {
+                    expect(textWidth(part, DEVICE_PAGE_TEXT_FONT, model), `${model} ${layout} ${part}`).to.be.at.most(
+                        width,
+                    );
+                    expect(bytes(part)).to.be.at.most(DEVICE_PAGE_STATUS_MAX_BYTES);
+                }
+                expect(splitDevicePageStatus('Fertig', layout, model)).to.deep.equal(['Fertig']);
+            }
+        }
+    });
+});
+
+describe('lib/types/deviceDetails - extra slots of the web models', () => {
+    it('the extra slots of every layout', () => {
+        expect(DEVICE_PAGE_EXTRA_SLOTS).to.deep.equal({
+            1: ['button', 'button'],
+            2: ['info', 'button', 'button'],
+            3: ['info', 'info', 'switch'],
+        });
+        // layout 1: 6 buttons; layout 2: 4 infos, 3 buttons; layout 3: 8 infos, 3 switches
+        const count = (layout: DevicePageLayout, kind: string): number =>
+            devicePageConfigSlotKinds(layout).filter(k => k === kind).length;
+        expect(count(1, 'button')).to.equal(6);
+        expect([count(2, 'info'), count(2, 'button')]).to.deep.equal([4, 3]);
+        expect([count(3, 'info'), count(3, 'switch')]).to.deep.equal([8, 3]);
+        for (const layout of LAYOUTS) {
+            expect(devicePageConfigSlotKinds(layout)).to.deep.equal([
+                ...DEVICE_PAGE_LAYOUTS[layout],
+                ...DEVICE_PAGE_EXTRA_SLOTS[layout],
+            ]);
+        }
+    });
+    it('only the web models show them, both the same', () => {
+        for (const layout of LAYOUTS) {
+            for (const model of WEB_MODELS) {
+                expect(devicePageExtraSlotKinds(layout, model)).to.equal(DEVICE_PAGE_EXTRA_SLOTS[layout]);
+                expect(devicePageExtraSlotCount(layout, model)).to.equal(DEVICE_PAGE_EXTRA_SLOTS[layout].length);
+            }
+            for (const model of HMI_MODELS) {
+                expect(devicePageExtraSlotKinds(layout, model)).to.deep.equal([]);
+                expect(devicePageExtraSlotCount(layout, model)).to.equal(0);
+            }
+        }
+    });
+    it('a configuration without extra slots stays exactly as it was', () => {
+        const stored = {
+            layout: 2,
+            slots: [ref('power'), null, ref('energy'), null, null, ref('start')],
+            showInfo: true,
+        };
+        const config = devicePageConfigOf(stored);
+        expect(config).to.deep.equal(stored);
+        expect(config).to.not.have.property('webExtras');
+        expect(devicePageConfigOf(config)).to.deep.equal(stored);
+        // not true = off, nothing is stored
+        for (const webExtras of [false, 1, 'true', null]) {
+            expect(devicePageConfigOf({ ...stored, webExtras })).to.deep.equal(stored);
+        }
+        expect(devicePageConfigOf({ ...stored, webExtras: true })).to.deep.equal({ ...stored, webExtras: true });
+    });
+    it('extra slots: stored behind the slots of the layout, all of them once one is filled', () => {
+        const n = DEVICE_PAGE_LAYOUTS[2].length;
+        const config = devicePageConfigOf({
+            layout: 2,
+            webExtras: true,
+            slots: [ref('power'), ...nulls(n - 1), null, { ...ref('start'), icon: 'x', name: ' Los ' }],
+        });
+        expect(config?.slots).to.have.length(n + DEVICE_PAGE_EXTRA_SLOTS[2].length);
+        expect(config?.slots.slice(n)).to.deep.equal([null, { ...ref('start'), name: 'Los' }, null]);
+        expect(config?.webExtras).to.equal(true);
+        // what lies behind the extra slots is dropped
+        const long = devicePageConfigOf({ layout: 2, slots: [...nulls(n + 3), ref('power')] });
+        expect(long?.slots).to.have.length(n);
+    });
+    it('unticked: the extra slots stay stored, the runtime ignores them', () => {
+        const n = DEVICE_PAGE_LAYOUTS[3].length;
+        const slots = [ref('power'), ...nulls(n - 1), ref('energy'), null, ref('on')];
+        const off = devicePageConfigOf({ layout: 3, slots });
+        expect(off?.slots).to.deep.equal(slots);
+        expect(off).to.not.have.property('webExtras');
+        expect(runtimeOf({ layout: 3, slots }).page.slots).to.deep.equal(slots.slice(0, n));
+        expect(runtimeOf({ layout: 3, slots, webExtras: true }).page.slots).to.deep.equal(slots);
+        // ticked without a filled extra slot: the page of the layout
+        expect(runtimeOf({ layout: 3, slots: slots.slice(0, n), webExtras: true }).page.slots).to.have.length(n);
+    });
+    it('runtime: an extra slot that cannot show anything is empty', () => {
+        const n = DEVICE_PAGE_LAYOUTS[3].length;
+        const nav = { key: '', id: '', custom: 'navigation', targetPage: 'rooms' };
+        const pending = { key: '', id: '', custom: 'state' };
+        // layout 3: info, info, switch - a switch needs a value
+        const { page } = runtimeOf({ layout: 3, webExtras: true, slots: [...nulls(n), nav, pending, nav] });
+        expect(page.slots.slice(n)).to.deep.equal([nav, null, null]);
+        // nothing left: no extra slots at all
+        const none = runtimeOf({ layout: 3, webExtras: true, slots: [...nulls(n), pending, null, nav] });
+        expect(none.page.slots).to.have.length(n);
+    });
+    it('a layout change keeps the extra slots among themselves', () => {
+        const one = [...nulls(6), ref('on'), null, null, ref('power'), ref('start'), ref('on')];
+        // layout 1 -> 2: slots 7-10 (status icons) are no extra slots of layout 2
+        expect(fitDevicePageSlots(one, 2, 1)).to.deep.equal([...nulls(6), ref('start'), ref('on'), null]);
+        // layout 2 -> 1: the extra slots do not become status icons
+        const two = [ref('power'), ...nulls(5), ref('energy'), ref('start'), ref('on')];
+        expect(fitDevicePageSlots(two, 1, 2)).to.deep.equal([ref('power'), ...nulls(9), ref('energy'), ref('start')]);
+        expect(fitDevicePageSlots(two, 3, 2)).to.deep.equal([
+            ref('power'),
+            ...nulls(7),
+            ref('energy'),
+            ref('start'),
+            ref('on'),
+        ]);
+        // without a filled extra slot there are only the slots of the layout
+        expect(fitDevicePageSlots(two.slice(0, 6), 3, 2)).to.have.length(8);
+        expect(fitDevicePageSlots([...two.slice(0, 6), null, null, null], 2, 2)).to.have.length(6);
+    });
+});
+
+describe('lib/pages/device-page - page items of the extra slots', () => {
+    const n = DEVICE_PAGE_LAYOUTS[2].length;
+    const base = [ref('power'), null, ref('energy'), null, null, ref('start')];
+    // layout 2: info, button, button
+    const extras = [ref('power'), ref('start'), { key: '', id: 'alias.0.socket', custom: 'channel' }];
+    const channelItem: any = { type: 'switch', role: '', dpInit: '', data: { icon: {} } };
+    const pageItemOf: DevicePageBuildContext['pageItemOf'] = async item =>
+        Promise.resolve(item.channelId.valueStateId === 'alias.0.socket' ? channelItem : undefined);
+
+    it('number of the page item of a slot: the extra slots stand behind the status item', () => {
+        for (const layout of LAYOUTS) {
+            const count = DEVICE_PAGE_LAYOUTS[layout].length;
+            expect(devicePageSlotItemIndex(layout, 0)).to.equal(1);
+            expect(devicePageSlotItemIndex(layout, count - 1)).to.equal(count);
+            expect(devicePageSlotItemIndex(layout, count)).to.equal(count + 3);
+            expect(devicePageSlotItemIndex(layout, count + 1)).to.equal(count + 4);
+        }
+    });
+    it('appended behind the status item, the items of the layout keep number and content', async () => {
+        const without = runtimeOf({ layout: 2, slots: base, status: ref('power') });
+        const plain = await build(without.page, without.details);
+        expect(plain.page.pageItems).to.have.length(n + 3);
+
+        const withExtras = runtimeOf({ layout: 2, slots: [...base, ...extras], status: ref('power'), webExtras: true });
+        const built = await build(withExtras.page, withExtras.details, pageItemOf);
+        expect(built.messages).to.deep.equal([]);
+        const items = built.page.pageItems ?? [];
+        expect(items).to.have.length(n + 3 + DEVICE_PAGE_EXTRA_SLOTS[2].length);
+        // main, slots, info, status: exactly the page without extra slots (the same state twice changes no name)
+        expect(items.slice(0, n + 3)).to.deep.equal(plain.page.pageItems);
+        const [info, button, channel]: any[] = items.slice(n + 3);
+        expect(info.type).to.equal('text');
+        // the same state as slot 1: the extra slot is told apart among all slots, slot 1 keeps its name
+        expect(info.data.text.true.constVal).to.equal('power power');
+        expect((items[1] as any).data.text.true.constVal).to.equal('power');
+        expect(button.type).to.equal('button');
+        expect(channel.type).to.equal('switch');
+        // the channel slot by its index in the configuration
+        expect((built.page.config as any).channelSlots).to.deep.equal([n + 2]);
+
+        // unticked: the page of the layout
+        const off = runtimeOf({ layout: 2, slots: [...base, ...extras], status: ref('power') });
+        expect((await build(off.page, off.details, pageItemOf)).page).to.deep.equal(plain.page);
+    });
+    it('an extra slot is built like a slot of the layout of the same kind; what does not fit stays empty', async () => {
+        // layout 2, slot 3 (info) and slot 6 (button) against the extra slots 1 (info) and 2 (button)
+        const normal = runtimeOf({ layout: 2, slots: [null, null, ref('energy'), null, null, ref('on')] });
+        const builtNormal = (await build(normal.page, normal.details)).page.pageItems ?? [];
+        const extra = runtimeOf({
+            layout: 2,
+            webExtras: true,
+            // a number is no button
+            slots: [...nulls(n), ref('energy'), ref('on'), ref('power')],
+        });
+        const built = await build(extra.page, extra.details);
+        const items = built.page.pageItems ?? [];
+        expect(items[n + 3]).to.deep.equal(builtNormal[3]);
+        expect(items[n + 4]).to.deep.equal(builtNormal[6]);
+        expect(items[n + 5].type).to.equal('empty');
+        expect(built.messages.join(' ')).to.contain(`${DEV}.power`);
+    });
+    it('a panel that shows no extra slots gets no items for them', async () => {
+        const withExtras = runtimeOf({ layout: 2, slots: [...base, ...extras], webExtras: true });
+        const built = (await build(withExtras.page, withExtras.details, pageItemOf)).page;
+        const baseConfig: any = { ...(built.config as object), channelSlots: [2, n + 2] };
+        const page = { ...built, config: baseConfig } as PageBase;
+        for (const model of HMI_MODELS) {
+            const cut = devicePageOfModel(page, model);
+            expect(cut.pageItems, model).to.deep.equal((page.pageItems ?? []).slice(0, n + 3));
+            expect((cut.config as any).channelSlots, model).to.deep.equal([2]);
+            expect((cut.config as any).card).to.equal('cardDevice2');
+        }
+        // the page itself is not changed
+        expect(page.pageItems).to.have.length(n + 6);
+        for (const model of WEB_MODELS) {
+            expect(devicePageOfModel(page, model)).to.equal(page);
+        }
+        // nothing to leave out, and no device page
+        const plain = runtimeOf({ layout: 2, slots: base });
+        const plainPage = (await build(plain.page, plain.details)).page;
+        expect(devicePageOfModel(plainPage, 'eu')).to.equal(plainPage);
+        const grid = { uniqueID: 'g', alwaysOn: 'none', pageItems: [], config: { card: 'cardGrid' } } as any;
+        expect(devicePageOfModel(grid, 'eu')).to.equal(grid);
+    });
+});
+
+/**
+ * A PageDevice without panel around it (like fakeDevicePage in device-page.test.ts).
+ *
+ * @param layout the layout
+ * @param model model of the panel
+ * @param payloads payloads of the page items (index = number of the item), undefined = no item
+ * @param channelSlots index of the slots with an alias channel
+ * @returns the page and what it sent
+ */
+function fakePage(
+    layout: DevicePageLayout,
+    model: NSpanelModel,
+    payloads: (string | undefined)[],
+    channelSlots: number[] = [],
+): { page: PageDevice; sent: string[] } {
+    const sent: string[] = [];
+    const page = Object.create(PageDevice.prototype) as PageDevice;
+    Object.assign(page, {
+        headline: 'Waschmaschine',
+        slotCount: DEVICE_PAGE_LAYOUTS[layout].length,
+        layout,
+        channelSlots: new Set<number>(channelSlots),
+        visibility: true,
+        refreshTimeout: null,
+        statusText: undefined,
+        statusParts: [''],
+        statusIndex: 0,
+        statusTimer: undefined,
+        sleep: false,
+        unload: false,
+        adapter: {
+            unload: false,
+            setTimeout: (): number => 1,
+            clearTimeout: (): void => undefined,
+            setInterval: (): number => 1,
+            clearInterval: (): void => undefined,
+        },
+        log: { debug: (): void => undefined },
+        library: { getTranslation: (s: string): string => s },
+        basePanel: { info: { nspanel: { model } } },
+        directParentPage: { id: '3' },
+        pageItems: payloads.map(p => (p === undefined ? undefined : { getPageItemPayload: async () => p })),
+        sendToPanel: (msg: string): void => {
+            sent.push(msg);
+        },
+        sendToPanelClass: (msg: string): void => {
+            sent.push(msg);
+        },
+    });
+    return { page, sent };
+}
+
+describe('lib/pages/pageDevice - message per model', () => {
+    /**
+     * @param layout the layout
+     * @param withExtras with the items of the extra slots
+     * @returns the payloads of main, the slots, info, the status item and the extra slots
+     */
+    const payloadsOf = (layout: DevicePageLayout, withExtras: boolean): string[] => {
+        const n = DEVICE_PAGE_LAYOUTS[layout].length;
+        const payloads = ['switch~dp_3?0~M~1~WM~1'];
+        for (let i = 1; i <= n; i++) {
+            payloads.push(`text~dp_3?${i}~I~2~S${i}~${i} W`);
+        }
+        payloads.push(`button~dp_3?${n + 1}~i~3~~1`);
+        payloads.push(`text~dp_3?${n + 2}~x~4~~Schleudern`);
+        if (withExtras) {
+            DEVICE_PAGE_EXTRA_SLOTS[layout].forEach((_kind, k) => {
+                payloads.push(`button~dp_3?${n + 3 + k}~E~5~X${k + 1}~1`);
+            });
+        }
+        return payloads;
+    };
+    const send = async (
+        layout: DevicePageLayout,
+        model: NSpanelModel,
+        payloads: (string | undefined)[],
+        channelSlots: number[] = [],
+    ): Promise<string> => {
+        const { page, sent } = fakePage(layout, model, payloads, channelSlots);
+        await page.update();
+        expect(sent).to.have.length(1);
+        return sent[0];
+    };
+
+    for (const layout of LAYOUTS) {
+        const n = DEVICE_PAGE_LAYOUTS[layout].length;
+        const e = DEVICE_PAGE_EXTRA_SLOTS[layout].length;
+        it(`layout ${layout}: eu, us-l and us-p get the message as it always was, also when the page has extra slots`, async () => {
+            const eu = await send(layout, 'eu', payloadsOf(layout, false));
+            expect(eu.split('~')).to.have.length(2 + 12 + 6 * (n + 2));
+            // the last element is info
+            expect(eu.endsWith(`~button~dp_3?${n + 1}~i~3~~1`)).to.equal(true);
+            for (const model of HMI_MODELS) {
+                expect(await send(layout, model, payloadsOf(layout, false)), model).to.equal(eu);
+                expect(await send(layout, model, payloadsOf(layout, true)), model).to.equal(eu);
+            }
+        });
+        it(`layout ${layout}: web-l and web-p get it with the ${e} extra elements appended`, async () => {
+            const eu = await send(layout, 'eu', payloadsOf(layout, false));
+            const extra = DEVICE_PAGE_EXTRA_SLOTS[layout].map((_kind, k) => `button~dp_3?${n + 3 + k}~E~5~X${k + 1}~1`);
+            for (const model of WEB_MODELS) {
+                const web = await send(layout, model, payloadsOf(layout, true));
+                expect(web, model).to.equal([eu, ...extra].join('~'));
+                expect(web.split('~')).to.have.length(2 + 12 + 6 * (n + 2 + e));
+            }
+        });
+        it(`layout ${layout}: web models without extra slots (unticked) get them as empty elements`, async () => {
+            const eu = await send(layout, 'eu', payloadsOf(layout, false));
+            const empty = DEVICE_PAGE_EXTRA_SLOTS[layout].map(() => DEVICE_PAGE_EMPTY_ELEMENT);
+            for (const model of WEB_MODELS) {
+                expect(await send(layout, model, payloadsOf(layout, false)), model).to.equal([eu, ...empty].join('~'));
+            }
+        });
+    }
+    it('one empty extra slot among filled ones is an empty element at its place', async () => {
+        const n = DEVICE_PAGE_LAYOUTS[2].length;
+        const payloads: (string | undefined)[] = payloadsOf(2, true);
+        payloads[n + 4] = undefined;
+        const web = await send(2, 'web-l', payloads);
+        const elements = web.split('~').slice(14 + 6 * (n + 2));
+        expect(elements).to.deep.equal([
+            ...['button', `dp_3?${n + 3}`, 'E', '5', 'X1', '1'],
+            ...['', '', '', '', '', ''],
+            ...['button', `dp_3?${n + 5}`, 'E', '5', 'X3', '1'],
+        ]);
+    });
+    it('extra slots: names and values 31 bytes, field 6 of an alias channel follows the kind of the slot', async () => {
+        const n = DEVICE_PAGE_LAYOUTS[2].length;
+        const payloads: (string | undefined)[] = payloadsOf(2, true);
+        // layout 2: info, button, button
+        payloads[n + 3] = `switch~dp_3?${n + 3}~E~5~${'ü'.repeat(40)}~1`;
+        payloads[n + 4] = `number~dp_3?${n + 4}~E~5~Vol~40|0|200`;
+        payloads[n + 5] = `text~dp_3?${n + 5}~E~5~Text~${'w'.repeat(40)}`;
+        const web = await send(2, 'web-p', payloads, [n, n + 1]);
+        const elements = web.split('~').slice(14 + 6 * (n + 2));
+        // an info slot shows on / off of a switch, the name is cut at a character
+        expect(elements.slice(0, 6)).to.deep.equal(['switch', `dp_3?${n + 3}`, 'E', '5', 'ü'.repeat(15), 'on']);
+        // a button slot shows no number
+        expect(elements.slice(6, 12)).to.deep.equal(['number', `dp_3?${n + 4}`, 'E', '5', 'Vol', '']);
+        // no channel: only cut
+        expect(elements.slice(12, 18)).to.deep.equal(['text', `dp_3?${n + 5}`, 'E', '5', 'Text', 'w'.repeat(31)]);
+    });
+    it('long press: an extra slot runs the long press of its item on a web model, never info or the status item', async () => {
+        const n = DEVICE_PAGE_LAYOUTS[2].length;
+        const ids = [0, 1, n, n + 1, n + 2, n + 3, n + 5, n + 6];
+        const pressedOn = async (model: NSpanelModel): Promise<number[]> => {
+            const { page } = fakePage(2, model, []);
+            const pressed: number[] = [];
+            const items = new Array(n + 7).fill(0).map((_v, i) => ({
+                onCommandLongPress: async (): Promise<boolean> => {
+                    pressed.push(i);
+                    return Promise.resolve(false);
+                },
+            }));
+            Object.assign(page, { pageItems: items });
+            for (const id of ids) {
+                expect(await page.onButtonPress3(String(id), undefined, 'button', ''), String(id)).to.equal(true);
+            }
+            return pressed;
+        };
+        expect(await pressedOn('web-l')).to.deep.equal([1, n, n + 3, n + 5]);
+        expect(await pressedOn('web-p')).to.deep.equal([1, n, n + 3, n + 5]);
+        expect(await pressedOn('eu')).to.deep.equal([1, n]);
+        expect(await pressedOn('us-p')).to.deep.equal([1, n]);
+    });
+});
+
+describe('lib/pages/device-page - length of the message per model', () => {
+    const NAV = 'button~bSubPrev~<~65535~~~button~bSubNext~>~65535~~';
+    const head = `entityUpd~${'H'.repeat(40)}~${NAV}`;
+    const main = `button~dp_12?0~I~65535~${'M'.repeat(31)}~1`;
+    const full = (n: number): string => `input_sel~dp_1234567890?${n}~I~65535~${'ü'.repeat(15)}~${'ü'.repeat(15)}`;
+    const status = 'ü'.repeat(31);
+
+    it('the HMI models keep the buffer of their page, the web models have no limit', () => {
+        for (const model of HMI_MODELS) {
+            expect(LAYOUTS.map(layout => devicePageMaxPayloadBytes(layout, model))).to.deep.equal([943, 875, 1017]);
+        }
+        for (const model of WEB_MODELS) {
+            for (const layout of LAYOUTS) {
+                expect(devicePageMaxPayloadBytes(layout, model)).to.equal(Number.POSITIVE_INFINITY);
+            }
+        }
+    });
+    it('the extra elements never shorten the status line of a web model and are never cut off', () => {
+        for (const layout of LAYOUTS) {
+            const count = DEVICE_PAGE_LAYOUTS[layout].length + 1 + DEVICE_PAGE_EXTRA_SLOTS[layout].length;
+            const elements = new Array(count).fill(0).map((_v, i) => full(i + 1));
+            const expected = [head, `button~dp_12?0~I~65535~${'M'.repeat(31)}~${status}`, ...elements].join('~');
+            // longer than every buffer of an HMI page
+            expect(bytes(expected)).to.be.above(1019);
+            for (const model of WEB_MODELS) {
+                expect(devicePagePayload(head, main, elements, status, layout, model), model).to.equal(expected);
+            }
+            // the same elements on an HMI model: the status line gives way (it never gets them)
+            const eu = devicePagePayload(head, main, elements, status, layout, 'eu');
+            expect(eu.split('~')[19]).to.not.equal(status);
+        }
+    });
+});
