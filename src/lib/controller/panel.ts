@@ -574,7 +574,7 @@ export class Panel extends BaseClass {
             return false;
         });
         if (!CARD_DEVICE_MODELS.has(this.info.nspanel.model)) {
-            // the HMI of this model has no device page: its device items open the detail page
+            // a model without device pages (today every model has them): its device items open the detail page
             // (PageItem.openDeviceOf), the page and its node would only be a broken page
             ({ pages: options.pages, navigation: options.navigation } = withoutDevicePages(
                 options.pages,

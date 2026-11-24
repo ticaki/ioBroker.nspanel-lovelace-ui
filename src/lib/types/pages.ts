@@ -251,13 +251,16 @@ export type cardDeviceTypes = Extract<PageTypeCards, 'cardDevice1' | 'cardDevice
 /**
  * device page of a device item (device-page.ts buildDevicePage): its page items are the elements - main, the slots of
  * the layout (the card says the layout), info and the hidden status item (an empty item = empty slot / no info / no
- * status)
+ * status), behind them the extra slots of the web models when the page has them
  */
 export type cardDeviceDataItemOptions = {
     card: cardDeviceTypes;
     /** name of the device as const headline */
     data: { headline: NSPanel.DataItemsOptions };
-    /** index of the slots (0 = slot 1) that show an alias channel: their field 6 is fitted to the kind of the slot */
+    /**
+     * index of the slots (0 = slot 1, N = extra slot 1) that show an alias channel: their field 6 is fitted to the
+     * kind of the slot
+     */
     channelSlots?: number[];
 };
 

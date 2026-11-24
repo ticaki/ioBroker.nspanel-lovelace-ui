@@ -3,7 +3,8 @@
  * preview, big icon, status line, the slots of the layout and the "i" icon. The states come from the answer of the
  * adapter (`getDeviceDetails`); without it the saved states stay as they are. A slot shows a state of the device or,
  * user defined, any data point, an alias channel or a navigation (icon and name, a tap opens a page); its "…" button
- * opens the settings of the element (DevicePageSlotDialog).
+ * opens the settings of the element (DevicePageSlotDialog). With the option "web panel elements" ticked the extra
+ * slots of the layout follow (DEVICE_PAGE_EXTRA_SLOTS) - each one like a slot of the layout of the same kind.
  */
 import React from 'react';
 import {
@@ -52,6 +53,7 @@ import {
     customDevicePageSlot,
     devicePageCustomProblem,
     devicePageCustomSources,
+    devicePageExtraSlots,
     isDevicePageCustomSource,
     withDevicePageSlotNavigation,
     devicePagePreviewAreas,
@@ -70,6 +72,7 @@ import {
     withDevicePageSlot,
     withDevicePageSlotLook,
     withDevicePageStatus,
+    withDevicePageWebExtras,
     type DevicePageCustomObject,
     type DevicePageSlotItemOptions,
     type DevicePageStateOption,
@@ -438,7 +441,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
     }
 
     /**
-     * @param index index of the slot (0 = slot 1)
+     * @param index index of the slot (0 = slot 1; the extra slots follow the slots of the layout)
      * @param ref what the slot shows, null = empty
      */
     private setSlot(index: number, ref: DevicePageSlotRef | null): void {
@@ -693,6 +696,42 @@ export default class DevicePageSection extends React.Component<DevicePageSection
         );
     }
 
+    /**
+     * The option "web panel elements" and, while it is ticked, the extra slots of the layout - each one a slot like
+     * those above (same selection, same dialogs), numbered on. Unticked nothing of them is shown; what was chosen
+     * for them stays stored.
+     *
+     * @returns the option and the extra slots
+     */
+    private renderWebExtras(): React.JSX.Element {
+        const { value, onChange } = this.props;
+        const extras = devicePageExtraSlots(value);
+        return (
+            <Box
+                sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+                data-dd="device-page-web-extras"
+            >
+                <Tooltip
+                    title={I18n.t('deviceDetailsDialog_pageWebExtrasHint')}
+                    placement="bottom-start"
+                >
+                    <FormControlLabel
+                        sx={{ alignSelf: 'flex-start' }}
+                        control={
+                            <Checkbox
+                                size="small"
+                                checked={value.webExtras === true}
+                                onChange={e => onChange(withDevicePageWebExtras(value, e.target.checked))}
+                            />
+                        }
+                        label={I18n.t('deviceDetailsDialog_pageWebExtras')}
+                    />
+                </Tooltip>
+                {extras.map(extra => this.renderSlot(extra.kind, extra.index))}
+            </Box>
+        );
+    }
+
     private renderSlots(): React.JSX.Element {
         const { value, onChange, socket, theme, themeType, iconSelect, targetSelect, adapterName, instance } =
             this.props;
@@ -704,6 +743,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                 {kinds.includes('status') ? (
                     <FormHelperText sx={{ mt: 0 }}>{I18n.t('deviceDetailsDialog_pageStatusIconsHint')}</FormHelperText>
                 ) : null}
+                {this.renderWebExtras()}
                 <DevicePageSlotDialog
                     ref={this.slotDialogRef}
                     socket={socket}

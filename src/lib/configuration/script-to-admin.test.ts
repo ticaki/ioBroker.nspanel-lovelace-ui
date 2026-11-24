@@ -4950,6 +4950,50 @@ describe('lib/configuration - device with details: the short tap of the admin it
         expect(result.messages).to.have.length(1);
         expect(result.messages[0]).to.contain('slot 2 (info): channel alias.0.dp.empty');
     });
+    it('extra slots of the web panels: built behind the status item only when switched on, the page stays as it was', async () => {
+        const channel = (id: string): object => ({ key: '', id, custom: 'channel' });
+        // layout 2: 6 slots, extra slots info, button, button
+        const slots = [
+            { key: '', id: `${DEV}.Relay0.Switch` },
+            null,
+            null,
+            null,
+            null,
+            channel('alias.0.dp.socket'),
+            channel(channels.temperature[0]),
+            null,
+            channel('alias.0.dp.socket'),
+        ];
+        const convert = async (
+            devicePage: object,
+        ): Promise<{ native: { pageItems: { type: string }[]; config: { channelSlots: number[] } } }> => {
+            const result = await convertAdminPageItem.call(
+                fakeAdapter([]),
+                {
+                    channelId: ShareConfig.emptyChannelValueConfig(`${DEV}.Relay0.Switch`),
+                    type: 'custom',
+                    device: { deviceId: DEV, shortPress: 'state', entries: [], devicePage },
+                } as ShareConfig.AdminPageItemConfig,
+                page,
+                [],
+            );
+            expect(result.error).to.equal(undefined);
+            expect(result.messages).to.deep.equal([]);
+            return JSON.parse(JSON.stringify(result.pageConfig));
+        };
+        const plain = await convert({ layout: 2, showInfo: true, slots: slots.slice(0, 6) });
+        expect(plain.native.pageItems).to.have.length(6 + 3);
+        expect(plain.native.config.channelSlots).to.deep.equal([5]);
+        // stored but not switched on: ignored
+        expect(await convert({ layout: 2, showInfo: true, slots })).to.deep.equal(plain);
+        const on = await convert({ layout: 2, showInfo: true, slots, webExtras: true });
+        // main, 6 slots, info, status - then the 3 extra slots
+        expect(on.native.pageItems).to.have.length(6 + 3 + 3);
+        expect(on.native.pageItems.slice(0, 9)).to.deep.equal(plain.native.pageItems);
+        expect(on.native.pageItems.slice(9).map(i => i.type)).to.deep.equal(['text', 'empty', 'switch']);
+        // the channel slots by their index in the configuration
+        expect(on.native.config.channelSlots).to.deep.equal([5, 6, 8]);
+    });
     it('the device page: a generated sub page of the page of the item, built with the panel configuration', async () => {
         const logs: LogEntry[] = [];
         const name = devicePageName('wohnen', DEV);

@@ -1,10 +1,12 @@
 import {
+    DEVICE_PAGE_EXTRA_SLOTS,
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_SLOT_LOOK_FIELDS,
     defaultDevicePageConfig,
     deviceDetailEntryOfState,
     deviceDetailMaskOf,
     devicePageConfigOf,
+    devicePageConfigSlotKinds,
     devicePageSlotAccepts,
     devicePageSlotAcceptsChannel,
     devicePageSlotAcceptsNavigation,
@@ -103,7 +105,8 @@ export function devicePageToSave(device: Pick<DeviceDetailsConfig, 'devicePage'>
 }
 
 /**
- * Another layout: the slots stay by position ({@link fitDevicePageSlots}), nothing is guessed.
+ * Another layout: the slots stay by position ({@link fitDevicePageSlots}) - the slots of the layout among
+ * themselves, the extra slots among themselves -, nothing is guessed.
  *
  * @param config the device page
  * @param layout the new layout
@@ -113,7 +116,39 @@ export function withDevicePageLayout(config: DevicePageConfig, layout: DevicePag
     if (config.layout === layout) {
         return config;
     }
-    return { ...config, layout, slots: fitDevicePageSlots(config.slots, layout) };
+    return { ...config, layout, slots: fitDevicePageSlots(config.slots, layout, config.layout) };
+}
+
+/**
+ * Switches the extra slots of the web panels (models web-l / web-p) on or off. The extra slots already filled stay
+ * stored while they are off - they are only not shown, not sent and not edited.
+ *
+ * @param config the device page
+ * @param on true = the extra slots are used
+ * @returns the device page with the choice
+ */
+export function withDevicePageWebExtras(config: DevicePageConfig, on: boolean): DevicePageConfig {
+    const { webExtras: _old, ...rest } = config;
+    return on ? { ...rest, webExtras: true } : rest;
+}
+
+/** an extra slot the admin shows: where it stands in the slots of the device page and what it is */
+export interface DevicePageExtraSlot {
+    /** index in {@link DevicePageConfig.slots} (behind the slots of the layout) */
+    index: number;
+    kind: DevicePageSlotKind;
+}
+
+/**
+ * @param config the device page
+ * @returns the extra slots of its layout to show and edit - none while they are switched off
+ */
+export function devicePageExtraSlots(config: Pick<DevicePageConfig, 'layout' | 'webExtras'>): DevicePageExtraSlot[] {
+    if (!config.webExtras) {
+        return [];
+    }
+    const first = DEVICE_PAGE_LAYOUTS[config.layout].length;
+    return DEVICE_PAGE_EXTRA_SLOTS[config.layout].map((kind, extra) => ({ index: first + extra, kind }));
 }
 
 /**
@@ -160,7 +195,7 @@ function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
 
 /**
  * @param config the device page
- * @param index index of the slot (0 = slot 1)
+ * @param index index of the slot (0 = slot 1; the extra slots follow the slots of the layout)
  * @param ref what the slot shows, null = empty
  * @returns the device page with the slot; the own settings of the slot (icons, colors, color scale, long press, name) stay
  * when something else is chosen for it, an emptied slot loses them
@@ -170,7 +205,8 @@ export function withDevicePageSlot(
     index: number,
     ref: DevicePageSlotRef | null,
 ): DevicePageConfig {
-    const slots = fitDevicePageSlots(config.slots, config.layout);
+    // every slot the layout can hold, the extra slots included (they are stored only while one of them is filled)
+    const slots = devicePageConfigSlotKinds(config.layout).map((_kind, i) => config.slots[i] ?? null);
     if (index < 0 || index >= slots.length) {
         return config;
     }
@@ -181,8 +217,8 @@ export function withDevicePageSlot(
         delete next.isNavigation;
     }
     slots[index] = next;
-    // the older own icon only on a status slot
-    return { ...config, slots: fitDevicePageSlots(slots, config.layout) };
+    // the older own icon only on a status slot; the extra slots only while one of them is filled
+    return { ...config, slots: fitDevicePageSlots(slots, config.layout, config.layout) };
 }
 
 /**
@@ -546,7 +582,8 @@ export const PREVIEW_INFO = -2;
 const STATUS_GRID = { x: 124, y: 71, w: 38, h: 45, columns: 2 };
 
 /**
- * The areas of the schematic preview of a layout (geometry of the HMI pages cardDevice1-3). Layout 1 with at least one
+ * The areas of the schematic preview of a layout (geometry of the HMI pages cardDevice1-3; the extra slots of the web
+ * panels are not part of it). Layout 1 with at least one
  * status slot filled: the status grid right of the main icon (2 columns, rows = number of status slots / 2, all of
  * them - an empty one stays an empty cell) and the narrow info rows; otherwise the wide rows and no grid.
  *

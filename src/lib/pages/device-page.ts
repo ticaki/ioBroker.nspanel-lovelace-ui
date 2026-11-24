@@ -7,20 +7,22 @@
  * (a generated sub page of the page of the item, read-only in the navigation flow like `media-<id>`).
  *
  * `entityUpd~<heading>~<navigation>~<main>~<slot1>~…~<slotN>~<info>`, every element the 6 fields of a cardGrid cell
- * `type~intName~icon~iconColor~displayName~optionalValue`.
+ * `type~intName~icon~iconColor~displayName~optionalValue`. The web models (`web-l`, `web-p`) get the same message
+ * with the elements of the extra slots of the layout appended: `…~<info>~<extra1>~…~<extraE>`
+ * ({@link DEVICE_PAGE_EXTRA_SLOTS}).
  */
 import { Color } from '../const/Color';
 import { MAX_PANEL_PAYLOAD_BYTES } from '../const/definition';
 import { ELLIPSIS, ELLIPSIS_FALLBACK, fitText, hasGlyph, textWidth } from '../const/text-width';
-import { isVersionGreaterOrEqual } from '../const/tools';
+import { isVersionGreaterOrEqual, isWebModel } from '../const/tools';
 import { isCardDeviceType } from '../types/function-and-const';
 import { emptyChannelValueConfig, type AdminPageItemConfig } from '../types/adminShareConfig';
 import type { NSPanel } from '../types/NSPanel';
-import type { PageBase } from '../types/pages';
+import type { cardDeviceDataItemOptions, cardDeviceTypes, PageBase } from '../types/pages';
 import type { NSpanelModel } from '../types/types';
 import {
     DEVICE_DETAIL_ROW_ROLE,
-    DEVICE_PAGE_FIELDS,
+    DEVICE_PAGE_EXTRA_SLOTS,
     DEVICE_PAGE_INFO_ROLE,
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_RECEIVE_BYTES,
@@ -32,6 +34,7 @@ import {
     DEVICE_PAGE_NAVIGATION_ICON,
     DEVICE_PAGE_PROGRESS_ROLE,
     devicePageChannelTakesNavigation,
+    devicePageFields,
     devicePageSlotAcceptsNavigation,
     devicePageSlotTargetOf,
     devicePageProgressPercent,
@@ -74,8 +77,17 @@ export function devicePageName(pageName: string, deviceId: string): string {
  */
 export const CARD_DEVICE_MIN_TFT = '6.2.0';
 
-/** models whose HMI has the device pages (us-l, us-p and web-p fall back to the detail page) */
-export const CARD_DEVICE_MODELS: ReadonlySet<NSpanelModel> = new Set<NSpanelModel>(['eu', 'web-l']);
+/**
+ * models that have the device pages: every model - the HMIs of eu, us-l and us-p and the web panel in the layouts of
+ * web-l and web-p
+ */
+export const CARD_DEVICE_MODELS: ReadonlySet<NSpanelModel> = new Set<NSpanelModel>([
+    'eu',
+    'us-l',
+    'us-p',
+    'web-l',
+    'web-p',
+]);
 
 /** an element without content (empty slot, no info): what cardGrid sends for an empty cell - the HMI hides it */
 export const DEVICE_PAGE_EMPTY_ELEMENT = '~~~~~';
@@ -90,8 +102,9 @@ export interface CardDeviceTarget {
 }
 
 /**
- * true if the panel has the device pages: model eu or web-l, a web panel always (web-l and web clones of eu panels),
- * a hardware panel from {@link CARD_DEVICE_MIN_TFT} on. Otherwise the long press opens the detail page.
+ * true if the panel has the device pages: a model of {@link CARD_DEVICE_MODELS} (all of them), a web panel always
+ * (web-l, web-p and the web clones of hardware panels), a hardware panel from {@link CARD_DEVICE_MIN_TFT} on.
+ * Otherwise (an older or unknown TFT) the long press opens the detail page.
  *
  * @param target model, web/hardware and TFT version
  * @returns true when the device page can be shown
@@ -107,8 +120,8 @@ export function supportsCardDevice(target: CardDeviceTarget): boolean {
 }
 
 /**
- * The pages and nodes of a panel without the device pages: for a model whose HMI has none ({@link CARD_DEVICE_MODELS})
- * - its device items open the detail page instead, a device page would be a broken page.
+ * The pages and nodes of a panel without the device pages: for a model that has none ({@link CARD_DEVICE_MODELS} -
+ * today every model has them) - its device items open the detail page instead, a device page would be a broken page.
  *
  * @param pages the pages of the panel
  * @param navigation its navigation nodes
@@ -216,7 +229,8 @@ function isStatusBreak(chars: readonly string[], at: number): boolean {
 /**
  * The status text (field 6 of main) as the parts the status line shows one after the other. Line breaks become
  * spaces, `~` is dropped.
- * - The text fits the line of the layout (px in font 0) and {@link DEVICE_PAGE_STATUS_MAX_BYTES}: one part, unchanged.
+ * - The text fits the line of the layout on this model (px in font 0, {@link devicePageFields}) and
+ *   {@link DEVICE_PAGE_STATUS_MAX_BYTES}: one part, unchanged.
  * - Else it is split into parts that each fit the line and the bytes: at the last space (the space is dropped) or
  *   behind the last comma, full stop, semicolon or dash that fits; a word that is too long on its own is cut at a
  *   character.
@@ -225,12 +239,12 @@ function isStatusBreak(chars: readonly string[], at: number): boolean {
  *
  * @param text the status text
  * @param layout the layout
- * @param model panel model (font tables)
+ * @param model panel model (width of the line, font tables)
  * @returns the parts, at least one ('' for an empty text)
  */
 export function splitDevicePageStatus(text: string, layout: DevicePageLayout, model: NSpanelModel): string[] {
     const flat = text.replace(/[\r\n]+/g, ' ').replaceAll('~', '');
-    const width = DEVICE_PAGE_FIELDS[layout].status;
+    const width = devicePageFields(layout, model).status;
     const fits = (part: string): boolean =>
         textWidth(part, DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(part) <= DEVICE_PAGE_STATUS_MAX_BYTES;
     if (fits(flat)) {
@@ -322,10 +336,15 @@ export function devicePageClampElement(element: string): string {
 
 /**
  * @param layout the layout
+ * @param model panel model
  * @returns the bytes an `entityUpd` of the page may have: the receive buffer of its HMI page, at most what the
- * display takes
+ * display takes. No limit (Infinity) for the web models `web-l` / `web-p`: they have no HMI page, and the transport
+ * of a web panel (web socket) has no receive buffer (PanelSend.isTooLong never limits a web panel)
  */
-export function devicePageMaxPayloadBytes(layout: DevicePageLayout): number {
+export function devicePageMaxPayloadBytes(layout: DevicePageLayout, model: NSpanelModel): number {
+    if (isWebModel(model)) {
+        return Number.POSITIVE_INFINITY;
+    }
     return Math.min(DEVICE_PAGE_RECEIVE_BYTES[layout], MAX_PANEL_PAYLOAD_BYTES);
 }
 
@@ -333,11 +352,12 @@ export function devicePageMaxPayloadBytes(layout: DevicePageLayout): number {
  * The `entityUpd` of the device page with the shown part of the status text in field 6 of main. When the message
  * has more bytes than the page takes ({@link devicePageMaxPayloadBytes}), the status line gives way: the part is cut
  * by the overhang, with an ellipsis. Names and values are already limited ({@link devicePageClampElement}), so that
- * is enough for a message the adapter builds.
+ * is enough for a message the adapter builds. A web model has no limit: there the elements of the extra slots never
+ * shorten the status line and are never cut off themselves.
  *
  * @param head `entityUpd~<heading>~<navigation>`
  * @param mainPayload payload of the main item ('' = none)
- * @param elements the elements of the slots and of info
+ * @param elements the elements of the slots and of info, on a web model followed by those of the extra slots
  * @param status the part of the status text that is shown ({@link splitDevicePageStatus}; '' = none)
  * @param layout the layout
  * @param model panel model (font tables)
@@ -353,11 +373,75 @@ export function devicePagePayload(
 ): string {
     const build = (field: string): string => [head, devicePageMainElement(mainPayload, field), ...elements].join('~');
     const payload = build(status);
-    const over = byteLength(payload) - devicePageMaxPayloadBytes(layout);
+    const over = byteLength(payload) - devicePageMaxPayloadBytes(layout, model);
     if (over <= 0) {
         return payload;
     }
     return build(cutToBytesWithEllipsis(status, Math.max(0, byteLength(status) - over), statusEllipsis(model)));
+}
+
+/**
+ * The number of the page item of a slot of a device page. The page items are
+ * `[main, slot 1 … slot N, info, status, extra slot 1 … extra slot E]`: the extra slots were appended later, so the
+ * numbers of main, the slots, info and the status item (and with them the ids `<page>?<n>` of the elements) are the
+ * same with and without extra slots.
+ *
+ * @param layout the layout
+ * @param slot index of the slot in the configuration (0 = slot 1, N = extra slot 1)
+ * @returns the number of its page item
+ */
+export function devicePageSlotItemIndex(layout: DevicePageLayout, slot: number): number {
+    const count = DEVICE_PAGE_LAYOUTS[layout].length;
+    return slot < count ? slot + 1 : slot + 3;
+}
+
+/**
+ * @param config the configuration of a page
+ * @returns true for the configuration of a device page
+ */
+export function isCardDeviceConfig(config: PageBase['config'] | undefined): config is cardDeviceDataItemOptions {
+    return !!config && isCardDeviceType(config.card);
+}
+
+/**
+ * @param card a HMI page of the device page
+ * @returns its layout
+ */
+export function layoutOfCardDevice(card: cardDeviceTypes): DevicePageLayout {
+    switch (card) {
+        case 'cardDevice1':
+            return 1;
+        case 'cardDevice2':
+            return 2;
+        case 'cardDevice3':
+            return 3;
+    }
+}
+
+/**
+ * The configuration of a device page as a panel of this model uses it: an HMI model (`eu`, `us-l`, `us-p`, also the
+ * web clone of such a panel) never shows the extra slots - their page items are left out, so nothing is created or
+ * subscribed for them, and the page is the one without extra slots. A web model keeps the page as it is, so does
+ * every page that is no device page.
+ *
+ * @param page the configuration of a page ({@link buildDevicePage})
+ * @param model panel model
+ * @returns the configuration for the model (the same object when nothing is left out)
+ */
+export function devicePageOfModel(page: PageBase, model: NSpanelModel): PageBase {
+    if (isWebModel(model) || !isCardDeviceConfig(page.config) || !page.pageItems) {
+        return page;
+    }
+    // main, the slots of the layout, info and the status item
+    const count = DEVICE_PAGE_LAYOUTS[layoutOfCardDevice(page.config.card)].length;
+    if (page.pageItems.length <= count + 3) {
+        return page;
+    }
+    const config: cardDeviceDataItemOptions = { ...page.config };
+    if (config.channelSlots) {
+        config.channelSlots = config.channelSlots.filter(slot => slot < count);
+    }
+    return { ...page, pageItems: page.pageItems.slice(0, count + 3), config };
 }
 
 /**
@@ -1058,7 +1142,16 @@ async function devicePageChannelSlot(
 /**
  * The configuration of a device page, built like every other page when the panel configuration is built (the
  * objects are read here once, not when the page is opened). Its page items are the elements in the order
- * `[main, slot1 … slotN, info, status]` - an empty slot, no info and no status line an empty item:
+ * `[main, slot1 … slotN, info, status]` - an empty slot, no info and no status line an empty item. When the page has
+ * extra slots (`page.slots` longer than the slots of the layout - they are switched on and one of them is filled),
+ * their items follow: `[…, status, extra1 … extraE]` ({@link devicePageSlotItemIndex}); an extra slot is built like a
+ * slot of the layout of the same kind. The model of the panel is not known here - a panel that shows no extra slots
+ * leaves their items out ({@link devicePageOfModel}).
+ *
+ * The names of the slots of the layout are found among these slots only, so the elements of the layout are the same
+ * with and without extra slots; an extra slot is told apart from all slots.
+ *
+ * The page items:
  * - main: {@link devicePageMainItem},
  * - a slot with a state of the device or an own data point: the item of the mask of the detail page (icon, name,
  *   color group, the text that tells duplicates apart) with the own settings of the slot ({@link devicePageSlotItem}),
@@ -1083,7 +1176,10 @@ export async function buildDevicePage(
     const details: DeviceDetailsRuntime = { deviceId, entries: source.entries };
     const device = await ctx.getObject(deviceId);
     const headline = nameOfCommon(device?.common?.name, ctx.language) || deviceId.split('.').pop() || '';
-    const kinds = DEVICE_PAGE_LAYOUTS[page.layout];
+    const layoutKinds = DEVICE_PAGE_LAYOUTS[page.layout];
+    const extraKinds = page.slots.length > layoutKinds.length ? DEVICE_PAGE_EXTRA_SLOTS[page.layout] : [];
+    // the kinds in the order of the configuration: the slots of the layout, then the extra slots
+    const kinds = [...layoutKinds, ...extraKinds];
     const messages: string[] = [];
     const skipped: string[] = [];
     const readCommon = async (ref: DevicePageStateRef | null): Promise<DeviceDetailStateCommon | undefined> => {
@@ -1124,17 +1220,23 @@ export async function buildDevicePage(
         }
     }
     const named = present.filter(p => kinds[p.index] !== 'status' && !p.entry.name);
-    const names = deviceDetailRowNames(
-        deviceId,
-        named.map(p => p.entry),
-        named.map(p => p.common),
-        ctx.translate,
-        ctx.language,
-        null,
-    );
+    const namesOf = (rows: typeof named): string[] =>
+        deviceDetailRowNames(
+            deviceId,
+            rows.map(p => p.entry),
+            rows.map(p => p.common),
+            ctx.translate,
+            ctx.language,
+            null,
+        );
+    // the slots of the layout among themselves (their names do not depend on the extra slots), an extra slot among all
+    const layoutNamed = named.filter(p => p.index < layoutKinds.length);
+    const layoutNames = namesOf(layoutNamed);
+    const allNames = layoutNamed.length < named.length ? namesOf(named) : layoutNames;
     present.forEach(p => {
-        const n = named.indexOf(p);
-        const name = (kinds[p.index] !== 'status' && p.entry.name) || (n >= 0 ? (names[n] ?? '') : '');
+        const n = p.index < layoutKinds.length ? layoutNamed.indexOf(p) : named.indexOf(p);
+        const auto = p.index < layoutKinds.length ? layoutNames : allNames;
+        const name = (kinds[p.index] !== 'status' && p.entry.name) || (n >= 0 ? (auto[n] ?? '') : '');
         const item = devicePageSlotItem(deviceId, kinds[p.index], p.entry, p.common, name);
         if (!item) {
             skipped.push(p.entry.id);
@@ -1152,9 +1254,11 @@ export async function buildDevicePage(
     }
     const elements = [
         devicePageMainItem(source.main, details, page, headline),
-        ...slots,
+        ...slots.slice(0, layoutKinds.length),
         page.showInfo ? devicePageInfoItem(details) : undefined,
         status,
+        // appended: the numbers of the items above never change
+        ...slots.slice(layoutKinds.length),
     ];
     return {
         page: {

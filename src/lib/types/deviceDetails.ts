@@ -14,10 +14,12 @@
 import {
     isHmiTextSize,
     isIconColorScaleElement,
+    isWebPanelModel,
     normalizeChannelId,
     type AdminPageItemConfig,
     type HmiTextSize,
     type IconColorElement,
+    type PanelModel,
 } from './adminShareConfig';
 import {
     deviceDetailMasks,
@@ -119,7 +121,7 @@ export type DeviceShortPress =
     /**
      * opens the device page like the long press (stored without channel, runtime item of type button); only with a
      * device page ({@link DeviceDetailsConfig.devicePage}), without one it does nothing like `none`. Where the panel
-     * has no device page the detail page opens, as with the long press.
+     * has no device page (a TFT that is too old) the detail page opens, as with the long press.
      */
     | 'devicePage';
 
@@ -196,6 +198,50 @@ export const DEVICE_PAGE_LAYOUTS: Readonly<Record<DevicePageLayout, readonly Dev
     3: ['info', 'info', 'info', 'info', 'info', 'info', 'switch', 'switch'],
 };
 
+/**
+ * The extra slots of every layout: more elements of the same kinds, shown only by the standalone web panels of the
+ * models `web-l` and `web-p` ({@link devicePageExtraSlotKinds}) and only when the device page has them switched on
+ * ({@link DevicePageConfig.webExtras}). In the configuration they follow the slots of {@link DEVICE_PAGE_LAYOUTS}
+ * (`slots[N] … slots[N + E - 1]`), in the message they are appended behind info - the message of the HMI models stays
+ * as it is. The single place for their number and kind (the web panel keeps its own copy in `src-web`).
+ */
+export const DEVICE_PAGE_EXTRA_SLOTS: Readonly<Record<DevicePageLayout, readonly DevicePageSlotKind[]>> = {
+    /** "Steuern": 6 buttons */
+    1: ['button', 'button'],
+    /** "Fortschritt": 4 infos, 3 buttons */
+    2: ['info', 'button', 'button'],
+    /** "Werte": 8 infos, 3 switches */
+    3: ['info', 'info', 'switch'],
+};
+
+/**
+ * @param layout the layout
+ * @param model the model of the panel
+ * @returns the kinds of the extra slots the model shows in this layout: {@link DEVICE_PAGE_EXTRA_SLOTS} for `web-l`
+ * and `web-p`, none for the HMI models (`eu`, `us-l`, `us-p` - also for a web clone of such a panel)
+ */
+export function devicePageExtraSlotKinds(layout: DevicePageLayout, model: PanelModel): readonly DevicePageSlotKind[] {
+    return isWebPanelModel(model) ? DEVICE_PAGE_EXTRA_SLOTS[layout] : [];
+}
+
+/**
+ * @param layout the layout
+ * @param model the model of the panel
+ * @returns number of extra slots the model shows in this layout ({@link devicePageExtraSlotKinds})
+ */
+export function devicePageExtraSlotCount(layout: DevicePageLayout, model: PanelModel): number {
+    return devicePageExtraSlotKinds(layout, model).length;
+}
+
+/**
+ * @param layout the layout
+ * @returns the kinds of all slots a configuration of the layout can hold, in the order of
+ * {@link DevicePageConfig.slots}: the slots of the layout, then its extra slots
+ */
+export function devicePageConfigSlotKinds(layout: DevicePageLayout): readonly DevicePageSlotKind[] {
+    return [...DEVICE_PAGE_LAYOUTS[layout], ...DEVICE_PAGE_EXTRA_SLOTS[layout]];
+}
+
 /** width of the text fields of a slot kind in px */
 export type DevicePageSlotFields = {
     /** name (field 5), font 0 */
@@ -241,7 +287,8 @@ export const DEVICE_PAGE_STATUS_INTERVAL_MS = 3000;
 
 /**
  * bytes of the receive buffer (`strCommand`) of the HMI page of a layout: what an `entityUpd` has beyond that is cut
- * off (the last elements are missing). The display itself takes at most MAX_PANEL_PAYLOAD_BYTES.
+ * off (the last elements are missing). The display itself takes at most MAX_PANEL_PAYLOAD_BYTES. The web models
+ * (`web-l`, `web-p`) have no HMI page and no such buffer.
  */
 export const DEVICE_PAGE_RECEIVE_BYTES: Readonly<Record<DevicePageLayout, number>> = {
     1: 943,
@@ -253,9 +300,9 @@ export const DEVICE_PAGE_RECEIVE_BYTES: Readonly<Record<DevicePageLayout, number
 export const DEVICE_PAGE_TEXT_MAX_BYTES = 31;
 
 /**
- * The text fields of the device pages (EU HMI). Only the status line is measured by the adapter (wider than its field
- * it is split into parts that alternate), every other field is cut by the HMI at its edge - the widths are here for
- * the admin and the web panel.
+ * The text fields of the device pages of the EU HMI ({@link devicePageFields} gives them per model). Only the status
+ * line is measured by the adapter (wider than its field it is split into parts that alternate), every other field is
+ * cut by the HMI at its edge - the widths are here for the admin and the web panel.
  *
  * The `value` slot of layout 2 draws field 6 in font 4 (Noto Sans Bold 80) in 190 px: a digit is 33 px, ':' 17 px,
  * '%' 53 px, '°' 25 px, a space 15 px - about 5 digits fit. The font has digits, `: % ° , . - /`, letters with
@@ -287,6 +334,56 @@ export const DEVICE_PAGE_FIELDS: Readonly<Record<DevicePageLayout, DevicePageLay
     },
 };
 
+/** the models whose text fields are not measured yet ({@link DEVICE_PAGE_FIELDS_PROVISIONAL}) */
+export type DevicePageProvisionalModel = 'us-p' | 'web-l' | 'web-p';
+
+/**
+ * PROVISIONAL - the text fields of the device pages of `us-p`, `web-l` and `web-p`, per model and layout. Until the
+ * us-p HMI and the layouts of the web panel are final these are the values of the EU HMI ({@link DEVICE_PAGE_FIELDS});
+ * `status` (the only field the adapter measures: px of the status line in font 0, counted with the font tables of the
+ * model - web-l with the eu tables, web-p with the us-p tables) is written out per model and layout.
+ *
+ * TODO: replace by the measured values - this table is the only place to change. Other fields of a layout that
+ * differ from the EU HMI go next to `status` (`mainName`, `slots`, `slotsWithStatus`).
+ */
+export const DEVICE_PAGE_FIELDS_PROVISIONAL: Readonly<
+    Record<DevicePageProvisionalModel, Readonly<Record<DevicePageLayout, DevicePageLayoutFields>>>
+> = {
+    'us-p': {
+        1: { ...DEVICE_PAGE_FIELDS[1], status: 390 },
+        2: { ...DEVICE_PAGE_FIELDS[2], status: 390 },
+        3: { ...DEVICE_PAGE_FIELDS[3], status: 390 },
+    },
+    'web-l': {
+        1: { ...DEVICE_PAGE_FIELDS[1], status: 390 },
+        2: { ...DEVICE_PAGE_FIELDS[2], status: 390 },
+        3: { ...DEVICE_PAGE_FIELDS[3], status: 390 },
+    },
+    'web-p': {
+        1: { ...DEVICE_PAGE_FIELDS[1], status: 390 },
+        2: { ...DEVICE_PAGE_FIELDS[2], status: 390 },
+        3: { ...DEVICE_PAGE_FIELDS[3], status: 390 },
+    },
+};
+
+/** the text fields of the device pages of every model: `eu` and `us-l` share the geometry of the EU HMI */
+const DEVICE_PAGE_FIELDS_BY_MODEL: Readonly<
+    Record<PanelModel, Readonly<Record<DevicePageLayout, DevicePageLayoutFields>>>
+> = {
+    eu: DEVICE_PAGE_FIELDS,
+    'us-l': DEVICE_PAGE_FIELDS,
+    ...DEVICE_PAGE_FIELDS_PROVISIONAL,
+};
+
+/**
+ * @param layout the layout
+ * @param model the model of the panel
+ * @returns the text fields of the layout on this model in px
+ */
+export function devicePageFields(layout: DevicePageLayout, model: PanelModel): DevicePageLayoutFields {
+    return DEVICE_PAGE_FIELDS_BY_MODEL[model][layout];
+}
+
 /**
  * @param layout the layout
  * @returns number of slots of the layout
@@ -311,14 +408,16 @@ export function devicePageHasStatusIcons(
  * @param layout the layout
  * @param kind the kind of the slot
  * @param withStatusIcons at least one status slot is filled ({@link devicePageHasStatusIcons})
+ * @param model the model of the panel, default `eu`
  * @returns the text fields of the kind, undefined for a kind without text
  */
 export function devicePageSlotFields(
     layout: DevicePageLayout,
     kind: DevicePageSlotKind,
     withStatusIcons: boolean,
+    model: PanelModel = 'eu',
 ): DevicePageSlotFields | undefined {
-    const fields = DEVICE_PAGE_FIELDS[layout];
+    const fields = devicePageFields(layout, model);
     return (withStatusIcons ? fields.slotsWithStatus?.[kind] : undefined) ?? fields.slots[kind];
 }
 
@@ -738,8 +837,17 @@ export type DevicePageConfig = {
     /**
      * one entry per slot of the layout ({@link DEVICE_PAGE_LAYOUTS}, same order), null = empty slot. A change of the
      * layout keeps the entries by position (cut or filled with null), nothing is guessed again.
+     *
+     * Behind them, only when at least one of them is filled, one entry per extra slot of the layout
+     * ({@link DEVICE_PAGE_EXTRA_SLOTS}, same order): the list has either N or N + E entries. A missing entry is an
+     * empty slot.
      */
     slots: (DevicePageSlotRef | null)[];
+    /**
+     * the extra slots ({@link DEVICE_PAGE_EXTRA_SLOTS}) are used: web panels of the models `web-l` / `web-p` show
+     * them. Missing = off: the extra slots that are stored stay stored but are ignored (never sent, not built).
+     */
+    webExtras?: true;
     /** the "i" icon bottom right opens the detail page - only if the device has ticked rows ({@link DeviceDetailsConfig.entries}) */
     showInfo: boolean;
     /** MDI name of the big device icon, missing = the icon of the item */
@@ -754,7 +862,11 @@ export type DevicePageConfig = {
 /** the device page at runtime ({@link DeviceDetailsRuntime.devicePage}) */
 export type DevicePageRuntime = {
     layout: DevicePageLayout;
-    /** one entry per slot of the layout, null = empty slot - never a custom one without id */
+    /**
+     * one entry per slot of the layout, null = empty slot - never a custom one without id. With the extra slots
+     * switched on ({@link DevicePageConfig.webExtras}) and at least one of them filled, one entry per extra slot
+     * follows (N + E entries); otherwise there are only the N slots of the layout.
+     */
     slots: (DevicePageSlotRef | null)[];
     /** the info icon is shown (configured and the device has rows for the detail page) */
     showInfo: boolean;
@@ -769,17 +881,24 @@ export type DevicePageRuntime = {
 };
 
 /**
+ * The slots of a device page fitted to a layout - by position, nothing is guessed: the slots of the layout are cut or
+ * filled with null to its number of slots, the extra slots ({@link DEVICE_PAGE_EXTRA_SLOTS}) keep their position
+ * among the extra slots (extra slot 1 of the layout the slots come from is extra slot 1 of the new layout - never a
+ * slot of the layout, and no slot of the layout becomes an extra slot). The extra slots are left out when none of
+ * them is filled. The older own icon (`icon`) stays only on a `status` slot, the own look ({@link DevicePageSlotLook})
+ * on every slot.
+ *
  * @param slots slots of a device page
  * @param layout the layout
- * @returns the slots cut or filled with null to the number of slots of the layout - by position, nothing is guessed;
- * the older own icon (`icon`) stays only on a `status` slot, the own look ({@link DevicePageSlotLook}) on every slot
+ * @param from the layout the slots belong to (the same layout: only cut / filled)
+ * @returns the slots of the layout, followed by its extra slots when one of them is filled
  */
 export function fitDevicePageSlots(
     slots: readonly (DevicePageSlotRef | null)[],
     layout: DevicePageLayout,
+    from: DevicePageLayout,
 ): (DevicePageSlotRef | null)[] {
-    return DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => {
-        const slot = slots[i];
+    const fit = (slot: DevicePageSlotRef | null | undefined, kind: DevicePageSlotKind): DevicePageSlotRef | null => {
         if (!slot) {
             return null;
         }
@@ -788,7 +907,11 @@ export function fitDevicePageSlots(
             delete out.icon;
         }
         return out;
-    });
+    };
+    const fromCount = DEVICE_PAGE_LAYOUTS[from].length;
+    const fitted = DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => fit(i < fromCount ? slots[i] : null, kind));
+    const extras = DEVICE_PAGE_EXTRA_SLOTS[layout].map((kind, k) => fit(slots[fromCount + k], kind));
+    return extras.some(slot => slot !== null) ? [...fitted, ...extras] : fitted;
 }
 
 /**
@@ -1015,6 +1138,10 @@ function devicePageStatusRefOf(value: unknown): DevicePageStatusRef | null {
  * true unless it is false, an empty icon or status is left out - an own data point of the status line and an own
  * data point or alias channel of a slot (`custom`) stay also without id.
  *
+ * The extra slots ({@link DEVICE_PAGE_EXTRA_SLOTS}) follow the slots of the layout only when at least one of them is
+ * stored - a configuration without them stays exactly as it was. `webExtras` is kept only when it is true; stored
+ * extra slots stay also while it is off.
+ *
  * @param value the field `devicePage` of a device configuration
  * @returns the device page, undefined when there is none (not an object)
  */
@@ -1028,11 +1155,20 @@ export function devicePageConfigOf(value: unknown): DevicePageConfig | undefined
     DEVICE_PAGE_LAYOUTS[layout].forEach((kind, i) => {
         slots.push(devicePageSlotRefOf(rawSlots[i], kind));
     });
+    const extras = DEVICE_PAGE_EXTRA_SLOTS[layout].map((kind, k) =>
+        devicePageSlotRefOf(rawSlots[slots.length + k], kind),
+    );
+    if (extras.some(slot => slot !== null)) {
+        slots.push(...extras);
+    }
     const config: DevicePageConfig = {
         layout,
         slots,
         showInfo: !('showInfo' in value) || value.showInfo !== false,
     };
+    if ('webExtras' in value && value.webExtras === true) {
+        config.webExtras = true;
+    }
     const icon = 'icon' in value && typeof value.icon === 'string' ? value.icon.trim() : '';
     if (icon) {
         config.icon = icon;
@@ -1556,20 +1692,26 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
     };
     const page = devicePageConfigOf(config.devicePage);
     if (page) {
+        const kinds = devicePageConfigSlotKinds(page.layout);
+        // an own data point or channel that is not entered yet, a navigation slot without target page or in a slot
+        // that needs a value: an empty slot
+        const slots = page.slots.map((slot, i) => {
+            if (!slot) {
+                return null;
+            }
+            if (slot.custom === 'navigation') {
+                const kind = kinds[i];
+                return slot.targetPage && kind && devicePageSlotAcceptsNavigation(kind) ? slot : null;
+            }
+            return slot.id !== '' ? slot : null;
+        });
+        // the extra slots only while they are switched on and one of them shows something: otherwise the page is
+        // built exactly as without them
+        const count = DEVICE_PAGE_LAYOUTS[page.layout].length;
+        const withExtras = page.webExtras === true && slots.slice(count).some(slot => slot !== null);
         const devicePage: DevicePageRuntime = {
             layout: page.layout,
-            // an own data point or channel that is not entered yet, a navigation slot without target page or in a
-            // slot that needs a value: an empty slot
-            slots: page.slots.map((slot, i) => {
-                if (!slot) {
-                    return null;
-                }
-                if (slot.custom === 'navigation') {
-                    const kind = DEVICE_PAGE_LAYOUTS[page.layout][i];
-                    return slot.targetPage && kind && devicePageSlotAcceptsNavigation(kind) ? slot : null;
-                }
-                return slot.id !== '' ? slot : null;
-            }),
+            slots: withExtras ? slots : slots.slice(0, count),
             // without rows the detail page would be empty: no info icon
             showInfo: page.showInfo && runtime.entries.length > 0,
             shortPress: deviceShortPressOf(config),

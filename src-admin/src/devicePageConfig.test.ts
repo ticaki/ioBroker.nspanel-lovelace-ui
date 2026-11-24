@@ -23,6 +23,8 @@ import {
     DEVICE_PAGE_CUSTOM,
     customDevicePageSlot,
     devicePageCustomProblem,
+    devicePageExtraSlots,
+    withDevicePageWebExtras,
     devicePageSlotDialogItem,
     devicePageSlotDialogValue,
     devicePageSlotItemOptions,
@@ -38,7 +40,9 @@ import {
 } from './devicePageConfig';
 import { screensaverTargetPage, type AdminPageItemConfig } from '../../src/lib/types/adminShareConfig';
 import {
+    DEVICE_PAGE_EXTRA_SLOTS,
     DEVICE_PAGE_LAYOUTS,
+    devicePageConfigOf,
     devicePageSlotHasLook,
     type DeviceDetailsConfig,
     type DevicePageConfig,
@@ -174,7 +178,10 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         const withSlot = withDevicePageSlot(page, 2, { key: '', id: 'x.3' });
         expect(withSlot.slots).to.deep.equal([null, null, { key: '', id: 'x.3' }, null, null, null, ...STATUS_NULLS]);
         expect(withDevicePageSlot(withSlot, 2, null).slots[2]).to.equal(null);
-        expect(withDevicePageSlot(page, DEVICE_PAGE_LAYOUTS[1].length, { key: '', id: 'x' })).to.equal(page);
+        // behind the slots of the layout come its extra slots, behind them nothing
+        const beyond = DEVICE_PAGE_LAYOUTS[1].length + DEVICE_PAGE_EXTRA_SLOTS[1].length;
+        expect(withDevicePageSlot(page, beyond, { key: '', id: 'x' })).to.equal(page);
+        expect(withDevicePageSlot(page, -1, { key: '', id: 'x' })).to.equal(page);
 
         const withStatus = withDevicePageStatus(page, { key: '', id: 'x.s' });
         expect(withStatus.status).to.deep.equal({ key: '', id: 'x.s' });
@@ -707,6 +714,97 @@ describe('devicePageConfig - device page of the page item dialog', () => {
                 id: `${DEV}.Sys.reboot`,
             });
         });
+    });
+});
+
+describe('devicePageConfig - extra slots of the web panels (web-l / web-p)', () => {
+    const N = DEVICE_PAGE_LAYOUTS[2].length;
+    const E = DEVICE_PAGE_EXTRA_SLOTS[2].length;
+    const page: DevicePageConfig = { layout: 2, slots: new Array<null>(N).fill(null), showInfo: true };
+
+    it('the option: off by default, ticking stores it, unticking removes it and keeps the slots', () => {
+        expect(devicePageExtraSlots(page)).to.deep.equal([]);
+        const on = withDevicePageWebExtras(page, true);
+        expect(on).to.deep.equal({ ...page, webExtras: true });
+        expect(on.slots).to.equal(page.slots);
+        // layout 2: info, button, button behind its 6 slots
+        expect(devicePageExtraSlots(on)).to.deep.equal([
+            { index: N, kind: 'info' },
+            { index: N + 1, kind: 'button' },
+            { index: N + 2, kind: 'button' },
+        ]);
+        for (const layout of [1, 2, 3] as const) {
+            expect(devicePageExtraSlots({ layout, webExtras: true }).map(e => e.kind)).to.deep.equal(
+                DEVICE_PAGE_EXTRA_SLOTS[layout],
+            );
+            expect(devicePageExtraSlots({ layout }).length).to.equal(0);
+        }
+        const filled = withDevicePageSlot(on, N + 1, { key: '', id: 'x.b' });
+        const off = withDevicePageWebExtras(filled, false);
+        expect(off).to.not.have.property('webExtras');
+        expect(off.slots).to.equal(filled.slots);
+        expect(devicePageExtraSlots(off)).to.deep.equal([]);
+        // ticked again: what was chosen is back
+        expect(withDevicePageWebExtras(off, true)).to.deep.equal(filled);
+    });
+
+    it('an extra slot is set like a slot of the layout; the list holds them only while one is filled', () => {
+        const on = withDevicePageWebExtras(page, true);
+        const one = withDevicePageSlot(on, N + 1, { key: '', id: 'x.b' });
+        expect(one.slots).to.have.length(N + E);
+        expect(one.slots.slice(N)).to.deep.equal([null, { key: '', id: 'x.b' }, null]);
+        // the settings stay when something else is chosen, an emptied slot loses them
+        const looked = withDevicePageSlotLook(one, N + 1, { trueIcon: 'play', name: 'Los' });
+        expect(looked.slots[N + 1]).to.deep.equal({ key: '', id: 'x.b', trueIcon: 'play', name: 'Los' });
+        const other = withDevicePageSlot(looked, N + 1, { key: '', id: 'x.c' });
+        expect(other.slots[N + 1]).to.deep.equal({ key: '', id: 'x.c', trueIcon: 'play', name: 'Los' });
+        const emptied = withDevicePageSlot(other, N + 1, null);
+        expect(emptied.slots).to.deep.equal(page.slots);
+        expect(emptied.webExtras).to.equal(true);
+        // a navigation in an extra slot
+        const nav = withDevicePageSlot(on, N, customDevicePageSlot('navigation', ''));
+        expect(withDevicePageSlotNavigation(nav, N, 'rooms').slots[N]).to.deep.equal({
+            key: '',
+            id: '',
+            custom: 'navigation',
+            targetPage: 'rooms',
+        });
+        // a slot of the layout next to filled extra slots
+        const both = withDevicePageSlot(one, 0, { key: '', id: 'x.v' });
+        expect(both.slots[0]).to.deep.equal({ key: '', id: 'x.v' });
+        expect(both.slots[N + 1]).to.deep.equal({ key: '', id: 'x.b' });
+    });
+
+    it('a layout change keeps the extra slots among themselves, never among the slots of the layout', () => {
+        const filled: DevicePageConfig = {
+            layout: 2,
+            webExtras: true,
+            showInfo: true,
+            slots: [{ key: '', id: 'x.1' }, null, null, null, null, null, { key: '', id: 'x.e1' }, null, null],
+        };
+        const one = withDevicePageLayout(filled, 1);
+        expect(one.slots).to.have.length(DEVICE_PAGE_LAYOUTS[1].length + DEVICE_PAGE_EXTRA_SLOTS[1].length);
+        expect(one.slots[0]).to.deep.equal({ key: '', id: 'x.1' });
+        // no status icon out of an extra slot
+        expect(STATUS.every(i => one.slots[i] === null)).to.equal(true);
+        expect(one.slots[DEVICE_PAGE_LAYOUTS[1].length]).to.deep.equal({ key: '', id: 'x.e1' });
+        expect(one.webExtras).to.equal(true);
+        // and back
+        expect(withDevicePageLayout(one, 2)).to.deep.equal(filled);
+        // a status icon of layout 1 is no extra slot of layout 2
+        const status: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
+        const withStatus = withDevicePageSlot(status, STATUS[0], { key: '', id: 'x.s' });
+        expect(withDevicePageLayout(withStatus, 2).slots).to.deep.equal(new Array<null>(N).fill(null));
+    });
+
+    it('saved as it is: with the option and the extra slots, also unticked; old pages unchanged', () => {
+        const on = withDevicePageSlot(withDevicePageWebExtras(page, true), N, { key: '', id: 'x.i' });
+        expect(devicePageToSave({ devicePage: on })).to.deep.equal(on);
+        expect(devicePageConfigOf(on)).to.deep.equal(on);
+        const off = withDevicePageWebExtras(on, false);
+        expect(devicePageToSave({ devicePage: off })).to.deep.equal(off);
+        expect(devicePageToSave({ devicePage: off })?.slots).to.have.length(N + E);
+        expect(devicePageToSave({ devicePage: page })).to.deep.equal(page);
     });
 });
 

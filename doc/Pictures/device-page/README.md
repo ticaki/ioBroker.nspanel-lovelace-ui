@@ -125,8 +125,26 @@ Medien-Kanäle und Fahrpläne gehen in keinem Slot.
 
 ## Wo es die Geräteseite gibt
 
-Nur auf **EU-Panels** und **Web-Panels im Querformat** mit aktueller TFT. Alle anderen Panels (US, Web-Panel im
-Hochformat, ältere TFT) öffnen wie bisher die Detailseite.
+Auf **allen Panels**: EU, US quer (us-l), US hochkant (us-p) und Web-Panels (auch Smartphone quer / hochkant).
+Hardware-Panels brauchen eine aktuelle TFT – mit älterer TFT öffnet sich wie bisher die Detailseite.
+
+## Web-Panel-Elemente (web-l / web-p)
+
+Eigenständige Web-Panels der Modelle **web-l** (Smartphone quer) und **web-p** (Smartphone hochkant) haben mehr Platz
+und können je Layout zusätzliche Elemente zeigen:
+
+| Layout | zusätzlich |
+|---|---|
+| 1 – Steuern | 2 Knöpfe (Slots 11–12) |
+| 2 – Fortschritt | 1 Info-Zeile, 2 Knöpfe (Slots 7–9) |
+| 3 – Werte | 2 Info-Zeilen, 1 Schalter (Slots 9–11) |
+
+- Im Abschnitt „Slots“ das Häkchen **Web-Panel-Elemente (web-l / web-p)** setzen – darunter erscheinen die
+  zusätzlichen Slots. Sie werden eingestellt wie jeder andere Slot derselben Art.
+- Ohne Häkchen ist davon nichts zu sehen, und die Web-Panels zeigen die Seite ohne zusätzliche Elemente.
+- Häkchen wieder entfernen: die Slots verschwinden aus dem Dialog und vom Web-Panel, ihre Einstellungen bleiben
+  gespeichert und sind nach erneutem Anhaken wieder da.
+- Alle anderen Panels (EU, US, Web-Klone von Hardware-Panels) zeigen die Seite immer ohne diese Elemente.
 
 ## Was Tim prüfen soll
 
@@ -146,7 +164,7 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 9 | Auf **Detailseite** stellen und übernehmen | `device.devicePage` ist aus den Rohdaten verschwunden | |
 | 10 | Einen gespeicherten Slot-State im Objektbaum löschen, Dialog öffnen | Slot zeigt den State rot „nicht im Gerät gefunden“, nach Übernehmen weiter gespeichert | |
 | 11 | Adapter stoppen, Dialog öffnen, Übernehmen | gespeicherte Geräteseite bleibt unverändert | |
-| 12 | Long-Press am EU-Panel (neue TFT) und am Web-Panel quer | Geräteseite erscheint mit den gewählten Slots | |
+| 12 | Long-Press am EU-, us-l- und us-p-Panel (neue TFT) und am Web-Panel quer / hochkant | Geräteseite erscheint mit den gewählten Slots | |
 | 13 | Dialog in hellem und dunklem Thema, schmales Fenster | Vorschaubilder und Slot-Zeilen lesbar, nichts abgeschnitten | |
 | 14 | Item mit einer Geräteseite Layout 1 von vor den Status-Icons (6 Slots) öffnen | Slots 1–6 unverändert, Slots 7–10 „Status-Icon“ leer; Übernehmen speichert 10 Slots | |
 | 15 | Layout 1: unter den Slots | Hinweis, dass die Info-Zeilen schmaler werden, sobald ein Status-Icon belegt ist | ✓ |
@@ -186,3 +204,9 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 49 | Auf der Zielseite die Pfeile benutzen | sie führen, wie für die Zielseite eingerichtet (nicht automatisch zur Geräteseite); über das Item kommt man wieder auf die Geräteseite | |
 | 50 | Zielseite wählen, die dem Panel nicht zugeordnet ist (oder Seite löschen), am Panel antippen | nichts passiert; im Log **eine** Warnung „target page … is not assigned to panel …“, auch bei mehrfachem Tippen | |
 | 51 | Kanal-Slot mit einer Kanal-ID, die es nicht gibt, Adapter neu starten | im Log eine Warnung `Page '<Seite>', page item <n>: Device page slot … not found!` – einmal, auch wenn die Seite mehreren Panels zugeordnet ist | |
+| 52 | Abschnitt „Slots“: Häkchen **Web-Panel-Elemente (web-l / web-p)** | Vorgabe aus, Tooltip erklärt es; angehakt erscheinen darunter die zusätzlichen Slots des Layouts (Layout 1: 11–12 Knopf; Layout 2: 7 Info-Zeile, 8–9 Knopf; Layout 3: 9–10 Info-Zeile, 11 Schalter), alle leer | |
+| 53 | Zusätzlichen Slot belegen (State, Benutzerdefiniert, „…“), übernehmen, neu öffnen | verhält sich wie ein normaler Slot derselben Art; Rohdaten zeigen `webExtras: true` und die Einträge hinten in `slots` | |
+| 54 | Häkchen entfernen, übernehmen, neu öffnen; wieder anhaken | Slots weg, in den Rohdaten fehlt `webExtras`, die Einträge in `slots` bleiben; nach dem Anhaken sind sie wieder da | |
+| 55 | Layout wechseln mit belegten zusätzlichen Slots | sie bleiben zusätzliche Slots (nach Position), kein Status-Icon entsteht daraus und umgekehrt | |
+| 56 | Web-Panel web-l und web-p: Häkchen an / aus | an: die zusätzlichen Elemente erscheinen, Tipp/Long-Press/Popup wie bei den anderen; aus: Seite ohne sie | |
+| 57 | EU-/US-Panel und Web-Klon eines Hardware-Panels mit angehakten Web-Panel-Elementen | Seite unverändert, nichts Zusätzliches, Statuszeile wie vorher | |

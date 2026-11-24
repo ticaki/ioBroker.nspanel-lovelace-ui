@@ -258,7 +258,8 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
 ## Geräteseite
 
 Stand: 2026-11-23 – Adapter und Admin im Branch `feat/device-page` (Web-Panel folgt). HMI-Seiten und Feldmaße:
-[device-page-hmi.md](device-page-hmi.md) (Branch `feat/device-page-hmi`).
+[device-page-hmi.md](device-page-hmi.md) (Branch `feat/device-page-hmi`). Seit 2026-11-24 auf allen fünf Modellen, die
+Web-Modelle mit Zusatz-Slots – siehe „Modelle und Zusatz-Slots“.
 
 Optional öffnet der Long-Press statt der Detailseite eine **Geräteseite** (cardDevice1/2/3): großes Geräte-Icon
 (main), feste Slots, eine breite Statuszeile und unten rechts ein „i“, das die Detailseite öffnet. Die Seite ist
@@ -272,7 +273,9 @@ bleibt alles wie bisher.
 ```ts
 devicePage?: {
     layout: 1 | 2 | 3;                         // cardDevice1 / cardDevice2 / cardDevice3
-    slots: (DevicePageSlotRef | null)[];       // ein Eintrag je Slot des Layouts, null = leer
+    slots: (DevicePageSlotRef | null)[];       // ein Eintrag je Slot des Layouts, null = leer; dahinter die
+                                               // Zusatz-Slots (nur wenn einer belegt ist), siehe „Modelle und Zusatz-Slots“
+    webExtras?: true;                          // Zusatz-Slots der Web-Panels web-l / web-p nutzen, fehlt = aus
     showInfo: boolean;                         // „i“ zur Detailseite
     icon?: string;                             // MDI-Name des großen Icons, fehlt = Icon des Items
     status?: DevicePageStatusRef;              // State der Statuszeile, fehlt = leere Zeile
@@ -317,7 +320,9 @@ devicePage?: {
 
 ### Layouts und Slot-Arten
 
-Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (beide geteilt mit Admin/Web):
+Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (eu; je Modell `devicePageFields(layout, model)`),
+beide geteilt mit dem Admin. Die Zusatz-Slots der Web-Modelle stehen in `DEVICE_PAGE_EXTRA_SLOTS`, siehe „Modelle und
+Zusatz-Slots“.
 
 | Layout | Slots |
 |---|---|
@@ -484,7 +489,7 @@ nichts – ein Long-Press gilt nie als Tipp (die Seite meldet ihn immer als beha
 ### Kurz-Tipp öffnet die Geräteseite
 
 `shortPress: 'devicePage'`: der Kurz-Tipp des Items öffnet dasselbe wie der Long-Press (`PageItem.openDeviceOf`:
-Geräteseite, wo das Panel sie hat, sonst die Detailseite). Der Long-Press bleibt unverändert.
+Geräteseite, wo das Panel sie hat, sonst – bei zu alter TFT – die Detailseite). Der Long-Press bleibt unverändert.
 
 - Nur mit Geräteseite: das Admin bietet die Auswahl nur dann an und speichert sonst `none` (`shortPressToSave`); ohne
   `devicePage` baut der Adapter das Item wie `none` (Text, Tipp ohne Wirkung).
@@ -497,6 +502,7 @@ Geräteseite, wo das Panel sie hat, sonst die Detailseite). Der Long-Press bleib
 ```
 pageType~cardDevice<1|2|3>
 entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info>
+entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info>~<extra 1>~…~<extra E>   (nur web-l / web-p)
 ```
 
 Beispiel Layout 1 (N = 10) mit zwei Status-Icons (Slot 7 Tür als boolean an, Slot 9 mit eigenem Icon), Slots 8/10 leer
@@ -535,8 +541,9 @@ Nextion-Objekt beginnt leer rechts außerhalb, läuft ganz hinaus und ruckelt.)
 
 **Teilen** – `splitDevicePageStatus` (Zeilenumbrüche werden Leerzeichen, `~` entfällt):
 
-1. Passt der Text in die Zeile – ≤ 390 px in Font 0 (`text-width.ts`, `DEVICE_PAGE_FIELDS[layout].status`) **und**
-   ≤ 63 Byte (`DEVICE_PAGE_STATUS_MAX_BYTES`, der Puffer von `tStatus`) –, bleibt er ein Abschnitt, unverändert.
+1. Passt der Text in die Zeile – ≤ 390 px in Font 0 (`text-width.ts`; Breite je Modell aus
+   `devicePageFields(layout, model).status`, siehe „Modelle und Zusatz-Slots“) **und** ≤ 63 Byte
+   (`DEVICE_PAGE_STATUS_MAX_BYTES`, der Puffer von `tStatus`) –, bleibt er ein Abschnitt, unverändert.
 2. Sonst nimmt jeder Abschnitt so viel, wie in Breite **und** Byte passt, und endet an der letzten Trennstelle davor:
    an einem Leerzeichen (es entfällt) oder hinter Komma, Punkt, Semikolon oder Gedankenstrich (`–`, `—`) – nicht
    in einer Zahl (`1,5`, `23.5` bleiben ganz). Gibt es keine Trennstelle, wird das Wort hart an der Zeichengrenze
@@ -575,7 +582,9 @@ Seite (`DEVICE_PAGE_RECEIVE_BYTES`: Layout 1 = 943, Layout 2 = 875, Layout 3 = 1
 1017 Byte, die das Display annimmt (`devicePageMaxPayloadBytes`: 943 / 875 / 1017). Ist es länger, gibt nur die
 Statuszeile nach: der gezeigte Abschnitt wird um den Überhang kürzer (mit „...“), notfalls bis leer. Weil Namen und
 Werte auf 31 Byte begrenzt sind, reicht das für jede Nachricht, die der Adapter baut (Test „the longest message“).
-Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `devStatus`.
+Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `devStatus`. Die Web-Modelle web-l und web-p
+haben keine HMI-Seite und keine Längengrenze (`devicePageMaxPayloadBytes(layout, model)` = unbegrenzt) – siehe „Modelle
+und Zusatz-Slots“.
 
 ### Web-Panel
 
@@ -633,6 +642,12 @@ Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `de
 - Status-Slots (Layout 1): Art „Status-Icon“; das eigene Icon steht jetzt im „…“-Dialog (kein eigener Icon-Wähler
   mehr in der Zeile). Hinweis unter den Slots, dass die Info-Zeilen schmaler werden. Die Vorschau zeichnet das Raster
   (2 Spalten, Zeilen = Anzahl/2) und die schmalen Info-Zeilen nur, wenn mindestens ein Status-Slot belegt ist.
+- Häkchen **„Web-Panel-Elemente (web-l / web-p)“** unter den Slots (Vorgabe aus, Erklärung im Tooltip): nur wenn es
+  gesetzt ist, erscheinen darunter die Zusatz-Slots des Layouts (`devicePageExtraSlots`), weiter nummeriert (Layout 1:
+  11–12, Layout 2: 7–9, Layout 3: 9–11). Jeder verhält sich wie ein normaler Slot seiner Art (gleiche Auswahl, gleicher
+  „…“-Dialog), Vorbelegung leer. Abwählen blendet sie aus und lässt die Einträge gespeichert
+  (`withDevicePageWebExtras`). Die Vorschau zeigt weiter nur die Geometrie der HMI; zu us-l/us-p gibt es im Admin
+  nichts.
 - Kurz-Tipp: zusätzliche Auswahl „Geräteseite öffnen“, nur wählbar mit „Long-Press öffnet: Geräteseite“; wechselt man
   zurück auf die Detailseite, springt der Kurz-Tipp auf „Keine“.
 - Ein gewählter State wird als Verweis gespeichert: gleicher State behält seinen Verweis, ein angehakter Eintrag der
@@ -648,19 +663,108 @@ Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `de
   `generatedPageIds` → im Flow schreibgeschützt mit Schloss), das Panel legt sie beim Start an. Objekte, Namen und
   Dubletten werden dabei einmal gelesen, nicht beim Öffnen. States sind nur abonniert, solange sie sichtbar ist.
 - Ihre Page-Items sind die Elemente `[main, Slot 1 … Slot N, info, status]`, ein leerer Platz ist ein Item
-  `type: 'empty'`. Alias-Kanäle baut der ConfigManager, Navigation steht als `setNavi` am Item; States der Maske, eigene
+  `type: 'empty'`; mit Zusatz-Slots folgen deren Items dahinter (`[…, status, extra 1 … extra E]`). Alias-Kanäle baut der ConfigManager, Navigation steht als `setNavi` am Item; States der Maske, eigene
   Datenpunkte und Navigations-Plätze baut `devicePageSlotItem` / `devicePageNavigationSlotItem` als fertiges Item.
 - Long-Press auf das Item → `navigation.setTargetPageByName(<Geräteseite>)`. Zurück (parent) → Seite des Items.
 - „i“ → Detailseite `dd_<id der Geräteseite>` unter der Geräteseite (zur Laufzeit erzeugt wie bisher). Zurück →
   Geräteseite → Zurück → Seite des Items.
-- Ein Modell ohne Geräteseite (us-l, us-p, web-p) bekommt die Seite und ihren Knoten gar nicht (`withoutDevicePages`
-  im Panel); die TFT-Version kennt das Panel erst nach dem Start, deshalb entscheidet über sie weiter der Long-Press.
+- Ein Modell ohne Geräteseite bekäme die Seite und ihren Knoten gar nicht (`withoutDevicePages` im Panel) – heute hat
+  jedes Modell sie (`CARD_DEVICE_MODELS`). Die TFT-Version kennt das Panel erst nach dem Start, deshalb entscheidet
+  über sie weiter der Long-Press.
+
+### Modelle und Zusatz-Slots
+
+Stand: 2026-11-24. Die Geräteseite gibt es auf **allen fünf Modellen**: `eu`, `us-l`, `us-p` (HMI-Seiten
+cardDevice1–3 der jeweiligen HMI) und `web-l`, `web-p` (eigenständige Web-Panels mit eigenen Layouts). Ein Web-Klon
+eines Hardware-Panels hat dessen Modell und verhält sich wie dieses.
+
+**Nachricht:** eu, us-l und us-p bekommen die Nachricht wie bisher, Byte für Byte. web-l und web-p bekommen dieselbe
+Nachricht mit den Elementen der Zusatz-Slots **hinten angehängt** – wer nach info abschneidet, hat die
+Standard-Nachricht:
+
+```
+entityUpd~<heading>~<prev 6>~<next 6>~<main 6>~<slot 1..N je 6>~<info 6>~<extra 1..E je 6>
+```
+
+- Ein Web-Modell bekommt immer alle E Zusatz-Elemente, ein leeres als `~~~~~` (wie ein leerer Slot) – auch wenn die
+  Geräteseite keine Zusatz-Slots nutzt (Häkchen aus).
+- Ein Zusatz-Element ist ein Element wie jedes andere (6 Felder, Name/Wert höchstens 31 Byte); nicht mehr Text je Feld
+  als auf der HMI, nur mehr Elemente.
+
+**Zusatz-Slots je Layout** (`DEVICE_PAGE_EXTRA_SLOTS` in `src/lib/types/deviceDetails.ts`, für web-l und web-p gleich;
+`devicePageExtraSlotKinds(layout, model)` / `devicePageExtraSlotCount(layout, model)` geben sie je Modell, für
+eu/us-l/us-p nichts; das Web-Panel hält seine eigene Kopie in `src-web`):
+
+| Layout | N | Zusatz-Slots (E) | damit insgesamt | Slot-Nr. in der Konfiguration | Page-Item / `intName` `<Seite>?<n>` | Felder der Nachricht |
+|---|---|---|---|---|---|---|
+| 1 „Steuern“ | 10 | button, button (2) | 6 Knöpfe | 11–12 (`slots[10..11]`) | 13, 14 | 86–97 |
+| 2 „Fortschritt“ | 6 | info, button, button (3) | 4 Infos, 3 Knöpfe | 7–9 (`slots[6..8]`) | 9, 10, 11 | 62–79 |
+| 3 „Werte“ | 8 | info, info, switch (3) | 8 Infos, 3 Schalter | 9–11 (`slots[8..10]`) | 11, 12, 13 | 74–91 |
+
+Beispiel web-l, Layout 2 (N = 6, E = 3), Seite 12, Zusatz-Slot 2 leer (Zeilenumbrüche nur zur Lesbarkeit):
+
+```
+entityUpd~Waschmaschine~<nav>~switch~12?0~<icon>~<farbe>~Waschmaschine~Schleudern, noch 23 min
+~text~12?1~<icon>~<farbe>~Restzeit~23 min~text~12?2~<icon>~<farbe>~Fortschritt~80
+~text~12?3~<icon>~<farbe>~Leistung~420 W~text~12?4~<icon>~<farbe>~Energie~1,2 kWh~text~12?5~<icon>~<farbe>~Tür~zu
+~button~12?6~<icon>~<farbe>~Start~1
+~button~12?7~<information-outline>~<deviceInfo>~~1
+~text~12?9~<icon>~<farbe>~Wasser~12 l~~~~~~~button~12?11~<icon>~<farbe>~Pause~0
+```
+
+**Konfiguration:**
+
+- Die Zusatz-Slots stehen in `DevicePageConfig.slots` hinter den Slots des Layouts (`slots[N] … slots[N + E - 1]`,
+  Arten in dieser Reihenfolge: `devicePageConfigSlotKinds(layout)`). Die Liste hat entweder N oder N + E Einträge: die
+  Zusatz-Einträge gibt es nur, wenn mindestens einer belegt ist – eine Konfiguration ohne sie bleibt durch
+  `devicePageConfigOf` genau, wie sie war. Fehlende Einträge = leer.
+- `webExtras: true` (Häkchen im Admin) schaltet sie ein; fehlt das Feld, sind sie aus. Bereits eingetragene
+  Zusatz-Slots bleiben beim Abwählen gespeichert, werden aber ignoriert: `deviceDetailsRuntimeOf` gibt dann nur die N
+  Slots des Layouts weiter (ebenso, wenn kein Zusatz-Slot etwas zeigt) – die Seite wird gebaut wie ohne sie.
+  Das Häkchen schaltet nur die Zusatz-Elemente, nicht die Seite: web-l / web-p zeigen die Geräteseite immer.
+- Layoutwechsel (`fitDevicePageSlots(slots, layout, from)`): die Slots des Layouts bleiben nach Position unter sich,
+  die Zusatz-Slots nach Position unter sich (Zusatz-Slot 1 bleibt Zusatz-Slot 1). Ein Status-Icon von Layout 1 wird
+  nie ein Zusatz-Slot von Layout 2, ein Zusatz-Slot nie ein Status-Icon.
+- Vorbelegung leer (`defaultDevicePageSlots` füllt nur die Slots des Layouts).
+
+**Adapter:**
+
+- `buildDevicePage` kennt das Modell nicht und baut die Zusatz-Slots, wenn die Laufzeit sie hat; ein Zusatz-Slot wird
+  gebaut wie ein Slot des Layouts derselben Art (State, eigener Datenpunkt, Alias-Kanal, Navigation, Einstellungen des
+  Elements, Kurz-Tipp-Navigation, Long-Press).
+- **Die Nummern der bestehenden Elemente verschieben sich nicht:** Page-Items
+  `[main, Slot 1 … Slot N, info, status, extra 1 … extra E]` – die Zusatz-Items hängen hinter dem (nie gesendeten)
+  Status-Item (`devicePageSlotItemIndex(layout, slot)`: Slot-Index s < N → Item s + 1, sonst s + 3). `channelSlots`
+  zählt in Slot-Indizes der Konfiguration (0 = Slot 1, N = Zusatz-Slot 1).
+- Die Namen der Slots des Layouts (Dubletten-Zusatz) werden nur unter diesen Slots bestimmt – sie hängen nicht davon
+  ab, ob es Zusatz-Slots gibt. Ein Zusatz-Slot wird unter allen Slots unterschieden.
+- `PageDevice` hängt auf einem Web-Modell die Zusatz-Elemente an (`devicePageExtraSlotKinds`), Feld 6 eines
+  Alias-Kanals folgt der Art des Zusatz-Slots, `buttonPress3` eines Zusatz-Slots läuft wie bei einem Slot.
+  Tipp, Popup und Navigation gehen über das Page-Item wie bei jedem Element.
+- Auf eu, us-l und us-p (auch Web-Klone davon) gibt es die Zusatz-Items gar nicht: `devicePageOfModel` nimmt sie im
+  Konstruktor von `PageDevice` aus der Seitenkonfiguration (und ihre Indizes aus `channelSlots`), es wird nichts
+  dafür angelegt oder abonniert.
+- **Länge:** Für die HMI-Modelle gilt weiter der Empfangspuffer der Seite (943 / 875 / 1017 Byte, die Statuszeile gibt
+  nach). Ein Web-Panel hat keine HMI-Seite und der Web-Transport keine Grenze (`PanelSend.isTooLong` begrenzt ein
+  Web-Panel nie): `devicePageMaxPayloadBytes(layout, 'web-l' | 'web-p')` ist unbegrenzt, die Zusatz-Elemente kürzen
+  dort weder die Statuszeile, noch werden sie abgeschnitten. Ein Web-Klon eines Hardware-Panels (Modell eu/us-l/us-p)
+  bekommt die Nachricht des Hardware-Panels, also mit dessen Grenze.
+
+**Statuszeile je Modell:** Der Adapter misst nur die Statuszeile (`splitDevicePageStatus`), ihre Breite kommt aus
+`devicePageFields(layout, model).status` – gemessen mit den Font-Tabellen des Modells (`text-width.ts`: web-l zählt mit
+den eu-Tabellen, web-p mit den us-p-Tabellen).
+
+| Modell | Statuszeile (px, Font 0) | Quelle |
+|---|---|---|
+| eu | 390 (alle Layouts) | `DEVICE_PAGE_FIELDS` |
+| us-l | wie eu | `DEVICE_PAGE_FIELDS` |
+| us-p, web-l, web-p | **vorläufig 390** – die endgültigen Werte stehen erst mit der us-p-HMI und den Web-Layouts fest | `DEVICE_PAGE_FIELDS_PROVISIONAL` (eine Tabelle, Modell → Layout → Felder) |
 
 ### Rückfall auf die Detailseite
 
-`supportsCardDevice`: nur Modell `eu` und `web-l`; ein Web-Panel (web-l, Web-Klon eines eu-Panels) immer, ein
-Hardware-Panel ab `CARD_DEVICE_MIN_TFT` (vorerst `6.2.0` wie popupNotify3 – **zum Release anheben**). us-l, us-p,
-web-p und ältere oder unbekannte TFT öffnen die Detailseite wie bisher.
+`supportsCardDevice`: jedes Modell (`CARD_DEVICE_MODELS`: eu, us-l, us-p, web-l, web-p); ein Web-Panel (web-l, web-p,
+Web-Klon eines Hardware-Panels) immer, ein Hardware-Panel ab `CARD_DEVICE_MIN_TFT` (vorerst `6.2.0` wie popupNotify3 –
+**zum Release anheben**). Eine ältere oder unbekannte TFT öffnet die Detailseite wie bisher.
 
 ## Offen
 

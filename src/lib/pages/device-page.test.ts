@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import {
     CARD_DEVICE_MIN_TFT,
+    CARD_DEVICE_MODELS,
     DEVICE_PAGE_EMPTY_ELEMENT,
     cardDeviceOf,
     devicePageChannelAdminItem,
@@ -260,9 +261,9 @@ describe('lib/types/deviceDetails - device page configuration', () => {
     });
     it('a layout change keeps the slots by position', () => {
         const slots = [ref('power'), null, ref('door'), null, null, ref('start'), ref('on'), ref('on')];
-        expect(fitDevicePageSlots(slots, 1)).to.deep.equal([...slots, ...statusNulls(2)]);
-        expect(fitDevicePageSlots(slots.slice(0, 6), 3)).to.deep.equal([...slots.slice(0, 6), null, null]);
-        expect(fitDevicePageSlots(slots, 2)).to.deep.equal(slots.slice(0, 6));
+        expect(fitDevicePageSlots(slots, 1, 1)).to.deep.equal([...slots, ...statusNulls(2)]);
+        expect(fitDevicePageSlots(slots.slice(0, 6), 3, 2)).to.deep.equal([...slots.slice(0, 6), null, null]);
+        expect(fitDevicePageSlots(slots, 2, 1)).to.deep.equal(slots.slice(0, 6));
     });
     it('an older layout 1 with 6 slots stays valid: the status slots are empty', () => {
         const old = {
@@ -290,8 +291,11 @@ describe('lib/types/deviceDetails - device page configuration', () => {
         expect(c?.slots[first + 1]).to.deep.equal(ref('on'));
         expect(c?.status).to.deep.equal(ref('phase'));
         // a layout change by position: the icon does not travel to another kind
-        expect(fitDevicePageSlots(c?.slots ?? [], 3)[first]).to.deep.equal(ref('door'));
-        expect(fitDevicePageSlots(c?.slots ?? [], 1)[first]).to.deep.equal({ ...ref('door'), icon: 'delete-empty' });
+        expect(fitDevicePageSlots(c?.slots ?? [], 3, 1)[first]).to.deep.equal(ref('door'));
+        expect(fitDevicePageSlots(c?.slots ?? [], 1, 1)[first]).to.deep.equal({
+            ...ref('door'),
+            icon: 'delete-empty',
+        });
     });
     it('status icons: shown when at least one status slot is set; narrower info rows then', () => {
         const slots: ({ key: string; id: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
@@ -414,18 +418,25 @@ describe('lib/types/deviceDetails - device page configuration', () => {
 describe('lib/pages/device-page - panel support', () => {
     const t = (model: any, isVirtual: boolean, displayVersion: string): boolean =>
         supportsCardDevice({ model, isVirtual, displayVersion });
-    it('eu from the minimum TFT on, web-l and eu web clones always', () => {
-        expect(t('eu', false, CARD_DEVICE_MIN_TFT)).to.equal(true);
-        expect(t('eu', false, '6.1.1')).to.equal(false);
-        expect(t('eu', false, '')).to.equal(false);
-        expect(t('web-l', true, '')).to.equal(true);
-        expect(t('eu', true, '')).to.equal(true);
+    it('every model has the device pages', () => {
+        expect([...CARD_DEVICE_MODELS].sort()).to.deep.equal(['eu', 'us-l', 'us-p', 'web-l', 'web-p']);
     });
-    it('us-l, us-p and web-p fall back to the detail page', () => {
-        expect(t('us-l', false, '9.9.9')).to.equal(false);
-        expect(t('us-p', false, '9.9.9')).to.equal(false);
-        expect(t('web-p', true, '')).to.equal(false);
-        expect(t('us-l', true, '')).to.equal(false);
+    it('a hardware panel (eu, us-l, us-p) from the minimum TFT on', () => {
+        for (const model of ['eu', 'us-l', 'us-p'] as const) {
+            expect(t(model, false, CARD_DEVICE_MIN_TFT), model).to.equal(true);
+            expect(t(model, false, '9.9.9'), model).to.equal(true);
+            expect(t(model, false, '6.1.1'), model).to.equal(false);
+            expect(t(model, false, ''), model).to.equal(false);
+        }
+    });
+    it('a web panel always: web-l, web-p and the web clones of hardware panels', () => {
+        for (const model of ['web-l', 'web-p', 'eu', 'us-l', 'us-p'] as const) {
+            expect(t(model, true, ''), model).to.equal(true);
+        }
+    });
+    it('an unknown model has none', () => {
+        expect(t('xx', true, '')).to.equal(false);
+        expect(t('xx', false, '9.9.9')).to.equal(false);
     });
     it('a model without device page: the device pages and their nodes are left out, nothing else', () => {
         const page = (uniqueID: string, card: string): { uniqueID: string; config: { card: string } } => ({
@@ -597,7 +608,12 @@ describe('lib/pages/device-page - status line', () => {
         const status = 's'.repeat(40);
         it('buffers of the HMI pages: 943 / 875 / 1019, never more than the display takes (1017)', () => {
             expect(DEVICE_PAGE_RECEIVE_BYTES).to.deep.equal({ 1: 943, 2: 875, 3: 1019 });
-            expect([1, 2, 3].map(l => devicePageMaxPayloadBytes(l as 1 | 2 | 3))).to.deep.equal([943, 875, 1017]);
+            for (const model of ['eu', 'us-l', 'us-p'] as const) {
+                expect(
+                    [1, 2, 3].map(l => devicePageMaxPayloadBytes(l as 1 | 2 | 3, model)),
+                    model,
+                ).to.deep.equal([943, 875, 1017]);
+            }
         });
         it('a message that fits keeps the part of the status text', () => {
             const elements = [full('text', 1), full('text', 2), info];
@@ -638,7 +654,7 @@ describe('lib/pages/device-page - status line', () => {
                 const part = splitDevicePageStatus('ü'.repeat(200), layout, 'eu')[2];
                 expect(bytes(part)).to.equal(63);
                 const out = devicePagePayload(head, main, elements, part, layout, 'eu');
-                expect(bytes(out), `layout ${layout}`).to.be.at.most(devicePageMaxPayloadBytes(layout));
+                expect(bytes(out), `layout ${layout}`).to.be.at.most(devicePageMaxPayloadBytes(layout, 'eu'));
                 expect(out.split('~')[19], `layout ${layout}`).to.equal(part);
                 expect(out.split('~')).to.have.length(1 + 1 + 12 + 6 * (kinds.length + 2));
             }
@@ -1406,7 +1422,7 @@ describe('lib/types/deviceDetails - own data points, alias channels and settings
         expect(devicePageSlotHasLook(ref('power'))).to.equal(false);
         expect(devicePageSlotHasLook(null)).to.equal(false);
         // a layout change keeps them
-        expect(fitDevicePageSlots(config?.slots ?? [], 3)[0]).to.deep.equal(config?.slots[0]);
+        expect(fitDevicePageSlots(config?.slots ?? [], 3, config?.layout ?? 1)[0]).to.deep.equal(config?.slots[0]);
     });
     it('older status icon: read as the icon for both states until an own icon is set', () => {
         const old = { ...ref('door'), icon: 'door' };
@@ -2302,9 +2318,8 @@ describe('lib/pages/pageItem - device page', () => {
         expect(f.created).to.have.length(0);
     });
     for (const [model, version, virtual] of [
-        ['us-l', '9.0.0', false],
-        ['us-p', '9.0.0', false],
-        ['web-p', '', true],
+        ['us-l', '6.1.1', false],
+        ['us-p', '', false],
         ['eu', '6.1.1', false],
         ['eu', '', false],
     ] as const) {
@@ -2323,11 +2338,19 @@ describe('lib/pages/pageItem - device page', () => {
         expect(f.opened).to.deep.equal([]);
         expect(f.created.map((p: FakePage) => p.id)).to.deep.equal(['dd_3']);
     });
-    for (const model of ['web-l', 'eu'] as const) {
+    for (const model of ['web-l', 'web-p', 'eu', 'us-l', 'us-p'] as const) {
         it(`web panel ${model}: device page`, async () => {
             const f = setup({ model, displayVersion: '' }, true);
             await f.item.onCommandLongPress('button', '');
             expect(f.opened).to.deep.equal([NAME]);
+        });
+    }
+    for (const model of ['us-l', 'us-p'] as const) {
+        it(`${model} with the TFT: device page`, async () => {
+            const f = setup({ model, displayVersion: CARD_DEVICE_MIN_TFT });
+            await f.item.onCommandLongPress('button', '');
+            expect(f.opened).to.deep.equal([NAME]);
+            expect(f.created).to.have.length(0);
         });
     }
     it('info icon: the detail page below the device page, back leads to the device page', async () => {
@@ -2464,7 +2487,7 @@ describe('lib/pages/pageItem - device page', () => {
             const main = content.elements[0];
             expect(main.type).to.equal('text');
             expect(main.deviceDetails.devicePage).to.equal(undefined);
-            const old = setup({ model: 'us-p', displayVersion: '9.0.0' });
+            const old = setup({ model: 'us-p', displayVersion: '6.1.1' });
             await old.makeItem(old.parent, config, { type: 'button', data: {} }).onCommand('button', '');
             expect(old.created.map((p: { id: string }) => p.id)).to.deep.equal(['dd_3']);
             // any other short tap never opens it
