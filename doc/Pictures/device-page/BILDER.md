@@ -1,95 +1,98 @@
 # Bildliste: Gerät mit Details und Geräteseite
 
 Alle Bilder, die die Nutzer-Doku ([doc/de/deviceDetails.md](../../de/deviceDetails.md),
-[doc/en/deviceDetails.md](../../en/deviceDetails.md)) und die [README dieses Ordners](README.md) verwenden – mit
-endgültigem Dateinamen. Die Doku bindet sie schon ein; fehlende Dateien sind dort mit `<!-- BILD FOLGT … -->` markiert.
+[doc/en/deviceDetails.md](../../en/deviceDetails.md)) und die [README dieses Ordners](README.md) verwenden.
 
-Stand: 2026-11-24, **vor** der Integration der Layouts für us-l, us-p, web-l und web-p. Aufgenommen wird erst danach.
+Stand: 2026-11-24, nach der Integration (Geräteseite auf allen fünf Modellen).
 
 ## Überblick
 
-| Wer | Was | Anzahl |
-|---|---|---|
-| automatisch (Puppeteer, Web-Panel) | Geräteseiten und Detailseite je Modell | 27 (23 neu, 4 vorhandene neu aufnehmen) |
-| automatisch (Puppeteer, Admin) | Dialoge | 9 (4 neu, 3 vorhandene neu aufnehmen, 2 bleiben) |
-| **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) |
+| Wer | Was | Anzahl | Stand |
+|---|---|---|---|
+| automatisch (Puppeteer, Web-Panel) | Geräteseiten je Modell und die Detailseite | 23 (eu 5, us-l 3, us-p 3, web-l 6, web-p 6) | **aufgenommen und angesehen** |
+| automatisch (Puppeteer, Admin) | Dialoge | 9 (2 vorhanden, 3 neu aufzunehmen, 4 neu) | in Arbeit (Integration) |
+| **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) | – |
 
 Das Web-Panel zeichnet jedes Modell: die Hardware-Modelle eu, us-l und us-p wie die HMI, dazu web-l und web-p.
-Deshalb kommen alle Panel-Bilder aus dem Web-Panel. Dass die Web-Bilder der HMI entsprechen, sichert der
+Deshalb kommen alle Panel-Bilder aus dem Web-Panel. Dass die Web-Bilder der HMI entsprechen, zeigt der
 [Abgleich Web ↔ HMI](#abgleich-web--hmi) gegen Tims echte Aufnahmen.
 
-## Vorbereitung
+Entfallen sind `web-cardDevice1.png`, `web-cardDevice1-plain.png`, `web-cardDevice2.png` und `web-cardDevice3.png`
+(eu mit den Beispieldaten des HMI-Werkzeugs): `eu-cardDevice*.png` ersetzen sie, es gibt nur noch eine
+Beispielbelegung.
 
-- **Testdaten:** Laut Notizen liegen im Dev-Server die Geräte `0_userdata.0.devicepage.robot`, `.washer` und `.car`
-  und die Seite `devicepage_test` (zugewiesen an `emu_topic` und `test_webl`). **Im Repo ist das nirgends
-  dokumentiert** und es gibt kein Skript, das sie anlegt – belegt ist nur `0_userdata.0.devicepage.robot` („Robbi“,
-  14 Einträge angehakt) im vorhandenen Bild `admin-overview.png` und die Belegung in Tims Aufnahmen (unten). Vor dem
-  Aufnehmen prüfen, dass Geräte und Seite noch da sind und zu den Referenzbelegungen passen.
-- **Web-Panels je Modell:** Für die Aufnahmen im Mock-Modus (Weg A) ist kein Panel nötig. Für den Live-Weg (B) und
-  die Admin-Bilder braucht der Dev-Server Web-Panels mit den Modellen eu, us-l, us-p, web-l und web-p, denen
-  `devicepage_test` zugewiesen ist (vorhanden laut Notizen: `emu_topic` = eu, `test_webl` = web-l, `webtest` = web-p).
-- **Zusatz-Elemente:** Für die Bilder `…-extra.png` das Häkchen für die zusätzlichen Elemente setzen und die
-  Zusatz-Plätze belegen (siehe Tabelle).
+## Referenzbelegung
 
-### Referenzbelegung
-
-Alle neuen Panel-Bilder zeigen dieselben drei Geräte – genau so belegt wie in Tims Aufnahmen vom 2026-11-23
-(`/mnt/projekte/Screenshot 2026-11-23 ….png`, nur lesbar), damit der Abgleich Bild gegen Bild geht. Icons sind die,
-die der Adapter von sich aus wählt (MDI-Namen nach Augenschein – maßgeblich ist das Referenzbild).
+Alle Panel-Bilder zeigen dieselben drei Geräte – belegt wie in Tims Aufnahmen der EU-HMI vom 2026-11-23, mit den
+Icons, die der Adapter von sich aus wählt, und Einheiten ohne Leerzeichen, wie der Adapter sie schreibt.
 
 | Kürzel | Seite | Belegung |
 |---|---|---|
-| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon (Füllstand, hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“, „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (Tipp-Icon), „Pause“ (`pause`), „Laden“ (Tipp-Icon), „Suchen“ (Tipp-Icon), alle cyan. Status-Icons 7–10: `wifi` (cyan), Papierkorb (grau), `air-filter` (weiß), Warndreieck (grau). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
-| **R1p** | cardDevice1 ohne Status-Icons | wie R1, aber Slots 7–10 leer (Info-Zeilen breit) und Knopf „Pause“ mit dem Tipp-Icon. |
-| **R2** | cardDevice2 | Überschrift „Waschmaschine“; links Pfeil hoch. Haupt-Icon `washing-machine` (cyan). Slot 1 großer Wert „1:23“, Name „Restzeit“, kleines Icon `information-outline`. Slot 2 Balken „Fortschritt“, 62 %, weiß gefüllt. Slot 3 „Programm“ / „Baumwolle“ (Listen-Icon). Slot 4 „Temperatur“ / „60°C“ (Thermometer). Slot 5 „Schleudern“ / „1400U/min“ (Icon „123“). Slot 6 Knopf „Pause“ (Schalter-Icon aus, grau). Statuszeile „Schleudern, noch 23 min - Fertig um 14:35“. i-Icon. |
-| **R3** | cardDevice3 | Überschrift „ID.3“; links Pfeil hoch. Haupt-Icon `car` (cyan), Name „ID.3“. Slots 1–6: „Batterie“ / „78%“ (Batterie-Icon), „Reichweite“ / „312km“ („123“), „Temperatur“ / „21,5°C“ (Thermometer), „Verriegelt“ / „an“ (Schalter-Icon, cyan), „Ladeleistung“ / „11kW“ („123“), „Kilometer“ / „23456km“ („123“). Schalter 7 „Klima“ an, Schalter 8 „Laden“ an. Statuszeile „Lädt an Wallbox, 11 kW - voll um 17:40“. i-Icon. |
-| **R4** | Detailseite (cardEntities) | Überschrift „Robbi“; links Pfeil hoch, rechts Pfeil runter (blättern). Zeilen: „Batterie“ / „80%“ (Batterie-Icon), „Signal“ / „-58dBm“ (`wifi`, cyan), „Firmware“ / „4.3.2“ (Chip-Icon), „Fläche“ / „34m²“ („123“). |
+| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon nach Füllstand (hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“ (`numeric`), „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (`gesture-tap-button`), „Pause“ (`pause`), „Laden“, „Suchen“ (`gesture-tap-button`), alle cyan. Status-Icons 7–10: `wifi` (cyan), `trash-can` (grau), `air-filter` (weiß), `alert` (grau). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
+| **R1p** | cardDevice1 ohne Status-Icons | wie R1, Slots 7–10 leer. |
+| **R2** | cardDevice2 | Überschrift und Gerätename „Waschmaschine“; Haupt-Icon `washing-machine` (cyan). Slot 1 großer Wert „1:23“, Name „Restzeit“, kleines Icon `information-outline`. Slot 2 Balken „Fortschritt“, 62 %, weiß. Slot 3 „Programm“ / „Baumwolle“ (`format-list-bulleted`). Slot 4 „Temperatur“ / „60°C“ (`thermometer`). Slot 5 „Schleudern“ / „1400U/min“ (`numeric`). Slot 6 Knopf „Pause“ (`toggle-switch`, grau). Statuszeile „Schleudern, noch 23 min - Fertig um 14:35“. i-Icon. |
+| **R3** | cardDevice3 | Überschrift und Gerätename „ID.3“; Haupt-Icon `car` (cyan). Slots 1–6: „Batterie“ / „78%“, „Reichweite“ / „312km“, „Temperatur“ / „21,5°C“, „Verriegelt“ / „an“ (`toggle-switch`, cyan), „Ladeleistung“ / „11kW“, „Kilometer“ / „23456km“. Schalter 7 „Klima“ an, Schalter 8 „Laden“ an. Statuszeile „Lädt an Wallbox, 11 kW - voll um 17:40“. i-Icon. |
+| **R4** | Detailseite (cardEntities) | Überschrift „Robbi“; links Pfeil hoch, rechts Pfeil runter (blättern). Zeilen: „Batterie“ / „80%“, „Signal“ / „-58dBm“ (`wifi`, cyan), „Firmware“ / „4.3.2“ (`chip`), „Fläche“ / „34m²“ (`numeric`). |
+| **+X** | Web-Panel-Elemente (web-l, web-p) | Layout 1: Knöpfe „Zone“, „Leeren“. Layout 2: Info „Wasser“ / „48l“, Knöpfe „Stopp“, „Später“. Layout 3: Infos „Reifen“ / „2,4bar“, „Außen“ / „8,5°C“, Schalter „Heizung“ aus. |
 
-Die vier vorhandenen Bilder `web-cardDevice*.png` zeigen eine **andere** Belegung (Beispieldaten des HMI-Werkzeugs:
-„Saugroboter“ mit Start/Pause/Dock/Suchen und eigenen Icons, „Waschküche“, „Auto“). Sie bleiben so – die Doku zeigt
-damit, wie eine Seite mit eigenen Icons aussieht – und werden nur neu aufgenommen, weil die Statuszeile inzwischen
-auf allen drei Seiten mittig steht.
+Auf us-p und web-p ist die Statuszeile 262 px breit; der Adapter teilt die drei Statustexte dort
+(`splitDevicePageStatus`), die Bilder zeigen den ersten Abschnitt: „Reinigt Wohnzimmer, noch 12“, „Schleudern, noch
+23 min -“, „Lädt an Wallbox, 11 kW - voll“.
+
+Gegenüber Tims Aufnahmen weicht die Belegung der Doku-Bilder an drei Stellen bewusst ab, weil der Adapter heute
+anders sendet: das Batterie-Icon folgt dem Füllstand (in den Aufnahmen die volle Batterie), unter dem Haupt-Icon
+von cardDevice2 steht der Gerätename (in der Aufnahme „Pause“), und der Knopf „Pause“ von R1p hat das Pause-Icon
+(in der Aufnahme 160356 das Tipp-Icon). Für den Abgleich wurden die Seiten zusätzlich genau wie in den Aufnahmen
+gerendert (nicht im Repo).
 
 ## Aufnahmeweg
 
-Format: **PNG**, Bühne in Originalgröße (1 Pixel = 1 Panel-Pixel) wie die vorhandenen Bilder – eu und us-l
-480 × 320, us-p 320 × 480, web-l 640 × 320, web-p 320 × 640. Nur die Bühne, ohne Hardware-Tasten und ohne
-Browser-Rand. Je Modell alle Bilder in einem Durchgang.
+Format: **PNG**, Bühne in Originalgröße (1 Pixel = 1 Panel-Pixel): eu und us-l 480 × 320, us-p 320 × 480, web-l
+640 × 320, web-p 320 × 640. Nur die Bühne, ohne Hardware-Tasten und ohne Browser-Rand.
 
-### A – Web-Panel im Mock-Modus (Regelfall für alle Panel-Bilder)
+### Web-Panel (statisch gerendert)
 
-So sind die vorhandenen `web-cardDevice*.png` entstanden: `src-web/scripts/screenshot.mjs` spielt eine Liste von
-Panel-Nachrichten in das Web-Panel ein (`/demo?mock=1&model=<Modell>`) und speichert die Bühne.
+`src-web/scripts/screenshot.mjs` spielt eine Liste von Panel-Nachrichten in das Web-Panel ein
+(`/demo?mock=1&model=<Modell>`) und speichert die Bühne. Es braucht einen laufenden Vite-Server in `src-web` und ein
+global installiertes Puppeteer.
 
 ```bash
 cd src-web
-npm start &                                   # Vite auf Port 4174, bleibt laufen
-node scripts/screenshot.mjs --in scripts/examples/cardDevice1.txt \
-     --out ../doc/Pictures/device-page/web-cardDevice1.png --model eu --scale 1
+npm start &                                   # Vite, Port 4174
+node scripts/screenshot.mjs --in scripts/examples/ref-cardDevice1.txt \
+     --out ../doc/Pictures/device-page/eu-cardDevice1.png --model eu --scale 1
 ```
 
-- `--model eu|us-l|us-p|web-l|web-p` wählt das Modell, `--scale 1` die Originalgröße (Vorgabe wäre 2x).
-- Braucht ein global installiertes Puppeteer (`npm root -g`) und `node_modules` in `src-web`.
-- Vorhandene Eingabedateien: `src-web/scripts/examples/cardDevice1.txt`, `cardDevice1-plain.txt`,
-  `cardDevice2.txt`, `cardDevice3.txt` (Beispieldaten des HMI-Werkzeugs → `web-cardDevice*.png`).
-- **Was noch fehlt** (nicht in diesem Auftrag angelegt, weil es `src-web/` ändert):
-  1. Eingabedateien mit der Referenzbelegung R1, R1p, R2, R3 (Vorschlag: `cardDevice1-ref.txt`,
-     `cardDevice1-ref-plain.txt`, `cardDevice2-ref.txt`, `cardDevice3-ref.txt`) und R4 (`cardEntities-device-ref.txt`,
-     `pageType~cardEntities`). Am genauesten: die Nachrichten übernehmen, die der Adapter im Dev-Server für
-     `devicepage_test` wirklich sendet (Debug-Log bzw. WebSocket-Frames des Web-Panels) – dann stimmen Icons,
-     Farben und Einheiten ohne Leerzeichen von selbst. R1p und der Gerätename von R2 von Hand anpassen.
-  2. Je Layout eine Eingabedatei mit den Zusatz-Elementen für web-l/web-p (`…-ref-extra.txt`).
-  3. Prüfen, ob dieselbe Nachricht für alle Modelle gilt (Hardware-Modelle ohne, web-l/web-p mit Zusatz-Elementen)
-     oder ob der Adapter je Modell anders sendet – dann je Modell eine Datei.
+`--model eu|us-l|us-p|web-l|web-p` wählt das Modell, `--scale 1` die Originalgröße (Vorgabe wäre 2x).
 
-### B – Web-Panel live am Dev-Server (zum Gegenprüfen und als Quelle der Nachrichten)
+> **Schrift prüfen.** Das Web-Panel zeichnet mit Noto Sans aus `@fontsource/noto-sans`. Ist `node_modules` nur ein
+> Symlink (Worktree), verweigert Vite die Schriftdateien mit 403 (`server.fs.strict`) und die Seite fällt
+> **stillschweigend auf Arial/Liberation Sans** zurück – die Bilder sehen dann anders aus und viele Texte sind
+> 4–9 % schmaler. So waren die ersten `web-l-*`/`web-p-*`-Bilder entstanden. Abhilfe: Vite mit einer eigenen
+> Konfiguration starten, die `server: { fs: { strict: false } }` setzt (`npx vite --config <datei>`), und im
+> Browser prüfen: `document.fonts.check("24px 'Noto Sans'")` muss `true` sein.
 
-Web-Panel unter `http://localhost:8090/<Topic>` öffnen, Viewport = Bühne des Modells, das Geräte-Item halten
-(Puppeteer: Zeiger 600 ms drücken, loslassen) oder – einfacher – den kurzen Tipp „Geräteseite öffnen“ nutzen, dann
-`[data-stage]` als Ausschnitt speichern. Die Detailseite über das „i“ der Geräteseite öffnen. Nur dieser Weg zeigt,
-was der Adapter wirklich sendet (wechselnder Statustext, Einheiten, Kürzen).
+Eingabedateien mit der Referenzbelegung (`src-web/scripts/examples/`):
 
-### C – Admin (Dev-Server, Puppeteer)
+| Eingabedatei | Bild(er) | Modell |
+|---|---|---|
+| `ref-cardDevice1.txt`, `ref-cardDevice2.txt`, `ref-cardDevice3.txt` | `eu-cardDevice<n>.png` · `us-l-cardDevice<n>.png` · `web-l-cardDevice<n>-plain.png` | eu · us-l · web-l |
+| `ref-cardDevice1-plain.txt` | `eu-cardDevice1-plain.png` | eu |
+| `ref-cardDevice<n>-extras.txt` | `web-l-cardDevice<n>.png` | web-l |
+| `ref-portrait-cardDevice<n>.txt` | `us-p-cardDevice<n>.png` · `web-p-cardDevice<n>-plain.png` | us-p · web-p |
+| `ref-portrait-cardDevice<n>-extras.txt` | `web-p-cardDevice<n>.png` | web-p |
+| `ref-cardEntities-detail.txt` | `eu-detail-page.png` | eu |
+
+Dateinamen: bei eu heißt `-plain` „ohne Status-Icons“, bei web-l und web-p „ohne Web-Panel-Elemente“ (so hatte der
+Web-Panel-Zweig die Dateien benannt; die Namen ohne Zusatz zeigen dort die voll belegte Seite). Ein Hardware-Modell
+liest die Zusatz-Elemente hinter dem i-Icon nicht; eine Nachricht ohne sie zeigt ein Web-Modell ohne Zusatz-Elemente.
+
+Die älteren Beispiele `cardDevice*.txt`, `us-p-cardDevice*.txt`, `web-l-cardDevice*.txt` und
+`web-p-cardDevice*.txt` (Beispieldaten des HMI-Werkzeugs) bleiben für die Tests des Web-Panels. Die Kommentare in
+`web-l-cardDevice*.txt` und `web-p-cardDevice*.txt` nennen noch die gleichnamigen Bilder – diese Bilder zeigen
+jetzt die Referenzbelegung.
+
+### Admin (Dev-Server, Puppeteer)
 
 Wie die vorhandenen `admin-*.png` (Commit `d4a0d7761`): Admin des Dev-Servers `http://localhost:8081/`, nach dem
 Laden `location.hash = '#tab-instances/config/system.adapter.nspanel-lovelace-ui.0'`, Tab **PageConfig**, Seite
@@ -98,125 +101,121 @@ Laden `location.hash = '#tab-instances/config/system.adapter.nspanel-lovelace-ui
 - ganzer Dialog: `.MuiDialog-paper` (bei zwei offenen Dialogen `.MuiDialog-root:last-of-type .MuiDialog-paper`),
 - Bereich der Geräteseite: `[data-dd="device-page-section"]`, Statuszeile `[data-dd="device-page-status"]` /
   `[data-dd="device-page-status-custom"]`, Slot-Zeilen `[data-dd="device-page-slot"]`,
-  `[data-dd="device-page-slot-custom"]`, „…“-Knopf `[data-dd="device-page-slot-settings"]`.
+  `[data-dd="device-page-slot-custom"]`, „…“-Knopf `[data-dd="device-page-slot-settings"]`, Web-Panel-Elemente
+  `[data-dd="device-page-web-extras"]`.
 
-Vor `npm run build:admin` den Dev-Server stoppen; danach neu starten und warten, bis der Admin erreichbar ist.
+Die Testdaten des Dev-Servers (`0_userdata.0.devicepage.robot`, `.washer`, `.car`, Seite `devicepage_test`) stehen
+nur in den Notizen, nicht im Repo.
 
 ## Web-Panel-Aufnahmen
 
-Sortiert nach Modell – je Modell ein Durchgang. „Doku“ = `doc/de/deviceDetails.md` und `doc/en/deviceDetails.md`.
+„Doku“ = `doc/de/deviceDetails.md` und `doc/en/deviceDetails.md`. Alle Bilder: Screenshot Web-Panel, automatisch
+(Puppeteer), aufgenommen und einzeln angesehen am 2026-11-24.
 
-| Dateiname | Art | Modell/Panel | Was zu sehen sein soll | Wer | Verwendet in | erledigt |
-|---|---|---|---|---|---|---|
-| `eu-cardDevice1.png` | Screenshot Web-Panel | eu | cardDevice1, Belegung **R1** (vier Status-Icons, schmale Info-Zeilen) | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku §8 EU; Abgleich 1 | ☐ |
-| `eu-cardDevice1-plain.png` | Screenshot Web-Panel | eu | cardDevice1, Belegung **R1p** (ohne Status-Icons, breite Info-Zeilen) | automatisch (Puppeteer, Web-Panel, Modell eu) | nur Abgleich 2 und README | ☐ |
-| `eu-cardDevice2.png` | Screenshot Web-Panel | eu | cardDevice2, Belegung **R2**, Balken bei 62 % | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku §8 EU; Abgleich 3 | ☐ |
-| `eu-cardDevice3.png` | Screenshot Web-Panel | eu | cardDevice3, Belegung **R3**, beide Schalter an | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku §8 EU; Abgleich 4 | ☐ |
-| `eu-detail-page.png` | Screenshot Web-Panel | eu | Detailseite, Belegung **R4** (vier Zeilen) | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku §3; Abgleich 5 | ☐ |
-| `web-cardDevice1.png` | Screenshot Web-Panel | eu | **vorhanden, neu aufnehmen** (Statuszeile jetzt mittig): `examples/cardDevice1.txt`, „Saugroboter“ mit eigenen Icons und vier Status-Icons | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku Einstieg, §5 Status-Icons, §6 Layout 1; README | ☐ |
-| `web-cardDevice1-plain.png` | Screenshot Web-Panel | eu | **vorhanden, neu aufnehmen**: `examples/cardDevice1-plain.txt`, dasselbe ohne Status-Icons | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku §5 Status-Icons; README | ☐ |
-| `web-cardDevice2.png` | Screenshot Web-Panel | eu | **vorhanden, neu aufnehmen** (zur Kontrolle, sollte gleich bleiben): `examples/cardDevice2.txt`, „Waschküche“ | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku §6 Layout 2; README | ☐ |
-| `web-cardDevice3.png` | Screenshot Web-Panel | eu | **vorhanden, neu aufnehmen** (Statuszeile jetzt mittig): `examples/cardDevice3.txt`, „Auto“ | automatisch (Puppeteer, Web-Panel, Modell eu) | Doku §6 Layout 3; README | ☐ |
-| `us-l-cardDevice1.png` | Screenshot Web-Panel | us-l | cardDevice1, Belegung **R1** | automatisch (Puppeteer, Web-Panel, Modell us-l) | Doku §8 US-Querformat | ☐ |
-| `us-l-cardDevice2.png` | Screenshot Web-Panel | us-l | cardDevice2, Belegung **R2** | automatisch (Puppeteer, Web-Panel, Modell us-l) | Doku §8 US-Querformat | ☐ |
-| `us-l-cardDevice3.png` | Screenshot Web-Panel | us-l | cardDevice3, Belegung **R3** | automatisch (Puppeteer, Web-Panel, Modell us-l) | Doku §8 US-Querformat | ☐ |
-| `us-p-cardDevice1.png` | Screenshot Web-Panel | us-p | cardDevice1 hochkant, Belegung **R1**: Haupt-Icon oben links, 2×2-Status-Icons daneben, Info-Zeilen volle Breite, Knöpfe 2×2, Statuszeile unten | automatisch (Puppeteer, Web-Panel, Modell us-p) | Doku §8 US-Hochformat | ☐ |
-| `us-p-cardDevice2.png` | Screenshot Web-Panel | us-p | cardDevice2 hochkant, Belegung **R2** | automatisch (Puppeteer, Web-Panel, Modell us-p) | Doku §8 US-Hochformat | ☐ |
-| `us-p-cardDevice3.png` | Screenshot Web-Panel | us-p | cardDevice3 hochkant, Belegung **R3** | automatisch (Puppeteer, Web-Panel, Modell us-p) | Doku §8 US-Hochformat | ☐ |
-| `web-l-cardDevice1.png` | Screenshot Web-Panel | web-l | cardDevice1 auf voller Bühne 640 × 320, Belegung **R1**, **ohne** Zusatz-Elemente | automatisch (Puppeteer, Web-Panel, Modell web-l) | Doku §8 Smartphone quer | ☐ |
-| `web-l-cardDevice2.png` | Screenshot Web-Panel | web-l | cardDevice2, Belegung **R2**, ohne Zusatz-Elemente | automatisch (Puppeteer, Web-Panel, Modell web-l) | Doku §8 Smartphone quer | ☐ |
-| `web-l-cardDevice3.png` | Screenshot Web-Panel | web-l | cardDevice3, Belegung **R3**, ohne Zusatz-Elemente | automatisch (Puppeteer, Web-Panel, Modell web-l) | Doku §8 Smartphone quer | ☐ |
-| `web-l-cardDevice1-extra.png` | Screenshot Web-Panel | web-l | cardDevice1, **R1 + 2 Knöpfe** (6 Knöpfe belegt) | automatisch (Puppeteer, Web-Panel, Modell web-l) | Doku §8 Smartphone quer | ☐ |
-| `web-l-cardDevice2-extra.png` | Screenshot Web-Panel | web-l | cardDevice2, **R2 + 1 Info-Zeile + 2 Knöpfe** (4 Infos, 3 Knöpfe) | automatisch (Puppeteer, Web-Panel, Modell web-l) | Doku §8 Smartphone quer | ☐ |
-| `web-l-cardDevice3-extra.png` | Screenshot Web-Panel | web-l | cardDevice3, **R3 + 2 Info-Zeilen + 1 Schalter** (8 Infos, 3 Schalter) | automatisch (Puppeteer, Web-Panel, Modell web-l) | Doku §8 Smartphone quer | ☐ |
-| `web-p-cardDevice1.png` | Screenshot Web-Panel | web-p | cardDevice1 auf voller Bühne 320 × 640, Belegung **R1**, ohne Zusatz-Elemente | automatisch (Puppeteer, Web-Panel, Modell web-p) | Doku §8 Smartphone hochkant | ☐ |
-| `web-p-cardDevice2.png` | Screenshot Web-Panel | web-p | cardDevice2, Belegung **R2**, ohne Zusatz-Elemente | automatisch (Puppeteer, Web-Panel, Modell web-p) | Doku §8 Smartphone hochkant | ☐ |
-| `web-p-cardDevice3.png` | Screenshot Web-Panel | web-p | cardDevice3, Belegung **R3**, ohne Zusatz-Elemente | automatisch (Puppeteer, Web-Panel, Modell web-p) | Doku §8 Smartphone hochkant | ☐ |
-| `web-p-cardDevice1-extra.png` | Screenshot Web-Panel | web-p | cardDevice1, **R1 + 2 Knöpfe** | automatisch (Puppeteer, Web-Panel, Modell web-p) | Doku §8 Smartphone hochkant | ☐ |
-| `web-p-cardDevice2-extra.png` | Screenshot Web-Panel | web-p | cardDevice2, **R2 + 1 Info-Zeile + 2 Knöpfe** | automatisch (Puppeteer, Web-Panel, Modell web-p) | Doku §8 Smartphone hochkant | ☐ |
-| `web-p-cardDevice3-extra.png` | Screenshot Web-Panel | web-p | cardDevice3, **R3 + 2 Info-Zeilen + 1 Schalter** | automatisch (Puppeteer, Web-Panel, Modell web-p) | Doku §8 Smartphone hochkant | ☐ |
-
-Womit die Zusatz-Plätze belegt werden (Texte, Icons), wird beim Aufnehmen festgelegt und hier nachgetragen –
-web-l und web-p bekommen dieselbe Belegung.
+| Dateiname | Modell | Was zu sehen ist | Verwendet in | erledigt |
+|---|---|---|---|---|
+| `eu-cardDevice1.png` | eu | cardDevice1, **R1** (vier Status-Icons, schmale Info-Zeilen) | Doku Einstieg, §5 Status-Icons, §6, §8 EU; README; Abgleich 1 | ☑ |
+| `eu-cardDevice1-plain.png` | eu | cardDevice1, **R1p** (ohne Status-Icons, breite Info-Zeilen) | Doku §5 Status-Icons; README; Abgleich 2 | ☑ |
+| `eu-cardDevice2.png` | eu | cardDevice2, **R2**, Balken bei 62 %; der Gerätename unter dem Icon ist an der Feldgrenze abgeschnitten | Doku §6, §8 EU, §10; README; Abgleich 3 | ☑ |
+| `eu-cardDevice3.png` | eu | cardDevice3, **R3**, beide Schalter an | Doku §6, §8 EU; README; Abgleich 4 | ☑ |
+| `eu-detail-page.png` | eu | Detailseite, **R4** | Doku §3; README; Abgleich 5 | ☑ |
+| `us-l-cardDevice1.png` | us-l | cardDevice1, **R1**, Inhalt 15 px weiter rechts | Doku §8 US-Querformat; README | ☑ |
+| `us-l-cardDevice2.png` | us-l | cardDevice2, **R2** | Doku §8 US-Querformat; README | ☑ |
+| `us-l-cardDevice3.png` | us-l | cardDevice3, **R3** | Doku §8 US-Querformat; README | ☑ |
+| `us-p-cardDevice1.png` | us-p | cardDevice1 hochkant, **R1**: Haupt-Icon oben links, 2×2-Status-Icons daneben, Info-Zeilen volle Breite, Knöpfe 2×2 | Doku §8 US-Hochformat; README | ☑ |
+| `us-p-cardDevice2.png` | us-p | cardDevice2 hochkant, **R2**: Infos als Zeilen, Knopf über die volle Breite | Doku §8 US-Hochformat; README | ☑ |
+| `us-p-cardDevice3.png` | us-p | cardDevice3 hochkant, **R3**: Haupt-Icon mittig, Schalter als Zeilen | Doku §8 US-Hochformat; README | ☑ |
+| `web-l-cardDevice1-plain.png` | web-l | cardDevice1, **R1**, ohne Web-Panel-Elemente: vier Knöpfe über 640 px | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice2-plain.png` | web-l | cardDevice2, **R2**, ohne Web-Panel-Elemente | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice3-plain.png` | web-l | cardDevice3, **R3**, ohne Web-Panel-Elemente | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice1.png` | web-l | cardDevice1, **R1 +X**: sechs Knöpfe in einer Reihe | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice2.png` | web-l | cardDevice2, **R2 +X**: drei Knöpfe oben rechts, vier Info-Kacheln | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice3.png` | web-l | cardDevice3, **R3 +X**: acht Info-Kacheln in drei Spalten, drei Schalter | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice1-plain.png` | web-p | cardDevice1, **R1**, ohne Web-Panel-Elemente: zwei Knopfreihen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice2-plain.png` | web-p | cardDevice2, **R2**, ohne Web-Panel-Elemente | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice3-plain.png` | web-p | cardDevice3, **R3**, ohne Web-Panel-Elemente | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice1.png` | web-p | cardDevice1, **R1 +X**: drei Knopfreihen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice2.png` | web-p | cardDevice2, **R2 +X**: vier Info-Zeilen, drei Knöpfe in einer Reihe | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice3.png` | web-p | cardDevice3, **R3 +X**: vier Kachelreihen, drei Schalterzeilen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 
 ## Admin-Aufnahmen
 
-| Dateiname | Art | Modell/Panel | Was zu sehen sein soll | Wer | Verwendet in | erledigt |
-|---|---|---|---|---|---|---|
-| `admin-device-item.png` | Screenshot Admin | – | Pageitem-Konfiguration, Art **Gerät mit Details**, Gerät `0_userdata.0.devicepage.robot` („Robbi – … Einträge angehakt“), Kurzer Tipp, Knopf Filterliste, **Long-Press öffnet: Detailseite** (kein Geräteseiten-Bereich) | automatisch (Puppeteer, Admin) | Doku Schnellstart 1 | ☐ |
-| `admin-filterlist.png` | Screenshot Admin | – | Dialog **Filterliste** eines Geräts mit Maske und gleichnamigen Zeilen (z. B. Shelly mit mehreren Temperaturen): angehakte oben, Spalten Eintrag/State, Feld **2. Zeile** sichtbar | automatisch (Puppeteer, Admin) | Doku §3 | ☐ |
-| `admin-shortpress.png` | Screenshot Admin | – | **vorhanden, bleibt:** Kurzer Tipp mit „Geräteseite öffnen“, Filterliste-Knopf, Long-Press öffnet: Geräteseite | – | Doku §2; README | ☑ |
-| `admin-overview.png` | Screenshot Admin | – | **vorhanden, nach der Integration neu aufnehmen:** ganzer Dialog mit Geräteseite Layout 1, alle zehn Slots belegt, Haupt-Icon, Statuszeile, i-Icon. Das heutige Bild zeigt noch den alten Hinweis „nur auf EU-Panels und Web-Panels im Querformat“ und kein Häkchen für die Zusatz-Elemente | automatisch (Puppeteer, Admin) | Doku Schnellstart 2, §5; README | ☐ |
-| `admin-status-custom.png` | Screenshot Admin | – | **vorhanden, bleibt:** Statuszeile „Benutzerdefinierter Datenpunkt“ mit ID-Feld | – | Doku §5 Statuszeile; README | ☑ |
-| `admin-slot-custom.png` | Screenshot Admin | – | **vorhanden, neu aufnehmen** (die Wahl heißt jetzt „Kanal“, dazu „Navigation“): Slots mit Benutzerdefiniert → Datenpunkt, → Kanal, → **Navigation** mit Zielseite und ein Datenpunkt mit „passt nicht zu diesem Slot“ | automatisch (Puppeteer, Admin) | Doku §5 Benutzerdefiniert; README | ☐ |
-| `admin-slot-dialog.png` | Screenshot Admin | – | **vorhanden, neu aufnehmen** (zeigt noch den früheren kleinen Dialog): „…“ eines **Knopf**-Slots = Pageitem-Konfiguration ohne Kanalauswahl, Titel mit „4 Knopf“, Name, Icon `pause`/`play` und Farben für wahr/unwahr, Langer Druck | automatisch (Puppeteer, Admin) | Doku §5 Einstellungen des Elements; README | ☐ |
-| `admin-slot-dialog-status.png` | Screenshot Admin | – | „…“ eines **Status-Icon**-Slots: kleiner Dialog „Einstellungen des Elements – 8 Status-Icon“ mit Icon/Farbe, „Farbverlauf …“ und „Kurzer Tipp“ | automatisch (Puppeteer, Admin) | Doku §5 Einstellungen des Elements; README | ☐ |
-| `admin-web-extra.png` | Screenshot Admin | – | Bereich der Geräteseite mit **gesetztem Häkchen** für die zusätzlichen Elemente: die Zusatz-Plätze stehen unter „Slots“ (Layout 2, damit Info-Zeile und Knöpfe zu sehen sind) | automatisch (Puppeteer, Admin) | Doku §5 Zusätzliche Elemente; README | ☐ |
+Alle: Screenshot Admin, automatisch (Puppeteer, Admin). Die Integration nimmt sie am Dev-Server auf und legt sie
+unter diesen Namen ab; die Doku bindet sie schon ein.
+
+| Dateiname | Was zu sehen sein soll | Verwendet in | Stand |
+|---|---|---|---|
+| `admin-device-item.png` | Pageitem-Konfiguration, Art **Gerät mit Details**, Gerät `0_userdata.0.devicepage.robot` („Robbi – … Einträge angehakt“), Kurzer Tipp, Knopf Filterliste, **Long-Press öffnet: Detailseite** (kein Geräteseiten-Bereich) | Doku Schnellstart 1 | ☐ in Arbeit (Integration) |
+| `admin-filterlist.png` | Dialog **Filterliste** eines Geräts mit Maske und gleichnamigen Zeilen (z. B. Shelly mit mehreren Temperaturen): angehakte oben, Spalten Eintrag/State, Feld **2. Zeile** sichtbar | Doku §3 | ☐ in Arbeit (Integration) |
+| `admin-shortpress.png` | **vorhanden, bleibt:** Kurzer Tipp mit „Geräteseite öffnen“, Filterliste-Knopf, Long-Press öffnet: Geräteseite | Doku §2; README | ☑ |
+| `admin-overview.png` | **vorhanden, neu aufnehmen:** ganzer Dialog mit Geräteseite Layout 1, alle zehn Slots belegt, Haupt-Icon, Statuszeile, darunter das Häkchen „Web-Panel-Elemente (web-l / web-p)“ (aus) und „i-Icon anzeigen“. Das alte Bild zeigt noch den Hinweis „nur auf EU-Panels und Web-Panels im Querformat“ | Doku Schnellstart 2, §5; README | ☐ in Arbeit (Integration) |
+| `admin-status-custom.png` | **vorhanden, bleibt:** Statuszeile „Benutzerdefinierter Datenpunkt“ mit ID-Feld | Doku §5 Statuszeile; README | ☑ |
+| `admin-slot-custom.png` | **vorhanden, neu aufnehmen** (die Wahl heißt jetzt „Kanal“, dazu „Navigation“): Slots mit Benutzerdefiniert → Datenpunkt, → Kanal, → **Navigation** mit Zielseite und ein Datenpunkt mit „passt nicht zu diesem Slot“ | Doku §5 Benutzerdefiniert; README | ☐ in Arbeit (Integration) |
+| `admin-slot-dialog.png` | **vorhanden, neu aufnehmen** (zeigt noch den früheren kleinen Dialog): „…“ eines **Knopf**-Slots = Pageitem-Konfiguration ohne Kanalauswahl, Titel mit „4 Knopf“, Name, Icon `pause`/`play` und Farben für wahr/unwahr, Langer Druck | Doku §5 Einstellungen des Elements; README | ☐ in Arbeit (Integration) |
+| `admin-slot-dialog-status.png` | „…“ eines **Status-Icon**-Slots: kleiner Dialog „Einstellungen des Elements“ mit Icon/Farbe, „Farbverlauf …“ und „Kurzer Tipp“ | Doku §5 Einstellungen des Elements | ☐ in Arbeit (Integration) |
+| `admin-web-extra.png` | Bereich der Geräteseite mit **gesetztem Häkchen** „Web-Panel-Elemente (web-l / web-p)“: darunter die zusätzlichen Slots (am besten Layout 2: 7 Info-Zeile, 8–9 Knopf) | Doku §5 Zusätzliche Elemente | ☐ in Arbeit (Integration) |
+
+In der Doku stehen an den fünf Bildern, die es noch nicht gibt bzw. die veraltet sind, die Kommentare
+`<!-- BILD FOLGT … -->` / `<!-- BILD NEU AUFNEHMEN … -->` – sie können weg, sobald die Dateien da sind.
 
 ## Hardware-Fotos (Tim)
 
-**Keine.** Jedes Bild der Doku lässt sich aus dem Web-Panel oder dem Admin aufnehmen:
+**Keine.** Jedes Bild der Doku kommt aus dem Web-Panel oder dem Admin:
 
 - Aussehen je Modell und Layout: Web-Panel mit dem jeweiligen Modell.
-- Blinken beim langen Druck und wechselnder Statustext: Abläufe, die ein Standbild nicht zeigt – die Doku
-  beschreibt sie nur im Text, ein Bild ist nicht eingeplant.
-- Popups: vorhandene Doku ([pagePopup](../../de/pagePopup.md), Bilder unter `doc/Pictures/webpanel/`).
-
-Sollte der Abgleich unten eine Abweichung zeigen, die sich im Web-Panel nicht beheben lässt, kommt hier eine Zeile
-mit Begründung dazu.
+- Blinken beim langen Druck: zeigt nur die HMI, das Web-Panel nicht. Die Doku beschreibt es im Text; ein Standbild
+  würde es ohnehin nicht zeigen, deshalb ist kein Foto eingeplant.
+- Wechselnder Statustext: ein Ablauf, im Text beschrieben.
 
 ## Abgleich Web ↔ HMI
 
-Maßgebliche Referenzen sind Tims echte Aufnahmen der EU-HMI (Nextion-Simulator/Display) in der Wurzel von
-`/mnt/projekte/` (nur lesbar, nicht hineinschreiben). Geprüft wird jeweils die Web-Aufnahme des Modells **eu** mit
-derselben Belegung.
+Durchgeführt am 2026-11-24. Referenzen sind Tims echte Aufnahmen der EU-HMI (Nextion-Simulator) in der Wurzel von
+`/mnt/projekte/` (nur lesbar). Verglichen wurde jeweils eine Web-Aufnahme des Modells **eu** in Originalgröße, die
+genau die Nachricht der Aufnahme nachbildet (gleiche Texte, Icons, Farben), mit Noto Sans.
 
-| # | Referenz | Größe | Inhalt | Web-Aufnahme |
+**Verfahren:** Die Aufnahmen haben teils einen Fensterrand. Der Versatz des Panel-Inhalts wurde je Bild bestimmt
+(grauer Rand links/oben) und an der Lage des i-Icons gegengeprüft – es liegt danach in allen fünf Bildern an
+derselben Stelle. Dann wurde für jedes Element in seinem Feld (Maße aus
+[device-page-hmi.md](../../ideas/device-details/device-page-hmi.md)) das Rechteck der hellen Pixel in beiden
+Bildern gemessen und verglichen (links / oben / rechts / unten in Pixeln, Web minus HMI), dazu die häufigste Farbe.
+
+| # | Referenz | Größe, Versatz | Web-Aufnahme | Ergebnis |
 |---|---|---|---|---|
-| 1 | `Screenshot 2026-11-23 202151.png` | 481 × 326 (Fensterrand) | cardDevice1 „Robbi“ mit Status-Icons (R1) | `eu-cardDevice1.png` |
-| 2 | `Screenshot 2026-11-23 160356.png` | 479 × 319 | cardDevice1 „Robbi“ ohne Status-Icons (R1p) | `eu-cardDevice1-plain.png` |
-| 3 | `Screenshot 2026-11-23 160338.png` | 481 × 320 | cardDevice2 „Waschmaschine“ (R2) | `eu-cardDevice2.png` |
-| 4 | `Screenshot 2026-11-23 160313.png` | 480 × 320 | cardDevice3 „ID.3“ (R3) | `eu-cardDevice3.png` |
-| 5 | `Screenshot 2026-11-23 202318.png` | 488 × 326 (Fensterrand) | Detailseite „Robbi“ (R4) | `eu-detail-page.png` |
+| 1 | `Screenshot 2026-11-23 202151.png` | 481 × 326, 0 / 1 | cardDevice1 mit Status-Icons (R1) | **deckt sich.** Rahmen des Status-Rasters deckungsgleich (x 124–198, y 71–159). Haupt-Icon ±0…1. Texte: linke Kante ±1, Breite 0…+1 px („Batterie“ 64 → 65, „Starten“ 58 → 59), Unterkante gleich. Icons der Info-Zeilen, Knöpfe und des Rasters 1–2 px weiter rechts bzw. größer. Statuszeile: HMI linksbündig (x 12–386), Web mittig (19–391). |
+| 2 | `Screenshot 2026-11-23 160356.png` | 479 × 319, 1 / 1 | cardDevice1 ohne Status-Icons (R1p) | **deckt sich.** Kein Raster, Info-Zeilen breit: Icon x 136 / 137, Name ab x 166 / 165, Wert endet x 437 / 438. Sonst wie 1. |
+| 3 | `Screenshot 2026-11-23 160338.png` | 481 × 320, 0 / 0 | cardDevice2 (R2) | **deckt sich.** Rahmen des Balkens deckungsgleich (x 10–438, y 207–220), Füllung endet bei x 274 / 275. Statuszeile in beiden mittig: x 28–381 / 27–382. Info-Kacheln: Namen ±0…2, rechtsbündige Werte enden ±0…1. Großer Wert „1:23“: linke Kante gleich, 4 px breiter (109 → 113). Überschrift 3 px breiter. |
+| 4 | `Screenshot 2026-11-23 160313.png` | 480 × 320, 2 / 2 (Ausschnitt verschoben) | cardDevice3 (R3) | **deckt sich.** Beide Schalter deckungsgleich. Kacheln: Namen beginnen ±1, enden gleich; Werte enden ±0…1; Icons 1–2 px weiter rechts. Statuszeile: HMI linksbündig (x 12–332), Web mittig (45–365). |
+| 5 | `Screenshot 2026-11-23 202318.png` | 488 × 326, 7 / 4 | Detailseite (R4) | **deckt sich bis auf wenige Pixel.** Überschrift und Pfeile ±1. Icons 1–2 px weiter links, Namen 1–2 px weiter links, Werte enden 2–4 px weiter links. Werte in beiden weiß. |
 
-**Vor dem Vergleich:** Die Referenzen sind nicht alle 480 × 320 (Fensterrand, ein Pixel zu viel oder zu wenig).
-Zuerst den Versatz bestimmen (z. B. an der linken Kante des Haupt-Icons und der Grundlinie der Überschrift) und auf
-480 × 320 zuschneiden bzw. ausrichten; erst dann Bild gegen Bild legen.
+**Abweichungen und ihre Ursache:**
 
-**Worauf geprüft wird:**
+| Abweichung | Größe | Ursache | Fehler des Web-Panels? |
+|---|---|---|---|
+| Statuszeile auf cardDevice1 und cardDevice3 links statt mittig | 7 bzw. 33 px | Aufnahmen von Test-HMIs vor `device9`; seitdem ist die Zeile auf allen drei Seiten mittig | nein |
+| Batterie-Icon: volle Batterie statt Füllstand; Name unter dem Haupt-Icon von cardDevice2 „Pause“; Knopf „Pause“ in 160356 mit Tipp-Icon | Inhalt | älterer Stand von Adapter und Testdaten | nein |
+| Textfarbe: HMI (205, 255, 255), Web weiß (255, 255, 255). Betrifft Überschrift, Namen, Werte, Statuszeile und den Rahmen des Balkens (die HMI zeichnet ihn in der Textfarbe) | Farbe | Das Web-Panel zeichnet den Text aller Karten weiß. In `doc/web-panel/PLAN.md` als bekannt vermerkt („HMI-Textfarbe hat einen Cyan-Stich … nicht übernommen“) | bekannte Abweichung aller Karten, nicht der Geräteseite |
+| Icons 1–2 px weiter rechts und 1–2 px breiter (z. B. Glyphe 23 → 24 px) | 1–2 px | Icon-Schrift im Browser gegen die gerasterten Nextion-Schriften | gering, nicht behoben |
+| Großer Wert „1:23“ 4 px breiter, Überschrift „Waschmaschine“ 3 px breiter | 3–4 px | Noto Sans im Browser gegen Nextion-Font 4 bzw. 2 | gering |
+| Detailseite: Werte enden 2–4 px, Icons und Namen 1–2 px weiter links | 1–4 px | cardEntities des Web-Panels, nicht die Geräteseite | gering |
+| Übrige Farben (Cyan, Grau, Hellgelb, Schalter-Blau, Pfeil-Blau) | ≤ 3 je Kanal | Rundung RGB565 → RGB | nein |
 
-| Punkt | Was genau |
-|---|---|
-| Positionen | Lage jedes Elements auf ±1 px: Haupt-Icon und Name, Icon-Spalten, linke Kante der Namen, rechte Kante der rechtsbündigen Werte, Raster der Status-Icons (Linien und Icon-Mitte), Knopfreihe, Balken (Rahmen 429 × 14 ab x 10 / y 207), Schalter, Statuszeile, i-Icon, Pfeile und Überschrift. |
-| Schriftgrößen | Höhe der Großbuchstaben/Ziffern je Schrift: Namen und Werte (24 px), Überschrift, großer Wert „1:23“ (80 px fett), kleine und große Icons. Laufweite: Endet „Reinigt Wohnzimmer, noch 12 min (Wischen)“ an derselben Stelle? |
-| Abschneiden an Feldgrenzen | Text, der nicht passt, endet an derselben Pixelspalte wie in der HMI, ohne „…“: in den Referenzen passt alles – zusätzlich mit längeren Namen prüfen (z. B. Gerätename „Waschmaschine“ unter dem Haupt-Icon von cardDevice2, Info-Namen in R1 mit Status-Icons). |
-| Farben | Textfarbe, Cyan der aktiven Icons, Grau der inaktiven, Hellgelb des Batterie-Icons, Weiß der „123“-Icons, Rasterlinien der Status-Icons, Balkenfüllung und -rahmen, Schalterbilder, Blau des Pfeils. |
-| Sichtbarkeit | Leere Slots sind unsichtbar; ohne Status-Icons kein Raster und breite Info-Zeilen (Referenz 2 gegen 1). |
+**Nicht prüfbar mit diesen Aufnahmen:** das **Abschneiden an der Feldgrenze** – in keiner Aufnahme ist ein Text
+länger als sein Feld. Das Web-Panel schneidet an der Feldgrenze ab (zu sehen in `eu-cardDevice2.png`: der
+Gerätename „Waschmaschine“ im 96 px breiten Feld unter dem Haupt-Icon, sichtbar ist der Anfang „Waschmasc“). Ob die
+HMI einen zu langen **mittig** ausgerichteten Text ebenso am Anfang beginnen lässt, ist am Panel anzusehen
+(README, Bildtabelle). Ebenfalls ohne echte Referenz: us-l und us-p – dort vergleicht der Test
+`src-web/src/cards/cardDevice/geometry.test.ts` jede Box mit `device-page-geometry.json` der HMI.
 
-**Bekannte Unterschiede der Referenzen zum heutigen Stand** (kein Fehler des Web-Panels):
+**Bekannter Unterschied us-l:** Das Web-Panel verschiebt auf us-l nur den Inhalt der Karte um 15 px, die Kopfzeile
+(Pfeile, Überschrift) zeichnet es wie auf eu; auf der echten us-l-HMI sitzt auch sie 15 px weiter rechts
+(`doc/web-panel/SMARTPHONE.md`, „Geräteseiten“). Das gilt für alle Karten des Web-Panels.
 
-- Die Referenzen stammen von Test-HMIs vor `device9`: Auf cardDevice1 und cardDevice3 steht die Statuszeile dort
-  **links**, heute auf allen drei Seiten **mittig**.
-- Referenz 3 zeigt unter dem Haupt-Icon „Pause“ (damals der Name des Items); heute steht dort immer der Name des
-  Geräts.
-- Referenz 2 ist älter als die Status-Icons: Der Knopf „Pause“ hat dort noch das Tipp-Icon.
-
-**Ergänzend** (nur Skript-Vorschauen, keine echten Aufnahmen): `hmi-cardDevice1.png`, `hmi-cardDevice1-plain.png`,
-`hmi-cardDevice2.png`, `hmi-cardDevice3.png` in diesem Ordner (maßstabsgetreu aus den Projektfonts, vom Werkzeug
-`HMI/tools/card_device.py`) gegen `web-cardDevice1.png`, `web-cardDevice1-plain.png`, `web-cardDevice2.png`,
-`web-cardDevice3.png` – gleiche Beispieldaten. Kopien älterer Vorschauen liegen unter
-`/mnt/projekte/nspanel emu/preview_cardDevice*.png`.
-
-`/mnt/projekte/nspanel emu/cardDevice3-neu.png` (2026-11-24) zeigt cardDevice3 mit einer **Spalte aus fünf
-Status-Icons am rechten Rand** und schmaleren Info-Kacheln. Das steht in keinem der Ideen-Dokumente und nicht in
-der Doku – vor dem Aufnehmen klären, ob das der Zielstand von Layout 3 ist (dann ändern sich R3, Doku §5
-„Status-Icons“ und §6).
-
-Sollen Referenzbilder in die Doku, werden sie beim Aufnehmen hierher kopiert (jetzt nicht).
+`/mnt/projekte/nspanel emu/cardDevice3-neu.png` (Status-Icon-Spalte auf Layout 3) ist ein Entwurf und kein
+Zielstand: Status-Icons gibt es nur auf Layout 1.
 
 ## Bilder, die nur Entwickler-Dokumente verwenden
 
-`hmi-cardDevice1.png`, `hmi-cardDevice1-plain.png`, `hmi-cardDevice2.png`, `hmi-cardDevice3.png` – eingebunden in
-`doc/ideas/device-details/device-page-hmi.md`; `card_device.py --preview doc/Pictures/device-page` erzeugt sie neu.
-Die Nutzer-Doku verwendet sie nicht (ihre Beispieldaten zeigen Einheiten mit Leerzeichen, der Adapter schreibt sie
-ohne).
+`hmi-cardDevice*.png`, `hmi-us-l-cardDevice*.png`, `hmi-us-p-cardDevice*.png` – Vorschauen des Werkzeugs
+`HMI/tools/card_device.py` (`--preview doc/Pictures/device-page`), eingebunden in
+`doc/ideas/device-details/device-page-hmi.md`. Die Nutzer-Doku verwendet sie nicht (ihre Beispieldaten zeigen
+Einheiten mit Leerzeichen, der Adapter schreibt sie ohne).

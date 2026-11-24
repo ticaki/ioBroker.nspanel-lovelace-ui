@@ -120,7 +120,10 @@ Werte haben wie auf der HMI höchstens 31 Byte und werden an der Feldgrenze abge
 | cardDevice2 | main und großer Wert wie eu (bei 3 Knöpfen Icon x 106, Wert und Name x 140 statt 110 / 146). **1–3 Knöpfe oben rechts** (100 × 50, Name 100 × 26), rechtsbündig, Slot 6 zuerst. Balken und sein Name 620 px. Darunter **eine Reihe mit 3–4 Info-Kacheln** (140 px wie eu) | Knöpfe 1: 530 · 2: 430 / 530 · 3: 330 / 430 / 530 · Infos 3: 10 / 250 / 490 · 4: 10 / 170 / 330 / 490 |
 | cardDevice3 | main wie eu. Info-Kacheln (161 px wie eu) in den Zeilen y 69 / 121 / 173: Slots 1–6 zeilenweise in zwei Spalten wie eu, die **Zusatz-Infos in einer dritten Spalte** (oben, Mitte). Darunter **eine Reihe mit 2–3 Schaltern** (y 228–277) | Infos 2 Spalten: 114 / 372 · 3 Spalten: 114 / 292 / 469 · Schalter 2: 10 / 320 (213 px wie eu) · 3: 10 / 217 / 424 (206 px: Name x + 34, Schalter x + 161, 45 px) |
 
-Voll belegt und ohne Zusatz-Elemente (Beispiele `src-web/scripts/examples/web-l-cardDevice*.txt`):
+Voll belegt und ohne Zusatz-Elemente. Die Bilder zeigen die Referenzbelegung der Nutzer-Doku
+(`src-web/scripts/examples/ref-cardDevice*-extras.txt` bzw. `ref-cardDevice*.txt`, siehe
+[BILDER.md](../Pictures/device-page/BILDER.md)); die Beispiele `web-l-cardDevice*.txt` mit anderen Daten nutzen
+die Tests:
 
 ![web-l cardDevice1](../Pictures/device-page/web-l-cardDevice1.png)
 ![web-l cardDevice1 ohne Zusatz-Elemente](../Pictures/device-page/web-l-cardDevice1-plain.png)
@@ -151,8 +154,10 @@ Abweichung von „kein Feld schmaler als auf us-p“: nur die Knöpfe von cardDe
 ganze Breite (300 px); drei Knöpfe in voller Breite wären drei Zeilen à 80 px und passen nicht mehr über die
 Statuszeile. In einer Reihe haben sie zu dritt 100 px – so breit wie derselbe Knopf auf eu.
 
-Voll belegt und ohne Zusatz-Elemente (Beispiele `src-web/scripts/examples/web-p-cardDevice*.txt`; die us-p-Seiten
-mit den Daten der HMI-Vorschau: `us-p-cardDevice*.txt`):
+Voll belegt und ohne Zusatz-Elemente. Die Bilder zeigen die Referenzbelegung der Nutzer-Doku
+(`src-web/scripts/examples/ref-portrait-cardDevice*-extras.txt` bzw. `ref-portrait-cardDevice*.txt`); die Beispiele
+`web-p-cardDevice*.txt` mit anderen Daten nutzen die Tests, die us-p-Seiten mit den Daten der HMI-Vorschau stehen
+in `us-p-cardDevice*.txt`:
 
 ![web-p cardDevice1](../Pictures/device-page/web-p-cardDevice1.png)
 ![web-p cardDevice1 ohne Zusatz-Elemente](../Pictures/device-page/web-p-cardDevice1-plain.png)

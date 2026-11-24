@@ -42,9 +42,9 @@ Was du nimmst, hängt davon ab, was du am Panel sehen willst:
 | auf der Geräteseite zusätzlich die ganze Werteliste erreichen | Geräteseite mit **i-Icon** – es öffnet die Detailseite |
 | ein Licht, einen Rollladen oder eine Steckdose mit ihrem gewohnten Popup bedienen | ein **Standard**-Item mit Alias-Kanal, siehe [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration) – ein solcher Kanal lässt sich aber auch in einen Slot der Geräteseite legen |
 
-So sieht eine Geräteseite aus (Layout „Steuern“ mit eigenen Icons für die Knöpfe, EU-Panel):
+So sieht eine Geräteseite aus (Layout „Steuern“ am EU-Panel):
 
-![Geräteseite eines Saugroboters: großes Icon, vier Status-Icons, zwei Info-Zeilen, vier Knöpfe und unten die Statuszeile mit dem i-Icon](../Pictures/device-page/web-cardDevice1.png)
+![Geräteseite eines Saugroboters: großes Icon, vier Status-Icons, zwei Info-Zeilen, vier Knöpfe und unten die Statuszeile mit dem i-Icon](../Pictures/device-page/eu-cardDevice1.png)
 
 ## Schnellstart: Gerät mit Detailseite
 
@@ -135,7 +135,6 @@ Bei einem neuen Item sind die Einträge vorbelegt, die du bei einem Gerät **des
 
 **Die Detailseite** ist eine normale Entities-Seite. Ihre Überschrift ist der Name des Geräts, der Pfeil zurück führt auf die Seite, von der sie geöffnet wurde. Je Seite zeigt sie so viele Zeilen wie jede Entities-Seite des Modells (EU-/US-Querformat und Smartphone quer 4, US-Hochformat 5, Smartphone hochkant 8); mehr Zeilen blättern weiter.
 
-<!-- BILD FOLGT (BILDER.md): eu-detail-page.png -->
 ![Die Detailseite eines Saugroboters am EU-Panel: Batterie, Signal, Firmware und Fläche als Zeilen mit Icon, Name und Wert](../Pictures/device-page/eu-detail-page.png)
 
 Was eine Zeile zeigt und kann, hängt vom Datenpunkt ab:
@@ -258,11 +257,12 @@ Nur Layout 1 hat vier Plätze der Art **Status-Icon** (Slots 7–10): kleine Ico
 - Ein Status-Icon zeigt **nur ein Icon in seiner Farbe**, ohne Name und Wert.
 - Das Icon kommt automatisch (dasselbe wie in einer Info-Zeile mit diesem Wert); ein eigenes wählst du über **…**, z. B. `delete-empty` für „Behälter leeren“.
 - Die Farbe kommt automatisch: An/Aus-Werte in den Farben *aktiviert* / *deaktiviert* des [Farbthemas](colorTheme), andere Werte in der Farbe ihrer Gruppe.
-- Sind alle vier leer, sieht die Seite aus wie ohne sie. Ist **mindestens eines** belegt, erscheint das ganze Raster (leere Felder bleiben als leere Kästchen stehen) und die beiden Info-Zeilen werden **schmaler** – lange Namen werden dann früher abgeschnitten. Der Dialog weist unter den Slots darauf hin.
+- Sind alle vier leer, sieht die Seite aus wie ohne sie. Ist **mindestens eines** belegt, erscheint das ganze Raster; leere Felder bleiben als leere Kästchen stehen.
+- Am **EU-Panel**, im **US-Querformat** und bei **Smartphone quer** stehen die Status-Icons zwischen dem großen Icon und den Info-Zeilen: Sobald das Raster erscheint, werden die beiden Info-Zeilen **schmaler** – lange Namen werden dann früher abgeschnitten. Der Dialog weist unter den Slots darauf hin. Im **US-Hochformat** und bei **Smartphone hochkant** stehen die Info-Zeilen unter dem Raster und bleiben immer gleich breit.
 
 | Mit Status-Icons | Ohne Status-Icons |
 |---|---|
-| <img alt="Layout 1 mit vier Status-Icons im Raster neben dem großen Icon, die Info-Zeilen sind schmal" src="../Pictures/device-page/web-cardDevice1.png" width="100%"/> | <img alt="Layout 1 ohne Status-Icons, die Info-Zeilen nutzen die ganze Breite" src="../Pictures/device-page/web-cardDevice1-plain.png" width="100%"/> |
+| <img alt="Layout 1 am EU-Panel mit vier Status-Icons im Raster neben dem großen Icon, die Info-Zeilen sind schmal" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="Layout 1 am EU-Panel ohne Status-Icons, die Info-Zeilen nutzen die ganze Breite" src="../Pictures/device-page/eu-cardDevice1-plain.png" width="100%"/> |
 
 ### i-Icon anzeigen
 
@@ -270,30 +270,30 @@ Vorgabe: an. Das „i“ unten rechts öffnet die Detailseite mit den angehakten
 
 ### Zusätzliche Elemente für Smartphone-Web-Panels
 
-Die Modelle **Smartphone quer** und **Smartphone hochkant** eines [Web-Panels](WebPanel#4-modell-wählen-format-und-plätze) haben mehr Platz und können je Layout zusätzliche Elemente zeigen:
+Die Modelle **Smartphone quer** (`web-l`) und **Smartphone hochkant** (`web-p`) eines [Web-Panels](WebPanel#4-modell-wählen-format-und-plätze) haben mehr Platz und können je Layout zusätzliche Elemente zeigen:
 
-| Layout | auf jedem Panel | zusätzlich auf Smartphone-Web-Panels | dort zusammen |
-|---|---|---|---|
-| **1 – Steuern** | 2 Info-Zeilen, 4 Knöpfe, 4 Status-Icons | 2 Knöpfe | 6 Knöpfe |
-| **2 – Fortschritt** | großer Wert, Fortschrittsbalken, 3 Info-Zeilen, 1 Knopf | 1 Info-Zeile, 2 Knöpfe | 4 Info-Zeilen, 3 Knöpfe |
-| **3 – Werte** | 6 Info-Zeilen, 2 Schalter | 2 Info-Zeilen, 1 Schalter | 8 Info-Zeilen, 3 Schalter |
+| Layout | auf jedem Panel | zusätzlich auf Smartphone-Web-Panels | Slot-Nummern | dort zusammen |
+|---|---|---|---|---|
+| **1 – Steuern** | 2 Info-Zeilen, 4 Knöpfe, 4 Status-Icons | 2 Knöpfe | 11–12 | 6 Knöpfe |
+| **2 – Fortschritt** | großer Wert, Fortschrittsbalken, 3 Info-Zeilen, 1 Knopf | 1 Info-Zeile, 2 Knöpfe | 7 (Info-Zeile), 8–9 (Knöpfe) | 4 Info-Zeilen, 3 Knöpfe |
+| **3 – Werte** | 6 Info-Zeilen, 2 Schalter | 2 Info-Zeilen, 1 Schalter | 9–10 (Info-Zeilen), 11 (Schalter) | 8 Info-Zeilen, 3 Schalter |
 
-Dafür gibt es im Bereich der Geräteseite ein Häkchen (Vorgabe: aus). Erst wenn es gesetzt ist, erscheinen die zusätzlichen Plätze unter **Slots**.
-
-<!-- TODO nach Integration: genaue Beschriftung des Häkchens (und sein Hilfstext) aus admin/i18n/de/translations.json wörtlich einsetzen; Position im Dialog (über/unter den Slots) und Nummern/Bezeichnung der Zusatz-Plätze prüfen; prüfen, was beim Ausschalten mit belegten Zusatz-Plätzen passiert (bleiben sie gespeichert?) -->
+Unter den Slots steht dafür das Häkchen **Web-Panel-Elemente (web-l / web-p)** (Vorgabe: aus). Sein Tooltip erklärt es: *Zusätzliche Slots dieses Layouts. Nur eigenständige Web-Panels der Modelle web-l und web-p zeigen sie, alle anderen Panels zeigen die Seite ohne sie.* Ist es gesetzt, erscheinen darunter die zusätzlichen Slots, fortlaufend weiternummeriert. Jeder wird belegt und eingestellt wie ein anderer Slot derselben Art – gleiche Auswahl, gleiches **…**. Vorbelegt ist keiner.
 
 <!-- BILD FOLGT (BILDER.md): admin-web-extra.png -->
-![Der Bereich der Geräteseite mit gesetztem Häkchen für die zusätzlichen Elemente: unter Slots stehen die Zusatz-Plätze](../Pictures/device-page/admin-web-extra.png)
+![Der Bereich der Geräteseite mit gesetztem Häkchen Web-Panel-Elemente (web-l / web-p): unter den Slots des Layouts stehen die zusätzlichen Slots](../Pictures/device-page/admin-web-extra.png)
 
-- **Hardware-Panels zeigen die zusätzlichen Elemente nie** – auch nicht das Browser-Bild eines echten Panels und kein Web-Panel mit einem der drei Panel-Formate.
-- Ist dieselbe Seite einem Hardware-Panel und einem Smartphone-Web-Panel zugewiesen, zeigt das Hardware-Panel die Plätze, die es kennt; die zusätzlichen fehlen dort einfach.
-- Die Textlängen sind auf allen Modellen gleich, siehe [Grenzen](#10-grenzen).
+- **Das Häkchen zu entfernen blendet nur aus.** Die zusätzlichen Slots verschwinden aus dem Dialog und vom Web-Panel; ihre Belegung bleibt gespeichert und ist nach erneutem Anhaken wieder da.
+- **Layoutwechsel:** Die zusätzlichen Slots bleiben unter sich in ihrer Reihenfolge – der erste zusätzliche Slot bleibt der erste. Seine Art kann dabei wechseln (in Layout 1 ein Knopf, in Layout 2 und 3 eine Info-Zeile); passt die Belegung danach nicht mehr, steht sie rot mit „passt nicht zu diesem Slot“ da. Layout 1 hat nur zwei zusätzliche Slots: Beim Wechsel dorthin geht der dritte verloren – auch wenn das Häkchen gerade nicht gesetzt ist. Aus einem Status-Icon wird nie ein zusätzlicher Slot und umgekehrt.
+- **Hardware-Panels zeigen die zusätzlichen Elemente nie** – auch nicht das Browser-Bild eines echten Panels und kein Web-Panel mit einem der drei Panel-Formate. Ist dieselbe Seite einem solchen Panel und einem Smartphone-Web-Panel zugewiesen, fehlen die zusätzlichen Elemente dort einfach; alles andere ist gleich.
+- Am Web-Panel verhält sich ein zusätzliches Element wie jedes andere seiner Art (Tipp, Halten, Popup). Leere zusätzliche Slots am Ende hinterlassen keine Lücke: Die Reihe wird für die belegten Elemente neu verteilt.
+- Mehr Text passt dadurch nicht in ein Feld – es sind mehr Elemente, nicht längere. Namen und Werte haben überall dieselbe Höchstlänge, siehe [Grenzen](#10-grenzen).
 
 Wie das aussieht, zeigen die Bilder unter [Smartphone quer](#smartphone-quer-web-l) und [Smartphone hochkant](#smartphone-hochkant-web-p).
 
 ## 6. Die drei Layouts
 
-Die Bilder zeigen das EU-Panel mit eigenen Icons; die anderen Modelle folgen in [Abschnitt 8](#8-aussehen-je-panel-modell).
+Die Bilder zeigen das EU-Panel mit den Icons, die der Adapter von sich aus wählt (eigene Icons und Farben setzt du über **…**). Die anderen Modelle folgen in [Abschnitt 8](#8-aussehen-je-panel-modell).
 
 ### 1 – Steuern
 
@@ -303,7 +303,7 @@ Für Geräte, die man startet und stoppt: Saugroboter, Rasenmäher.
 - 4 **Knöpfe** darunter (Slots 3–6),
 - 4 **Status-Icons** im 2×2-Raster neben dem großen Icon (Slots 7–10), siehe [Status-Icons](#status-icons).
 
-![Layout 1 – Steuern: Saugroboter mit Akku und Fläche als Info-Zeilen, den Knöpfen Start, Pause, Dock und Suchen und vier Status-Icons](../Pictures/device-page/web-cardDevice1.png)
+![Layout 1 – Steuern: Saugroboter mit Batterie und Fläche als Info-Zeilen, den Knöpfen Starten, Pause, Laden und Suchen und vier Status-Icons](../Pictures/device-page/eu-cardDevice1.png)
 
 ### 2 – Fortschritt
 
@@ -314,7 +314,7 @@ Für Geräte mit einem Programm, das abläuft: Waschmaschine, Trockner, Geschirr
 - 3 **Info-Zeilen** als kleine Kacheln (Slots 3–5),
 - 1 **Knopf** oben rechts (Slot 6).
 
-![Layout 2 – Fortschritt: Waschmaschine mit der Restzeit als großem Wert, Fortschrittsbalken, Programm, Temperatur und Drehzahl und dem Knopf Pause](../Pictures/device-page/web-cardDevice2.png)
+![Layout 2 – Fortschritt: Waschmaschine mit der Restzeit als großem Wert, Fortschrittsbalken, Programm, Temperatur und Schleuderdrehzahl und dem Knopf Pause; der Name unter dem Icon ist an der Feldgrenze abgeschnitten](../Pictures/device-page/eu-cardDevice2.png)
 
 ### 3 – Werte
 
@@ -323,9 +323,7 @@ Für Geräte mit vielen Messwerten: Auto, Sensoren.
 - 6 **Info-Zeilen** als Kacheln in zwei Spalten (Slots 1–6, zeilenweise: 1 links oben, 2 rechts oben, 3 links Mitte …),
 - 2 **Schalter** darunter (Slots 7–8).
 
-<!-- TODO nach Integration: /mnt/projekte/nspanel emu/cardDevice3-neu.png (2026-11-24) zeigt Layout 3 mit einer Spalte aus fünf Status-Icons am rechten Rand und schmaleren Info-Kacheln. Wenn das der Zielstand ist: hier, unter „Status-Icons“ (bisher „nur Layout 1“), in der Tabelle der Zusatz-Elemente und in §10 (Feldbreiten) nachziehen. -->
-
-![Layout 3 – Werte: Auto mit sechs Werten in zwei Spalten und den Schaltern Klima und Laden](../Pictures/device-page/web-cardDevice3.png)
+![Layout 3 – Werte: Auto mit sechs Werten in zwei Spalten und den Schaltern Klima und Laden](../Pictures/device-page/eu-cardDevice3.png)
 
 Auf allen drei Layouts gleich: oben die Überschrift (der Name des Geräts) mit den Pfeilen, oben links das große **Haupt-Icon** mit dem Namen des Geräts, unten die **Statuszeile** und rechts daneben das **i-Icon**.
 
@@ -344,61 +342,63 @@ Medien-Kanäle und Fahrpläne passen in keinen Slot.
 
 ## 8. Aussehen je Panel-Modell
 
-Die Geräteseite gibt es auf jedem Modell. Was auf welchem Slot steht, ist überall gleich – nur die Anordnung folgt dem Format. Die Bilder zeigen je Modell dieselben drei Geräte: einen Saugroboter (Layout 1), eine Waschmaschine (Layout 2) und ein Auto (Layout 3), hier mit den Icons, die der Adapter von sich aus wählt.
+Die Geräteseite gibt es auf allen fünf Modellen. Was auf welchem Slot steht, ist überall gleich – nur die Anordnung folgt dem Format. Die Vorschau im Dialog des Admins zeigt die Anordnung des EU-Panels; wie die Seite auf den anderen Modellen aussieht, zeigen die Bilder hier.
 
-<!-- TODO nach Integration: alle Aussagen dieses Abschnitts am Code prüfen (heute: supportsCardDevice/CARD_DEVICE_MODELS nur eu und web-l). Insbesondere: us-l wirklich wie EU; Anordnung us-p für Layout 2 und 3 beschreiben (bisher kenne ich nur Layout 1); eigenes Layout web-l/web-p auf voller Bühne beschreiben; ob ein Web-Panel mit Panel-Format (eu/us-l/us-p) genau wie die Hardware zeichnet. -->
-
-<!-- BILD FOLGT (BILDER.md): alle Bilder dieses Abschnitts außer web-cardDevice*.png -->
+Die Bilder zeigen je Modell dieselben drei Geräte: einen Saugroboter (Layout 1), eine Waschmaschine (Layout 2) und ein Auto (Layout 3), mit den Icons, die der Adapter von sich aus wählt. Aufgenommen sind sie im Web-Panel mit dem jeweiligen Modell.
 
 ### EU-Querformat (`eu`)
 
 | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|
-| <img alt="EU-Panel, Layout 1: Saugroboter Robbi mit Status-Icons, Batterie und Fläche, vier Knöpfen und Statuszeile" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="EU-Panel, Layout 2: Waschmaschine mit Restzeit, Fortschrittsbalken, drei Info-Kacheln und einem Knopf" src="../Pictures/device-page/eu-cardDevice2.png" width="100%"/> | <img alt="EU-Panel, Layout 3: Auto mit sechs Info-Kacheln und zwei Schaltern" src="../Pictures/device-page/eu-cardDevice3.png" width="100%"/> |
+| <img alt="EU-Panel, Layout 1: Saugroboter Robbi mit Status-Icons, Batterie und Fläche, vier Knöpfen und Statuszeile" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="EU-Panel, Layout 2: Waschmaschine mit Restzeit, Fortschrittsbalken, drei Info-Kacheln und einem Knopf oben rechts" src="../Pictures/device-page/eu-cardDevice2.png" width="100%"/> | <img alt="EU-Panel, Layout 3: Auto mit sechs Info-Kacheln und zwei Schaltern" src="../Pictures/device-page/eu-cardDevice3.png" width="100%"/> |
 
 ### US-Querformat (`us-l`)
 
-Wie das EU-Panel.
+Dieselbe Anordnung wie am EU-Panel. Der Inhalt sitzt 15 Pixel weiter rechts, weil der sichtbare Bereich des US-Displays dort liegt.
 
 | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|
-| <img alt="US-Panel im Querformat, Layout 1: dieselbe Anordnung wie am EU-Panel" src="../Pictures/device-page/us-l-cardDevice1.png" width="100%"/> | <img alt="US-Panel im Querformat, Layout 2: dieselbe Anordnung wie am EU-Panel" src="../Pictures/device-page/us-l-cardDevice2.png" width="100%"/> | <img alt="US-Panel im Querformat, Layout 3: dieselbe Anordnung wie am EU-Panel" src="../Pictures/device-page/us-l-cardDevice3.png" width="100%"/> |
+| <img alt="US-Panel im Querformat, Layout 1: dieselbe Anordnung wie am EU-Panel, etwas nach rechts versetzt" src="../Pictures/device-page/us-l-cardDevice1.png" width="100%"/> | <img alt="US-Panel im Querformat, Layout 2: dieselbe Anordnung wie am EU-Panel, etwas nach rechts versetzt" src="../Pictures/device-page/us-l-cardDevice2.png" width="100%"/> | <img alt="US-Panel im Querformat, Layout 3: dieselbe Anordnung wie am EU-Panel, etwas nach rechts versetzt" src="../Pictures/device-page/us-l-cardDevice3.png" width="100%"/> |
 
 ### US-Hochformat (`us-p`)
 
-Hochkant sind die Elemente neu angeordnet. Layout 1: das Haupt-Icon oben links, die 2×2-Status-Icons rechts daneben, darunter die Info-Zeilen über die volle Breite, die Knöpfe in einem 2×2-Block und unten die Statuszeile.
+Hochkant sind die Elemente neu angeordnet:
+
+- **Layout 1:** das Haupt-Icon oben links mit dem Namen darunter, rechts daneben die Status-Icons als 2×2-Block. Darunter die zwei Info-Zeilen über die volle Breite, dann die vier Knöpfe als 2×2-Block (Slot 3 oben links, 4 oben rechts, 5 unten links, 6 unten rechts). Die Info-Zeilen sind hier immer gleich breit; ohne Status-Icons bleibt der Platz neben dem Haupt-Icon frei.
+- **Layout 2:** Haupt-Icon und großer Wert oben, darunter der Fortschrittsbalken. Die drei Infos sind volle Zeilen (Name links, Wert rechts) statt Kacheln, der Knopf liegt darunter über die volle Breite.
+- **Layout 3:** das Haupt-Icon oben in der Mitte, sein Name darunter über die volle Breite. Die sechs Info-Kacheln in zwei Spalten, die zwei Schalter als Zeilen untereinander.
+
+Die Statuszeile ist hier schmaler (262 statt 390 Pixel). Die Statustexte der Beispiele passen nicht mehr hinein – die Bilder zeigen ihren ersten Abschnitt, siehe [Wechselnder Statustext](#9-bedienung-am-panel).
 
 | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|
-| <img alt="US-Panel im Hochformat, Layout 1: Haupt-Icon oben links, Status-Icons daneben, Info-Zeilen über die volle Breite, Knöpfe als 2×2-Block, Statuszeile unten" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 2: Waschmaschine mit Restzeit, Fortschrittsbalken, Info-Kacheln und Knopf untereinander" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 3: Auto mit Info-Kacheln und Schaltern untereinander" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
+| <img alt="US-Panel im Hochformat, Layout 1: Haupt-Icon oben links, Status-Icons daneben, Info-Zeilen über die volle Breite, Knöpfe als 2×2-Block, Statuszeile unten" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 2: Haupt-Icon und Restzeit oben, Fortschrittsbalken, drei Info-Zeilen und der Knopf über die volle Breite" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 3: Haupt-Icon oben in der Mitte, sechs Info-Kacheln in zwei Spalten und zwei Schalterzeilen" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
 
 ### Smartphone quer (`web-l`)
 
-Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (640 × 320) mit einer eigenen Anordnung. Obere Reihe: ohne zusätzliche Elemente; untere Reihe: mit den [zusätzlichen Elementen](#zusätzliche-elemente-für-smartphone-web-panels).
+Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (640 × 320). Die Anordnung ist die des EU-Panels, in die Breite gezogen: Kein Textfeld ist schmaler als dort, die Info-Zeilen von Layout 1 und die Statuszeile (580 Pixel) sind deutlich breiter. Die [zusätzlichen Elemente](#zusätzliche-elemente-für-smartphone-web-panels) reihen sich ein: in Layout 1 eine Reihe mit bis zu sechs Knöpfen, in Layout 2 bis zu drei Knöpfe oben rechts und vier Info-Kacheln in einer Reihe, in Layout 3 eine dritte Spalte Info-Kacheln und ein dritter Schalter.
 
 | | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|---|
-| Standard | <img alt="Smartphone quer, Layout 1 ohne zusätzliche Elemente" src="../Pictures/device-page/web-l-cardDevice1.png" width="100%"/> | <img alt="Smartphone quer, Layout 2 ohne zusätzliche Elemente" src="../Pictures/device-page/web-l-cardDevice2.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 ohne zusätzliche Elemente" src="../Pictures/device-page/web-l-cardDevice3.png" width="100%"/> |
-| mit Zusatz | <img alt="Smartphone quer, Layout 1 mit sechs Knöpfen" src="../Pictures/device-page/web-l-cardDevice1-extra.png" width="100%"/> | <img alt="Smartphone quer, Layout 2 mit vier Info-Zeilen und drei Knöpfen" src="../Pictures/device-page/web-l-cardDevice2-extra.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 mit acht Info-Zeilen und drei Schaltern" src="../Pictures/device-page/web-l-cardDevice3-extra.png" width="100%"/> |
+| ohne Web-Panel-Elemente | <img alt="Smartphone quer, Layout 1 ohne zusätzliche Elemente: vier Knöpfe über die ganze Breite" src="../Pictures/device-page/web-l-cardDevice1-plain.png" width="100%"/> | <img alt="Smartphone quer, Layout 2 ohne zusätzliche Elemente: ein Knopf oben rechts, drei Info-Kacheln" src="../Pictures/device-page/web-l-cardDevice2-plain.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 ohne zusätzliche Elemente: sechs Info-Kacheln in zwei Spalten, zwei Schalter" src="../Pictures/device-page/web-l-cardDevice3-plain.png" width="100%"/> |
+| mit Web-Panel-Elementen | <img alt="Smartphone quer, Layout 1 mit sechs Knöpfen in einer Reihe" src="../Pictures/device-page/web-l-cardDevice1.png" width="100%"/> | <img alt="Smartphone quer, Layout 2 mit drei Knöpfen oben rechts und vier Info-Kacheln" src="../Pictures/device-page/web-l-cardDevice2.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 mit acht Info-Kacheln in drei Spalten und drei Schaltern" src="../Pictures/device-page/web-l-cardDevice3.png" width="100%"/> |
 
 ### Smartphone hochkant (`web-p`)
 
-Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (320 × 640) mit einer eigenen Anordnung.
+Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (320 × 640). Die Anordnung ist die des US-Hochformats; die zusätzliche Höhe tragen die [zusätzlichen Elemente](#zusätzliche-elemente-für-smartphone-web-panels) als weitere Zeilen: in Layout 1 eine dritte Reihe mit zwei Knöpfen, in Layout 2 eine vierte Info-Zeile und bis zu drei Knöpfe in einer Reihe, in Layout 3 eine vierte Reihe Info-Kacheln und eine dritte Schalterzeile. Ohne sie verteilen sich die Zeilen mit größeren Abständen über die Höhe. Ohne Status-Icons steht das Haupt-Icon von Layout 1 in der Mitte. Die Statuszeile ist wie im US-Hochformat 262 Pixel breit.
 
 | | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|---|
-| Standard | <img alt="Smartphone hochkant, Layout 1 ohne zusätzliche Elemente" src="../Pictures/device-page/web-p-cardDevice1.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 2 ohne zusätzliche Elemente" src="../Pictures/device-page/web-p-cardDevice2.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 3 ohne zusätzliche Elemente" src="../Pictures/device-page/web-p-cardDevice3.png" width="100%"/> |
-| mit Zusatz | <img alt="Smartphone hochkant, Layout 1 mit sechs Knöpfen" src="../Pictures/device-page/web-p-cardDevice1-extra.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 2 mit vier Info-Zeilen und drei Knöpfen" src="../Pictures/device-page/web-p-cardDevice2-extra.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 3 mit acht Info-Zeilen und drei Schaltern" src="../Pictures/device-page/web-p-cardDevice3-extra.png" width="100%"/> |
+| ohne Web-Panel-Elemente | <img alt="Smartphone hochkant, Layout 1 ohne zusätzliche Elemente: zwei Reihen mit je zwei Knöpfen" src="../Pictures/device-page/web-p-cardDevice1-plain.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 2 ohne zusätzliche Elemente: drei Info-Zeilen und ein Knopf" src="../Pictures/device-page/web-p-cardDevice2-plain.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 3 ohne zusätzliche Elemente: drei Reihen Info-Kacheln und zwei Schalterzeilen" src="../Pictures/device-page/web-p-cardDevice3-plain.png" width="100%"/> |
+| mit Web-Panel-Elementen | <img alt="Smartphone hochkant, Layout 1 mit drei Reihen zu je zwei Knöpfen" src="../Pictures/device-page/web-p-cardDevice1.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 2 mit vier Info-Zeilen und drei Knöpfen in einer Reihe" src="../Pictures/device-page/web-p-cardDevice2.png" width="100%"/> | <img alt="Smartphone hochkant, Layout 3 mit vier Reihen Info-Kacheln und drei Schalterzeilen" src="../Pictures/device-page/web-p-cardDevice3.png" width="100%"/> |
 
 ### Ein echtes Panel im Browser
 
-Das [Browser-Bild eines echten Panels](WebPanel#2-ein-echtes-panel-im-browser-öffnen) und ein Web-Panel mit einem der drei Panel-Formate sehen aus wie die Hardware – also wie in den Abschnitten EU, US-Querformat und US-Hochformat oben.
+Das [Browser-Bild eines echten Panels](WebPanel#2-ein-echtes-panel-im-browser-öffnen) und ein Web-Panel mit einem der drei Panel-Formate zeichnen die Seite wie die Hardware des jeweiligen Modells – also wie in den Abschnitten EU, US-Querformat und US-Hochformat oben und immer ohne zusätzliche Elemente.
 
 ## 9. Bedienung am Panel
 
-**Öffnen.** Auf einer Grid-Seite das Item **lange drücken**: Nach etwa einer halben Sekunde blinkt der Hintergrund der Kachel grün und grau – das zeigt, dass der lange Druck erkannt ist; beim **Loslassen** öffnet die Seite. Auf einer Entities-Seite genügt ein Tipp links auf Icon oder Bezeichnung. Mit dem kurzen Tipp **Geräteseite öffnen** reicht auf beiden ein kurzer Tipp.
-
-<!-- TODO nach Integration: Blinken beim langen Druck – gilt es auf allen Hardware-Modellen (Changelog heute: "needs a new TFT, eu") und zeigt es auch das Web-Panel? Text danach anpassen. -->
+**Öffnen.** Auf einer Grid-Seite das Item **lange drücken**: Nach etwa einer halben Sekunde blinkt am Hardware-Panel der Hintergrund der Kachel grün und grau – das zeigt, dass der lange Druck erkannt ist; beim **Loslassen** öffnet die Seite. Auf einer Entities-Seite genügt ein Tipp links auf Icon oder Bezeichnung. Mit dem kurzen Tipp **Geräteseite öffnen** reicht auf beiden ein kurzer Tipp.
 
 **Zurück.** Der Pfeil oben links führt von der Geräteseite auf die Seite des Items, von der Detailseite auf die Seite, von der sie geöffnet wurde (hinter dem „i“ also zurück auf die Geräteseite).
 
@@ -417,28 +417,30 @@ Das [Browser-Bild eines echten Panels](WebPanel#2-ein-echtes-panel-im-browser-ö
 | **i-Icon** | öffnet die Detailseite | wie der kurze Tipp |
 | **Statuszeile** | nichts | nichts |
 
-Wird ein Element ohne Popup gehalten, blinkt sein Hintergrund nach einer halben Sekunde grün und grau; ausgelöst wird beim Loslassen. Ein langer Druck gilt nie als kurzer Tipp: Ist für das Element kein langer Druck eingestellt, passiert nichts.
+Wird ein Element ohne Popup gehalten, blinkt am Hardware-Panel sein Hintergrund nach einer halben Sekunde grün und grau; ausgelöst wird beim Loslassen. Das **Web-Panel zeigt dieses Blinken nicht** – weder auf der Grid-Seite noch auf der Geräteseite; der lange Druck wirkt dort genauso, nur ohne die Rückmeldung. Ein langer Druck gilt nie als kurzer Tipp: Ist für das Element kein langer Druck eingestellt, passiert nichts.
 
 **Popups** sind die gewohnten (Licht, Rollladen, Auswahl, Regler, Timer …). Nach dem Schließen steht wieder die Geräteseite da. Ein Popup aus einem Status-Icon hat keine Überschrift.
 
-**Wechselnder Statustext.** Passt der Text nicht in die Statuszeile, teilt ihn der Adapter an Wortgrenzen in höchstens **drei Abschnitte** und zeigt sie nacheinander, Wechsel alle **3 Sekunden**, immer im Kreis. Was nach dem dritten Abschnitt übrig wäre, entfällt; der dritte endet dann mit „…“. Ändert sich der Text, beginnt die Anzeige wieder beim ersten Abschnitt. Solange ein Popup offen ist, pausiert der Wechsel.
+**Wechselnder Statustext.** Passt der Text nicht in die Statuszeile – ihre Breite hängt vom Modell ab, siehe [Grenzen](#10-grenzen) –, teilt ihn der Adapter an Wortgrenzen in höchstens **drei Abschnitte** und zeigt sie nacheinander, Wechsel alle **3 Sekunden**, immer im Kreis. Was nach dem dritten Abschnitt übrig wäre, entfällt; der dritte endet dann mit „…“. Ändert sich der Text, beginnt die Anzeige wieder beim ersten Abschnitt. Solange ein Popup offen ist, pausiert der Wechsel.
 
 ## 10. Grenzen
 
-- **TFT-Version.** Am Hardware-Panel braucht die Geräteseite eine TFT-Version, die sie enthält. Mit einer älteren TFT öffnet der lange Druck (und der kurze Tipp **Geräteseite öffnen**) stattdessen die **Detailseite**. Auch der Tipp auf Icon oder Bezeichnung auf einer Entities-Seite und das Blinken beim langen Druck brauchen die neue TFT. Ein Web-Panel braucht keine TFT.
-  <!-- TODO nach Integration: TFT-Version eintragen (CARD_DEVICE_MIN_TFT steht vorläufig auf 6.2.0 und wird zum Release angehoben); je Modell (eu / us-l / us-p) prüfen, ob dieselbe Version gilt; prüfen, ob es nach der Integration noch ein Modell gibt, das immer auf die Detailseite zurückfällt. -->
-- **Namen und Werte: höchstens 31 Zeichen** (Umlaute und Sonderzeichen zählen doppelt). Längeres wird ohne „…“ abgeschnitten. Meist ist aber vorher das Feld zu Ende – dann schneidet das Panel an der Feldgrenze ab, auch mitten im Buchstaben. Das ist auf allen Modellen gleich. Die Schrift ist 24 Pixel hoch, ein Buchstabe im Schnitt knapp 10 Pixel breit:
+- **TFT-Version.** Am Hardware-Panel braucht die Geräteseite eine TFT-Version, die sie enthält – auf allen drei Hardware-Modellen. Mit einer älteren TFT öffnet der lange Druck (und der kurze Tipp **Geräteseite öffnen**) stattdessen die **Detailseite**. Der Dialog sagt es so: *Die Geräteseite braucht auf Hardware-Panels eine aktuelle TFT. Panels mit älterer TFT zeigen die Detailseite.* Auch der Tipp auf Icon oder Bezeichnung auf einer Entities-Seite und das Blinken beim langen Druck brauchen die neue TFT. Ein Web-Panel braucht keine TFT und zeigt die Geräteseite immer.
+  <!-- TODO: Version folgt – die erste TFT mit den Geräteseiten steht noch nicht fest (CARD_DEVICE_MIN_TFT steht vorläufig auf 6.2.0 und wird zum Release angehoben); hier eintragen, sobald sie feststeht. -->
+- **Namen und Werte: höchstens 31 Byte** – das sind 31 Zeichen, Umlaute und Sonderzeichen zählen doppelt. Längeres wird ohne „…“ abgeschnitten. Diese Grenze ist auf allen Modellen gleich, auch für die zusätzlichen Elemente der Smartphone-Web-Panels.
+- **Die sichtbare Breite hängt vom Modell ab.** Meist ist das Feld zu Ende, bevor die 31 Byte erreicht sind – dann schneidet das Panel an der Feldgrenze ab, auch mitten im Buchstaben (im Bild von Layout 2 oben der Name „Waschmaschine“ unter dem Icon). Breiten in Pixeln; die Schrift ist 24 Pixel hoch, ein Buchstabe im Schnitt knapp 10 Pixel breit. Info-Zeile als *Name / Wert*:
 
-  | Layout | Name des Geräts unter dem Icon | Name eines Slots | Wert eines Slots |
-  |---|---|---|---|
-  | **1 – Steuern** | 110 px | Info-Zeile 164 px, **mit Status-Icons 86 px**; Knopf 104 px | Info-Zeile 110 px |
-  | **2 – Fortschritt** | 96 px | großer Wert 190 px; Fortschrittsbalken 429 px; Info-Zeile 104 px; Knopf 100 px | großer Wert 190 px in der großen Schrift (eine Ziffer 33 px); Info-Zeile 104 px |
-  | **3 – Werte** | 100 px | Info-Zeile 125 px; Schalter 125 px | Info-Zeile 125 px |
+  | Modell | Statuszeile | Layout 1 | Layout 2 | Layout 3 |
+  |---|---|---|---|---|
+  | **EU-Querformat**, **US-Querformat** | 390 | Gerätename 110 · Info-Zeile 164 / 110, **mit Status-Icons 86 / 110** · Knopf 104 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 429 · Info-Zeile 104 / 104 · Knopf 100 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
+  | **US-Hochformat** | 262 | Gerätename 150 · Info-Zeile 156 / 104 (auch mit Status-Icons) · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
+  | **Smartphone quer** | 580 | Gerätename 110 · Info-Zeile 354 / 110, mit Status-Icons 276 / 110 · Knopf 104 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 620 · Info-Zeile 104 / 104 · Knopf 100 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
+  | **Smartphone hochkant** | 262 | Gerätename 150 (ohne Status-Icons 300) · Info-Zeile 156 / 104 · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300, zu zweit je 148, zu dritt je 100 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
 
-  <!-- TODO nach Integration: "Textlängen überall gleich" und die Feldbreiten gegen DEVICE_PAGE_FIELDS und die us-p-/Web-Layouts prüfen (Tabelle = EU-HMI, doc/ideas/device-details/device-page-hmi.md). -->
+  Der große Wert steht in der großen Schrift: Eine Ziffer braucht dort 33 Pixel, „12:34“ 149 Pixel.
 - **Einheiten stehen ohne Leerzeichen am Wert** („80%“, „34m²“, „60°C“). Das ist Absicht und spart Platz.
 - **Der große Wert** hat eine eigene Schrift mit Ziffern, Buchstaben (auch ä, ö, ü) und den Zeichen `: % ° , . - /`. Ein **€** kann sie nicht zeigen.
-- **Die Statuszeile** hat eine Zeile (390 Pixel breit). Längerer Text wechselt in bis zu drei Abschnitten, siehe [Bedienung am Panel](#9-bedienung-am-panel).
+- **Die Statuszeile** hat eine Zeile; ihre Breite steht in der Tabelle oben. Längerer Text wechselt in bis zu drei Abschnitten (jeder höchstens 63 Byte), siehe [Bedienung am Panel](#9-bedienung-am-panel).
 - **Zahlen lassen sich auf der Detailseite nicht verstellen**, auch wenn der Datenpunkt schreibbar ist. Bedienbar sind Schalter, Taster und Werte mit Werteliste. Wer einen Regler braucht, legt einen Alias-Kanal (slider) in einen Slot der Geräteseite.
 - **Die Art eines Slots ist fest.** Du wählst, *was* ein Slot zeigt, nicht *wie*: Anzahl, Lage und Art der Plätze gibt das Layout vor.
 - **Erzeugte Seiten lassen sich nicht bearbeiten.** Geräteseite und Detailseite stehen nicht in der Seitenliste des Tabs PageConfig. Im [Navigation Flow](naviFlow) erscheint die Geräteseite schreibgeschützt (mit Schloss) unter der Seite ihres Items.
@@ -450,8 +452,10 @@ Die technischen Einzelheiten (Protokoll, Maße) stehen für Entwickler in [doc/i
 - **Statt der Geräteseite kommt die Detailseite.** Die TFT des Panels ist zu alt, siehe [Grenzen](#10-grenzen).
 - **Auf der Entities-Seite passiert beim Tipp links nichts.** Auch das braucht die neue TFT. Der Schalter rechts in der Zeile funktioniert unabhängig davon.
 - **Ein Slot bleibt am Panel leer.** Der Datenpunkt oder Kanal existiert nicht (mehr) oder passt nicht zur Art des Slots – im Dialog ist die Zeile dann rot. Bei einem Kanal steht beim Start des Adapters eine Warnung im Log (*Page '…', page item …: Device page slot …*).
-- **Die Info-Zeilen in Layout 1 schneiden plötzlich früher ab.** Ein Status-Icon ist belegt; dann sind die beiden Info-Zeilen schmaler (Name 86 statt 164 Pixel).
-- **Nach einem Layoutwechsel fehlen Slots.** Die Slots bleiben nach ihrer Nummer. Layout 2 hat nur 6 Slots: Wer von Layout 1 dorthin und wieder zurück wechselt, hat die Status-Icons 7–10 verloren.
+- **Die Info-Zeilen in Layout 1 schneiden plötzlich früher ab.** Ein Status-Icon ist belegt; am EU-Panel, im US-Querformat und bei Smartphone quer sind die beiden Info-Zeilen dann schmaler (am EU-Panel der Name 86 statt 164 Pixel).
+- **Nach einem Layoutwechsel fehlen Slots.** Die Slots bleiben nach ihrer Nummer. Layout 2 hat nur 6 Slots: Wer von Layout 1 dorthin und wieder zurück wechselt, hat die Status-Icons 7–10 verloren. Von den zusätzlichen Slots der Smartphone-Web-Panels geht beim Wechsel auf Layout 1 der dritte verloren.
+- **Die zusätzlichen Elemente fehlen am Panel.** Sie erscheinen nur auf eigenständigen Web-Panels mit den Modellen *Smartphone quer* und *Smartphone hochkant* – und nur, solange das Häkchen **Web-Panel-Elemente (web-l / web-p)** gesetzt ist.
+- **Im Web-Panel blinkt beim langen Druck nichts.** Das Blinken zeigt nur das Hardware-Panel; ausgelöst wird im Web-Panel trotzdem beim Loslassen.
 - **Ein langer Druck auf einen Knopf der Geräteseite tut nichts.** Für das Element ist kein **Langer Druck** eingestellt. Das ist Absicht: Ein langer Druck wird nie als kurzer Tipp gewertet.
 - **Der Tipp auf einen Navigations-Slot tut nichts.** Die Zielseite gibt es nicht mehr oder sie ist diesem Panel nicht zugeordnet. Im Log steht dazu einmal eine Warnung (*… the target page "…" of element … is not assigned to panel … - the tap does nothing!*).
 - **Von der Zielseite führt kein Weg zurück zur Geräteseite.** Siehe den Hinweis unter [Von der Geräteseite auf eine andere Seite springen](#von-der-geräteseite-auf-eine-andere-seite-springen).

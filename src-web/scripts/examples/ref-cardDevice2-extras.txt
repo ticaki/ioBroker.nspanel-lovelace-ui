@@ -1,0 +1,5 @@
+# cardDevice2 "Waschmaschine" with the additional info and 2 buttons of the web models: reference assignment of the docs (doc/Pictures/device-page/BILDER.md), values as the adapter writes them
+# web-l: doc/Pictures/device-page/web-l-cardDevice2.png
+pageType~cardDevice2
+entityUpd~Waschmaschine~button~bUp~~17299~~~~~~~~~text~9?0~~2047~Waschmaschine~Schleudern, noch 23 min - Fertig um 14:35~text~9?1~~65535~Restzeit~1:23~text~9?2~~65535~Fortschritt~62~text~9?3~~65535~Programm~Baumwolle~text~9?4~~53247~Temperatur~60°C~text~9?5~~65535~Schleudern~1400U/min~button~9?6~~35921~Pause~0~button~9?info~~65535~~1~text~9?9~~65535~Wasser~48l~button~9?10~~2047~Stopp~1~button~9?11~~2047~Später~1
+@sleep 300

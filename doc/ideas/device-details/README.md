@@ -257,7 +257,7 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
 
 ## Geräteseite
 
-Stand: 2026-11-23 – Adapter und Admin im Branch `feat/device-page` (Web-Panel folgt). HMI-Seiten und Feldmaße:
+Stand: 2026-11-23 – Adapter, Admin und Web-Panel im Branch `feat/device-page`. HMI-Seiten und Feldmaße:
 [device-page-hmi.md](device-page-hmi.md) (Branch `feat/device-page-hmi`). Seit 2026-11-24 auf allen fünf Modellen, die
 Web-Modelle mit Zusatz-Slots – siehe „Modelle und Zusatz-Slots“.
 
