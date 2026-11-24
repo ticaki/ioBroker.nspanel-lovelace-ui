@@ -23,7 +23,12 @@ __export(deviceDetails_exports, {
   DEVICE_DETAIL_ROW_ROLE: () => DEVICE_DETAIL_ROW_ROLE,
   DEVICE_PAGE_CHANNEL_ITEM_FIELDS: () => DEVICE_PAGE_CHANNEL_ITEM_FIELDS,
   DEVICE_PAGE_CHANNEL_ROLES: () => DEVICE_PAGE_CHANNEL_ROLES,
+  DEVICE_PAGE_EXTRA_SLOTS: () => DEVICE_PAGE_EXTRA_SLOTS,
   DEVICE_PAGE_FIELDS: () => DEVICE_PAGE_FIELDS,
+  DEVICE_PAGE_FIELDS_BY_MODEL: () => DEVICE_PAGE_FIELDS_BY_MODEL,
+  DEVICE_PAGE_FIELDS_US_P: () => DEVICE_PAGE_FIELDS_US_P,
+  DEVICE_PAGE_FIELDS_WEB_L: () => DEVICE_PAGE_FIELDS_WEB_L,
+  DEVICE_PAGE_FIELDS_WEB_P: () => DEVICE_PAGE_FIELDS_WEB_P,
   DEVICE_PAGE_INFO_ROLE: () => DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS: () => DEVICE_PAGE_LAYOUTS,
   DEVICE_PAGE_NAVIGATION_ICON: () => DEVICE_PAGE_NAVIGATION_ICON,
@@ -60,6 +65,10 @@ __export(deviceDetails_exports, {
   devicePageChannelTakesLongPress: () => devicePageChannelTakesLongPress,
   devicePageChannelTakesNavigation: () => devicePageChannelTakesNavigation,
   devicePageConfigOf: () => devicePageConfigOf,
+  devicePageConfigSlotKinds: () => devicePageConfigSlotKinds,
+  devicePageExtraSlotCount: () => devicePageExtraSlotCount,
+  devicePageExtraSlotKinds: () => devicePageExtraSlotKinds,
+  devicePageFields: () => devicePageFields,
   devicePageHasStatusIcons: () => devicePageHasStatusIcons,
   devicePageProgressPercent: () => devicePageProgressPercent,
   devicePageSlotAccepts: () => devicePageSlotAccepts,
@@ -124,6 +133,23 @@ const DEVICE_PAGE_LAYOUTS = {
   /** "Werte" (values) */
   3: ["info", "info", "info", "info", "info", "info", "switch", "switch"]
 };
+const DEVICE_PAGE_EXTRA_SLOTS = {
+  /** "Steuern": 6 buttons */
+  1: ["button", "button"],
+  /** "Fortschritt": 4 infos, 3 buttons */
+  2: ["info", "button", "button"],
+  /** "Werte": 8 infos, 3 switches */
+  3: ["info", "info", "switch"]
+};
+function devicePageExtraSlotKinds(layout, model) {
+  return (0, import_adminShareConfig.isWebPanelModel)(model) ? DEVICE_PAGE_EXTRA_SLOTS[layout] : [];
+}
+function devicePageExtraSlotCount(layout, model) {
+  return devicePageExtraSlotKinds(layout, model).length;
+}
+function devicePageConfigSlotKinds(layout) {
+  return [...DEVICE_PAGE_LAYOUTS[layout], ...DEVICE_PAGE_EXTRA_SLOTS[layout]];
+}
 const DEVICE_PAGE_TEXT_FONT = 0;
 const DEVICE_PAGE_STATUS_MAX_BYTES = 63;
 const DEVICE_PAGE_STATUS_COMMAND = "devStatus";
@@ -160,15 +186,78 @@ const DEVICE_PAGE_FIELDS = {
     slots: { info: { name: 125, value: 125 }, switch: { name: 125 } }
   }
 };
+const DEVICE_PAGE_FIELDS_US_P = {
+  1: {
+    mainName: 150,
+    status: 262,
+    slots: { info: { name: 156, value: 104 }, button: { name: 148 } }
+  },
+  2: {
+    mainName: 90,
+    status: 262,
+    slots: {
+      value: { name: 172, value: 172, valueFont: 4 },
+      progress: { name: 300 },
+      info: { name: 156, value: 104 },
+      button: { name: 300 }
+    }
+  },
+  3: {
+    mainName: 300,
+    status: 262,
+    slots: { info: { name: 112, value: 112 }, switch: { name: 212 } }
+  }
+};
+const DEVICE_PAGE_FIELDS_WEB_L = {
+  1: {
+    mainName: 110,
+    status: 580,
+    slots: { info: { name: 354, value: 110 }, button: { name: 104 } },
+    slotsWithStatus: { info: { name: 276, value: 110 } }
+  },
+  2: {
+    mainName: 96,
+    status: 580,
+    slots: {
+      value: { name: 190, value: 190, valueFont: 4 },
+      progress: { name: 620 },
+      info: { name: 104, value: 104 },
+      button: { name: 100 }
+    }
+  },
+  3: {
+    mainName: 100,
+    status: 580,
+    slots: { info: { name: 125, value: 125 }, switch: { name: 125 } }
+  }
+};
+const DEVICE_PAGE_FIELDS_WEB_P = {
+  1: DEVICE_PAGE_FIELDS_US_P[1],
+  2: {
+    ...DEVICE_PAGE_FIELDS_US_P[2],
+    slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 100 } }
+  },
+  3: DEVICE_PAGE_FIELDS_US_P[3]
+};
+const DEVICE_PAGE_FIELDS_BY_MODEL = {
+  eu: DEVICE_PAGE_FIELDS,
+  "us-l": DEVICE_PAGE_FIELDS,
+  "us-p": DEVICE_PAGE_FIELDS_US_P,
+  "web-l": DEVICE_PAGE_FIELDS_WEB_L,
+  "web-p": DEVICE_PAGE_FIELDS_WEB_P
+};
+function devicePageFields(layout, model) {
+  return DEVICE_PAGE_FIELDS_BY_MODEL[model][layout];
+}
 function devicePageSlotCount(layout) {
   return DEVICE_PAGE_LAYOUTS[layout].length;
 }
 function devicePageHasStatusIcons(layout, slots) {
   return DEVICE_PAGE_LAYOUTS[layout].some((kind, i) => kind === "status" && !!slots[i]);
 }
-function devicePageSlotFields(layout, kind, withStatusIcons) {
+function devicePageSlotFields(layout, kind, withStatusIcons, model = "eu") {
   var _a, _b;
-  const fields = DEVICE_PAGE_FIELDS[layout];
+  const fields = devicePageFields(layout, model);
   return (_b = withStatusIcons ? (_a = fields.slotsWithStatus) == null ? void 0 : _a[kind] : void 0) != null ? _b : fields.slots[kind];
 }
 function devicePageSlotAccepts(kind, state) {
@@ -342,9 +431,8 @@ function devicePageSlotLookOf(ref, withOlderIcon = true) {
 function devicePageSlotHasLook(ref) {
   return !!ref && Object.keys(devicePageSlotLookOf(ref)).length > 0;
 }
-function fitDevicePageSlots(slots, layout) {
-  return DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => {
-    const slot = slots[i];
+function fitDevicePageSlots(slots, layout, from) {
+  const fit = (slot, kind) => {
     if (!slot) {
       return null;
     }
@@ -353,7 +441,11 @@ function fitDevicePageSlots(slots, layout) {
       delete out.icon;
     }
     return out;
-  });
+  };
+  const fromCount = DEVICE_PAGE_LAYOUTS[from].length;
+  const fitted = DEVICE_PAGE_LAYOUTS[layout].map((kind, i) => fit(i < fromCount ? slots[i] : null, kind));
+  const extras = DEVICE_PAGE_EXTRA_SLOTS[layout].map((kind, k) => fit(slots[fromCount + k], kind));
+  return extras.some((slot) => slot !== null) ? [...fitted, ...extras] : fitted;
 }
 function defaultDevicePageSlots(entries, layout) {
   const rows = entries.filter((e) => e.id !== "");
@@ -505,11 +597,20 @@ function devicePageConfigOf(value) {
   DEVICE_PAGE_LAYOUTS[layout].forEach((kind, i) => {
     slots.push(devicePageSlotRefOf(rawSlots[i], kind));
   });
+  const extras = DEVICE_PAGE_EXTRA_SLOTS[layout].map(
+    (kind, k) => devicePageSlotRefOf(rawSlots[slots.length + k], kind)
+  );
+  if (extras.some((slot) => slot !== null)) {
+    slots.push(...extras);
+  }
   const config = {
     layout,
     slots,
     showInfo: !("showInfo" in value) || value.showInfo !== false
   };
+  if ("webExtras" in value && value.webExtras === true) {
+    config.webExtras = true;
+  }
   const icon = "icon" in value && typeof value.icon === "string" ? value.icon.trim() : "";
   if (icon) {
     config.icon = icon;
@@ -757,20 +858,22 @@ function deviceDetailsRuntimeOf(config) {
   };
   const page = devicePageConfigOf(config.devicePage);
   if (page) {
+    const kinds = devicePageConfigSlotKinds(page.layout);
+    const slots = page.slots.map((slot, i) => {
+      if (!slot) {
+        return null;
+      }
+      if (slot.custom === "navigation") {
+        const kind = kinds[i];
+        return slot.targetPage && kind && devicePageSlotAcceptsNavigation(kind) ? slot : null;
+      }
+      return slot.id !== "" ? slot : null;
+    });
+    const count = DEVICE_PAGE_LAYOUTS[page.layout].length;
+    const withExtras = page.webExtras === true && slots.slice(count).some((slot) => slot !== null);
     const devicePage = {
       layout: page.layout,
-      // an own data point or channel that is not entered yet, a navigation slot without target page or in a
-      // slot that needs a value: an empty slot
-      slots: page.slots.map((slot, i) => {
-        if (!slot) {
-          return null;
-        }
-        if (slot.custom === "navigation") {
-          const kind = DEVICE_PAGE_LAYOUTS[page.layout][i];
-          return slot.targetPage && kind && devicePageSlotAcceptsNavigation(kind) ? slot : null;
-        }
-        return slot.id !== "" ? slot : null;
-      }),
+      slots: withExtras ? slots : slots.slice(0, count),
       // without rows the detail page would be empty: no info icon
       showInfo: page.showInfo && runtime.entries.length > 0,
       shortPress: deviceShortPressOf(config)
@@ -860,7 +963,12 @@ function deviceDetailSubNames(deviceId, rows) {
   DEVICE_DETAIL_ROW_ROLE,
   DEVICE_PAGE_CHANNEL_ITEM_FIELDS,
   DEVICE_PAGE_CHANNEL_ROLES,
+  DEVICE_PAGE_EXTRA_SLOTS,
   DEVICE_PAGE_FIELDS,
+  DEVICE_PAGE_FIELDS_BY_MODEL,
+  DEVICE_PAGE_FIELDS_US_P,
+  DEVICE_PAGE_FIELDS_WEB_L,
+  DEVICE_PAGE_FIELDS_WEB_P,
   DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS,
   DEVICE_PAGE_NAVIGATION_ICON,
@@ -897,6 +1005,10 @@ function deviceDetailSubNames(deviceId, rows) {
   devicePageChannelTakesLongPress,
   devicePageChannelTakesNavigation,
   devicePageConfigOf,
+  devicePageConfigSlotKinds,
+  devicePageExtraSlotCount,
+  devicePageExtraSlotKinds,
+  devicePageFields,
   devicePageHasStatusIcons,
   devicePageProgressPercent,
   devicePageSlotAccepts,

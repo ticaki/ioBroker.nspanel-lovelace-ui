@@ -34,12 +34,16 @@ __export(device_page_exports, {
   devicePageMaxPayloadBytes: () => devicePageMaxPayloadBytes,
   devicePageName: () => devicePageName,
   devicePageNavigationSlotItem: () => devicePageNavigationSlotItem,
+  devicePageOfModel: () => devicePageOfModel,
   devicePagePayload: () => devicePagePayload,
   devicePageSlotItem: () => devicePageSlotItem,
+  devicePageSlotItemIndex: () => devicePageSlotItemIndex,
   devicePageStatusIconElement: () => devicePageStatusIconElement,
   devicePageStatusIconItem: () => devicePageStatusIconItem,
   devicePageStatusItem: () => devicePageStatusItem,
   devicePageStatusMessage: () => devicePageStatusMessage,
+  isCardDeviceConfig: () => isCardDeviceConfig,
+  layoutOfCardDevice: () => layoutOfCardDevice,
   optionalValueOf: () => optionalValueOf,
   reportMissingDevicePageTarget: () => reportMissingDevicePageTarget,
   splitDevicePageStatus: () => splitDevicePageStatus,
@@ -61,7 +65,13 @@ function devicePageName(pageName, deviceId) {
   return `device-${pageName}-${deviceId}`;
 }
 const CARD_DEVICE_MIN_TFT = "6.2.0";
-const CARD_DEVICE_MODELS = /* @__PURE__ */ new Set(["eu", "web-l"]);
+const CARD_DEVICE_MODELS = /* @__PURE__ */ new Set([
+  "eu",
+  "us-l",
+  "us-p",
+  "web-l",
+  "web-p"
+]);
 const DEVICE_PAGE_EMPTY_ELEMENT = "~~~~~";
 function supportsCardDevice(target) {
   if (!CARD_DEVICE_MODELS.has(target.model)) {
@@ -133,7 +143,7 @@ function isStatusBreak(chars, at) {
 }
 function splitDevicePageStatus(text, layout, model) {
   const flat = text.replace(/[\r\n]+/g, " ").replaceAll("~", "");
-  const width = import_deviceDetails.DEVICE_PAGE_FIELDS[layout].status;
+  const width = (0, import_deviceDetails.devicePageFields)(layout, model).status;
   const fits = (part) => (0, import_text_width.textWidth)(part, import_deviceDetails.DEVICE_PAGE_TEXT_FONT, model) <= width && byteLength(part) <= import_deviceDetails.DEVICE_PAGE_STATUS_MAX_BYTES;
   if (fits(flat)) {
     return [flat];
@@ -193,17 +203,51 @@ function devicePageClampElement(element) {
   fields[5] = cutToBytes(fields[5], import_deviceDetails.DEVICE_PAGE_TEXT_MAX_BYTES);
   return fields.join("~");
 }
-function devicePageMaxPayloadBytes(layout) {
+function devicePageMaxPayloadBytes(layout, model) {
+  if ((0, import_tools.isWebModel)(model)) {
+    return Number.POSITIVE_INFINITY;
+  }
   return Math.min(import_deviceDetails.DEVICE_PAGE_RECEIVE_BYTES[layout], import_definition.MAX_PANEL_PAYLOAD_BYTES);
 }
 function devicePagePayload(head, mainPayload, elements, status, layout, model) {
   const build = (field) => [head, devicePageMainElement(mainPayload, field), ...elements].join("~");
   const payload = build(status);
-  const over = byteLength(payload) - devicePageMaxPayloadBytes(layout);
+  const over = byteLength(payload) - devicePageMaxPayloadBytes(layout, model);
   if (over <= 0) {
     return payload;
   }
   return build(cutToBytesWithEllipsis(status, Math.max(0, byteLength(status) - over), statusEllipsis(model)));
+}
+function devicePageSlotItemIndex(layout, slot) {
+  const count = import_deviceDetails.DEVICE_PAGE_LAYOUTS[layout].length;
+  return slot < count ? slot + 1 : slot + 3;
+}
+function isCardDeviceConfig(config) {
+  return !!config && (0, import_function_and_const.isCardDeviceType)(config.card);
+}
+function layoutOfCardDevice(card) {
+  switch (card) {
+    case "cardDevice1":
+      return 1;
+    case "cardDevice2":
+      return 2;
+    case "cardDevice3":
+      return 3;
+  }
+}
+function devicePageOfModel(page, model) {
+  if ((0, import_tools.isWebModel)(model) || !isCardDeviceConfig(page.config) || !page.pageItems) {
+    return page;
+  }
+  const count = import_deviceDetails.DEVICE_PAGE_LAYOUTS[layoutOfCardDevice(page.config.card)].length;
+  if (page.pageItems.length <= count + 3) {
+    return page;
+  }
+  const config = { ...page.config };
+  if (config.channelSlots) {
+    config.channelSlots = config.channelSlots.filter((slot) => slot < count);
+  }
+  return { ...page, pageItems: page.pageItems.slice(0, count + 3), config };
 }
 function devicePageStatusIconElement(payload) {
   const fields = payload ? payload.split("~") : [];
@@ -571,7 +615,9 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
   const details = { deviceId, entries: source.entries };
   const device = await ctx.getObject(deviceId);
   const headline = (0, import_device_details.nameOfCommon)((_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name, ctx.language) || deviceId.split(".").pop() || "";
-  const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
+  const layoutKinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
+  const extraKinds = page.slots.length > layoutKinds.length ? import_deviceDetails.DEVICE_PAGE_EXTRA_SLOTS[page.layout] : [];
+  const kinds = [...layoutKinds, ...extraKinds];
   const messages = [];
   const skipped = [];
   const readCommon = async (ref) => {
@@ -610,18 +656,22 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
     }
   }
   const named = present.filter((p) => kinds[p.index] !== "status" && !p.entry.name);
-  const names = (0, import_device_details.deviceDetailRowNames)(
+  const namesOf = (rows) => (0, import_device_details.deviceDetailRowNames)(
     deviceId,
-    named.map((p) => p.entry),
-    named.map((p) => p.common),
+    rows.map((p) => p.entry),
+    rows.map((p) => p.common),
     ctx.translate,
     ctx.language,
     null
   );
+  const layoutNamed = named.filter((p) => p.index < layoutKinds.length);
+  const layoutNames = namesOf(layoutNamed);
+  const allNames = layoutNamed.length < named.length ? namesOf(named) : layoutNames;
   present.forEach((p) => {
     var _a2;
-    const n = named.indexOf(p);
-    const name = kinds[p.index] !== "status" && p.entry.name || (n >= 0 ? (_a2 = names[n]) != null ? _a2 : "" : "");
+    const n = p.index < layoutKinds.length ? layoutNamed.indexOf(p) : named.indexOf(p);
+    const auto = p.index < layoutKinds.length ? layoutNames : allNames;
+    const name = kinds[p.index] !== "status" && p.entry.name || (n >= 0 ? (_a2 = auto[n]) != null ? _a2 : "" : "");
     const item = devicePageSlotItem(deviceId, kinds[p.index], p.entry, p.common, name);
     if (!item) {
       skipped.push(p.entry.id);
@@ -638,9 +688,11 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
   }
   const elements = [
     devicePageMainItem(source.main, details, page, headline),
-    ...slots,
+    ...slots.slice(0, layoutKinds.length),
     page.showInfo ? devicePageInfoItem(details) : void 0,
-    status
+    status,
+    // appended: the numbers of the items above never change
+    ...slots.slice(layoutKinds.length)
   ];
   return {
     page: {
@@ -675,12 +727,16 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
   devicePageMaxPayloadBytes,
   devicePageName,
   devicePageNavigationSlotItem,
+  devicePageOfModel,
   devicePagePayload,
   devicePageSlotItem,
+  devicePageSlotItemIndex,
   devicePageStatusIconElement,
   devicePageStatusIconItem,
   devicePageStatusItem,
   devicePageStatusMessage,
+  isCardDeviceConfig,
+  layoutOfCardDevice,
   optionalValueOf,
   reportMissingDevicePageTarget,
   splitDevicePageStatus,
