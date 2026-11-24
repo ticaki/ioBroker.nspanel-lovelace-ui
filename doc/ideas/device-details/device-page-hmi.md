@@ -248,7 +248,8 @@ auslöst, zeigt die HMI, sobald er erkannt ist – auf den Grid-Seiten blinkt de
     }
     bEntity2.bco2=bEntity2.bco
   }
-  // Restore: in jedem up hinter tmLP.en=0 (vor dem Senden) und am Ende von tc0 up (dort mit tmLP.en=0)
+  // Restore: in jedem up hinter tmLP.en=0 (vor dem Senden) und am Ende von tc0 up; dort steht als erste Zeile
+  // im if zusätzlich tmLP.en=0 - also nur, wenn schon geblinkt wird (tmLP.tim ist dann 200)
   if(tmLP.tim!=500)
   {
     tmLP.tim=500
@@ -266,8 +267,17 @@ auslöst, zeigt die HMI, sobald er erkannt ist – auf den Grid-Seiten blinkt de
   ohne intName (sendet nichts – `down` setzt dafür `vaLPCell.val=0`; button sendet immer und blinkt immer); leere
   Elemente (der Code läuft nicht); `bInfo` und der Schalter `btOnOff<k>` (kein Long-Press).
 - **Nie hängen bleiben:**
-  - Loslassen: `up` des Elements stellt zurück; zusätzlich `tc0` `up` (bekommt jedes Loslassen), dort auch
-    `tmLP.en=0`. Das Zurückstellen ist wiederholbar, die Reihenfolge der beiden Ereignisse ist egal.
+  - Loslassen: `up` des Elements stoppt den Timer (`tmLP.en=0`, erste Zeile, immer) und stellt zurück. Zusätzlich
+    stellt `tc0` `up` (bekommt jedes Loslassen) zurück – aber nur **innerhalb** von `if(tmLP.tim!=500){…}`: dort
+    stehen `tmLP.en=0`, `tmLP.tim=500` und die Farben. `tc0` stoppt den Timer also nur, wenn das Blinken schon
+    läuft; vor Ablauf der 500 ms fasst `tc0` `tmLP` nicht an (so in allen drei Modellen und in der kompilierten
+    EU-`device10`). Das Zurückstellen ist wiederholbar, die Reihenfolge der beiden Ereignisse ist egal.
+  - **Offener Fall (theoretisch, nicht beobachtet):** Erreicht ein Loslassen **vor** Ablauf der 500 ms nur `tc0`
+    und nicht das Element (Finger vom Element gezogen), läuft `tmLP` weiter: nach 500 ms setzt er `LPState=1` und
+    die Zelle beginnt zu blinken, obwohl kein Finger mehr aufliegt – bis zum nächsten Loslassen irgendwo auf der
+    Seite (dessen `tc0` `up` stellt zurück) oder einem Seitenwechsel. Dass `LPState` in diesem Fall stehen bleibt,
+    war schon vor dem Blinken so (siehe „Bekannte Unsicherheiten“); neu ist nur, dass man es sieht. Prüfpunkt für
+    Tim, siehe Schritt 9. Der Code bleibt, wie er kompiliert und auf EU getestet ist.
   - Seitenwechsel (Popup, `pageType` des Adapters nach `sleepReached` oder Navigation): die Seite wird neu
     geladen; `bco2`, `tmLP.tim` und die Variablen sind lokal und haben wieder ihre Entwurfswerte, `bco` setzt die
     Lade-Schleife.
@@ -556,6 +566,17 @@ Handänderungen aus dem Editor, die kein Werkzeug abdeckt, gibt es außer der Se
 | neue Seiten cardDevice1–3, Einträge in main.HMI, pageType-Zweige `cardDevice1–3` in allen Seiten mit tmSerial (EU 36) | `card_device.py` | übertragen: Abschnitte 35/36/37.pa, Seiten-IDs 35–37, Zweige in 34 Seiten |
 | Seite cardEntities2 (im Editor als Kopie von cardEntities angelegt, dann `entities2_five_rows.py` Teil 1), ihr Eintrag in main.HMI, pageType-Zweig `cardEntities2` in allen 36 Seiten mit Umschalter | Editor + `entities2_five_rows.py` | **nicht übertragen** – Entscheidung von Tim: cardEntities2 wird nicht weiterverfolgt, die EU-Seite bleibt liegen |
 
+Dazu kommt **nur auf us-p** eine Korrektur, die kein Gegenstück auf EU hat (`grid_cell_id_fix.py`): auf cardGrid3
+baut `bEntity4` `up` seine beiden Ereignisse mit der ID der Nachbarzelle
+(`tSend.txt="event,buttonPress2,"+entn3.txt+",button"`, ebenso `buttonPress3`); `down` nimmt richtig
+`type4/entn4/tEntity4`. Ein Popup öffnet also für Zelle 4, ein Tipp oder Long-Press wird für Zelle 3 gemeldet. Der
+Fehler steht seit us-p 5.1.1 in der Datei (5.1.0 hat noch `entn4`) und fällt mit dem Blinken auf: Zelle 4 blinkt, das Ereignis trägt die ID von
+Zelle 3. Jetzt `entn4`. Maschinell geprüft auf allen drei Modellen (6.2.0 und die gebauten Dateien): auf cardGrid,
+cardGrid2 und cardGrid3 ist jede Zelle `bEntity<k>` Zeile für Zeile die Zelle 1 mit umbenannten Namen – einzige
+Ausnahme war diese Zelle; auf den Geräteseiten benutzt jedes nummerierte Objekt (Knopf, Text, Hotspot, Status-Zelle,
+Schalter, auch die schmalen Zeilen) in allen Ereignissen nur `type/entn/tEntity/…` seiner eigenen Nummer, und der
+Parser liest jede Zelle aus ihren eigenen Feldern.
+
 Schon in 6.2.0 verschieden und **nicht angefasst**: die Zeilen-Flächen `m<n>` von cardEntities setzen auf EU
 zusätzlich `tempIconColor=tIcon<r>.pco`, auf us-l/us-p nicht (deren popupSlider liest die Variable nicht).
 Nebenbei behoben: auf us-p prüfte der alte Text-Zweig der Zeilen 5 und 6 `type4` statt des eigenen Typs; der neue
@@ -566,15 +587,22 @@ letzte Zweig nimmt den Typ der Zeile.
 ```
 M=us-l   # bzw. us-p
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py HMI/$M/nspanel-$M-v6.2.0.HMI /tmp/$M-1.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py /tmp/$M-1.HMI /tmp/$M-2.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/entities_left_tap.py /tmp/$M-2.HMI /tmp/$M-3.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/$M-3.HMI nspanel-$M-v6.2.0.device10.HMI --preview doc/Pictures/device-page --geometry doc/ideas/device-details/device-page-geometry.json
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_cell_id_fix.py /tmp/$M-1.HMI /tmp/$M-2.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py /tmp/$M-2.HMI /tmp/$M-3.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/entities_left_tap.py /tmp/$M-3.HMI /tmp/$M-4.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/$M-4.HMI nspanel-$M-v6.2.0.device10.HMI --preview doc/Pictures/device-page --geometry doc/ideas/device-details/device-page-geometry.json
 ```
 
-- Vier Schritte statt drei: die EU-Basis `entities5` hat den Links-Tipp schon, bei us-l/us-p bringt ihn
-  `entities_left_tap.py` (auf EU 6.2.0 liefert es für cardEntities denselben Code wie `entities5`, geprüft).
+- Fünf Schritte statt drei. `grid_cell_id_fix.py` behebt die falsche ID von us-p cardGrid3 Zelle 4; auf us-l (und
+  EU) meldet es „nothing to do“ und ändert nichts – der Schritt steht in beiden Ketten, damit sie gleich sind. Es
+  ignoriert die Blöcke des Long-Press-Blinkens, läuft also vor oder nach `grid_long_press_feedback.py`.
+- Die EU-Basis `entities5` hat den Links-Tipp schon, bei us-l/us-p bringt ihn `entities_left_tap.py` (auf EU 6.2.0
+  liefert es für cardEntities denselben Code wie `entities5`, geprüft).
 - Jeder Schritt prüft die Prüfsummen (`Hmi.check()`) und den Round-Trip jeder geänderten Seite; jeder ist auf seiner
-  eigenen Ausgabe wirkungslos (für `card_device.py` und `entities_left_tap.py` auf beiden Modellen geprüft).
+  eigenen Ausgabe wirkungslos (für `card_device.py`, `entities_left_tap.py` und `grid_cell_id_fix.py` geprüft).
+- `card_device.py` bricht ab, wenn eine Box oder ein Hotspot der neuen Seite den sichtbaren Bereich verlässt oder
+  eine Tippfläche schneidet, die die Seite von cardGrid behält: die Pfeile `bPrev`/`bNext`, die Swipe-Streifen und
+  die versteckte Fläche `mSpecial` in der Kopfzeile.
 - Vorschaubilder heißen mit Modell: `hmi-us-l-cardDevice1.png`, `hmi-us-p-cardDevice1.png` usw.; die EU-Namen
   bleiben. Die Vorschau zeichnet mit den Schriften des jeweiligen Projekts.
 
@@ -677,8 +705,8 @@ sie je Modell).
 
 | Objekt | x | y | w | h | Font | Ausrichtung | txt_maxl |
 |---|---|---|---|---|---|---|---|
-| bMain | 85 | 67 | 150 | 82 | 4 | mittig | 10 |
-| tMainName | 10 | 151 | 300 | 26 | 0 | mittig | 31 |
+| bMain | 85 | 68 | 150 | 82 | 4 | mittig | 10 |
+| tMainName | 10 | 152 | 300 | 26 | 0 | mittig | 31 |
 | bEntity1–6 (info) | 10 / 162 (Spalte) | 184 / 236 / 288 (Zeile) | 34 | 48 | 1 | mittig | 10 |
 | tEntity1–6 | 46 / 198 | 182 / 234 / 286 | 112 | 25 | 0 | links | 31 |
 | tValue1–6 | 46 / 198 | 208 / 260 / 312 | 112 | 25 | 0 | rechts | 31 |
@@ -691,7 +719,12 @@ sie je Modell).
 
 - Haupt-Icon oben in der Mitte, sein Name darunter über die volle Breite. Kacheln zeilenweise wie auf EU (Slot 1
   links oben, Slot 2 rechts oben …), die zwei Schalter als Zeilen untereinander.
-- Die engste Seite in der Höhe: der zweite Schalter endet bei y 443, die Statuszeile beginnt bei 447.
+- Haupt-Icon und Name beginnen bei y 68 / 152 wie auf cardDevice2, nicht bei 67 / 151: die versteckte Fläche
+  `mSpecial` liegt auf us-p bei x 174–256, **y 1–67** (EU und us-l y 0–66) und hätte sich in der Zeile y 67 mit
+  `bMain` (x 85–234) überschnitten. Jetzt grenzen sie aneinander (67 / 68), ohne gemeinsames Pixel.
+- Die engste Seite in der Höhe. Freie Pixelzeilen zwischen den Blöcken: `bMain` (bis 149) – 2 – `tMainName`
+  (152–177) – 4 – Kacheln (182–336) – 5 – Schalter 7 (342–391) – 2 – Schalter 8 (394–443) – **2** – info-Icon
+  `bInfo` (ab 446, x 274–309, liegt unter dem Schalter x 260–309) bzw. **3** – Statuszeile (ab 447).
 
 ### Feldbreiten für den Adapter je Modell
 
@@ -743,10 +776,20 @@ cardDevice3.
 | cardDevice1 | neu: 3201 (Kopie von cardGrid: 2733) | 3332 (**252 frei**) | neu: 3015 (71 Objekte, kein schmaler Zeilensatz) | etwa 3145 (rund 440 frei) |
 | cardDevice2 | neu: 2785 | 2824 (760 frei) | neu: 2785 | 2824 (760 frei) |
 | cardDevice3 | neu: 3264 | 3352 (**232 frei**) | neu: 3264 | 3352 (**232 frei**) |
-| cardEntities | 2768, unverändert (nur Code) | – | 3212, unverändert (nur Code) | – |
+| cardEntities | 2768 → 2768 (nur Code) – **Formel zu niedrig, siehe unten** | 3000 (584 frei), wie EU | 3212 → 3212 (nur Code) – **Formel zu niedrig, siehe unten** | **unbekannt, bitte ablesen** |
 
-`card_device.py` bricht über 3584 ab und meldet Stände über 3400; kein Modell kommt in die Nähe. Die anderen 14
-Seiten mit Swipe-Streifen und die Seiten mit neuem pageType-Zweig ändern nur Code (kein RAM).
+`card_device.py` bricht über 3584 ab und meldet Stände über 3400; die sechs Seiten oben kommen nicht in die Nähe.
+Die anderen 14 Seiten mit Swipe-Streifen und die Seiten mit neuem pageType-Zweig ändern nur Code (kein RAM).
+
+**cardEntities ist nur geschätzt, und die Schätzung taugt für diese Seite nicht.** Die einfache Formel (7 je Objekt)
+liegt bei den Grid- und Geräteseiten nahe an der Messung, bei cardEntities aber weit darunter: EU schätzt sie auf
+2768, die TFT misst **3000** (+232) – Schieberegler, Zahlenfelder und Schalter kosten deutlich mehr als 7 Byte.
+EU cardEntities2 (eine Zeile mehr): geschätzt 2856, gemessen 3216 (+360). us-l hat dieselben Objekte und Puffer wie
+EU, dort sind 3000 zu erwarten. us-p hat auf cardEntities **sechs** Zeilensätze (94 Objekte statt 70): der wahre
+Wert liegt deutlich über den geschätzten 3212 und ist vermutlich der höchste aller us-p-Seiten – sicher ist nur,
+dass er ≤ 3584 ist, weil us-p 6.2.0 mit denselben Objekten kompiliert. Der Links-Tipp ändert daran nichts: er ist
+nur Code, EU cardEntities misst vorher (`nspanel-v6.2.0.tmserial3.tft`) und nachher (`device10.tft`) 3000. Tim liest
+den Wert von us-p cardEntities bitte im Editor ab (Prüfliste Punkt 3), damit er für spätere Änderungen bekannt ist.
 
 ### us-l und us-p: im Nextion-Editor prüfen
 
@@ -762,14 +805,20 @@ Für jedes der beiden Projekte:
    - cardEntities `m0…m3` (us-p `m0…m5`): die Kette `}else if(type<r>.txt=="…")` mit dem letzten Zweig
      `}else if(type<r>.txt!="delete"&&type<r>.txt!="")`.
 3. **RAM-Werte melden** (Editor-Anzeige „global + Seite“) für cardDevice1, cardDevice2, cardDevice3, cardGrid,
-   cardGrid2, cardGrid3 – je Modell. Erwartung siehe Tabelle oben; wichtig sind cardDevice1 und cardDevice3
-   (us-l 252 / 232 frei erwartet) und us-p cardGrid2.
+   cardGrid2, cardGrid3 und **cardEntities** – je Modell. Erwartung siehe Tabelle oben; wichtig sind cardDevice1
+   und cardDevice3 (us-l 252 / 232 frei erwartet), us-p cardGrid2 und vor allem **us-p cardEntities**: der Wert ist
+   nicht vorhersagbar (die Schätzformel liegt dort um Hunderte Byte zu niedrig) und vermutlich der höchste der
+   us-p-Datei. Er hat sich durch diese Arbeit nicht geändert, ist aber bisher nirgends festgehalten.
 4. Ansehen (Editor-Vorschau oder Simulator, `pageType~cardDevice<n>` und ein `entityUpd` mit allen Elementen):
    - us-l: jedes Element sitzt 15 px weiter rechts als auf EU; links von x 15 und rechts von x 464 liegt nichts
      (auch das info-Icon nicht), der Balken von cardDevice2 beginnt bei x 25 unter dem Namen.
    - us-p: Anordnung wie in den Bildern oben. cardDevice1: Status-Raster rechts neben dem Haupt-Icon, 2 × 2 Knöpfe;
      cardDevice2: Wert in Font 4 neben dem Icon, Balken über die volle Breite, Knopf unten; cardDevice3: Kacheln
-     2 × 3, Schalter als Zeilen, Abstand zur Statuszeile (4 px). Statuszeile mittig, info-Icon rechts daneben.
+     2 × 3, Schalter als Zeilen; unten ist es eng – zwischen dem zweiten Schalter (bis y 443) und dem info-Icon
+     (ab y 446) liegen 2 freie Pixelzeilen, bis zur Statuszeile (ab y 447) 3. Lassen sich Schalter 8 und info-Icon
+     getrennt treffen? Statuszeile mittig, info-Icon rechts daneben.
+   - us-p cardDevice3: das Haupt-Icon beginnt bei y 68 direkt unter der versteckten Fläche `mSpecial` (bis y 67) –
+     ein Tipp auf den oberen Rand des Icons löst das Icon aus, nicht `mSpecial`.
    - us-p: Texte in Font 0 (andere Schrift als EU) – passen Namen und Werte in ihre Felder, ist der Punkt `.` zu
      sehen (in dieser Schrift ein Zeichen ohne Kantenglättung)?
 5. Am Panel bzw. im Simulator dieselben Schritte wie für EU (Schritte 4–9 unten): Ereignisse je Platz, Popups,
@@ -778,12 +827,16 @@ Für jedes der beiden Projekte:
 6. Kleine Anpassungen:
    - Swipe: Tipp auf den Rand links/rechts/oben einer Kartenseite sendet beim Loslassen `buttonPress2` des Pfeils.
    - cardGrid, cardGrid2 (us-p: alle 9 Zellen), cardGrid3: Long-Press-Blinken wie EU Schritt 9.
+   - **us-p cardGrid3, Zelle 4** (unten rechts): kurzer Tipp sendet `event,buttonPress2,<ID von Zelle 4>,button`,
+     langer Druck `event,buttonPress3,<ID von Zelle 4>,button` – bisher trugen beide die ID von Zelle 3. Gegenprobe
+     Zelle 3: ihre eigene ID. Mit vier verschieden belegten Zellen testen.
    - cardEntities: Tipp links auf eine Zeile mit Typ `switch`, `button` oder `text` sendet genau ein
      `event,buttonPress3,<entn>,button`; `light`, `shutter`, `number` … öffnen weiter ihr Popup; leere Zeile nichts.
      Auf us-p auch Zeile 5.
 
-Der Adapter schickt die Geräteseite bisher nur an EU (`withoutDevicePages` nimmt us-l, us-p, web-p aus) und misst
-mit den EU-Breiten; für us-p braucht er die Breiten dieser Seite (Statuszeile 262 px). Das ist nicht Teil der HMI.
+Adapter (Feldbreiten) und Web-Panel (Boxen) haben eigene Tabellen je Modell; ihre Tests vergleichen sie mit
+`device-page-geometry.json`. Ändert sich eine Box in der HMI, müssen sie nachziehen (Web-Panel:
+`src-web/src/cards/cardDevice/geometryHmi.ts`).
 
 ## Im Nextion-Editor prüfen
 
@@ -861,6 +914,10 @@ Die Schritte gelten für die EU-Datei; für us-l und us-p zusätzlich die Liste 
      Bleibt nach dem Loslassen kein grüner Rest (auch bei hellem Thema bzw. schwarzem Hintergrund)?
    - Finger halten und **von der Zelle herunterziehen**, dann loslassen: das Blinken endet, die Zelle ist normal;
      der nächste kurze Tipp auf eine andere Zelle sendet `buttonPress2`.
+   - Dasselbe **schneller als 0,5 s**: Zelle berühren, sofort herunterziehen und neben der Zelle loslassen, dann
+     nichts mehr berühren. Bleibt alles ruhig – oder beginnt die Zelle nach 0,5 s zu blinken und blinkt bis zur
+     nächsten Berührung? (`tc0` `up` stoppt `tmLP` nur, wenn schon geblinkt wird; kommt das Loslassen nicht bei der
+     Zelle an, läuft der Timer weiter. Siehe „Nie hängen bleiben“.)
    - Während des Blinkens ein `entityUpd` (anderer Wert, anderes Icon; einmal auch die gehaltene Zelle per `delete`
      ausblenden): Blinken läuft weiter bzw. die ausgeblendete Zelle erscheint nicht wieder; nach dem Loslassen
      nichts Grünes.

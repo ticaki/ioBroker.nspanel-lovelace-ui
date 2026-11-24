@@ -611,8 +611,8 @@
           "next": {"object": "bNext", "x": 261, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
         },
         "main": {
-          "icon": {"object": "bMain", "x": 85, "y": 67, "w": 150, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
-          "name": {"object": "tMainName", "x": 10, "y": 151, "w": 300, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          "icon": {"object": "bMain", "x": 85, "y": 68, "w": 150, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
+          "name": {"object": "tMainName", "x": 10, "y": 152, "w": 300, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
         },
         "slots": [
           {
