@@ -300,9 +300,11 @@ export const DEVICE_PAGE_RECEIVE_BYTES: Readonly<Record<DevicePageLayout, number
 export const DEVICE_PAGE_TEXT_MAX_BYTES = 31;
 
 /**
- * The text fields of the device pages of the EU HMI ({@link devicePageFields} gives them per model). Only the status
- * line is measured by the adapter (wider than its field it is split into parts that alternate), every other field is
- * cut by the HMI at its edge - the widths are here for the admin and the web panel.
+ * The text fields of the device pages of the EU HMI ({@link devicePageFields} gives them per model,
+ * {@link DEVICE_PAGE_FIELDS_BY_MODEL}). Only the status line is measured by the adapter (wider than its field it is
+ * split into parts that alternate; px in font 0, counted with the font tables of the model - web-l with the eu tables,
+ * web-p with the us-p tables), every other field is cut by the HMI at its edge - the widths are here for the admin and
+ * the web panel.
  *
  * The `value` slot of layout 2 draws field 6 in font 4 (Noto Sans Bold 80) in 190 px: a digit is 33 px, ':' 17 px,
  * '%' 53 px, '°' 25 px, a space 15 px - about 5 digits fit. The font has digits, `: % ° , . - /`, letters with
@@ -334,45 +336,94 @@ export const DEVICE_PAGE_FIELDS: Readonly<Record<DevicePageLayout, DevicePageLay
     },
 };
 
-/** the models whose text fields are not measured yet ({@link DEVICE_PAGE_FIELDS_PROVISIONAL}) */
-export type DevicePageProvisionalModel = 'us-p' | 'web-l' | 'web-p';
-
 /**
- * PROVISIONAL - the text fields of the device pages of `us-p`, `web-l` and `web-p`, per model and layout. Until the
- * us-p HMI and the layouts of the web panel are final these are the values of the EU HMI ({@link DEVICE_PAGE_FIELDS});
- * `status` (the only field the adapter measures: px of the status line in font 0, counted with the font tables of the
- * model - web-l with the eu tables, web-p with the us-p tables) is written out per model and layout.
- *
- * TODO: replace by the measured values - this table is the only place to change. Other fields of a layout that
- * differ from the EU HMI go next to `status` (`mainName`, `slots`, `slotsWithStatus`).
+ * The text fields of the device pages of the us-p HMI (`doc/ideas/device-details/device-page-geometry.json`, key
+ * `us-p`; a test compares the tables of eu, us-l and us-p with that file). Portrait, 320 px wide: the status line has
+ * 262 px. Layout 1 has the status icons right of the big icon and the info rows below it - the rows do not get narrower
+ * with status icons (no `slotsWithStatus`); the one button of layout 2 has the width of the page.
  */
-export const DEVICE_PAGE_FIELDS_PROVISIONAL: Readonly<
-    Record<DevicePageProvisionalModel, Readonly<Record<DevicePageLayout, DevicePageLayoutFields>>>
-> = {
-    'us-p': {
-        1: { ...DEVICE_PAGE_FIELDS[1], status: 390 },
-        2: { ...DEVICE_PAGE_FIELDS[2], status: 390 },
-        3: { ...DEVICE_PAGE_FIELDS[3], status: 390 },
+export const DEVICE_PAGE_FIELDS_US_P: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
+    1: {
+        mainName: 150,
+        status: 262,
+        slots: { info: { name: 156, value: 104 }, button: { name: 148 } },
     },
-    'web-l': {
-        1: { ...DEVICE_PAGE_FIELDS[1], status: 390 },
-        2: { ...DEVICE_PAGE_FIELDS[2], status: 390 },
-        3: { ...DEVICE_PAGE_FIELDS[3], status: 390 },
+    2: {
+        mainName: 90,
+        status: 262,
+        slots: {
+            value: { name: 172, value: 172, valueFont: 4 },
+            progress: { name: 300 },
+            info: { name: 156, value: 104 },
+            button: { name: 300 },
+        },
     },
-    'web-p': {
-        1: { ...DEVICE_PAGE_FIELDS[1], status: 390 },
-        2: { ...DEVICE_PAGE_FIELDS[2], status: 390 },
-        3: { ...DEVICE_PAGE_FIELDS[3], status: 390 },
+    3: {
+        mainName: 300,
+        status: 262,
+        slots: { info: { name: 112, value: 112 }, switch: { name: 212 } },
     },
 };
 
-/** the text fields of the device pages of every model: `eu` and `us-l` share the geometry of the EU HMI */
-const DEVICE_PAGE_FIELDS_BY_MODEL: Readonly<
+/**
+ * The text fields of the device pages of the web panel on `web-l` (640x320, `src-web/src/cards/cardDevice/
+ * geometryWeb.ts`, `webLandscapeGeometry`; a test of the web panel pins the boxes). The layout of eu on the full
+ * width with the extra slots: the status line has 580 px, the info rows of layout 1 and the bar of layout 2 reach the
+ * right edge; every other field is as wide as on eu (more elements, not more text). Rows that hold a varying number
+ * of elements are given with their narrowest field.
+ */
+export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
+    1: {
+        mainName: 110,
+        status: 580,
+        slots: { info: { name: 354, value: 110 }, button: { name: 104 } },
+        slotsWithStatus: { info: { name: 276, value: 110 } },
+    },
+    2: {
+        mainName: 96,
+        status: 580,
+        slots: {
+            value: { name: 190, value: 190, valueFont: 4 },
+            progress: { name: 620 },
+            info: { name: 104, value: 104 },
+            button: { name: 100 },
+        },
+    },
+    3: {
+        mainName: 100,
+        status: 580,
+        slots: { info: { name: 125, value: 125 }, switch: { name: 125 } },
+    },
+};
+
+/**
+ * The text fields of the device pages of the web panel on `web-p` (320x640, `geometryWeb.ts`,
+ * `webPortraitGeometry`): the layout of us-p with the extra slots, every field as wide as on us-p, the status line
+ * 262 px. Narrowest case of the fields that vary: the name of main of layout 1 has 300 px without status icons (main
+ * then stands in the middle), the buttons of layout 2 share one row - one button 300 px, two 148 px, three 100 px (the
+ * width of this button on eu).
+ */
+export const DEVICE_PAGE_FIELDS_WEB_P: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
+    1: DEVICE_PAGE_FIELDS_US_P[1],
+    2: {
+        ...DEVICE_PAGE_FIELDS_US_P[2],
+        slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 100 } },
+    },
+    3: DEVICE_PAGE_FIELDS_US_P[3],
+};
+
+/**
+ * The text fields of the device pages of every model: `eu` and `us-l` share the geometry of the EU HMI (us-l is the
+ * eu page 15 px to the right), `us-p` has its own HMI pages, `web-l` and `web-p` the layouts of the web panel.
+ */
+export const DEVICE_PAGE_FIELDS_BY_MODEL: Readonly<
     Record<PanelModel, Readonly<Record<DevicePageLayout, DevicePageLayoutFields>>>
 > = {
     eu: DEVICE_PAGE_FIELDS,
     'us-l': DEVICE_PAGE_FIELDS,
-    ...DEVICE_PAGE_FIELDS_PROVISIONAL,
+    'us-p': DEVICE_PAGE_FIELDS_US_P,
+    'web-l': DEVICE_PAGE_FIELDS_WEB_L,
+    'web-p': DEVICE_PAGE_FIELDS_WEB_P,
 };
 
 /**

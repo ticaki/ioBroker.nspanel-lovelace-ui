@@ -4,12 +4,17 @@
  * (web-l, web-p) the same message with the elements of the extra slots appended.
  */
 import { expect } from 'chai';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { hasGlyph, textWidth } from '../const/text-width';
 import { panelModels } from '../types/adminShareConfig';
 import {
     DEVICE_PAGE_EXTRA_SLOTS,
     DEVICE_PAGE_FIELDS,
-    DEVICE_PAGE_FIELDS_PROVISIONAL,
+    DEVICE_PAGE_FIELDS_BY_MODEL,
+    DEVICE_PAGE_FIELDS_US_P,
+    DEVICE_PAGE_FIELDS_WEB_L,
+    DEVICE_PAGE_FIELDS_WEB_P,
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_STATUS_MAX_BYTES,
     DEVICE_PAGE_TEXT_FONT,
@@ -108,11 +113,99 @@ describe('lib/types/deviceDetails - models of the device page', () => {
         expect(devicePageFields(1, 'eu').status).to.equal(390);
         expect(devicePageSlotFields(1, 'info', true)).to.deep.equal({ name: 86, value: 110 });
     });
-    it('the models not measured yet stand in one table', () => {
-        expect(Object.keys(DEVICE_PAGE_FIELDS_PROVISIONAL).sort()).to.deep.equal(['us-p', 'web-l', 'web-p']);
-        for (const model of ['us-p', 'web-l', 'web-p'] as const) {
+    it('us-p, web-l and web-p have their own fields: status line 262 / 580 / 262 px', () => {
+        expect(Object.keys(DEVICE_PAGE_FIELDS_BY_MODEL).sort()).to.deep.equal([...panelModels].sort());
+        for (const layout of LAYOUTS) {
+            expect(devicePageFields(layout, 'us-p')).to.equal(DEVICE_PAGE_FIELDS_US_P[layout]);
+            expect(devicePageFields(layout, 'web-l')).to.equal(DEVICE_PAGE_FIELDS_WEB_L[layout]);
+            expect(devicePageFields(layout, 'web-p')).to.equal(DEVICE_PAGE_FIELDS_WEB_P[layout]);
+            expect(devicePageFields(layout, 'us-p').status).to.equal(262);
+            expect(devicePageFields(layout, 'web-l').status).to.equal(580);
+            expect(devicePageFields(layout, 'web-p').status).to.equal(262);
+        }
+        // us-p: the info rows of layout 1 lie below the big icon and keep their width with status icons
+        expect(DEVICE_PAGE_FIELDS_US_P[1].slotsWithStatus).to.equal(undefined);
+        expect(devicePageSlotFields(1, 'info', true, 'us-p')).to.deep.equal({ name: 156, value: 104 });
+        expect(devicePageSlotFields(2, 'button', false, 'us-p')).to.deep.equal({ name: 300 });
+        expect(devicePageSlotFields(2, 'value', false, 'us-p')).to.deep.equal({ name: 172, value: 172, valueFont: 4 });
+        expect(devicePageSlotFields(3, 'switch', false, 'us-p')).to.deep.equal({ name: 212 });
+        // web-l: eu on the full width - info rows and bar reach the right edge, the rest keeps the eu widths
+        expect(devicePageSlotFields(1, 'info', false, 'web-l')).to.deep.equal({ name: 354, value: 110 });
+        expect(devicePageSlotFields(1, 'info', true, 'web-l')).to.deep.equal({ name: 276, value: 110 });
+        expect(devicePageSlotFields(2, 'progress', false, 'web-l')).to.deep.equal({ name: 620 });
+        for (const layout of LAYOUTS) {
+            const web = DEVICE_PAGE_FIELDS_WEB_L[layout];
+            const eu = DEVICE_PAGE_FIELDS[layout];
+            expect(web.mainName, `web-l ${layout}`).to.equal(eu.mainName);
+            for (const kind of DEVICE_PAGE_LAYOUTS[layout].filter(k => k !== 'status')) {
+                const w = devicePageSlotFields(layout, kind, false, 'web-l');
+                const e = devicePageSlotFields(layout, kind, false, 'eu');
+                expect(w?.name ?? 0, `web-l ${layout} ${kind}`).to.be.at.least(e?.name ?? 0);
+                expect(w?.value, `web-l ${layout} ${kind}`).to.equal(e?.value);
+                expect(w?.valueFont, `web-l ${layout} ${kind}`).to.equal(e?.valueFont);
+            }
+        }
+        // web-p: us-p with the extra slots - only the buttons of layout 2 share a row (three: 100 px like eu)
+        expect(DEVICE_PAGE_FIELDS_WEB_P[1]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[1]);
+        expect(DEVICE_PAGE_FIELDS_WEB_P[3]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[3]);
+        expect(DEVICE_PAGE_FIELDS_WEB_P[2]).to.deep.equal({
+            ...DEVICE_PAGE_FIELDS_US_P[2],
+            slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 100 } },
+        });
+        expect(devicePageSlotFields(2, 'button', false, 'web-p')?.name).to.equal(
+            devicePageSlotFields(2, 'button', false, 'eu')?.name,
+        );
+    });
+    it('the fields of eu, us-l and us-p are the boxes of the HMI pages (device-page-geometry.json)', () => {
+        type Box = { w: number; font?: number };
+        type Slot = { kind: string; name?: Box; value?: Box; narrow?: { name: Box; value: Box } };
+        type HmiPage = { statusWidth: number; main: { name: Box }; status: Box; slots: Slot[] };
+        const file = path.join(__dirname, '../../../doc/ideas/device-details/device-page-geometry.json');
+        const geometry = JSON.parse(fs.readFileSync(file, 'utf8')) as Record<
+            string,
+            { pages: Record<string, HmiPage> }
+        >;
+        expect(Object.keys(geometry).sort()).to.deep.equal([...HMI_MODELS].sort());
+        for (const model of HMI_MODELS) {
             for (const layout of LAYOUTS) {
-                expect(devicePageFields(layout, model)).to.equal(DEVICE_PAGE_FIELDS_PROVISIONAL[model][layout]);
+                const at = `${model} cardDevice${layout}`;
+                const page = geometry[model].pages[`cardDevice${layout}`];
+                const fields = devicePageFields(layout, model);
+                expect(
+                    page.slots.map(s => s.kind),
+                    at,
+                ).to.deep.equal(DEVICE_PAGE_LAYOUTS[layout]);
+                expect(fields.mainName, at).to.equal(page.main.name.w);
+                expect(fields.status, at).to.equal(page.statusWidth);
+                expect(fields.status, at).to.equal(page.status.w);
+                expect(page.status.font, at).to.equal(DEVICE_PAGE_TEXT_FONT);
+                const narrowKinds = new Set<string>();
+                for (const slot of page.slots) {
+                    if (slot.kind === 'status') {
+                        continue;
+                    }
+                    const kind = DEVICE_PAGE_LAYOUTS[layout].find(k => k === slot.kind);
+                    expect(kind, at).to.not.equal(undefined);
+                    if (kind === undefined) {
+                        continue;
+                    }
+                    // every slot of a kind has the same fields
+                    const own = fields.slots[kind];
+                    expect(own?.name, `${at} ${kind} name`).to.equal(slot.name?.w);
+                    expect(own?.value, `${at} ${kind} value`).to.equal(slot.value?.w);
+                    if (slot.value) {
+                        expect(own?.valueFont ?? DEVICE_PAGE_TEXT_FONT, `${at} ${kind} font`).to.equal(slot.value.font);
+                    }
+                    expect(slot.name?.font, `${at} ${kind} name font`).to.equal(DEVICE_PAGE_TEXT_FONT);
+                    if (slot.narrow) {
+                        narrowKinds.add(kind);
+                        expect(fields.slotsWithStatus?.[kind], `${at} ${kind} narrow`).to.deep.equal({
+                            name: slot.narrow.name.w,
+                            value: slot.narrow.value.w,
+                        });
+                    }
+                }
+                expect(Object.keys(fields.slotsWithStatus ?? {}).sort(), at).to.deep.equal([...narrowKinds].sort());
             }
         }
     });

@@ -12,8 +12,7 @@ import { stageSize } from '../style/theme';
  * on the full stage and sees `web-p` / `web-l` in `global.model`. Nothing else has to change.
  *
  * The device pages (cardDevice1-3) are not in the list: they bring a geometry per model
- * (`cardDevice/layout.ts`) - web-l a layout of its own with additional slots; a model without one
- * (us-p, web-p until their tables exist) draws the provisional fallback of that file.
+ * (`cardDevice/layout.ts`) - web-l and web-p layouts of their own with additional slots.
  */
 export const CENTERED_ON_WEB: ReadonlySet<string> = new Set([
     'pageStartup',

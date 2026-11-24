@@ -70,12 +70,18 @@ die Karte sieht also immer das echte Modell.
 | --- | --- | --- |
 | eu | Tabelle der eu-HMI, unverändert | `geometryHmi.ts` `EU_GEOMETRY` |
 | us-l | eu-Tabelle **15 px nach rechts** (sichtbarer Bereich x 15–464) | `geometryHmi.ts` `US_L_GEOMETRY` |
+| us-p | Tabelle der us-p-HMI (320 × 480, Inhalt x 10–309, Statuszeile 262 px) | `geometryHmi.ts` `US_P_GEOMETRY` |
 | web-l | eigenes Layout auf 640 px mit Zusatz-Elementen | `geometryWeb.ts` `webLandscapeGeometry` |
-| us-p, web-p | **vorläufiger Rückfall** (Phase 2 ersetzt ihn): eu-Seite ohne Zusatz-Elemente, auf die Bühnenbreite verkleinert (320 / 450) | `layout.ts` `FALLBACK` |
+| web-p | eigenes Layout auf 320 × 640 nach dem Vorbild us-p mit Zusatz-Elementen | `geometryWeb.ts` `webPortraitGeometry` |
 
-- **Neues Modell:** Tabelle (Hardware, aus `doc/ideas/device-details/device-page-geometry.json`) bzw. Layout-Funktion
-  (Web) anlegen und in `GEOMETRY` in `layout.ts` eintragen – sonst nichts. Eine Box darf `font` und `align`
-  mitbringen, wenn das Modell von der Vorgabe der Elementart abweicht.
+- **Web = HMI:** `geometry.test.ts` liest `doc/ideas/device-details/device-page-geometry.json` (Werkzeug der HMI) und
+  vergleicht für eu, us-l und us-p jede Box (x/y/w/h), jede Schrift und Ausrichtung sowie die Tippflächen mit den
+  Hotspots der HMI. Ändert sich eine HMI-Seite, schlägt der Test fehl, bis die Tabelle nachgezogen ist.
+- **Neues Modell:** Tabelle (Hardware) bzw. Layout-Funktion (Web) anlegen und in `GEOMETRY` in `layout.ts`
+  eintragen – sonst nichts. Schrift und Ausrichtung je Elementart stehen in `BOX_STYLES` (`geometry.ts`); eine Box
+  darf `font` und `align` mitbringen, wenn ein Modell davon abweicht (bisher keins).
+- **us-p:** cardDevice1 hat den Status-Block rechts neben dem Haupt-Icon und die Info-Zeilen darunter – es gibt
+  keinen schmalen Zeilensatz, ohne Status-Icons bleibt der Platz des Blocks leer (wie in der HMI).
 - **us-l:** Die Verschiebung ist aus der HMI abgelesen (`HMI/us-l/nspanel-us-l-v6.2.0.HMI` gegen
   `HMI/nspanel-v6.2.0.HMI`): Überschrift, Pfeile und alle Objekte von cardEntities und cardThermo2 +15 px, die
   Zellen von cardGrid +16, von cardGrid2 +14; y, Breite und Höhe gleich. Wie bei cardThermo2 verschiebt die Karte
@@ -104,8 +110,8 @@ letzten belegten Zusatz-Slot ihrer Art. Der Parser liest die Zusatz-Slots nur be
 ### Layout web-l (Bühne 640 × 320)
 
 Kopfzeile wie die anderen web-l-Karten, Inhalt x 10–629 (kein HMI-Rand), y, Schriften und Elementarten wie eu.
-**Kein Textfeld ist schmaler als auf eu** (der Adapter kürzt Namen und Werte auf die eu-Breiten); die Breite geht in
-mehr Elemente, nicht in längere Texte. Statuszeile auf allen drei Seiten **x 10, y 289, 580 × 30, mittig**
+**Kein Textfeld ist schmaler als auf eu**; die Breite geht in mehr Elemente, nicht in längere Texte (Namen und
+Werte haben wie auf der HMI höchstens 31 Byte und werden an der Feldgrenze abgeschnitten). Statuszeile auf allen drei Seiten **x 10, y 289, 580 × 30, mittig**
 (eu 390 px), info-Icon x 594, y 288, 36 × 32.
 
 | Seite | Aufbau | x-Positionen |
@@ -122,6 +128,53 @@ Voll belegt und ohne Zusatz-Elemente (Beispiele `src-web/scripts/examples/web-l-
 ![web-l cardDevice2 ohne Zusatz-Elemente](../Pictures/device-page/web-l-cardDevice2-plain.png)
 ![web-l cardDevice3](../Pictures/device-page/web-l-cardDevice3.png)
 ![web-l cardDevice3 ohne Zusatz-Elemente](../Pictures/device-page/web-l-cardDevice3-plain.png)
+
+### Layout web-p (Bühne 320 × 640)
+
+Kopfzeile wie die anderen web-p-Karten, Inhalt x 10–309 und alle Elemente (Größe, Schrift, Aufbau einer Zeile) wie
+auf us-p. Statuszeile auf allen drei Seiten **x 10, y 607, 262 × 30, mittig** (wie us-p, dort y 447), info-Icon
+x 274, y 606, 36 × 32.
+
+Die 160 px mehr Höhe tragen die Zusatz-Elemente als weitere Zeilen. **Die Zeilen teilen sich die Höhe** (`stack` in
+`geometryWeb.ts`): die Zeilen behalten ihre Höhe, die freie Höhe zwischen der ersten Zeile und der Statuszeile geht
+in die Abstände – zwischen zwei Gruppen (main, Infos, Knöpfe / Schalter, Statuszeile) doppelt so viel wie zwischen
+zwei Zeilen einer Gruppe. Ohne Zusatz-Elemente hat die Seite weniger Zeilen und größere Abstände, aber kein Loch
+über der Statuszeile.
+
+| Seite | Aufbau | y der Zeilen (voll belegt · ohne Zusatz-Elemente) |
+| --- | --- | --- |
+| cardDevice1 | main (150 × 86 + Name) mit Status-Block rechts wie us-p; **ohne Status-Icons steht main in der Mitte** (Icon x 85, Name 300 px). 2 Info-Zeilen (34 px). Darunter **2–3 Reihen mit je zwei Knöpfen** (148 × 52, Name 148 × 26, x 10 / 162); die dritte Reihe trägt die Zusatz-Knöpfe | main 70 · Infos 210 / 256 · Knöpfe 316 / 409 / 501 — ohne: Infos 233 / 291 · Knöpfe 374 / 478 |
+| cardDevice2 | main, großer Wert und Balken wie us-p. **3–4 Info-Zeilen** (die vierte ist die Zusatz-Info). Darunter **eine Reihe mit 1–3 Knöpfen**, die sich die Breite teilen: 1 Knopf 300 px wie us-p, 2 je 148 px (x 10 / 162), 3 je 100 px (x 10 / 110 / 210, die Breite dieses Knopfs auf eu); Slot 6 zuerst | main 68 · Balken 209 · Infos 282 / 332 / 381 / 431 · Knöpfe 496 — ohne: Balken 219 · Infos 302 / 357 / 411 · Knopf 486 |
+| cardDevice3 | main wie us-p (Icon mittig, Name 300 px). **3–4 Reihen mit je zwei Info-Kacheln** (148 px, x 10 / 162, 51 px hoch); die vierte Reihe trägt die Zusatz-Infos. Darunter **2–3 Schalterzeilen** (50 px, Name 212 px, Schalter x 260) | main 67 · Infos 191 / 249 / 307 / 365 · Schalter 429 / 486 / 543 — ohne: Infos 216 / 287 / 358 · Schalter 448 / 518 |
+
+Abweichung von „kein Feld schmaler als auf us-p“: nur die Knöpfe von cardDevice2. Auf us-p hat der eine Knopf die
+ganze Breite (300 px); drei Knöpfe in voller Breite wären drei Zeilen à 80 px und passen nicht mehr über die
+Statuszeile. In einer Reihe haben sie zu dritt 100 px – so breit wie derselbe Knopf auf eu.
+
+Voll belegt und ohne Zusatz-Elemente (Beispiele `src-web/scripts/examples/web-p-cardDevice*.txt`; die us-p-Seiten
+mit den Daten der HMI-Vorschau: `us-p-cardDevice*.txt`):
+
+![web-p cardDevice1](../Pictures/device-page/web-p-cardDevice1.png)
+![web-p cardDevice1 ohne Zusatz-Elemente](../Pictures/device-page/web-p-cardDevice1-plain.png)
+![web-p cardDevice2](../Pictures/device-page/web-p-cardDevice2.png)
+![web-p cardDevice2 ohne Zusatz-Elemente](../Pictures/device-page/web-p-cardDevice2-plain.png)
+![web-p cardDevice3](../Pictures/device-page/web-p-cardDevice3.png)
+![web-p cardDevice3 ohne Zusatz-Elemente](../Pictures/device-page/web-p-cardDevice3-plain.png)
+
+### Feldbreiten für den Adapter
+
+`src/lib/types/deviceDetails.ts`, `DEVICE_PAGE_FIELDS_BY_MODEL` (`devicePageFields(layout, model)`). Der Adapter
+misst nur die Statuszeile (web-l mit den eu-Font-Tabellen, web-p mit den us-p-Tabellen); die übrigen Breiten sind
+für Admin und Doku. Bei Reihen mit wechselnder Elementzahl steht der schmalste Fall.
+
+| Modell | Statuszeile | Layout 1 | Layout 2 | Layout 3 |
+| --- | --- | --- | --- | --- |
+| eu, us-l | 390 | main 110 · Info 164 / 110 (mit Status-Icons 86 / 110) · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 429 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
+| us-p | 262 | main 150 · Info 156 / 104 · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 300 | main 300 · Info 112 / 112 · Schalter 212 |
+| web-l | 580 | main 110 · Info 354 / 110 (mit Status-Icons 276 / 110) · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 620 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
+| web-p | 262 | main 150 · Info 156 / 104 · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 100 | main 300 · Info 112 / 112 · Schalter 212 |
+
+(Info, Wert: Name / Wert in px.)
 
 ## Screensaver: Plätze pro Modell
 

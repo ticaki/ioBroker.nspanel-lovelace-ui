@@ -9,14 +9,15 @@ import { isOn, popupForType } from '../cardEntities/shared/entityTypes';
 import { tileTouch } from '../cardGrid/CardGrid';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import { Pressable } from '../cardEntities/shared/Pressable';
-import { HmiTextBox, Toggle, type NextionAlign } from '../cardEntities/shared/widgets';
+import { HmiTextBox, Toggle } from '../cardEntities/shared/widgets';
 import {
+    BOX_STYLES,
     STATUS_FRAME_COLOR,
-    deviceFallbackScale,
     deviceGeometry,
     progressPercent,
     statusBlockVisible,
     type Box,
+    type BoxStyle,
     type SlotGeometry,
     type StatusSlotGeometry,
 } from './layout';
@@ -100,11 +101,10 @@ function unionBox(boxes: readonly Box[]): Box {
  * cardDevice1 / cardDevice2 / cardDevice3: the page of one device - big icon (main), fixed slots
  * (info, value, progress, button, switch, status), the status line (field 6 of main, replaced by
  * `devStatus`) and the info icon at the bottom right. main and every slot are touched like a grid tile
- * ({@link deviceTouch}). The boxes come from the geometry of the model ({@link deviceGeometry}): eu and us-l
- * are rebuilt from the HMI pixel by pixel, web-l has a layout of its own on the full stage with additional
- * slots behind the standard ones (same kinds, same touch). A model without a geometry yet (us-p, web-p) draws
- * the eu page scaled to its stage ({@link deviceFallbackScale}). Texts are cut at the border of their field
- * like on the panel.
+ * ({@link deviceTouch}). The boxes come from the geometry of the model ({@link deviceGeometry}): eu, us-l and
+ * us-p are rebuilt from the HMI pixel by pixel, web-l and web-p have layouts of their own on the full stage with
+ * additional slots behind the standard ones (same kinds, same touch). Texts are cut at the border of their
+ * field like on the panel.
  */
 export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
     /**
@@ -157,8 +157,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         key: string,
         field: string,
         b: Box,
-        font: number,
-        xcen: NextionAlign,
+        style: BoxStyle,
         color: string,
         origin: Box = { x: 0, y: 0, w: 0, h: 0 },
     ): React.JSX.Element {
@@ -172,8 +171,8 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                 w={b.w}
                 h={b.h}
                 // a box of the geometry may bring its own font and alignment, else those of the element kind
-                font={b.font ?? font}
-                xcen={b.align ?? xcen}
+                font={b.font ?? style.font}
+                xcen={b.align ?? style.align}
             />
         );
     }
@@ -266,7 +265,14 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                           entity,
                           [{ x: -1, y: -1, w: cell.w, h: cell.h }],
                           (): React.ReactNode =>
-                              this.text('icon', entity.icon, cell, 1, 1, color565ToCss(entity.iconColor), cell),
+                              this.text(
+                                  'icon',
+                                  entity.icon,
+                                  cell,
+                                  BOX_STYLES.status.cell,
+                                  color565ToCss(entity.iconColor),
+                                  cell,
+                              ),
                       )}
             </div>
         );
@@ -300,26 +306,26 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         switch (slot.kind) {
             case 'info':
                 return this.tapArea(role, 'info', entity, [slot.icon, slot.name, slot.value], o => [
-                    this.text('icon', entity.icon, slot.icon, 1, 1, iconColor, o),
-                    this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
-                    this.text('value', entity.optionalValue, slot.value, 0, 2, fg, o),
+                    this.text('icon', entity.icon, slot.icon, BOX_STYLES.info.icon, iconColor, o),
+                    this.text('name', entity.displayName, slot.name, BOX_STYLES.info.name, fg, o),
+                    this.text('value', entity.optionalValue, slot.value, BOX_STYLES.info.value, fg, o),
                 ]);
             case 'button':
                 return this.tapArea(role, 'button', entity, [slot.icon, slot.name], o => [
-                    this.text('icon', entity.icon, slot.icon, 3, 1, iconColor, o),
-                    this.text('name', entity.displayName, slot.name, 0, 1, fg, o),
+                    this.text('icon', entity.icon, slot.icon, BOX_STYLES.button.icon, iconColor, o),
+                    this.text('name', entity.displayName, slot.name, BOX_STYLES.button.name, fg, o),
                 ]);
             case 'value':
                 return this.tapArea(role, 'value', entity, [slot.icon, slot.value, slot.name], o => [
-                    this.text('icon', entity.icon, slot.icon, 1, 1, iconColor, o),
-                    this.text('value', entity.optionalValue, slot.value, 4, 0, fg, o),
-                    this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
+                    this.text('icon', entity.icon, slot.icon, BOX_STYLES.value.icon, iconColor, o),
+                    this.text('value', entity.optionalValue, slot.value, BOX_STYLES.value.value, fg, o),
+                    this.text('name', entity.displayName, slot.name, BOX_STYLES.value.name, fg, o),
                 ]);
             case 'progress': {
                 const inner = slot.bar.w - 2;
                 const fill = Math.round((inner * progressPercent(entity.optionalValue)) / 100);
                 return this.tapArea(role, 'progress', entity, [slot.name, slot.bar], o => [
-                    this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
+                    this.text('name', entity.displayName, slot.name, BOX_STYLES.progress.name, fg, o),
                     <div
                         key="bar"
                         data-role="progress-bar"
@@ -347,8 +353,8 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                         data-role={role}
                     >
                         {this.tapArea(`${role}-label`, 'switch', entity, [slot.icon, slot.name], o => [
-                            this.text('icon', entity.icon, slot.icon, 1, 1, iconColor, o),
-                            this.text('name', entity.displayName, slot.name, 0, 0, fg, o),
+                            this.text('icon', entity.icon, slot.icon, BOX_STYLES.switch.icon, iconColor, o),
+                            this.text('name', entity.displayName, slot.name, BOX_STYLES.switch.name, fg, o),
                         ])}
                         <div
                             style={{
@@ -379,7 +385,6 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         const { model, ctx, global, press } = this.props;
         const geometry = deviceGeometry(model.layout, model.slots, global.model, model.extras);
         const statusVisible = statusBlockVisible(model.layout, model.slots);
-        const scale = deviceFallbackScale(global.model);
         const { main, info } = model;
         return (
             <div
@@ -404,22 +409,27 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                     data-device=""
                     // spans the stage above the title bar: only the elements take the touches,
                     // the navigation arrows stay reachable
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        pointerEvents: 'none',
-                        // provisional fallback of a model without a geometry (us-p, web-p): the eu page, shrunk
-                        // to the width of the stage below the title bar
-                        ...(scale === 1
-                            ? {}
-                            : { transform: `scale(${scale})`, transformOrigin: `0 ${theme.titleBarHeight}px` }),
-                    }}
+                    style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
                 >
                     {isEmptySlot(main)
                         ? null
                         : this.tapArea('main', 'main', main, [geometry.main.icon, geometry.main.name], o => [
-                              this.text('icon', main.icon, geometry.main.icon, 4, 1, color565ToCss(main.iconColor), o),
-                              this.text('name', main.displayName, geometry.main.name, 0, 1, theme.foreground, o),
+                              this.text(
+                                  'icon',
+                                  main.icon,
+                                  geometry.main.icon,
+                                  BOX_STYLES.main.icon,
+                                  color565ToCss(main.iconColor),
+                                  o,
+                              ),
+                              this.text(
+                                  'name',
+                                  main.displayName,
+                                  geometry.main.name,
+                                  BOX_STYLES.main.name,
+                                  theme.foreground,
+                                  o,
+                              ),
                           ])}
                     {geometry.slots.map((slot, i) =>
                         this.renderSlot(model.slots[i] ?? emptyEntity(), slot, `slot-${i + 1}`, statusVisible),
@@ -428,7 +438,13 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                         this.renderSlot(model.extras[j] ?? emptyEntity(), slot, `extra-${j + 1}`, statusVisible),
                     )}
                     <div data-role="status">
-                        {this.text('status', model.status, geometry.status, 0, geometry.statusAlign, theme.foreground)}
+                        {this.text(
+                            'status',
+                            model.status,
+                            geometry.status,
+                            { font: BOX_STYLES.statusLine.font, align: geometry.statusAlign },
+                            theme.foreground,
+                        )}
                     </div>
                     {isEmptySlot(info) ? null : (
                         <Pressable
@@ -448,8 +464,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                                 'icon',
                                 info.icon,
                                 geometry.info,
-                                1,
-                                1,
+                                BOX_STYLES.infoIcon,
                                 color565ToCss(info.iconColor),
                                 geometry.info,
                             )}

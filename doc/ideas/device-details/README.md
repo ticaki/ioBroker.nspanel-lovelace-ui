@@ -320,8 +320,8 @@ devicePage?: {
 
 ### Layouts und Slot-Arten
 
-Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (eu; je Modell `devicePageFields(layout, model)`),
-beide geteilt mit dem Admin. Die Zusatz-Slots der Web-Modelle stehen in `DEVICE_PAGE_EXTRA_SLOTS`, siehe „Modelle und
+Zentrale Tabelle `DEVICE_PAGE_LAYOUTS`, Feldbreiten `DEVICE_PAGE_FIELDS` (eu; je Modell `devicePageFields(layout, model)`
+aus `DEVICE_PAGE_FIELDS_BY_MODEL`, Tabelle unter „Modelle und Zusatz-Slots“), beide geteilt mit dem Admin. Die Zusatz-Slots der Web-Modelle stehen in `DEVICE_PAGE_EXTRA_SLOTS`, siehe „Modelle und
 Zusatz-Slots“.
 
 | Layout | Slots |
@@ -588,9 +588,9 @@ und Zusatz-Slots“.
 
 ### Web-Panel
 
-`src-web/src/cards/cardDevice`: die drei Seiten mit einer Geometrie je Modell – eu wie die HMI, us-l 15 px nach
-rechts, web-l ein eigenes Layout auf voller Breite mit Zusatz-Elementen hinter dem info-Icon; us-p und web-p
-zeichnen vorerst einen Rückfall. Aufbau, Zusatz-Slots und Maße:
+`src-web/src/cards/cardDevice`: die drei Seiten mit einer Geometrie je Modell – eu, us-l (eu 15 px nach rechts) und
+us-p wie die jeweilige HMI (ein Test vergleicht die Tabellen mit `device-page-geometry.json`), web-l und web-p mit
+eigenen Layouts auf voller Bühne und den Zusatz-Elementen hinter dem info-Icon. Aufbau, Zusatz-Slots und Maße:
 [SMARTPHONE.md, „Geräteseiten“](../../web-panel/SMARTPHONE.md#geräteseiten-carddevice13).
 
 - **Statuszeile:** Feld 6 von main, ein stehender Text, an der Feldgrenze abgeschnitten (keine eigenen „…“),
@@ -761,7 +761,22 @@ den eu-Tabellen, web-p mit den us-p-Tabellen).
 |---|---|---|
 | eu | 390 (alle Layouts) | `DEVICE_PAGE_FIELDS` |
 | us-l | wie eu | `DEVICE_PAGE_FIELDS` |
-| us-p, web-l, web-p | **vorläufig 390** – die endgültigen Werte stehen erst mit der us-p-HMI und den Web-Layouts fest | `DEVICE_PAGE_FIELDS_PROVISIONAL` (eine Tabelle, Modell → Layout → Felder) |
+| us-p | 262 (alle Layouts) | `DEVICE_PAGE_FIELDS_US_P` – us-p-HMI, `device-page-geometry.json` |
+| web-l | 580 (alle Layouts) | `DEVICE_PAGE_FIELDS_WEB_L` – Layout des Web-Panels (`geometryWeb.ts`) |
+| web-p | 262 (alle Layouts) | `DEVICE_PAGE_FIELDS_WEB_P` – Layout des Web-Panels nach dem Vorbild us-p |
+
+**Feldbreiten je Modell** (`DEVICE_PAGE_FIELDS_BY_MODEL`, px in Font 0, Info und Wert als Name / Wert; nur die
+Statuszeile misst der Adapter, die übrigen Felder schneidet das Panel an der Feldgrenze ab). Ein Test vergleicht eu,
+us-l und us-p mit `device-page-geometry.json`. Bei Reihen mit wechselnder Elementzahl (Web) steht der schmalste Fall.
+
+| Modell | Layout 1 | Layout 2 | Layout 3 |
+|---|---|---|---|
+| eu, us-l | main 110 · Info 164 / 110, mit Status-Icons 86 / 110 · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 429 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
+| us-p | main 150 · Info 156 / 104 (auch mit Status-Icons) · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 300 | main 300 · Info 112 / 112 · Schalter 212 |
+| web-l | main 110 · Info 354 / 110, mit Status-Icons 276 / 110 · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 620 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
+| web-p | main 150 (ohne Status-Icons 300) · Info 156 / 104 · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 100 (drei in einer Reihe; zwei 148, einer 300) | main 300 · Info 112 / 112 · Schalter 212 |
+
+Layouts der Web-Modelle: [SMARTPHONE.md, „Geräteseiten“](../../web-panel/SMARTPHONE.md#geräteseiten-carddevice13).
 
 ### Rückfall auf die Detailseite
 

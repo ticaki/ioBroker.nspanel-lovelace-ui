@@ -9,12 +9,23 @@ import {
     type InfoSlotGeometry,
     type SwitchSlotGeometry,
 } from './geometry';
-import { EU_GEOMETRY } from './geometryHmi';
+import {
+    EU_GEOMETRY,
+    portraitButton,
+    portraitInfoRow,
+    portraitInfoTile,
+    portraitMain1,
+    portraitMain2,
+    portraitMain3,
+    portraitProgress,
+    portraitSwitchRow,
+} from './geometryHmi';
 
 /*
  * The device pages of the web models: layouts of their own on the full stage, with the additional slots
- * (`DEVICE_EXTRA_KINDS`). Same element kinds, fonts and heights as the eu page; the text boxes are never
- * narrower than on eu (the adapter cuts names and values to the eu widths), the room goes into more elements.
+ * (`DEVICE_EXTRA_KINDS`). Same element kinds, fonts and heights as the page of the HMI model they follow
+ * (web-l: eu, web-p: us-p); the room goes into more elements, not into more text - a text box is as wide as on
+ * that model unless a row has to hold more elements than there (never narrower than the same field on eu).
  * A row is laid out for the elements it has to place: empty additional slots at its end leave no gap.
  */
 
@@ -207,6 +218,161 @@ function landscape3(_slots: readonly Entity6[], extras: readonly Entity6[]): Dev
         info: INFO_L,
     };
 }
+
+/** Width of the status line (font 0) of the web-p pages, as on us-p */
+export const WEB_P_STATUS_WIDTH = 262;
+
+/** web-p: status line and info icon at the bottom of the 640 px stage (us-p: y 447 / 446) */
+const STATUS_P = box(10, 607, WEB_P_STATUS_WIDTH, 30);
+const INFO_P = box(274, 606, 36, 32);
+
+/** weights of the free height of a portrait page: between two groups of elements, between two rows of a group */
+const GROUP_GAP = 2;
+const ROW_GAP = 1;
+
+/**
+ * Top edges of rows stacked from `top` down to the status line: the rows keep their height, the free height
+ * goes into the gaps by weight - the gap in front of a row (`gap`, 0 for the first) and {@link GROUP_GAP} in
+ * front of the status line. So a page with fewer rows is spread over the stage instead of ending early.
+ *
+ * @param top top of the first row
+ * @param rows height of every row and weight of the gap in front of it
+ */
+export function stack(top: number, rows: readonly { h: number; gap: number }[]): number[] {
+    const free = STATUS_P.y - top - rows.reduce((sum, r) => sum + r.h, 0);
+    const unit = free / (rows.reduce((sum, r) => sum + r.gap, 0) + GROUP_GAP);
+    let used = 0;
+    let gaps = 0;
+    return rows.map(r => {
+        gaps += r.gap;
+        const y = Math.round(top + used + gaps * unit);
+        used += r.h;
+        return y;
+    });
+}
+
+/**
+ * A group of `count` rows of the same height: the first after a group gap, the others after a row gap.
+ *
+ * @param count number of rows
+ * @param h height of a row
+ */
+function group(count: number, h: number): { h: number; gap: number }[] {
+    return Array.from({ length: count }, (_, i) => ({ h, gap: i === 0 ? GROUP_GAP : ROW_GAP }));
+}
+
+/**
+ * web-p cardDevice1: main with the status block and the two info rows like us-p, below them 2 or 3 rows of
+ * two buttons (2 additional). Without status icons main stands in the middle (us-p leaves the place of the
+ * block empty).
+ *
+ * @param slots the standard slots
+ * @param extras the additional slots: button, button
+ */
+function portrait1(slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+    const used = usedExtras(extras, [0, 1]);
+    const buttonRows = used > 0 ? 3 : 2;
+    const ys = stack(70, [{ h: 114, gap: 0 }, ...group(2, 34), ...group(buttonRows, 80)]);
+    const withBlock = portraitMain1(ys[0]);
+    const { cells } = withBlock;
+    const main = statusBlockVisible(1, slots)
+        ? withBlock.main
+        : { icon: box(85, ys[0], 150, 86), name: box(10, ys[0] + 88, 300, 26) };
+    const button = (n: number): ButtonSlotGeometry =>
+        portraitButton(n % 2 === 0 ? 10 : 162, ys[3 + Math.floor(n / 2)], 148);
+    return {
+        main,
+        slots: [portraitInfoRow(ys[1]), portraitInfoRow(ys[2]), button(0), button(1), button(2), button(3), ...cells],
+        extras: [used > 0 ? button(4) : undefined, used > 1 ? button(5) : undefined],
+        status: STATUS_P,
+        statusAlign: 1,
+        info: INFO_P,
+    };
+}
+
+/**
+ * web-p cardDevice2: main, the big value and the bar like us-p, 3 or 4 info rows (1 additional), below them one
+ * row of 1-3 buttons (2 additional) that share the width: 300 px like us-p, 2 x 148 or 3 x 100 px (the width of
+ * this button on eu).
+ *
+ * @param _slots the standard slots
+ * @param extras the additional slots: info, button, button
+ */
+function portrait2(_slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+    const infos = 3 + usedExtras(extras, [0]);
+    const buttons = 1 + usedExtras(extras, [1, 2]);
+    const ys = stack(68, [{ h: 110, gap: 0 }, ...group(1, 42), ...group(infos, 34), ...group(1, 80)]);
+    const { main, value } = portraitMain2(ys[0]);
+    const width = buttons === 1 ? 300 : buttons === 2 ? 148 : 100;
+    const xs = spread(buttons, width, 10, 310);
+    const button = (n: number): ButtonSlotGeometry => portraitButton(xs[n], ys[2 + infos], width);
+    return {
+        main,
+        slots: [
+            value,
+            portraitProgress(ys[1]),
+            portraitInfoRow(ys[2]),
+            portraitInfoRow(ys[3]),
+            portraitInfoRow(ys[4]),
+            button(0),
+        ],
+        extras: [
+            infos > 3 ? portraitInfoRow(ys[5]) : undefined,
+            buttons > 1 ? button(1) : undefined,
+            buttons > 2 ? button(2) : undefined,
+        ],
+        status: STATUS_P,
+        statusAlign: 1,
+        info: INFO_P,
+    };
+}
+
+/**
+ * web-p cardDevice3: main like us-p, 3 or 4 rows of two info tiles (2 additional), below them 2 or 3 switch
+ * rows (1 additional).
+ *
+ * @param _slots the standard slots
+ * @param extras the additional slots: info, info, switch
+ */
+function portrait3(_slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+    const extraInfos = usedExtras(extras, [0, 1]);
+    const infoRows = extraInfos > 0 ? 4 : 3;
+    const switches = 2 + usedExtras(extras, [2]);
+    const ys = stack(67, [{ h: 110, gap: 0 }, ...group(infoRows, 51), ...group(switches, 50)]);
+    const tile = (n: number): InfoSlotGeometry => portraitInfoTile(n % 2, ys[1 + Math.floor(n / 2)]);
+    const toggle = (n: number): SwitchSlotGeometry => portraitSwitchRow(ys[1 + infoRows + n]);
+    return {
+        main: portraitMain3(ys[0]),
+        slots: [tile(0), tile(1), tile(2), tile(3), tile(4), tile(5), toggle(0), toggle(1)],
+        extras: [
+            extraInfos > 0 ? tile(6) : undefined,
+            extraInfos > 1 ? tile(7) : undefined,
+            switches > 2 ? toggle(2) : undefined,
+        ],
+        status: STATUS_P,
+        statusAlign: 1,
+        info: INFO_P,
+    };
+}
+
+/**
+ * web-p (stage 320x640): the three device pages after the us-p pages, with the additional slots; the rows share
+ * the height of the stage ({@link stack}).
+ *
+ * @param layout the page
+ * @param slots the standard slots of the model
+ * @param extras the additional slots of the model
+ */
+export const webPortraitGeometry: DeviceGeometryBuilder = (layout, slots, extras) => {
+    switch (layout) {
+        case 1:
+            return portrait1(slots, extras);
+        case 2:
+            return portrait2(slots, extras);
+        case 3:
+            return portrait3(slots, extras);
+    }
+};
 
 /**
  * web-l (stage 640x320): the three device pages on the full width.
