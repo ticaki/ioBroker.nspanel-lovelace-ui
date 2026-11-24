@@ -149,7 +149,8 @@ auf dem State mit diesem Skript (`deviceDetailRowIcon`), es wird also bei jeder 
 ## Auswahl des Geräts
 
 - Wählbar sind nur Objekte vom Typ `device` oder `channel`, nie Instanz oder Adapter-Wurzel (kein `shelly.0`).
-- Eingesammelt wird das Gerät selbst plus **höchstens ein Unterordner** (`Relay0.Power`, `:1.STATE`).
+- Eingesammelt wird das Gerät selbst plus **höchstens ein Unterordner** (`Relay0.Power`, `:1.STATE`); eine Maske kann
+  mehr erlauben (`stateDepth`, hmip: 3 Teile, `channels.1.setPointTemperature`).
 - Für bekannte Adapter legt eine Maske fest, auf welcher Ebene ein Gerät liegt.
 
 ## Masken (bekannte Adapter)
@@ -226,10 +227,10 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
   - Ohne eigenen Namen zeigen „Keine“ und „Navigation“ den Namen des Geräts.
   - Gespeichert in `AdminPageItemConfig.device` (`deviceId`, `shortPress`, `entries` = angehakte Zeilen in Reihenfolge).
 - **Gerät:** nur `device`/`channel`, nie Instanz, Adapter-Wurzel oder Info-Kanal (`<adapter>.<n>.info`); bekannte
-  Adapter legen die Ebene fest (3). sendTo `getDeviceDetails` liefert die States (Gerät + höchstens ein Unterordner).
-  Ohne Antwort (Adapter aus) oder bei gelöschtem Gerät bleibt ein Item speicherbar.
-- **Masken:** `src/lib/types/deviceDetails.ts` – shelly (Gen1 und Gen2), sonoff, zigbee2mqtt, hm-rpc, dazu die
-  allgemeine Maske nur nach Rolle. Zeilennamen: Übersetzungsschlüssel `deviceDetail_<key>`.
+  Adapter legen die Ebene fest (3, hmip 4). sendTo `getDeviceDetails` liefert die States (Gerät + höchstens ein
+  Unterordner, hmip zwei). Ohne Antwort (Adapter aus) oder bei gelöschtem Gerät bleibt ein Item speicherbar.
+- **Masken:** `src/lib/types/deviceDetailMasks.ts` (reine Daten) – shelly (Gen1 und Gen2), sonoff, zigbee2mqtt, hm-rpc,
+  hmip, dazu die allgemeine Maske nur nach Rolle. Zeilennamen: Übersetzungsschlüssel `deviceDetail_<key>`.
 - **Gelernte Vorbelegung:** eigenes natives Attribut `deviceDetailsLearned` (Adapter → Einträge in Reihenfolge). Es
   ändert sich nur, wenn der Nutzer im Dialog die Filterliste des Geräts übernommen hat und sich beim Speichern des Items
   Häkchen oder Reihenfolge ändern; nur vorbelegte Einträge (gelernt, Maske, Adapter ohne Antwort) lehren nichts. Es

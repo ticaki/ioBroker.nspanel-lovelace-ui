@@ -47,8 +47,8 @@ export function deviceStateInfoOf(adapter: ioBroker.Adapter, obj: ioBroker.State
 
 /**
  * The device and its states: only an object of type device or channel can be chosen (never an instance or the root of
- * an adapter, a known adapter fixes the level of its devices); its states are the ones directly below it or in at
- * most one sub folder.
+ * an adapter, a known adapter fixes the level of its devices); its states are the ones directly below it or in sub
+ * folders, as deep as the mask of its adapter allows (`isDeviceDetailState`).
  *
  * @param adapter adapter instance
  * @param rawId id of the device as sent by the admin

@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Injoignable",
     "deviceDetail_update": "Mise à jour",
     "deviceDetail_uptime": "Durée de fct.",
+    "deviceDetail_valvePosition": "Pos. vanne",
     "deviceDetail_voltage": "Tension",
     "deviceDetailsDialog_apply": "Appliquer",
     "deviceDetailsDialog_device": "Appareil (objet de type device ou channel)",

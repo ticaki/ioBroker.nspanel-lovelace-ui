@@ -7,6 +7,7 @@ import {
     deviceDetailEntriesOfRows,
     deviceDetailSubNames,
     deviceDetailEntryOfRow,
+    deviceDetailEntryOfState,
     deviceDetailIdentifier,
     deviceDetailMaskOf,
     deviceDetailMasks,
@@ -34,6 +35,7 @@ const SHELLY2 = 'shelly.0.shellyplus2pm#000000000002#1';
 const SONOFF = 'sonoff.0.Plug_01';
 const ZIGBEE = 'zigbee2mqtt.0.0x0000000000000001';
 const HM = 'hm-rpc.1.000000000000A1';
+const HMIP = 'hmip.0.devices.3014F711A000000000000001';
 
 /**
  * @param deviceId device of the fixture
@@ -140,6 +142,34 @@ describe('lib/types/deviceDetails', () => {
                 update: ['0.UPDATE_PENDING'],
             });
         });
+        it('hmip: the states lie in channels.0, channels.1 and info (radiator thermostat)', () => {
+            expect(defaultRows(HMIP)).to.deep.equal({
+                lowBattery: ['channels.0.lowBat'],
+                temperature: ['channels.1.valveActualTemperature'],
+                setpoint: ['channels.1.setPointTemperature'],
+                valvePosition: ['channels.1.valvePosition'],
+                rssi: ['channels.0.rssiDeviceValue'],
+                unreachable: ['channels.0.unreach'],
+                firmware: ['info.firmwareVersion'],
+            });
+        });
+        it('hmip: every state of the device becomes a row, the other ones without entry', () => {
+            const rows = buildDeviceDetailRows(HMIP, fixture[HMIP].states, undefined, undefined);
+            expect(rows.every(r => r.id !== '')).to.equal(true);
+            expect(rows.map(r => r.id).sort()).to.deep.equal(fixture[HMIP].states.map(s => s.id).sort());
+            expect(rows.find(r => r.id === `${HMIP}.channels.0.rssiPeerValue`)).to.deep.equal({
+                key: '',
+                id: `${HMIP}.channels.0.rssiPeerValue`,
+                enabled: false,
+            });
+        });
+        it('the general mask knows the role indicator.maintenance.lowbat', () => {
+            const state = { id: 'foo.0.dev.lowBat', role: 'indicator.maintenance.lowbat' };
+            expect(deviceDetailEntryOfState(generalDeviceDetailMask, state)?.key).to.equal('lowBattery');
+            expect(
+                deviceDetailEntryOfState(generalDeviceDetailMask, { ...state, role: 'indicator.lowbat' })?.key,
+            ).to.equal('lowBattery');
+        });
         it('an entry of an own mask without state is listed empty and not ticked', () => {
             const rows = buildDeviceDetailRows(SHELLY2, fixture[SHELLY2].states, undefined, undefined);
             expect(rows.find(r => r.key === 'switch')).to.deep.equal({ key: 'switch', id: '', enabled: false });
@@ -181,7 +211,7 @@ describe('lib/types/deviceDetails', () => {
         });
     });
 
-    describe('choice of the device: device or channel only, at most one sub folder', () => {
+    describe('choice of the device: device or channel only, states as deep as the mask allows', () => {
         it('only objects of type device or channel', () => {
             expect(deviceSelectionError(SHELLY, 'device')).to.equal(undefined);
             expect(deviceSelectionError(SONOFF, 'channel')).to.equal(undefined);
@@ -211,6 +241,27 @@ describe('lib/types/deviceDetails', () => {
             expect(isDeviceDetailState(SHELLY, `${SHELLY}.Relay0.Deep.Power`)).to.equal(false);
             expect(isDeviceDetailState(SHELLY, `${SHELLY}x.rssi`)).to.equal(false);
             expect(isDeviceDetailState('', 'a.b')).to.equal(false);
+        });
+        it('hmip: the device lies on level 4, not its channels or the devices folder', () => {
+            expect(deviceSelectionError(HMIP, 'device')).to.equal(undefined);
+            expect(deviceSelectionError(`${HMIP}.channels.1`, 'channel')).to.equal('level');
+            expect(deviceSelectionError('hmip.0.devices', 'channel')).to.equal('level');
+        });
+        it('hmip: states up to 3 parts below the device (stateDepth of its mask)', () => {
+            expect(isDeviceDetailState(HMIP, `${HMIP}.channels.1.setPointTemperature`)).to.equal(true);
+            expect(isDeviceDetailState(HMIP, `${HMIP}.info.firmwareVersion`)).to.equal(true);
+            expect(isDeviceDetailState(HMIP, `${HMIP}.channels.1.deep.setPointTemperature`)).to.equal(false);
+            const deeper: DeviceStateInfo = {
+                ...fixture[HMIP].states[0],
+                id: `${HMIP}.channels.1.deep.valvePosition`,
+            };
+            const rows = buildDeviceDetailRows(HMIP, [...fixture[HMIP].states, deeper], undefined, undefined);
+            expect(rows.some(r => r.id === deeper.id)).to.equal(false);
+        });
+        it('other adapters keep at most 2 parts below the device', () => {
+            expect(isDeviceDetailState(HM, `${HM}.1.x.STATE`)).to.equal(false);
+            expect(isDeviceDetailState('foo.0.dev', 'foo.0.dev.channels.1.x')).to.equal(false);
+            expect(isDeviceDetailState('foo.0.dev', 'foo.0.dev.channels.x')).to.equal(true);
         });
         it('the deeper state of the fixture never becomes a row', () => {
             const rows = buildDeviceDetailRows(SHELLY, fixture[SHELLY].states, undefined, undefined);

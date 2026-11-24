@@ -2719,5 +2719,181 @@
     "max": 1
    }
   ]
+ },
+ "hmip.0.devices.3014F711A000000000000001": {
+  "type": "device",
+  "states": [
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.configPending",
+    "name": "configPending",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.dutyCycle",
+    "name": "dutyCycle",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.functionalChannelType",
+    "name": "functionalChannelType",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.lowBat",
+    "name": "lowBat",
+    "role": "indicator.maintenance.lowbat",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.operationLockActive",
+    "name": "operationLockActive",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.routerModuleEnabled",
+    "name": "routerModuleEnabled",
+    "role": "switch",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.routerModuleSupported",
+    "name": "routerModuleSupported",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.rssiDeviceValue",
+    "name": "rssiDeviceValue",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.rssiPeerValue",
+    "name": "rssiPeerValue",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.unreach",
+    "name": "unreach",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.functionalChannelType",
+    "name": "functionalChannelType",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.setPointTemperature",
+    "name": "setPointTemperature",
+    "role": "level.temperature",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "°C"
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.temperatureOffset",
+    "name": "temperatureOffset",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.valveActualTemperature",
+    "name": "valveActualTemperature",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.valvePosition",
+    "name": "valvePosition",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.valveState",
+    "name": "valveState",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.firmwareVersion",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.label",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.modelType",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.type",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.updateState",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   }
+  ]
  }
 }

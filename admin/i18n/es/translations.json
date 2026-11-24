@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Inaccesible",
     "deviceDetail_update": "Actualiz.",
     "deviceDetail_uptime": "Tiempo act.",
+    "deviceDetail_valvePosition": "Pos. válvula",
     "deviceDetail_voltage": "Tensión",
     "deviceDetailsDialog_apply": "Aplicar",
     "deviceDetailsDialog_device": "Dispositivo (objeto de tipo device o channel)",
