@@ -824,6 +824,8 @@ Für jedes der beiden Projekte:
      2 × 3, Schalter als Zeilen; unten ist es eng – zwischen dem zweiten Schalter (bis y 443) und dem info-Icon
      (ab y 446) liegen 2 freie Pixelzeilen, bis zur Statuszeile (ab y 447) 3. Lassen sich Schalter 8 und info-Icon
      getrennt treffen? Statuszeile mittig, info-Icon rechts daneben.
+     **Im Emulator geprüft 2026-11-24 (Tim, us-p-TFT):** Schalter 8 (`OnOff` 0 und 1) und info-Icon lösen getrennt
+     aus.
    - us-p cardDevice3: das Haupt-Icon beginnt bei y 68 direkt unter der versteckten Fläche `mSpecial` (bis y 67) –
      ein Tipp auf den oberen Rand des Icons löst das Icon aus, nicht `mSpecial`.
    - us-p: Texte in Font 0 (andere Schrift als EU) – passen Namen und Werte in ihre Felder, ist der Punkt `.` zu
@@ -837,6 +839,10 @@ Für jedes der beiden Projekte:
    - **us-p cardGrid3, Zelle 4** (unten rechts): kurzer Tipp sendet `event,buttonPress2,<ID von Zelle 4>,button`,
      langer Druck `event,buttonPress3,<ID von Zelle 4>,button` – bisher trugen beide die ID von Zelle 3. Gegenprobe
      Zelle 3: ihre eigene ID. Mit vier verschieden belegten Zellen testen.
+     **Im Emulator geprüft 2026-11-24 (Tim, us-p-TFT):** kurzer Tipp auf Zelle 4 sendet `buttonPress2` mit der ID
+     von Zelle 4, der lange Druck öffnet bei Typ `number` das Popup mit der ID von Zelle 4 (`pageOpenDetail`).
+     Nicht ausgelöst wurde dabei die Zeile mit `buttonPress3`: sie wird nur bei Typen ohne Popup gesendet (z. B.
+     `text`, `button`), Zelle 4 war eine `number`.
    - cardEntities: Tipp links auf eine Zeile mit Typ `switch`, `button` oder `text` sendet genau ein
      `event,buttonPress3,<entn>,button`; `light`, `shutter`, `number` … öffnen weiter ihr Popup; leere Zeile nichts.
      Auf us-p auch Zeile 5.
