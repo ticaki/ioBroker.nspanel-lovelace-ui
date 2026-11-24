@@ -29,6 +29,69 @@ const PageAlarmMessageDefault: pages.PageAlarmMessage = {
 };
 /** largest delay setTimeout accepts (32-bit signed int), adapter.setTimeout throws above it */
 const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+/** the adapter timer functions the PIN lockout needs */
+type PinLockTimers = {
+    setTimeout: (cb: () => void, ms: number) => ioBroker.Timeout | undefined;
+    clearTimeout: (timer: ioBroker.Timeout | undefined) => void;
+};
+
+/**
+ * PIN lockout state: failed attempts, wait time and the running lockout timer.
+ * A page without shared status owns one, a page with shared status (isGlobal) uses the
+ * one of the controller, so all panels share counter, wait time and timer.
+ */
+export class PinLock {
+    /** failed attempts since the last correct PIN, not limited */
+    failCount: number = 0;
+    /** wait time of the running lockout in seconds, as shown on the panel */
+    lockSeconds: number = 0;
+    private timeout: ioBroker.Timeout | undefined | null = null;
+
+    /**
+     * @param timers - adapter timer functions
+     * @param onExpire - called after the lockout is lifted, to refresh the panels
+     */
+    constructor(
+        private readonly timers: PinLockTimers,
+        private readonly onExpire: () => void,
+    ) {}
+
+    /** @returns true while a lockout is running */
+    get locked(): boolean {
+        return !!this.timeout;
+    }
+
+    /**
+     * Count a failed PIN attempt and (re)start the lockout with 2^failCount seconds.
+     * The timer duration is capped to the largest value setTimeout accepts (2^31-1 ms),
+     * the counter itself is not limited.
+     */
+    fail(): void {
+        this.clear();
+        this.failCount++;
+        const delayMs = Math.min(2 ** this.failCount * 1000, MAX_TIMEOUT_MS);
+        this.lockSeconds = Math.floor(delayMs / 1000);
+        this.timeout = this.timers.setTimeout(() => {
+            // lift the lockout before the panels get the free numpad
+            this.timeout = null;
+            this.onExpire();
+        }, delayMs);
+    }
+
+    /** correct PIN: reset the counter */
+    reset(): void {
+        this.failCount = 0;
+    }
+
+    /** stop a running lockout timer (unload) */
+    clear(): void {
+        if (this.timeout) {
+            this.timers.clearTimeout(this.timeout);
+            this.timeout = null;
+        }
+    }
+}
+
 const alarmStates: pages.AlarmStates[] = ['disarmed', 'armed', 'arming', 'pending', 'triggered'];
 
 /**
@@ -109,10 +172,8 @@ export class PageAlarm extends Page {
         this.delayUpdate();
     }
     private pin: string = '0';
-    private failCount: number = 0;
-    private pinFailTimeout: ioBroker.Timeout | undefined | null = null;
-    /** wait time of the running PIN lockout in seconds, as shown on the panel */
-    private pinLockSeconds: number = 0;
+    /** own PIN lockout of a page without shared status */
+    private localPinLock: PinLock | undefined;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
@@ -243,10 +304,10 @@ export class PageAlarm extends Page {
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
         message.navigation = this.getNavigation();
         if (this.alarmType === 'alarm') {
-            if (this.pinFailTimeout) {
+            if (this.pinLock.locked) {
                 message.button1 = `${this.library.getTranslation('locked_for')}`;
                 message.status1 = '';
-                message.button2 = ` ${this.pinLockSeconds} s`;
+                message.button2 = ` ${this.pinLock.lockSeconds} s`;
                 message.status2 = '';
                 message.button3 = '';
                 message.status3 = '';
@@ -311,10 +372,10 @@ export class PageAlarm extends Page {
                 message.flashing = 'enable'; //flashing*
             }
         } else if (this.alarmType === 'unlock') {
-            if (this.pinFailTimeout) {
+            if (this.pinLock.locked) {
                 message.button1 = `${this.library.getTranslation('locked_for')}`;
                 message.status1 = '';
-                message.button2 = ` ${this.pinLockSeconds} s`;
+                message.button2 = ` ${this.pinLock.lockSeconds} s`;
                 message.status2 = '';
                 message.button3 = '';
                 message.status3 = '';
@@ -475,23 +536,24 @@ export class PageAlarm extends Page {
                 return;
             }*/
             // during a running lockout every PIN attempt is rejected without checking the PIN - also the correct one
-            if (this.pin && this.pinFailTimeout) {
-                this.startPinLockout();
+            const pinLock = this.pinLock;
+            if (this.pin && pinLock.locked) {
+                pinLock.fail();
                 this.log.warn(
-                    `PIN attempt during lockout rejected. try ${this.failCount}! Delay next attempt by ${this.pinLockSeconds} seconds`,
+                    `PIN attempt during lockout rejected. try ${pinLock.failCount}! Delay next attempt by ${pinLock.lockSeconds} seconds`,
                 );
-                await this.update();
+                await this.updatePinLockPages();
                 return;
             }
             if (this.pin && this.pin != value) {
-                this.startPinLockout();
+                pinLock.fail();
                 this.log.warn(
-                    `Wrong pin entered. try ${this.failCount}! Delay next attempt by ${this.pinLockSeconds} seconds`,
+                    `Wrong pin entered. try ${pinLock.failCount}! Delay next attempt by ${pinLock.lockSeconds} seconds`,
                 );
-                await this.update();
+                await this.updatePinLockPages();
                 return;
             }
-            this.failCount = 0;
+            pinLock.reset();
             this.log.debug(`Alarm event ${button}`);
             switch (button) {
                 case 'A1':
@@ -561,22 +623,31 @@ export class PageAlarm extends Page {
     }
 
     /**
-     * Count a failed PIN attempt and (re)start the lockout with 2^failCount seconds.
-     * The timer duration is capped to the largest value setTimeout accepts (2^31-1 ms),
-     * the counter itself is not limited.
+     * PIN lockout of this page: shared by all panels for a page with shared status, otherwise its own.
+     *
+     * @returns the lockout state to use
      */
-    private startPinLockout(): void {
-        if (this.pinFailTimeout) {
-            this.adapter.clearTimeout(this.pinFailTimeout);
-            this.pinFailTimeout = null;
+    private get pinLock(): PinLock {
+        if (this.isGlobal) {
+            return this.basePanel.controller.getGlobalPinLock(this.name);
         }
-        this.failCount++;
-        const delayMs = Math.min(2 ** this.failCount * 1000, MAX_TIMEOUT_MS);
-        this.pinLockSeconds = Math.floor(delayMs / 1000);
-        this.pinFailTimeout = this.adapter.setTimeout(() => {
-            this.pinFailTimeout = null;
-            void this.update();
-        }, delayMs);
+        if (!this.localPinLock) {
+            this.localPinLock = new PinLock(this.adapter, () => void this.update());
+        }
+        return this.localPinLock;
+    }
+
+    /**
+     * Show the changed lockout: on all panels for a page with shared status, otherwise this page.
+     *
+     * @returns Promise that resolves after the update
+     */
+    private async updatePinLockPages(): Promise<void> {
+        if (this.isGlobal) {
+            await this.basePanel.controller.updateGlobalAlarmPages(this.name);
+        } else {
+            await this.update();
+        }
     }
 
     delayUpdate(): void {
@@ -600,10 +671,8 @@ export class PageAlarm extends Page {
             this.adapter.clearTimeout(this.updatePanelTimeout);
             this.updatePanelTimeout = null;
         }
-        if (this.pinFailTimeout) {
-            this.adapter.clearTimeout(this.pinFailTimeout);
-            this.pinFailTimeout = null;
-        }
+        // the shared lockout of a page with shared status belongs to the controller
+        this.localPinLock?.clear();
         await super.delete();
     }
 }

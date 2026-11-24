@@ -8,7 +8,7 @@ import { getInternalDefaults, getRGBFromValue, getTasmotaVersionFromJson, isWebM
 import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
-import type { PageAlarm } from '../pages/pageAlarm';
+import { PageAlarm, PinLock } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
 import { getNextTrashRefresh, getTrashDataFromFile, getTrashDataFromState } from '../pages/tools/pageTrash';
 import * as definition from '../const/definition';
@@ -39,6 +39,8 @@ export class Controller extends Library.BaseClass {
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
     private dailyIntervalTimeout: ioBroker.Interval | undefined;
     private trashRefreshTimeout: ioBroker.Timeout | undefined;
+    /** PIN lockout of alarm pages with shared status, key = page name */
+    private globalPinLocks = new Map<string, PinLock>();
     /** dates of all trash pages by unique id, the value of `definition.trashPagesState` */
     private trashPages: Record<string, unknown[]> = {};
     private dataCache: Record<string, { time: number; data: any }> = {};
@@ -746,13 +748,50 @@ export class Controller extends Library.BaseClass {
     }
 
     async setGlobalAlarmStatus(name: string, status: AlarmStates): Promise<void> {
+        for (const page of this.getGlobalAlarmPages(name)) {
+            await page.setStatusGlobal(status);
+        }
+    }
+
+    /**
+     * @param name page name of an alarm page with shared status
+     * @returns the instances of this page on all panels
+     */
+    private getGlobalAlarmPages(name: string): PageAlarm[] {
+        const result: PageAlarm[] = [];
         for (const panel of this.panels) {
-            // @ts-expect-error accessing private subclass property
-            for (const page of panel.pages) {
-                if (page?.card === 'cardAlarm' && 'isGlobal' in page && page.isGlobal && page.name === name) {
-                    await (page as PageAlarm).setStatusGlobal(status);
-                }
+            const page = panel.getPagebyUniqueID(name);
+            if (page instanceof PageAlarm && page.isGlobal) {
+                result.push(page);
             }
+        }
+        return result;
+    }
+
+    /**
+     * PIN lockout shared by all instances of an alarm page with shared status.
+     *
+     * @param name page name
+     * @returns the shared lockout state, created on first use
+     */
+    getGlobalPinLock(name: string): PinLock {
+        let lock = this.globalPinLocks.get(name);
+        if (!lock) {
+            lock = new PinLock(this.adapter, () => void this.updateGlobalAlarmPages(name));
+            this.globalPinLocks.set(name, lock);
+        }
+        return lock;
+    }
+
+    /**
+     * Refresh all instances of an alarm page with shared status (only visible ones send).
+     *
+     * @param name page name
+     * @returns Promise that resolves after all updates
+     */
+    async updateGlobalAlarmPages(name: string): Promise<void> {
+        for (const page of this.getGlobalAlarmPages(name)) {
+            await page.update();
         }
     }
 
@@ -770,6 +809,10 @@ export class Controller extends Library.BaseClass {
         if (this.trashRefreshTimeout) {
             this.adapter.clearTimeout(this.trashRefreshTimeout);
         }
+        for (const lock of this.globalPinLocks.values()) {
+            lock.clear();
+        }
+        this.globalPinLocks.clear();
         if (this.systemNotification) {
             await this.systemNotification.delete();
         }
