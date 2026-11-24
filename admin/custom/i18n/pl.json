@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Nieosiągalny",
     "deviceDetail_update": "Aktualizacja",
     "deviceDetail_uptime": "Czas pracy",
+    "deviceDetail_valvePosition": "Poz. zaworu",
     "deviceDetail_voltage": "Napięcie",
     "deviceDetailsDialog_apply": "Zastosuj",
     "deviceDetailsDialog_device": "Urządzenie (obiekt typu device lub channel)",

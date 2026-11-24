@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Non raggiung.",
     "deviceDetail_update": "Aggiornam.",
     "deviceDetail_uptime": "Uptime",
+    "deviceDetail_valvePosition": "Pos. valvola",
     "deviceDetail_voltage": "Tensione",
     "deviceDetailsDialog_apply": "Applica",
     "deviceDetailsDialog_device": "Dispositivo (oggetto di tipo device o channel)",

@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Onbereikbaar",
     "deviceDetail_update": "Update",
     "deviceDetail_uptime": "Uptime",
+    "deviceDetail_valvePosition": "Klepstand",
     "deviceDetail_voltage": "Spanning",
     "deviceDetailsDialog_apply": "Toepassen",
     "deviceDetailsDialog_device": "Apparaat (object van het type device of channel)",

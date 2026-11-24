@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Nicht erreichbar",
     "deviceDetail_update": "Update",
     "deviceDetail_uptime": "Laufzeit",
+    "deviceDetail_valvePosition": "Ventilstellung",
     "deviceDetail_voltage": "Spannung",
     "deviceDetailsDialog_apply": "Übernehmen",
     "deviceDetailsDialog_device": "Gerät (Objekt vom Typ Device oder Channel)",

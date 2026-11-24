@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "不可连接",
     "deviceDetail_update": "更新",
     "deviceDetail_uptime": "运行时间",
+    "deviceDetail_valvePosition": "阀门开度",
     "deviceDetail_voltage": "电压",
     "deviceDetailsDialog_apply": "应用",
     "deviceDetailsDialog_device": "设备（类型为 device 或 channel 的对象）",

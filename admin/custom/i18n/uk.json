@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Недоступно",
     "deviceDetail_update": "Оновлення",
     "deviceDetail_uptime": "Час роботи",
+    "deviceDetail_valvePosition": "Клапан",
     "deviceDetail_voltage": "Напруга",
     "deviceDetailsDialog_apply": "Застосувати",
     "deviceDetailsDialog_device": "Пристрій (об’єкт типу device або channel)",

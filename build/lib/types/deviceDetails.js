@@ -18,6 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var deviceDetails_exports = {};
 __export(deviceDetails_exports, {
+  DEFAULT_DEVICE_DETAIL_STATE_DEPTH: () => DEFAULT_DEVICE_DETAIL_STATE_DEPTH,
   DEVICE_DETAIL_NAME_PREFIX: () => DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE: () => DEVICE_DETAIL_ROW_ROLE,
   DEVICE_PAGE_CHANNEL_ITEM_FIELDS: () => DEVICE_PAGE_CHANNEL_ITEM_FIELDS,
@@ -46,7 +47,7 @@ __export(deviceDetails_exports, {
   deviceDetailGroupColorKey: () => deviceDetailGroupColorKey,
   deviceDetailIdentifier: () => deviceDetailIdentifier,
   deviceDetailMaskOf: () => deviceDetailMaskOf,
-  deviceDetailMasks: () => deviceDetailMasks,
+  deviceDetailMasks: () => import_deviceDetailMasks2.deviceDetailMasks,
   deviceDetailNameKey: () => deviceDetailNameKey,
   deviceDetailRowKind: () => deviceDetailRowKind,
   deviceDetailRuleMatches: () => deviceDetailRuleMatches,
@@ -76,7 +77,7 @@ __export(deviceDetails_exports, {
   deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
   fitDevicePageSlots: () => fitDevicePageSlots,
-  generalDeviceDetailMask: () => generalDeviceDetailMask,
+  generalDeviceDetailMask: () => import_deviceDetailMasks2.generalDeviceDetailMask,
   hasCommonStatesList: () => hasCommonStatesList,
   hasOwnDeviceDetailMask: () => hasOwnDeviceDetailMask,
   isDeviceDetailState: () => isDeviceDetailState,
@@ -89,6 +90,8 @@ __export(deviceDetails_exports, {
 });
 module.exports = __toCommonJS(deviceDetails_exports);
 var import_adminShareConfig = require("./adminShareConfig");
+var import_deviceDetailMasks = require("./deviceDetailMasks");
+var import_deviceDetailMasks2 = require("./deviceDetailMasks");
 const SENDTO_GET_DEVICE_DETAILS_COMMAND = "getDeviceDetails";
 const DEVICE_DETAIL_ROW_ROLE = "deviceDetail";
 const DEVICE_PAGE_INFO_ROLE = "devicePageInfo";
@@ -539,241 +542,6 @@ function deviceDetailRowKind(common) {
   }
   return "text";
 }
-const generalDeviceDetailMask = {
-  adapter: "",
-  entries: [
-    { key: "switch", group: "info", icon: "toggle-switch", rules: [{ role: "switch" }] },
-    {
-      key: "power",
-      group: "energy",
-      icon: "lightning-bolt",
-      rules: [{ role: ["value.power", "value.power.active", "value.power.consumption"], unit: "W" }]
-    },
-    { key: "voltage", group: "energy", icon: "flash", rules: [{ role: "value.voltage" }] },
-    { key: "current", group: "energy", icon: "current-ac", rules: [{ role: "value.current" }] },
-    {
-      key: "energy",
-      group: "energy",
-      icon: "counter",
-      rules: [
-        { role: ["value.energy", "value.energy.consumed", "value.energy.active"] },
-        { role: "value.power.consumption", unit: "kWh" },
-        { role: "value.power.consumption", unit: "Wh" }
-      ]
-    },
-    { key: "battery", group: "energy", icon: "battery", rules: [{ role: "value.battery" }] },
-    { key: "batteryVoltage", group: "energy", icon: "battery-charging", rules: [{ role: "battery.voltage" }] },
-    { key: "lowBattery", group: "energy", icon: "battery-alert", rules: [{ role: "indicator.lowbat" }] },
-    { key: "temperature", group: "climate", icon: "thermometer", rules: [{ role: "value.temperature" }] },
-    { key: "setpoint", group: "climate", icon: "home-thermometer", rules: [{ role: "level.temperature" }] },
-    { key: "humidity", group: "climate", icon: "water-percent", rules: [{ role: "value.humidity" }] },
-    {
-      key: "illuminance",
-      group: "climate",
-      icon: "brightness-5",
-      rules: [{ role: ["value.brightness", "value.illuminance"] }]
-    },
-    { key: "pressure", group: "climate", icon: "gauge", rules: [{ role: "value.pressure" }] },
-    { key: "rssi", group: "connection", icon: "wifi", rules: [{ role: "value.rssi" }] },
-    { key: "reachable", group: "connection", icon: "lan-connect", rules: [{ role: "indicator.reachable" }] },
-    { key: "unreachable", group: "connection", icon: "lan-disconnect", rules: [{ role: "indicator.unreach" }] },
-    { key: "ip", group: "connection", icon: "ip-network", rules: [{ role: "info.ip" }] },
-    { key: "firmware", group: "info", icon: "chip", rules: [{ role: "info.firmware" }] }
-  ]
-};
-const deviceDetailMasks = [
-  {
-    // shellyplus1pm#…#1 / SHSW-1#…#1 - Relay0, Input0, Sys, … as sub folders
-    adapter: "shelly",
-    deviceLevel: 3,
-    entries: [
-      { key: "switch", group: "info", icon: "toggle-switch", rules: [{ role: "switch", dp: ".Switch" }] },
-      { key: "power", group: "energy", icon: "lightning-bolt", rules: [{ role: "value.power", dp: ".Power" }] },
-      { key: "voltage", group: "energy", icon: "flash", rules: [{ role: "value.voltage", dp: ".Voltage" }] },
-      { key: "current", group: "energy", icon: "current-ac", rules: [{ role: "value.current", dp: ".Current" }] },
-      // Gen2+: value.energy, Gen1 (Shelly 1PM, Plug S, …): value.power.consumption - both Wh in Relay0.Energy
-      {
-        key: "energy",
-        group: "energy",
-        icon: "counter",
-        rules: [
-          { role: "value.energy", dp: ".Energy" },
-          { role: "value.power.consumption", dp: ".Energy" }
-        ]
-      },
-      // every temperature comes as °C and °F pair, the °C state counts
-      {
-        key: "temperature",
-        group: "climate",
-        icon: "thermometer",
-        rules: [{ role: "value.temperature", dp: ".temperatureC" }]
-      },
-      { key: "humidity", group: "climate", icon: "water-percent", rules: [{ role: "value.humidity" }] },
-      // role value, unit dBm
-      { key: "rssi", group: "connection", icon: "wifi", rules: [{ role: "value", dp: ".rssi" }] },
-      {
-        key: "reachable",
-        group: "connection",
-        icon: "lan-connect",
-        rules: [{ role: "indicator.reachable", dp: ".online" }]
-      },
-      { key: "ip", group: "connection", icon: "ip-network", rules: [{ role: "info.ip", dp: ".hostname" }] },
-      { key: "firmware", group: "info", icon: "chip", rules: [{ role: "state", dp: ".version" }] },
-      // boolean "new firmware available"
-      { key: "update", group: "info", icon: "update", rules: [{ role: "state", dp: ".firmware" }] },
-      { key: "uptime", group: "info", icon: "timer-outline", rules: [{ role: "value.interval", dp: ".uptime" }] }
-    ]
-  },
-  {
-    // Tasmota devices, one channel per device, INFO as sub folder
-    adapter: "sonoff",
-    deviceLevel: 3,
-    entries: [
-      { key: "switch", group: "info", icon: "toggle-switch", rules: [{ role: "switch" }] },
-      {
-        key: "power",
-        group: "energy",
-        icon: "lightning-bolt",
-        rules: [{ role: "value.power.consumption", dp: ".ENERGY_Power" }]
-      },
-      {
-        key: "voltage",
-        group: "energy",
-        icon: "flash",
-        rules: [{ role: "value.voltage", dp: ".ENERGY_Voltage" }]
-      },
-      {
-        key: "current",
-        group: "energy",
-        icon: "current-ac",
-        rules: [{ role: "value.current", dp: ".ENERGY_Current" }]
-      },
-      {
-        key: "energyToday",
-        group: "energy",
-        icon: "counter",
-        rules: [{ role: "value.energy.consumed", dp: ".ENERGY_Today" }]
-      },
-      {
-        key: "energy",
-        group: "energy",
-        icon: "counter",
-        rules: [{ role: "value.power.consumption", dp: ".ENERGY_Total" }]
-      },
-      { key: "temperature", group: "climate", icon: "thermometer", rules: [{ role: "value.temperature" }] },
-      { key: "humidity", group: "climate", icon: "water-percent", rules: [{ role: "value.humidity" }] },
-      { key: "illuminance", group: "climate", icon: "brightness-5", rules: [{ role: "value.illuminance" }] },
-      // Wifi_RSSI (%) and Wifi_Signal (dBm) both have the role value.rssi - dBm like the other adapters
-      { key: "rssi", group: "connection", icon: "wifi", rules: [{ role: "value.rssi", dp: ".Wifi_Signal" }] },
-      { key: "reachable", group: "connection", icon: "lan-connect", rules: [{ role: "indicator.reachable" }] },
-      { key: "ip", group: "connection", icon: "ip-network", rules: [{ role: "info.ip", dp: ".IPAddress" }] },
-      { key: "firmware", group: "info", icon: "chip", rules: [{ role: "info.firmware", dp: ".Version" }] },
-      {
-        key: "uptime",
-        group: "info",
-        icon: "timer-outline",
-        rules: [{ role: "value.interval", dp: ".UptimeSec" }]
-      }
-    ]
-  },
-  {
-    // one device object per Zigbee device, all states directly below it
-    adapter: "zigbee2mqtt",
-    deviceLevel: 3,
-    entries: [
-      { key: "switch", group: "info", icon: "toggle-switch", rules: [{ role: "switch", dp: ".state" }] },
-      { key: "power", group: "energy", icon: "lightning-bolt", rules: [{ role: "value.power" }] },
-      { key: "voltage", group: "energy", icon: "flash", rules: [{ role: "value.voltage" }] },
-      { key: "current", group: "energy", icon: "current-ac", rules: [{ role: "value.current" }] },
-      {
-        key: "energy",
-        group: "energy",
-        icon: "counter",
-        rules: [{ role: "value.power.consumption", dp: ".energy" }]
-      },
-      { key: "battery", group: "energy", icon: "battery", rules: [{ role: "value.battery" }] },
-      { key: "batteryVoltage", group: "energy", icon: "battery-charging", rules: [{ role: "battery.voltage" }] },
-      { key: "lowBattery", group: "energy", icon: "battery-alert", rules: [{ role: "indicator.lowbat" }] },
-      {
-        key: "temperature",
-        group: "climate",
-        icon: "thermometer",
-        rules: [{ role: "value.temperature", dp: ".temperature" }]
-      },
-      {
-        key: "deviceTemperature",
-        group: "climate",
-        icon: "thermometer-lines",
-        rules: [{ role: "value.temperature", dp: ".device_temperature" }]
-      },
-      { key: "humidity", group: "climate", icon: "water-percent", rules: [{ role: "value.humidity" }] },
-      {
-        key: "illuminance",
-        group: "climate",
-        icon: "brightness-5",
-        rules: [{ role: "value.brightness", dp: ".illuminance" }]
-      },
-      { key: "pressure", group: "climate", icon: "gauge", rules: [{ role: "value.pressure" }] },
-      {
-        key: "linkQuality",
-        group: "connection",
-        icon: "signal",
-        rules: [{ role: "state", dp: ".link_quality" }]
-      },
-      {
-        key: "reachable",
-        group: "connection",
-        icon: "lan-connect",
-        rules: [{ role: "indicator.reachable", dp: ".available" }]
-      },
-      {
-        key: "lastSeen",
-        group: "connection",
-        icon: "clock-outline",
-        rules: [{ role: "state", dp: ".last_seen" }]
-      }
-    ]
-  },
-  {
-    // HomeMatic: hm-rpc.N.<serial>, the states lie in the channels :0, :1, … (sub folders)
-    adapter: "hm-rpc",
-    deviceLevel: 3,
-    entries: [
-      { key: "switch", group: "info", icon: "toggle-switch", rules: [{ role: "switch", dp: ".STATE" }] },
-      { key: "power", group: "energy", icon: "lightning-bolt", rules: [{ role: "value.power" }] },
-      { key: "current", group: "energy", icon: "current-ac", rules: [{ role: "value.current" }] },
-      { key: "energy", group: "energy", icon: "counter", rules: [{ role: "value.power.consumption" }] },
-      {
-        key: "voltage",
-        group: "energy",
-        icon: "flash",
-        rules: [{ role: "value.voltage", dp: ".OPERATING_VOLTAGE" }]
-      },
-      { key: "lowBattery", group: "energy", icon: "battery-alert", rules: [{ role: "indicator.lowbat" }] },
-      {
-        key: "temperature",
-        group: "climate",
-        icon: "thermometer",
-        rules: [{ role: "value.temperature", dp: ".ACTUAL_TEMPERATURE" }]
-      },
-      {
-        key: "setpoint",
-        group: "climate",
-        icon: "home-thermometer",
-        rules: [{ role: "level.temperature", dp: ".SET_POINT_TEMPERATURE" }]
-      },
-      { key: "humidity", group: "climate", icon: "water-percent", rules: [{ role: "value.humidity" }] },
-      { key: "rssi", group: "connection", icon: "wifi", rules: [{ role: "value.rssi", dp: ".RSSI_DEVICE" }] },
-      {
-        key: "unreachable",
-        group: "connection",
-        icon: "lan-disconnect",
-        rules: [{ role: "indicator.unreach", dp: ".UNREACH" }]
-      },
-      { key: "update", group: "info", icon: "update", rules: [{ role: "indicator", dp: ".UPDATE_PENDING" }] }
-    ]
-  }
-];
 function deviceDetailsAdapter(id) {
   var _a;
   return (_a = id.split(".")[0]) != null ? _a : "";
@@ -781,10 +549,10 @@ function deviceDetailsAdapter(id) {
 function deviceDetailMaskOf(deviceId) {
   var _a;
   const adapter = deviceDetailsAdapter(deviceId);
-  return (_a = deviceDetailMasks.find((m) => m.adapter === adapter)) != null ? _a : generalDeviceDetailMask;
+  return (_a = import_deviceDetailMasks.deviceDetailMasks.find((m) => m.adapter === adapter)) != null ? _a : import_deviceDetailMasks.generalDeviceDetailMask;
 }
 function hasOwnDeviceDetailMask(deviceId) {
-  return deviceDetailMaskOf(deviceId) !== generalDeviceDetailMask;
+  return deviceDetailMaskOf(deviceId) !== import_deviceDetailMasks.generalDeviceDetailMask;
 }
 function deviceSelectionError(id, type) {
   if (type === void 0) {
@@ -807,12 +575,15 @@ function deviceSelectionError(id, type) {
   }
   return void 0;
 }
+const DEFAULT_DEVICE_DETAIL_STATE_DEPTH = 2;
 function isDeviceDetailState(deviceId, stateId) {
+  var _a;
   if (!deviceId || !stateId.startsWith(`${deviceId}.`)) {
     return false;
   }
+  const depth = (_a = deviceDetailMaskOf(deviceId).stateDepth) != null ? _a : DEFAULT_DEVICE_DETAIL_STATE_DEPTH;
   const rest = stateId.slice(deviceId.length + 1).split(".");
-  return rest.length >= 1 && rest.length <= 2 && rest.every((part) => part !== "");
+  return rest.length >= 1 && rest.length <= depth && rest.every((part) => part !== "");
 }
 function deviceDetailRuleMatches(rule, state) {
   if (rule.role === void 0 && rule.dp === void 0 && rule.unit === void 0) {
@@ -840,11 +611,11 @@ function deviceDetailEntryByKey(deviceId, key) {
   if (!key) {
     return void 0;
   }
-  return (_a = deviceDetailMaskOf(deviceId).entries.find((e) => e.key === key)) != null ? _a : generalDeviceDetailMask.entries.find((e) => e.key === key);
+  return (_a = deviceDetailMaskOf(deviceId).entries.find((e) => e.key === key)) != null ? _a : import_deviceDetailMasks.generalDeviceDetailMask.entries.find((e) => e.key === key);
 }
 function deviceDetailEntryOfRow(deviceId, key, state) {
   var _a;
-  return (_a = deviceDetailEntryByKey(deviceId, key)) != null ? _a : state ? deviceDetailEntryOfState(generalDeviceDetailMask, state) : void 0;
+  return (_a = deviceDetailEntryByKey(deviceId, key)) != null ? _a : state ? deviceDetailEntryOfState(import_deviceDetailMasks.generalDeviceDetailMask, state) : void 0;
 }
 function deviceDetailNameKey(key) {
   return `${DEVICE_DETAIL_NAME_PREFIX}${key}`;
@@ -878,7 +649,7 @@ function buildDeviceDetailRows(deviceId, states, saved, learned) {
       for (const state of found) {
         candidates.push({ key: entry.key, id: state.id, enabled: false });
       }
-    } else if (mask !== generalDeviceDetailMask) {
+    } else if (mask !== import_deviceDetailMasks.generalDeviceDetailMask) {
       candidates.push({ key: entry.key, id: "", enabled: false });
     }
   }
@@ -1084,6 +855,7 @@ function deviceDetailSubNames(deviceId, rows) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  DEFAULT_DEVICE_DETAIL_STATE_DEPTH,
   DEVICE_DETAIL_NAME_PREFIX,
   DEVICE_DETAIL_ROW_ROLE,
   DEVICE_PAGE_CHANNEL_ITEM_FIELDS,

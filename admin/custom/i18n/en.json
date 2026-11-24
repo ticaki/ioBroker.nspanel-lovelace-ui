@@ -590,6 +590,7 @@
     "deviceDetail_unreachable": "Unreachable",
     "deviceDetail_update": "Update",
     "deviceDetail_uptime": "Uptime",
+    "deviceDetail_valvePosition": "Valve position",
     "deviceDetail_voltage": "Voltage",
     "deviceDetailsDialog_apply": "Apply",
     "deviceDetailsDialog_device": "Device (object of type device or channel)",
