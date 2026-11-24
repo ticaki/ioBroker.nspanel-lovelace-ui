@@ -183,11 +183,16 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
      * ({@link Pressable}) with the timer of the device pages: a tap on release, after {@link DEVICE_LONG_PRESS_MS}
      * the popup of light, light2, fan and number at once, the long press of every other type on release.
      *
+     * With `hit` the element is touched only in these boxes (`data-role="<role>-hit"`), not in the whole area
+     * around them: main, whose icon and name differ in width on the portrait pages - the HMI has only `bMain` and
+     * `tMainName` as touch components, the room next to the icon belongs to nobody.
+     *
      * @param role data-role of the area
      * @param element the kind of element
      * @param entity its entity
      * @param boxes the boxes of the element
      * @param render the content, positioned relative to the area
+     * @param hit the boxes that take the touch, the whole area when missing
      */
     private tapArea(
         role: string,
@@ -195,6 +200,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         entity: Entity6,
         boxes: readonly Box[],
         render: (origin: Box) => React.ReactNode,
+        hit?: readonly Box[],
     ): React.JSX.Element {
         const area = unionBox(boxes);
         return (
@@ -213,9 +219,23 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                     top: area.y,
                     width: area.w,
                     height: area.h,
-                    pointerEvents: 'auto',
+                    pointerEvents: hit ? 'none' : 'auto',
                 }}
             >
+                {hit?.map((b, i) => (
+                    <div
+                        key={`hit-${i}`}
+                        data-role={`${role}-hit`}
+                        style={{
+                            position: 'absolute',
+                            left: b.x - area.x,
+                            top: b.y - area.y,
+                            width: b.w,
+                            height: b.h,
+                            pointerEvents: 'auto',
+                        }}
+                    />
+                ))}
                 {render(area)}
             </Pressable>
         );
@@ -386,6 +406,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         const geometry = deviceGeometry(model.layout, model.slots, global.model, model.extras);
         const statusVisible = statusBlockVisible(model.layout, model.slots);
         const { main, info } = model;
+        const mainBoxes = [geometry.main.icon, geometry.main.name];
         return (
             <div
                 data-page={ctx.pageType}
@@ -413,24 +434,32 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                 >
                     {isEmptySlot(main)
                         ? null
-                        : this.tapArea('main', 'main', main, [geometry.main.icon, geometry.main.name], o => [
-                              this.text(
-                                  'icon',
-                                  main.icon,
-                                  geometry.main.icon,
-                                  BOX_STYLES.main.icon,
-                                  color565ToCss(main.iconColor),
-                                  o,
-                              ),
-                              this.text(
-                                  'name',
-                                  main.displayName,
-                                  geometry.main.name,
-                                  BOX_STYLES.main.name,
-                                  theme.foreground,
-                                  o,
-                              ),
-                          ])}
+                        : this.tapArea(
+                              'main',
+                              'main',
+                              main,
+                              mainBoxes,
+                              o => [
+                                  this.text(
+                                      'icon',
+                                      main.icon,
+                                      geometry.main.icon,
+                                      BOX_STYLES.main.icon,
+                                      color565ToCss(main.iconColor),
+                                      o,
+                                  ),
+                                  this.text(
+                                      'name',
+                                      main.displayName,
+                                      geometry.main.name,
+                                      BOX_STYLES.main.name,
+                                      theme.foreground,
+                                      o,
+                                  ),
+                              ],
+                              // bMain and tMainName of the HMI: nothing between or next to them takes the touch
+                              mainBoxes,
+                          )}
                     {geometry.slots.map((slot, i) =>
                         this.renderSlot(model.slots[i] ?? emptyEntity(), slot, `slot-${i + 1}`, statusVisible),
                     )}
