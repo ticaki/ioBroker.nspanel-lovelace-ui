@@ -685,6 +685,20 @@ export class PageItem extends BaseTriggeredPage {
 
                                 break;
                             }
+                            case 'battery.power': {
+                                // entity3 is the power: negative = charging (icon with flash), the color follows it
+                                const power = await tools.getValueEntryNumber(item.entity3);
+                                message.icon =
+                                    (await tools.getIconEntryValue(
+                                        item.icon,
+                                        power !== null && power < 0,
+                                        '',
+                                        '',
+                                        false,
+                                    )) ?? '';
+                                message.iconColor = await tools.getBatteryPowerColor(item.icon, power);
+                                break;
+                            }
                             case 'combined': {
                                 message.icon =
                                     (await tools.getIconEntryValue(item.icon, showIcon, '', null, false)) ?? '';
@@ -711,7 +725,8 @@ export class PageItem extends BaseTriggeredPage {
                         }
                         const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : '';
 
-                        message.iconColor = await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
+                        // set above when the role brings its own color (battery.power)
+                        message.iconColor ??= await tools.getIconEntryColor(item.icon, value ?? true, Color.HMIOn);
 
                         if (entry.type === 'button' && entry.data.confirm) {
                             if (this.confirmClick === 'unlock') {

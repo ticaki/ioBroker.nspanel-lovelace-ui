@@ -1,6 +1,7 @@
 # Table of contents
 * [Remarks](#remarks)
 * [airCondition](#aircondition)
+* [battery](#battery)
 * [blind](#blind)
 * [button](#button)
 * [ct](#ct)
@@ -54,6 +55,12 @@
 | " | ~~SWING~~ | number | level.mode.swing |  | X |  |
 | " | ~~SWING2~~ | boolean | switch.mode.swing |  | X |  |
 | " | ~~UNREACH~~ | boolean | indicator.maintenance.unreach |  |  |  |
+
+### battery
+| Channel role | State ID | common.type | common.role | required | common.write | description |
+| :---: | :--- | :--- | :--- | :---: | :---: | :--- |
+| **battery** | ~~ACTUAL~~ | number | value.battery | X |  | Ladestand in % |
+| " | ~~POWER~~ | number | value.power |  |  | Lade-/Entladeleistung: negativ = laden, positiv = entladen, 0 = weder noch. Liefert das Gerät es andersherum, im Alias umdrehen. |
 
 ### blind
 | Channel role | State ID | common.type | common.role | required | common.write | description |

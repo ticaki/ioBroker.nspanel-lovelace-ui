@@ -177,6 +177,21 @@ export const pageItemDefaults = {
         type: 'number',
     },
 
+    // ── Battery ───────────────────────────────────────────────────────────────
+    /**
+     * Channel role 'battery' (home battery / storage), template 'text.battery.channel'.
+     * The icons stand for the two icon rows of the template, which follow the charge level in steps of ten:
+     * on = charging (with flash), off = not charging. colorOn = charging, colorOff = discharging; when neither
+     * (power 0 or no power state) the template uses Color.neutral.
+     */
+    battery: {
+        iconOn: 'battery-charging',
+        iconOff: 'battery',
+        colorOn: 'Green',
+        colorOff: 'Red',
+        type: 'boolean',
+    },
+
     // ── Info ──────────────────────────────────────────────────────────────────
     /**
      * Fallback icons when item has no icon and no USERICON state.
@@ -378,6 +393,17 @@ export const pageNaviItemDefaults = {
         type: 'number',
     },
 
+    // ── Battery ───────────────────────────────────────────────────────────────
+    /** Channel role 'battery', see {@link pageItemDefaults}.battery. Icons from template. */
+    battery: {
+        iconOn: 'battery-charging',
+        iconOff: 'battery',
+        colorOn: 'Green',
+        colorOff: 'Red',
+        template: 'text.battery.channel',
+        type: 'boolean',
+    },
+
     // ── Temperature ───────────────────────────────────────────────────────────
     /** Covers cases: 'thermostat', 'airCondition', 'temperature', 'value.temperature'. Icons from template. */
     thermostat: {
@@ -575,6 +601,7 @@ const ITEM_ROLE_KEY: Partial<Record<string, keyof typeof pageItemDefaults>> = {
     'value.temperature': 'thermostat',
     humidity: 'humidity',
     'value.humidity': 'humidity',
+    battery: 'battery',
     info: 'info',
     volume: 'volume',
     select: 'select',
@@ -654,6 +681,7 @@ const NAVI_ROLE_KEY: Partial<Record<string, keyof typeof pageNaviItemDefaults>> 
     button: 'button',
     humidity: 'humidity',
     'value.humidity': 'humidity',
+    battery: 'battery',
     thermostat: 'thermostat',
     airCondition: 'thermostat',
     temperature: 'thermostat',

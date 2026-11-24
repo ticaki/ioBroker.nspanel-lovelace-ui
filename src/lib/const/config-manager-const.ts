@@ -215,6 +215,10 @@ export const checkedDatapoints: checkedDatapointsUnionWithNull = {
         SWING2: null,
         UNREACH: null,
     },
+    battery: {
+        ACTUAL: null,
+        POWER: null,
+    },
     blind: {
         ACTUAL: null,
         SET: null,
@@ -396,6 +400,15 @@ type requiredDatapoints2 = {
             SWING: Datapoint;
             SWING2: Datapoint;
             UNREACH: Datapoint;
+        } & Partial<Record<mydps, Datapoint>>;
+        updatedVersion?: boolean;
+        name: string;
+        description: string;
+    };
+    battery: {
+        data: {
+            ACTUAL: Datapoint;
+            POWER: Datapoint;
         } & Partial<Record<mydps, Datapoint>>;
         updatedVersion?: boolean;
         name: string;
@@ -795,6 +808,30 @@ export const requiredScriptDataPoints: requiredDatapoints = {
             SWING: { role: 'level.mode.swing', type: 'number', required: false, writeable: true, trigger: true },
             SWING2: { role: 'switch.mode.swing', type: 'boolean', required: false, writeable: true, trigger: true },
             UNREACH: templateDatapoint.UNREACH,
+        },
+    },
+    battery: {
+        updatedVersion: true,
+        name: 'battery',
+        description: 'Hausakku / Speicher: Symbol nach Ladestand, Farbe nach Laden / Entladen',
+        data: {
+            ACTUAL: {
+                role: 'value.battery',
+                type: 'number',
+                required: true,
+                writeable: false,
+                trigger: true,
+                description: 'Ladestand in %',
+            },
+            POWER: {
+                role: 'value.power',
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                description:
+                    'Lade-/Entladeleistung: negativ = laden, positiv = entladen, 0 = weder noch. Liefert das Gerät es andersherum, im Alias umdrehen.',
+            },
         },
     },
     blind: {

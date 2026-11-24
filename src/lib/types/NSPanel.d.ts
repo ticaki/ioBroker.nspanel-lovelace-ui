@@ -84,6 +84,7 @@ export namespace NSPanel {
         | 'shutter.basic'
         | 'shutter.basic.onlyV'
         | 'text.battery.bydhvs'
+        | 'text.battery.channel'
         | 'text.accuweather.bot2values'
         | 'text.accuweather.sunriseset'
         | 'button.esphome.powerplug'

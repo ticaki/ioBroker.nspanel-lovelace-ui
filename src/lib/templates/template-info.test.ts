@@ -25,6 +25,17 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
         expect(byName.get('text.pirate-weather.favorit')).to.include({ need: 'channel', adapter: 'pirate-weather' });
     });
 
+    it('offers the battery channel template like the bydhvs one: below a channel, on every place', () => {
+        const channel = byName.get('text.battery.channel');
+        expect(channel).to.include({ need: 'channel', type: 'text', role: 'battery.power', adapter: '' });
+        // found by role below the chosen channel: ACTUAL (value.battery) and POWER (value.power)
+        expect(channel?.looksFor).to.deep.equal(['value.battery', 'value.power']);
+        expect(channel?.areas).to.deep.equal(byName.get('text.battery.bydhvs')?.areas);
+        expect(channel?.areas).to.deep.equal([...screensaverAreas]);
+        expect(channel?.options).to.deep.equal([]);
+        expect(channel).to.not.have.property('label');
+    });
+
     it('names the constant icon font of a template, also from the base template', () => {
         expect(byName.get('text.clock')?.iconTextSize).to.equal(1);
         expect(byName.get('text.battery')?.iconTextSize).to.equal(undefined);

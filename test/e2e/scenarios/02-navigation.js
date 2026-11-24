@@ -47,8 +47,8 @@ module.exports = ctx => {
                     const upd = await panel.waitFor(isMenuUpdate(HEADLINES.entities), { since: mark });
                     const page = parseMenuUpdate(upd);
                     // cardEntities: 4 rows (eu), the items in the configured order
-                    expect(page.items.map(i => i.name)).to.deep.equal([NAMES.socket, NAMES.blind, '', '']);
-                    expect(page.items.map(i => i.type)).to.deep.equal(['switch', 'shutter2', '', '']);
+                    expect(page.items.map(i => i.name)).to.deep.equal([NAMES.socket, NAMES.blind, NAMES.battery, '']);
+                    expect(page.items.map(i => i.type)).to.deep.equal(['switch', 'shutter2', 'text', '']);
                     expect(page.left.type).to.equal('button');
                     expect(page.left.id).to.equal('bSubPrev');
                     expect(page.left.icon).to.equal(icon('arrow-left-bold'));

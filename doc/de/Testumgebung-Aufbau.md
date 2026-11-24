@@ -16,10 +16,10 @@ Einzige Quelle ist **`templates/test-states.json`**. Die Datei wird mit dem Adap
 
 | Größe | Stand heute |
 |---|---|
-| Kanäle | 52 |
-| Datenpunkte in diesen Kanälen | 191 |
+| Kanäle | 53 |
+| Datenpunkte in diesen Kanälen | 193 |
 | Einzel-States ohne Alias | 25 |
-| verschiedene Kanalrollen | 30 |
+| verschiedene Kanalrollen | 31 |
 
 Aufbau der Datei:
 
@@ -60,16 +60,16 @@ Beide Platzhalter werden **nur beim Neuanlegen** ausgewertet. Ein zweiter Druck 
 
 ## 3. Was beim Anlegen entsteht
 
-Aus den 52 Kanälen und 25 Einzel-States werden **550 Objekte**:
+Aus den 53 Kanälen und 25 Einzel-States werden **557 Objekte**:
 
 | Teil | Anzahl |
 |---|---|
-| Ordner unter `0_userdata.0.NSPanelTest` (mit Wurzel) | 76 |
-| States unter `0_userdata.0.NSPanelTest` | 216 |
-| Ordner unter `alias.0.NSPanelTest` (mit Wurzel) | 15 |
-| Alias-Kanäle | 52 |
-| Alias-States | 191 |
-| **Summe** | **550** |
+| Ordner unter `0_userdata.0.NSPanelTest` (mit Wurzel) | 77 |
+| States unter `0_userdata.0.NSPanelTest` | 218 |
+| Ordner unter `alias.0.NSPanelTest` (mit Wurzel) | 16 |
+| Alias-Kanäle | 53 |
+| Alias-States | 193 |
+| **Summe** | **557** |
 
 Die Objekte entstehen in einer Reihenfolge, in der jedes Elternobjekt vor seinen Kindern angelegt wird. Der Startwert wird ausschließlich am Wert-State unter `userdata` gesetzt, nicht am Alias — und nur dann, wenn das Objekt neu ist.
 
@@ -81,7 +81,7 @@ Der Anspruch „jede Kanalrolle des Adapters kommt vor" ist kein Vorsatz, sonder
 2. **jede** Kanalrolle des Adapters durch mindestens einen Kanal abgedeckt ist,
 3. jeder Alias-State ein Ziel hat, das im selben Lauf mit angelegt wird — kein Alias zeigt ins Leere.
 
-Derzeit stehen 30 Rollen der Testdaten 30 Rollen des Adapters gegenüber, ohne Rest auf beiden Seiten. Kommt im Adapter eine Rolle dazu, schlägt der Test fehl, bis die Testdaten nachgezogen sind.
+Derzeit stehen 31 Rollen der Testdaten 31 Rollen des Adapters gegenüber, ohne Rest auf beiden Seiten. Kommt im Adapter eine Rolle dazu, schlägt der Test fehl, bis die Testdaten nachgezogen sind.
 
 Starten:
 

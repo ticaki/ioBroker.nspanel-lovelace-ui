@@ -449,6 +449,24 @@ export async function getIconEntryColor(
     return String(Color.rgb_dec565(def));
 }
 
+/**
+ * Icon color of a battery by its power (role `battery.power`): negative power charges - color of `icon.true`,
+ * positive power discharges - color of `icon.false`, anything else (exactly 0, no value, no state) is neither -
+ * color of `icon.unstable`. No threshold around 0.
+ *
+ * @param i icon of the page item
+ * @param power power of the battery, null without a value
+ * @returns the color as decimal RGB565 string; without a configured color the neutral color of the theme
+ */
+export async function getBatteryPowerColor(
+    i: ChangeTypeOfKeys<NSPanel.IconEntryType, Dataitem | undefined> | undefined,
+    power: number | null,
+): Promise<string> {
+    const entry = power !== null && power < 0 ? i?.true : power !== null && power > 0 ? i?.false : i?.unstable;
+    const color = entry?.color && (await entry.color.getRGBDec());
+    return color || String(Color.rgb_dec565(Color.isRGB(Color.neutral) ? Color.neutral : Color.HMIOn));
+}
+
 export function getRGBFromValue(val: any, role?: string): RGB | undefined {
     if (val != null) {
         if (typeof val === 'string') {

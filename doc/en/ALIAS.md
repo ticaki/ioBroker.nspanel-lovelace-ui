@@ -1,6 +1,7 @@
 # Table of contents
 * [Remarks](#remarks)
 * [airCondition](#aircondition)
+* [battery](#battery)
 * [blind](#blind)
 * [button](#button)
 * [ct](#ct)
@@ -54,6 +55,12 @@
 | " | ~~SWING~~ | number | level.mode.swing |  | X |  |
 | " | ~~SWING2~~ | boolean | switch.mode.swing |  | X |  |
 | " | ~~UNREACH~~ | boolean | indicator.maintenance.unreach |  |  |  |
+
+### battery
+| Channel role | State ID | common.type | common.role | required | common.write | description |
+| :---: | :--- | :--- | :--- | :---: | :---: | :--- |
+| **battery** | ~~ACTUAL~~ | number | value.battery | X |  | Charge level in % |
+| " | ~~POWER~~ | number | value.power |  |  | Charging / discharging power: negative = charging, positive = discharging, 0 = neither. If the device delivers it the other way round, invert it in the alias. |
 
 ### blind
 | Channel role | State ID | common.type | common.role | required | common.write | description |

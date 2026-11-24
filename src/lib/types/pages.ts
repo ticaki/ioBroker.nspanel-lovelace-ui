@@ -164,6 +164,8 @@ export type DeviceRole =
     | '4values'
     | 'arrow'
     | 'battery'
+    /** battery whose power (entity3) decides: negative = charging (icon true), color charging / discharging / neither */
+    | 'battery.power'
     | 'blind'
     | 'button'
     | 'buttonSensor'

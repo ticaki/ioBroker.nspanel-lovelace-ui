@@ -96,6 +96,7 @@ declare namespace ScriptConfig {
      */
     export type roles =
         | 'airCondition'
+        | 'battery'
         | 'blind'
         | 'button'
         | 'buttonSensor'
@@ -129,6 +130,7 @@ declare namespace ScriptConfig {
 
     export type channelRoles =
         | 'airCondition'
+        | 'battery'
         | 'blind'
         | 'button'
         //| 'buttonSensor'

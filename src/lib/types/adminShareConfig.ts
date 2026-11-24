@@ -3655,6 +3655,30 @@ export const requiredScriptDataPoints = {
             },
         },
     },
+    battery: {
+        updatedVersion: true,
+        name: 'battery',
+        description: 'Hausakku / Speicher: Symbol nach Ladestand, Farbe nach Laden / Entladen',
+        data: {
+            ACTUAL: {
+                role: 'value.battery',
+                type: 'number',
+                required: true,
+                writeable: false,
+                trigger: true,
+                description: 'Ladestand in %',
+            },
+            POWER: {
+                role: 'value.power',
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                description:
+                    'Lade-/Entladeleistung: negativ = laden, positiv = entladen, 0 = weder noch. Liefert das Gerät es andersherum, im Alias umdrehen.',
+            },
+        },
+    },
     blind: {
         updatedVersion: true,
         name: 'blind',
