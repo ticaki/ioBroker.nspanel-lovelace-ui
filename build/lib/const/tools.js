@@ -38,6 +38,7 @@ __export(tools_exports, {
   dropIconFontWithoutGlyphs: () => dropIconFontWithoutGlyphs,
   formatHMS: () => formatHMS,
   formatInSelText: () => formatInSelText,
+  getBatteryPowerColor: () => getBatteryPowerColor,
   getDecfromHue: () => getDecfromHue,
   getDecfromRGBThree: () => getDecfromRGBThree,
   getEnabled: () => getEnabled,
@@ -416,6 +417,11 @@ async function getIconEntryColor(i, value, def, defOff = null) {
     );
   }
   return String(import_Color.Color.rgb_dec565(def));
+}
+async function getBatteryPowerColor(i, power) {
+  const entry = power !== null && power < 0 ? i == null ? void 0 : i.true : power !== null && power > 0 ? i == null ? void 0 : i.false : i == null ? void 0 : i.unstable;
+  const color = (entry == null ? void 0 : entry.color) && await entry.color.getRGBDec();
+  return color || String(import_Color.Color.rgb_dec565(import_Color.Color.isRGB(import_Color.Color.neutral) ? import_Color.Color.neutral : import_Color.Color.HMIOn));
 }
 function getRGBFromValue(val, role) {
   if (val != null) {
@@ -1242,6 +1248,7 @@ function shortenHeadline(text, model) {
   dropIconFontWithoutGlyphs,
   formatHMS,
   formatInSelText,
+  getBatteryPowerColor,
   getDecfromHue,
   getDecfromRGBThree,
   getEnabled,

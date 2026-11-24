@@ -257,7 +257,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
   }
   async getPageItemPayload(skipEnabledCheck = false) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -534,27 +534,39 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 message.icon = (_N = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _N : "";
                 break;
               }
+              case "battery.power": {
+                const power = await tools.getValueEntryNumber(item.entity3);
+                message.icon = (_O = await tools.getIconEntryValue(
+                  item.icon,
+                  power !== null && power < 0,
+                  "",
+                  "",
+                  false
+                )) != null ? _O : "";
+                message.iconColor = await tools.getBatteryPowerColor(item.icon, power);
+                break;
+              }
               case "combined": {
-                message.icon = (_O = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _O : "";
-                message.icon += (_P = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _P : "";
+                message.icon = (_P = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _P : "";
+                message.icon += (_Q = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _Q : "";
                 break;
               }
               default: {
-                const positionIcon = typeof showIcon === "number" && await ((_S = (_R = (_Q = item.icon) == null ? void 0 : _Q.true) == null ? void 0 : _R.value) == null ? void 0 : _S.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
-                message.icon = (_U = await tools.getIconEntryValue(
+                const positionIcon = typeof showIcon === "number" && await ((_T = (_S = (_R = item.icon) == null ? void 0 : _R.true) == null ? void 0 : _S.value) == null ? void 0 : _T.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
+                message.icon = (_V = await tools.getIconEntryValue(
                   item.icon,
                   positionIcon ? showIcon : !!showIcon,
                   "",
                   null,
-                  (_T = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _T : false
-                )) != null ? _U : "";
+                  (_U = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _U : false
+                )) != null ? _V : "";
               }
             }
             const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
-            message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
+            (_W = message.iconColor) != null ? _W : message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                const newValue = (_V = await entry.data.confirm.getObject()) != null ? _V : await entry.data.confirm.getString();
+                const newValue = (_X = await entry.data.confirm.getObject()) != null ? _X : await entry.data.confirm.getString();
                 if (newValue) {
                   const text = typeof newValue === "object" ? newValue.text : newValue;
                   if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
@@ -592,7 +604,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.intNameEntity + additionalId,
               message.icon,
               message.iconColor,
-              (_W = message.displayName) != null ? _W : "",
+              (_Y = message.displayName) != null ? _Y : "",
               message.optionalValue
             );
           }
@@ -601,17 +613,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          let value = (_X = await tools.getValueEntryNumber(item.entityInSel)) != null ? _X : await tools.getValueEntryBoolean(item.entityInSel);
+          let value = (_Z = await tools.getValueEntryNumber(item.entityInSel)) != null ? _Z : await tools.getValueEntryBoolean(item.entityInSel);
           if (entry.role === "alexa-speaker") {
             value = this.parent.currentItem === this.parent.items[0];
           }
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_Y = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _Y : import_Color.Color.HMIOn;
+          message.iconColor = (__ = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? __ : import_Color.Color.HMIOn;
           message.displayName = this.library.getTranslation(
-            (__ = (_Z = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? _Z : message.displayName) != null ? __ : ""
+            (_aa = (_$ = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? _$ : message.displayName) != null ? _aa : ""
           );
           message.optionalValue = this.library.getTranslation(
-            (_$ = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _$ : "PRESS"
+            (_ba = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _ba : "PRESS"
           );
           return tools.getItemMesssage(message);
           break;
@@ -621,12 +633,12 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (entry.type === "fan") {
               const item = entry.data;
               message.type = "fan";
-              const value = (_aa = await tools.getValueEntryBoolean(item.entity1)) != null ? _aa : null;
+              const value = (_ca = await tools.getValueEntryBoolean(item.entity1)) != null ? _ca : null;
               message.displayName = this.library.getTranslation(
-                (_ca = (_ba = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ba : message.displayName) != null ? _ca : ""
+                (_ea = (_da = await tools.getEntryTextOnOff(item.headline, true)) != null ? _da : message.displayName) != null ? _ea : ""
               );
-              message.icon = (_da = await tools.getIconEntryValue(item.icon, value, "")) != null ? _da : "";
-              message.iconColor = (_ea = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ea : "";
+              message.icon = (_fa = await tools.getIconEntryValue(item.icon, value, "")) != null ? _fa : "";
+              message.iconColor = (_ga = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ga : "";
               return tools.getPayloadRemoveTilde(
                 message.type,
                 message.intNameEntity,
@@ -649,16 +661,16 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             const item = entry.data;
             message.type = "timer";
             const { opt, on } = await this.getTimerListValue(item);
-            const s = ((_fa = this.tempData) == null ? void 0 : _fa.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
+            const s = ((_ha = this.tempData) == null ? void 0 : _ha.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
             const v = typeof s === "number" ? s > 1 : on;
             {
               message.iconColor = await tools.getIconEntryColor(item.icon, v, import_Color.Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, v, "gesture-tap-button");
               message.optionalValue = this.library.getTranslation(
-                (_ga = await tools.getEntryTextOnOff(item.text, on)) != null ? _ga : opt
+                (_ia = await tools.getEntryTextOnOff(item.text, on)) != null ? _ia : opt
               );
               message.displayName = this.library.getTranslation(
-                (_ia = (_ha = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ha : message.displayName) != null ? _ia : ""
+                (_ka = (_ja = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ja : message.displayName) != null ? _ka : ""
               );
               return tools.getPayloadRemoveTilde(
                 message.type,
