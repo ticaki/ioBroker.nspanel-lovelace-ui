@@ -441,7 +441,8 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 
 Das ist die Schätzung für `device10` (mit `vaLPCell`, +7 je Seite gegenüber `device9`). **Gemessen** sind `device9`
 und `device10`: die Seitentabellen von `/mnt/projekte/nspanel-v6.2.0.device9.tft` und `…device10.tft` (Tims
-Kompilate, gelesen mit `nav_long_press_blink.tft_ram`, global 436) – die Schätzung liegt bei `device10` 131
+Kompilate, gelesen mit `nav_long_press_blink.tft_ram`; die Summen stimmen mit der Editor-Ausgabe überein, der
+Editor weist davon 428 Byte als global aus, nicht 436) – die Schätzung liegt bei `device10` 131
 (cardDevice1), 39 (cardDevice2) und 88 (cardDevice3) Byte darunter:
 
 | Seite | `device9` gemessen (global + Seite) | frei | `device10` gemessen | frei |
@@ -547,7 +548,8 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
 
 ## us-l und us-p
 
-Teststände (nicht kompiliert): `/home/tim/device-page-hmi/nspanel-us-l-v6.2.0.device10.HMI` und
+Teststände (am 2026-11-24 von Tim im Editor kompiliert, 0 Fehler, 0 Warnungen; Kopien in
+`/mnt/projekte/nspanel emu/`): `/home/tim/device-page-hmi/nspanel-us-l-v6.2.0.device10.HMI` und
 `/home/tim/device-page-hmi/nspanel-us-p-v6.2.0.device10.HMI`, gebaut aus den unveränderten 6.2.0-Projekten in
 `HMI/us-l/` und `HMI/us-p/`.
 
@@ -763,33 +765,41 @@ cardDevice1 Slot 1–2). Das Web-Panel baut seine Layouts aus dieser Datei.
 
 ### RAM je Seite und Modell
 
-Schätzung des Werkzeugs (9 + 7 je Objekt + Textpuffer, global 436), davor der Stand der Seite in 6.2.0. Gemessen ist
-für us-l und us-p nichts (keine TFT). Die Spalte „erwartet“ überträgt die Messung der EU-`device10`-TFT: us-l hat
-auf allen sechs Seiten dieselben Objekte und Puffer wie EU; us-p ebenso auf cardGrid, cardGrid3, cardDevice2 und
-cardDevice3.
+**Gemessen** am 2026-11-24: Ausgabe des Nextion-Editors beim Kompilieren der drei `device10`-Projekte (alle
+„Compile Successful! 0 Errors, 0 Warnings“). Global belegt EU 428 Byte, us-l und us-p je 404; die Werte unten sind
+Seite + global, Limit 3584.
 
-| Seite | us-l geschätzt (vorher → nachher, mit global) | us-l erwartet | us-p geschätzt (vorher → nachher, mit global) | us-p erwartet |
-|---|---|---|---|---|
-| cardGrid | 2726 → 2733 | 2728 (856 frei) | 2726 → 2733 | 2728 (856 frei) |
-| cardGrid2 | 3062 → 3069 | 3072 (512 frei) | 3230 → 3237 (9 Zellen) | etwa 3240 (rund 345 frei) |
-| cardGrid3 | 2610 → 2617 | 2596 (988 frei) | 2610 → 2617 | 2596 (988 frei) |
-| cardDevice1 | neu: 3201 (Kopie von cardGrid: 2733) | 3332 (**252 frei**) | neu: 3015 (71 Objekte, kein schmaler Zeilensatz) | etwa 3145 (rund 440 frei) |
-| cardDevice2 | neu: 2785 | 2824 (760 frei) | neu: 2785 | 2824 (760 frei) |
-| cardDevice3 | neu: 3264 | 3352 (**232 frei**) | neu: 3264 | 3352 (**232 frei**) |
-| cardEntities | 2768 → 2768 (nur Code) – **Formel zu niedrig, siehe unten** | 3000 (584 frei), wie EU | 3212 → 3212 (nur Code) – **Formel zu niedrig, siehe unten** | **unbekannt, bitte ablesen** |
+| Seite | EU | us-l | us-p |
+|---|---|---|---|
+| cardGrid | 2728 (856 frei) | 2704 (880 frei) | 2704 (880 frei) |
+| cardGrid2 | 3072 (512 frei) | 3048 (536 frei) | 3220 (364 frei) |
+| cardGrid3 | 2596 (988 frei) | 2572 (1012 frei) | 2572 (1012 frei) |
+| cardDevice1 | 3332 (**252 frei**) | 3308 (**276 frei**) | 3076 (508 frei) |
+| cardDevice2 | 2824 (760 frei) | 2800 (784 frei) | 2800 (784 frei) |
+| cardDevice3 | 3352 (**232 frei**) | 3328 (**256 frei**) | 3328 (**256 frei**) |
+| cardEntities | 3000 (584 frei) | 2976 (608 frei) | 3548 (**36 frei**) |
 
-`card_device.py` bricht über 3584 ab und meldet Stände über 3400; die sechs Seiten oben kommen nicht in die Nähe.
-Die anderen 14 Seiten mit Swipe-Streifen und die Seiten mit neuem pageType-Zweig ändern nur Code (kein RAM).
+Die Seitenanteile von us-l sind auf allen sieben Seiten die der EU-Datei (gleiche Objekte und Puffer), der Unterschied
+von 24 Byte kommt nur aus dem globalen Anteil. us-p weicht ab bei cardGrid2 (9 Zellen), cardDevice1 (kein schmaler
+Zeilensatz) und cardEntities (sechs Zeilensätze).
 
-**cardEntities ist nur geschätzt, und die Schätzung taugt für diese Seite nicht.** Die einfache Formel (7 je Objekt)
-liegt bei den Grid- und Geräteseiten nahe an der Messung, bei cardEntities aber weit darunter: EU schätzt sie auf
-2768, die TFT misst **3000** (+232) – Schieberegler, Zahlenfelder und Schalter kosten deutlich mehr als 7 Byte.
-EU cardEntities2 (eine Zeile mehr): geschätzt 2856, gemessen 3216 (+360). us-l hat dieselben Objekte und Puffer wie
-EU, dort sind 3000 zu erwarten. us-p hat auf cardEntities **sechs** Zeilensätze (94 Objekte statt 70): der wahre
-Wert liegt deutlich über den geschätzten 3212 und ist vermutlich der höchste aller us-p-Seiten – sicher ist nur,
-dass er ≤ 3584 ist, weil us-p 6.2.0 mit denselben Objekten kompiliert. Der Links-Tipp ändert daran nichts: er ist
-nur Code, EU cardEntities misst vorher (`nspanel-v6.2.0.tmserial3.tft`) und nachher (`device10.tft`) 3000. Tim liest
-den Wert von us-p cardEntities bitte im Editor ab (Prüfliste Punkt 3), damit er für spätere Änderungen bekannt ist.
+Engste Seiten je Datei (alle Seiten, nicht nur die geänderten):
+
+| Modell | Seiten | engste Seiten (frei bis 3584) |
+|---|---|---|
+| EU | 40 | popupThermo 4, popupInSel 84, popupTimer 84, cardSchedule 132, cardThermo2 148 |
+| us-l | 38 | popupThermo 28, popupInSel 60, popupTimer 108, cardThermo2 172, cardDevice3 256 |
+| us-p | 38 | popupThermo 28, **cardEntities 36**, popupInSel 60, popupTimer 108, cardThermo2 172 |
+
+**us-p cardEntities hat nur 36 Byte Luft.** Der Wert stammt aus den sechs Zeilensätzen und war schon vor dieser
+Arbeit so (der Links-Tipp ist nur Code), ist aber erst jetzt festgehalten. Eine weitere Variable (8 Byte) passt noch,
+ein neues Textobjekt oder ein größerer Puffer auf dieser Seite nicht mehr ohne Ausgleich.
+
+Die Schätzformel des Werkzeugs (9 + 7 je Objekt + Textpuffer) liegt bei den Grid- und Geräteseiten nahe an der
+Messung, bei cardEntities aber weit darunter (us-p geschätzt 3212, gemessen 3548; EU 2768 zu 3000) – Schieberegler,
+Zahlenfelder und Schalter kosten deutlich mehr als 7 Byte. `card_device.py` bricht über 3584 ab und meldet Stände
+über 3400. Die anderen 14 Seiten mit Swipe-Streifen und die Seiten mit neuem pageType-Zweig ändern nur Code (kein
+RAM).
 
 ### us-l und us-p: im Nextion-Editor prüfen
 
@@ -797,18 +807,15 @@ Für jedes der beiden Projekte:
 
 1. Datei öffnen – keine Meldung „resource file damaged“. Seitenliste: 38 Seiten, cardDevice1, cardDevice2,
    cardDevice3 stehen **hinten** (IDs 35, 36, 37), alle bisherigen Seiten an ihrer alten Stelle.
-2. Kompilieren – keine Fehler, keine Warnung „Component overlap“. Der Code der drei Seiten ist der der EU-Datei, die
+2. Kompilieren – keine Fehler, keine Warnung „Component overlap“ (**erledigt 2026-11-24:** beide Projekte
+   kompilieren mit 0 Fehlern und 0 Warnungen, 38 Seiten). Der Code der drei Seiten ist der der EU-Datei, die
    kompiliert ist; neu gegenüber EU sind nur:
    - die Koordinaten in `fill`/`draw` des Balkens im tmSerial von cardDevice2 (us-l `25,207,…`, us-p `10,212,300,14`,
      Füllung `sys0*298/100`);
    - us-p cardDevice1 ohne `bEntityS/tEntityS/tValueS1–2` (im tmSerial fehlt der Block „wide and narrow set“);
    - cardEntities `m0…m3` (us-p `m0…m5`): die Kette `}else if(type<r>.txt=="…")` mit dem letzten Zweig
      `}else if(type<r>.txt!="delete"&&type<r>.txt!="")`.
-3. **RAM-Werte melden** (Editor-Anzeige „global + Seite“) für cardDevice1, cardDevice2, cardDevice3, cardGrid,
-   cardGrid2, cardGrid3 und **cardEntities** – je Modell. Erwartung siehe Tabelle oben; wichtig sind cardDevice1
-   und cardDevice3 (us-l 252 / 232 frei erwartet), us-p cardGrid2 und vor allem **us-p cardEntities**: der Wert ist
-   nicht vorhersagbar (die Schätzformel liegt dort um Hunderte Byte zu niedrig) und vermutlich der höchste der
-   us-p-Datei. Er hat sich durch diese Arbeit nicht geändert, ist aber bisher nirgends festgehalten.
+3. ~~RAM-Werte melden~~ – erledigt 2026-11-24, siehe Tabelle „gemessen“ oben (us-p cardEntities: 36 Byte frei).
 4. Ansehen (Editor-Vorschau oder Simulator, `pageType~cardDevice<n>` und ein `entityUpd` mit allen Elementen):
    - us-l: jedes Element sitzt 15 px weiter rechts als auf EU; links von x 15 und rechts von x 464 liegt nichts
      (auch das info-Icon nicht), der Balken von cardDevice2 beginnt bei x 25 unter dem Namen.
@@ -978,8 +985,8 @@ Die Schritte gelten für die EU-Datei; für us-l und us-p zusätzlich die Liste 
 - EU `device10` ist kompiliert: `/mnt/projekte/nspanel-v6.2.0.device10.tft` (2026-11-23 22:25) hat eine Seitentabelle
   mit 40 Seiten, deren Werte zu `device10` passen (siehe „Puffer und RAM“). Die Hinweise „nicht kompiliert“ weiter oben
   stammen von vor diesem Kompilat. Das Verhalten am Panel ist ungeprüft.
-- **us-l und us-p:** nicht kompiliert, kein RAM-Wert aus dem Editor, nichts am Panel oder im Simulator gesehen. Geprüft
-  sind Prüfsummen, Round-Trip, dass der Code der Seiten dem der kompilierten EU-Datei entspricht (bis auf die
+- **us-l und us-p:** seit 2026-11-24 kompiliert (0 Fehler, 0 Warnungen, RAM siehe „RAM je Seite und Modell“); am
+  Panel oder im Simulator ist noch nichts gesehen. Außerdem geprüft sind Prüfsummen, Round-Trip, dass der Code der Seiten dem der kompilierten EU-Datei entspricht (bis auf die
   Balken-Koordinaten und den fehlenden schmalen Zeilensatz auf us-p), dass jede Box im sichtbaren Bereich und neben
   den Swipe-Streifen liegt, sich keine Boxen verschiedener Elemente überschneiden und keine zwei Objekte
   deckungsgleich sind. Die Vorschaubilder sind aus den Objekten und den Schriften des Projekts gezeichnet, nicht vom
