@@ -642,6 +642,48 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
     });
 });
 
+describe('lib/configuration - admin screensaver: pinned indicator', () => {
+    it('pinned becomes ScreensaverEntityPinned on the indicator only, for state and template items, not raw items', () => {
+        expect(screensaverItemToScript({ state: 'a.0.b', pinned: true }, 'indicator').ScreensaverEntityPinned).to.equal(
+            true,
+        );
+        const template = screensaverItemToScript(
+            { state: 'a.0.b', template: 'text.window.isOpen', pinned: true },
+            'indicator',
+        );
+        expect(template.ScreensaverEntityPinned).to.equal(true);
+        expect(screensaverItemToScript({ state: 'a.0.b', pinned: true }, 'left')).to.not.have.property(
+            'ScreensaverEntityPinned',
+        );
+        expect(screensaverItemToScript({ state: 'a.0.b' }, 'indicator')).to.not.have.property(
+            'ScreensaverEntityPinned',
+        );
+        const raw = screensaverItemToScript(
+            {
+                state: 'a.0.b',
+                pinned: true,
+                raw: { format: 'script', config: { type: 'script', ScreensaverEntity: 'a.0.c' } },
+            },
+            'indicator',
+        );
+        expect(raw).to.not.have.property('ScreensaverEntityPinned');
+    });
+
+    it('the indicator list keeps its gaps, so the pinned element stays on the index of the admin list', () => {
+        const entry: ScreensaverEntry = {
+            ...emptyScreensaverEntry('Pin', 'tiles'),
+            panels: ['NSPanel_1'],
+            indicator: [undefined, { state: 'i1' }, undefined, { state: 'i3', pinned: true }],
+        };
+        const list = buildScreensaverScriptConfig(entry, 'NSPanel_1').indicatorScreensaverEntity;
+        expect(list).to.have.length(4);
+        expect(list[0]).to.equal(undefined);
+        expect(list[2]).to.equal(undefined);
+        expect(list[1]).to.not.have.property('ScreensaverEntityPinned');
+        expect(list[3]).to.include({ ScreensaverEntity: 'i3', ScreensaverEntityPinned: true });
+    });
+});
+
 describe('lib/configuration - admin screensaver log message', () => {
     const entry = { name: 'Living', mode: 'standard' };
     const screensaver = { uniqueID: 'screensaver', config: { card: 'screensaver' } } as unknown as pages.PageBase;
