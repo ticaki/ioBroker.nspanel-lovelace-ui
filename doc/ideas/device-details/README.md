@@ -352,9 +352,8 @@ Jeder Slot kann statt eines States des Geräts etwas Eigenes zeigen (`custom`); 
   `devicePageSlotAccepts` (Tabelle oben). Der Adapter liest nur `id` und `common`.
 - **Alias-Kanal** (`custom: 'channel'`): der Kanal wird über die vorhandene Kette zum normalen Page-Item
   (`devicePageChannelAdminItem` → `adminPageItemToScriptItem` → `ConfigManager.getPageItemConfig`, Seitenart
-  `cardGrid`) – Icon, Farben, Name, Tipp und Popup wie auf einer Grid-Seite. Gebaut wird beim Konfigurieren des Items
-  (`devicePageChannels` in `convertAdminPageItemToPageItemConfig`), abgelegt am Laufzeit-Item als
-  `devicePageChannels` (Slot-Index → `{ role, item }`); die Geräteseite selbst entsteht weiter erst beim Öffnen. Ein
+  `cardGrid`) – Icon, Farben, Name, Tipp und Popup wie auf einer Grid-Seite. Gebaut wird mit der Geräteseite
+  (`buildDevicePage`, aufgerufen in `convertAdminPageItemToPageItemConfig`); das Item ist ein Page-Item der Seite. Ein
   Kanal, den es nicht gibt, dessen Rolle nicht zum Slot passt oder den der ConfigManager ablehnt (fehlende
   Datenpunkte), lässt den Slot leer und steht in den Meldungen der Konvertierung (beim Start als Warnung im Log,
   siehe „Meldungen der Konvertierung“); das Item bleibt gültig.
@@ -443,11 +442,12 @@ Felder heißen wie beim Standard-Page-Item (`isNavigation`, `targetPage`), die S
    blendet die Wahl dort aus, ein dort gespeicherter Platz ist rot markiert und bleibt am Panel leer. Ohne Zielseite
    bleibt der Slot leer.
 
-**Adapter:** `devicePageSlotItem` / `devicePageNavigationSlotItem` / `devicePageElements` setzen am Page-Item
-`devicePageTarget` (Name der Zielseite). Für die HMI ändert sich nichts: ein Navigations-Platz ist ein `text`-Element
-mit Icon und Name (Feld 6 leer), das wie jeder Slot `buttonPress2,<id>,button` sendet. `PageItem.onCommand('button')`
-prüft `devicePageTarget` zuerst und ruft `navigation.setTargetPageByName(target)` – derselbe Weg wie `setNavi` eines
-Navigations-Items auf cardGrid (versteckte Seite → „Seite gesperrt“, `///screensaver` → Screensaver).
+**Adapter:** `devicePageSlotItem` / `devicePageNavigationSlotItem` / `buildDevicePage` setzen am Page-Item das normale
+Feld `data.setNavi` (Name der Zielseite) – der Navigations-Flow sieht die Kante dadurch wie bei jedem
+Navigations-Item. Für die HMI ändert sich nichts: ein Navigations-Platz ist ein `text`-Element mit Icon und Name
+(Feld 6 leer), das wie jeder Slot `buttonPress2,<id>,button` sendet. `PageItem.onCommand('button')` prüft auf einer
+Geräteseite `setNavi` zuerst und ruft nur `navigation.setTargetPageByName(target)` (der State des Slots wird dabei
+nicht geschaltet; versteckte Seite → „Seite gesperrt“, `///screensaver` → Screensaver).
 
 **Zielseite fehlt:** Ist das Ziel kein Navigationsknoten dieses Panels (`Navigation.hasTarget`, Seite dem Panel nicht
 zugeordnet oder gelöscht), passiert beim Tipp nichts; das Log bekommt einmal je Panel und Ziel eine Warnung
@@ -456,13 +456,13 @@ der Seitenliste des Dialogs steht (`devicePageTargetProblem`; Screensaver und di
 bekannt). Die Seitenliste des Dialogs ist nicht nach Panel getrennt – ob die Seite dem Panel zugeordnet ist, zeigt
 erst die Warnung zur Laufzeit.
 
-**Rückweg:** Es gibt keinen Mechanismus „zurück zur aufrufenden Seite“ für beliebige Ziele. Detailseite und
-Geräteseite hängen als erzeugte Unterseiten (`directParentPage`) an der Seite des Items, deshalb führt ihr Pfeil dorthin
-zurück; eine Zielseite ist dagegen eine normale Seite der Navigation. Nach dem Sprung steht die Navigation auf dem
+**Rückweg:** Es gibt keinen Mechanismus „zurück zur aufrufenden Seite“ für beliebige Ziele. Die Geräteseite ist eine
+erzeugte Unterseite der Seite des Items (Navigationsknoten mit parent = Seite des Items), die Detailseite hängt
+(`directParentPage`) an der Seite, von der sie geöffnet wurde; deshalb führt ihr Pfeil dorthin zurück; eine Zielseite
+ist dagegen eine normale Seite der Navigation. Nach dem Sprung steht die Navigation auf dem
 Knoten der Zielseite, ihre Pfeile sind die dort eingerichteten (prev / parent / home / next). Zur Geräteseite kommt
 man nur wieder über das Item (Long-Press bzw. kurzer Tipp). Wer von der Zielseite zurück zur Seite mit dem Geräte-Item
-will, trägt diese als parent der Zielseite ein. Die verlassene Geräteseite bleibt bis zum nächsten Öffnen als
-Unterseite der Item-Seite bestehen (wie bisher beim Verlassen über den Screensaver).
+will, trägt diese als parent der Zielseite ein.
 
 ### Meldungen der Konvertierung
 
@@ -502,11 +502,11 @@ Beispiel Layout 1 (N = 10) mit zwei Status-Icons (Slot 7 Tür als boolean an, Sl
 (Zeilenumbrüche nur zur Lesbarkeit):
 
 ```
-entityUpd~Saugroboter~<nav>~button~dp_3?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimmer
-~text~dp_3?1~<icon>~<farbe>~Akku~80 %~text~dp_3?2~<icon>~<farbe>~Fläche~34 m²
-~button~dp_3?3~<icon>~<farbe>~Start~1~…~button~dp_3?6~<icon>~<farbe>~Suchen~1
-~text~dp_3?7~<icon door>~<aktiviert>~~~~~~~~~text~dp_3?9~<icon air-filter>~<farbe der Gruppe>~~~~~~~~
-~button~dp_3?11~<information-outline>~<deviceInfo>~~1
+entityUpd~Saugroboter~<nav>~button~12?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimmer
+~text~12?1~<icon>~<farbe>~Akku~80 %~text~12?2~<icon>~<farbe>~Fläche~34 m²
+~button~12?3~<icon>~<farbe>~Start~1~…~button~12?6~<icon>~<farbe>~Suchen~1
+~text~12?7~<icon door>~<aktiviert>~~~~~~~~~text~12?9~<icon air-filter>~<farbe der Gruppe>~~~~~~~~
+~button~12?11~<information-outline>~<deviceInfo>~~1
 ```
 
 - Jedes Element hat die 6 Felder einer cardGrid-Zelle `type~intName~icon~iconColor~displayName~optionalValue`, leere
@@ -641,10 +641,19 @@ Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `de
 
 ### Navigation und Lebensdauer
 
-- Long-Press auf das Item der Seite `<P>` → Geräteseite `dp_<P>` (`directParentPage` = P). Zurück → P.
-- „i“ → Detailseite `dd_<P>` unter der Geräteseite. Zurück → Geräteseite → Zurück → P.
-- Wie die Detailseite: zur Laufzeit erzeugt, nicht editierbar, States nur abonniert solange sichtbar, eine neue
-  Geräte-/Detailseite ersetzt die alte erst nach dem Wechsel, von zwei überlappenden Long-Presses gewinnt der letzte.
+- Die Geräteseite ist eine normale Seite des Panels: `convertAdminPageItemToPageItemConfig` baut ihre Konfiguration
+  mit dem Item (`buildDevicePage`, Name `device-<Seite>-<Geräte-ID>`, `devicePageName`), die Admin-Konfiguration
+  hängt sie wie `media-<id>` als erzeugte Unterseite an (`addGeneratedPages`, Knoten mit parent = Seite des Items,
+  `generatedPageIds` → im Flow schreibgeschützt mit Schloss), das Panel legt sie beim Start an. Objekte, Namen und
+  Dubletten werden dabei einmal gelesen, nicht beim Öffnen. States sind nur abonniert, solange sie sichtbar ist.
+- Ihre Page-Items sind die Elemente `[main, Slot 1 … Slot N, info, status]`, ein leerer Platz ist ein Item
+  `type: 'empty'`. Alias-Kanäle baut der ConfigManager, Navigation steht als `setNavi` am Item; States der Maske, eigene
+  Datenpunkte und Navigations-Plätze baut `devicePageSlotItem` / `devicePageNavigationSlotItem` als fertiges Item.
+- Long-Press auf das Item → `navigation.setTargetPageByName(<Geräteseite>)`. Zurück (parent) → Seite des Items.
+- „i“ → Detailseite `dd_<id der Geräteseite>` unter der Geräteseite (zur Laufzeit erzeugt wie bisher). Zurück →
+  Geräteseite → Zurück → Seite des Items.
+- Ein Modell ohne Geräteseite (us-l, us-p, web-p) bekommt die Seite und ihren Knoten gar nicht (`withoutDevicePages`
+  im Panel); die TFT-Version kennt das Panel erst nach dem Start, deshalb entscheidet über sie weiter der Long-Press.
 
 ### Rückfall auf die Detailseite
 

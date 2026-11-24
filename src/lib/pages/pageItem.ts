@@ -20,7 +20,6 @@ import {
     DEVICE_PAGE_PROGRESS_ROLE,
     devicePageProgressPercent,
     type DeviceDetailsRuntime,
-    type DevicePageRuntime,
 } from '../types/deviceDetails';
 import {
     beginDeviceDetailsRun,
@@ -29,14 +28,7 @@ import {
     deviceDetailRows,
     isLatestDeviceDetailsRun,
 } from './device-details';
-import {
-    cardDeviceOf,
-    DEVICE_PAGE_PREFIX,
-    reportMissingDevicePageTarget,
-    devicePageElements,
-    devicePagePageConfig,
-    supportsCardDevice,
-} from './device-page';
+import { reportMissingDevicePageTarget, supportsCardDevice } from './device-page';
 import {
     alarmClockOf,
     isCountdownCommon,
@@ -2599,13 +2591,16 @@ export class PageItem extends BaseTriggeredPage {
 
     /**
      * What the long press of a device item opens (and its short tap `devicePage`): the device page when the item has
-     * one and the panel can show it, else the detail page.
+     * one and the panel can show it, else the detail page. The device page is a page of the panel (built at the start
+     * like every other page): the navigation opens it, back leads to the page of the item (its parent).
      *
      * @param details the device part of the item
      */
     private async openDeviceOf(details: DeviceDetailsRuntime): Promise<void> {
-        if (details.devicePage && this.panelHasDevicePage()) {
-            await this.openDevicePage(details, details.devicePage);
+        const name = this.config?.devicePageName;
+        const navigation = this.parent.basePanel.navigation;
+        if (details.devicePage && name && this.panelHasDevicePage() && navigation.hasTarget(name)) {
+            await navigation.setTargetPageByName(name);
         } else {
             await this.openDeviceDetails(details);
         }
@@ -2617,11 +2612,11 @@ export class PageItem extends BaseTriggeredPage {
      * detail page opened before by an item of the page is replaced - after the new one is shown, never while it is
      * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
      *
+     * The info item of a device page opens it the same way: below the device page.
+     *
      * @param details the device part of the item
-     * @param originId id of the page the device was opened from (id of the detail page `dd_<originId>`), default the
-     * page of this item - the info item of a device page passes the page below the device page
      */
-    private async openDeviceDetails(details: DeviceDetailsRuntime, originId: string = this.parent.id): Promise<void> {
+    private async openDeviceDetails(details: DeviceDetailsRuntime): Promise<void> {
         const parent = this.parent;
         const panel = parent.basePanel;
         const run = beginDeviceDetailsRun(panel);
@@ -2639,7 +2634,7 @@ export class PageItem extends BaseTriggeredPage {
             this.log.warn(`Device details of ${details.deviceId}: none of the chosen states exists (any more)!`);
         }
         // short id: the ids of the rows (<page>?<n>) must fit the id buffers of the HMI
-        const id = `${DEVICE_DETAIL_PAGE_PREFIX}${originId}`;
+        const id = `${DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
         await this.showGeneratedPage(
             run,
             { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: 'cardEntities' },
@@ -2660,48 +2655,8 @@ export class PageItem extends BaseTriggeredPage {
     }
 
     /**
-     * Opens the device page of the device of this item (device-page.ts): cardDevice1..3 below the page of the item,
-     * back leads here again; like the detail page it replaces a page opened before and only the last of two
-     * overlapping long presses opens its page.
-     *
-     * @param details the device part of the item
-     * @param devicePage the device page
-     */
-    private async openDevicePage(details: DeviceDetailsRuntime, devicePage: DevicePageRuntime): Promise<void> {
-        const parent = this.parent;
-        const panel = parent.basePanel;
-        const source = this.config;
-        if (!source) {
-            return;
-        }
-        const run = beginDeviceDetailsRun(panel);
-        const content = await devicePageElements(
-            source,
-            details,
-            devicePage,
-            id => panel.statesControler.getObjectAsync(id),
-            key => this.library.getTranslation(key),
-            this.library.getLocalLanguage(),
-        );
-        if (!isLatestDeviceDetailsRun(panel, run) || panel.getActivePage() !== parent) {
-            return;
-        }
-        if (content.skipped.length > 0) {
-            this.log.warn(
-                `Device page of ${details.deviceId}: missing state or not fitting its slot, left empty: ${content.skipped.join(', ')}`,
-            );
-        }
-        const id = `${DEVICE_PAGE_PREFIX}${parent.id}`;
-        await this.showGeneratedPage(
-            run,
-            { id, name: `${parent.name}-device`, adapter: this.adapter, panel, card: cardDeviceOf(devicePage.layout) },
-            devicePagePageConfig(id, devicePage.layout, parent.alwaysOn, content),
-        );
-    }
-
-    /**
-     * Creates a generated page (detail page, device page) below the page of this item and shows it. The child page
-     * opened before is deleted after the new one is shown, never while it is active.
+     * Creates the generated detail page below the page of this item and shows it. The child page opened before is
+     * deleted after the new one is shown, never while it is active.
      *
      * @param run the number of this opening (beginDeviceDetailsRun)
      * @param pageInterface the page
@@ -2731,10 +2686,21 @@ export class PageItem extends BaseTriggeredPage {
     }
 
     /**
-     * The tap on an element of a device page that navigates (`devicePageTarget`): the normal way of a navigation item
-     * (`setNavi`) - the navigation of the panel opens the page and takes its position, so the arrows of the target
-     * page are those of its node. A target that is no node of this panel does nothing and is reported once per panel
-     * and target.
+     * @returns the target page of the short tap (`setNavi`) of an element of a device page, '' = none
+     */
+    private async devicePageTargetOf(): Promise<string> {
+        const data = this.dataItems?.data;
+        if (!isCardDeviceType(this.parent.card) || !data || !('setNavi' in data) || !data.setNavi) {
+            return '';
+        }
+        return (await data.setNavi.getString()) ?? '';
+    }
+
+    /**
+     * The tap on an element of a device page that navigates (`setNavi`): the normal way of a navigation item - the
+     * navigation of the panel opens the page and takes its position, so the arrows of the target page are those of
+     * its node. Nothing else happens (the state of the slot is not switched). A target that is no node of this panel
+     * does nothing and is reported once per panel and target.
      *
      * @param target name of the target page
      */
@@ -2825,8 +2791,9 @@ export class PageItem extends BaseTriggeredPage {
 
             case 'button': {
                 // an element of a device page whose tap navigates: nothing else happens
-                if (this.config?.devicePageTarget) {
-                    await this.navigateFromDevicePage(this.config.devicePageTarget);
+                const devicePageTarget = await this.devicePageTargetOf();
+                if (devicePageTarget) {
+                    await this.navigateFromDevicePage(devicePageTarget);
                     break;
                 }
                 if (entry.role === DEVICE_DETAIL_ROW_ROLE) {
@@ -2842,10 +2809,7 @@ export class PageItem extends BaseTriggeredPage {
                 // the info icon of a device page: the detail page, back leads to the device page
                 if (entry.role === DEVICE_PAGE_INFO_ROLE) {
                     if (this.config?.deviceDetails) {
-                        await this.openDeviceDetails(
-                            this.config.deviceDetails,
-                            this.parent.directParentPage?.id ?? this.parent.id,
-                        );
+                        await this.openDeviceDetails(this.config.deviceDetails);
                     }
                     break;
                 }

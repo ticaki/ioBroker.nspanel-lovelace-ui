@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var type_pageItem_exports = {};
 __export(type_pageItem_exports, {
   isPageItemDataItemsOptions: () => isPageItemDataItemsOptions,
+  isPageItemWithoutTemplate: () => isPageItemWithoutTemplate,
   islistCommandUnion: () => islistCommandUnion
 });
 module.exports = __toCommonJS(type_pageItem_exports);
@@ -34,6 +35,9 @@ function isPageItemDataItemsOptions(obj) {
   }
   return false;
 }
+function isPageItemWithoutTemplate(item) {
+  return !("template" in item && item.template);
+}
 function islistCommandUnion(F) {
   switch (F) {
     case "flip": {
@@ -45,6 +49,7 @@ function islistCommandUnion(F) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   isPageItemDataItemsOptions,
+  isPageItemWithoutTemplate,
   islistCommandUnion
 });
 //# sourceMappingURL=type-pageItem.js.map

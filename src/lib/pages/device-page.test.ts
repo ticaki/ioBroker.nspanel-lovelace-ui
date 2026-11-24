@@ -7,14 +7,13 @@ import {
     devicePageChannelElement,
     cutToBytes,
     devicePageChannelSlotItem,
-    devicePageChannels,
+    buildDevicePage,
     devicePageClampElement,
-    devicePageElements,
     devicePageMainElement,
     devicePageMainItem,
     devicePageMaxPayloadBytes,
+    devicePageName,
     devicePageNavigationSlotItem,
-    devicePagePageConfig,
     devicePagePayload,
     devicePageSlotItem,
     devicePageStatusIconElement,
@@ -24,6 +23,8 @@ import {
     reportMissingDevicePageTarget,
     splitDevicePageStatus,
     supportsCardDevice,
+    withoutDevicePages,
+    type DevicePageBuildContext,
 } from './device-page';
 import {
     DEVICE_DETAIL_ROW_ROLE,
@@ -70,6 +71,7 @@ import { isCardDeviceType } from '../types/function-and-const';
 import { Page } from '../classes/Page';
 import { Color } from '../const/Color';
 import { BATTERY_ICON_READ } from '../templates/text';
+import type { PageBase } from '../types/pages';
 
 const DEV = 'shelly.0.wm';
 
@@ -130,6 +132,69 @@ function runtime(page: Partial<DevicePageRuntime>): { details: DeviceDetailsRunt
         ...page,
     };
     return { details: { deviceId: DEV, entries: [ref('power')], devicePage: p }, page: p };
+}
+
+/** what {@link devicePageElements} gives: the page built and its page items as elements */
+type BuiltDevicePage = {
+    headline: string;
+    slotCount: number;
+    /** the page items, an empty item as undefined */
+    elements: any[];
+    /** the ids of the slots left empty (from the messages) */
+    skipped: string[];
+    channelSlots: number[];
+    messages: string[];
+    page: PageBase;
+};
+
+/**
+ * Builds the configuration of a device page (buildDevicePage) and gives its page items as elements.
+ *
+ * @param source the device item (main)
+ * @param details the device part of the item
+ * @param page the device page
+ * @param getObj reads an object
+ * @param translate translates a key
+ * @param language language of the system
+ * @param pageItemOf builds the page item of an alias channel (config manager)
+ * @returns the page and its elements
+ */
+async function devicePageElements(
+    source: any,
+    details: DeviceDetailsRuntime,
+    page: DevicePageRuntime,
+    getObj: (id: string) => Promise<ioBroker.Object | null>,
+    translate: (key: string) => string,
+    language: ioBroker.Languages,
+    pageItemOf: DevicePageBuildContext['pageItemOf'] = async () => Promise.resolve(undefined),
+): Promise<BuiltDevicePage> {
+    const built = await buildDevicePage(
+        'device-test',
+        'none',
+        { deviceId: details.deviceId, entries: details.entries, page, main: source },
+        { getObject: getObj, translate, language, pageItemOf },
+    );
+    const config: any = built.page.config;
+    const skipped: string[] = [];
+    for (const msg of built.messages) {
+        const channel = /: channel (\S+)/.exec(msg);
+        if (channel) {
+            skipped.push(channel[1]);
+        }
+        const left = msg.split('left empty: ')[1];
+        if (left) {
+            skipped.push(...left.split(', '));
+        }
+    }
+    return {
+        headline: config.data.headline.constVal,
+        slotCount: DEVICE_PAGE_LAYOUTS[page.layout].length,
+        elements: (built.page.pageItems ?? []).map(item => (item.type === 'empty' ? undefined : item)),
+        skipped,
+        channelSlots: config.channelSlots,
+        messages: built.messages,
+        page: built.page,
+    };
 }
 
 describe('lib/types/deviceDetails - device page configuration', () => {
@@ -361,6 +426,21 @@ describe('lib/pages/device-page - panel support', () => {
         expect(t('us-p', false, '9.9.9')).to.equal(false);
         expect(t('web-p', true, '')).to.equal(false);
         expect(t('us-l', true, '')).to.equal(false);
+    });
+    it('a model without device page: the device pages and their nodes are left out, nothing else', () => {
+        const page = (uniqueID: string, card: string): { uniqueID: string; config: { card: string } } => ({
+            uniqueID,
+            config: { card },
+        });
+        const pages = [page('main', 'cardGrid'), page('device-main-x', 'cardDevice2'), undefined];
+        const navigation = [{ name: 'main' }, { name: 'device-main-x' }, null];
+        expect(withoutDevicePages(pages, navigation)).to.deep.equal({
+            pages: [page('main', 'cardGrid'), undefined],
+            navigation: [{ name: 'main' }, null],
+        });
+        const none = withoutDevicePages([page('main', 'cardGrid')], [{ name: 'main' }]);
+        expect(none.pages).to.have.length(1);
+        expect(none.navigation).to.have.length(1);
     });
     it('HMI page of the layout', () => {
         expect([cardDeviceOf(1), cardDeviceOf(2), cardDeviceOf(3)]).to.deep.equal([
@@ -671,8 +751,10 @@ describe('lib/pages/device-page - elements', () => {
             expect(content.elements.slice(1, content.slotCount + 1).every(e => e === undefined)).to.equal(true);
             expect(content.elements[content.slotCount + 1]?.role).to.equal(DEVICE_PAGE_INFO_ROLE);
             expect(content.elements[content.slotCount + 2]?.type).to.equal('text');
-            const config = devicePagePageConfig('dp_3', layout, 'none', content);
-            expect(config.config?.card).to.equal(`cardDevice${layout}`);
+            expect(content.page.config?.card).to.equal(`cardDevice${layout}`);
+            expect(content.page.uniqueID).to.equal('device-test');
+            expect(content.page.pageItems).to.have.length(DEVICE_PAGE_LAYOUTS[layout].length + 3);
+            expect(content.page.pageItems?.[1]).to.deep.equal({ type: 'empty', data: undefined });
         });
     }
     it('status line with an own data point outside the device: a triggered text row of exactly this state', async () => {
@@ -738,7 +820,7 @@ describe('lib/pages/device-page - elements', () => {
             ],
         });
         const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
-        const item = content.elements[1] as any;
+        const item = content.elements[1];
         expect(item.data.text.true.constVal).to.equal('power Pumpe mit einem sehr langen Namen');
     });
     it('status slots: an item without name, they do not count for the duplicates of the named slots', async () => {
@@ -750,11 +832,11 @@ describe('lib/pages/device-page - elements', () => {
         const { details, page } = runtime({ slots });
         const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
         // the same state in a status slot: no automatic suffix for the info row
-        expect((content.elements[1] as any).data.text.true.constVal).to.equal('power');
-        const status = content.elements[first + 1] as any;
+        expect(content.elements[1].data.text.true.constVal).to.equal('power');
+        const status = content.elements[first + 1];
         expect(status.type).to.equal('text');
         expect(status.data.text.true.constVal).to.equal('');
-        expect((content.elements[first + 2] as any).data.icon.true.value.constVal).to.equal('door-open');
+        expect(content.elements[first + 2].data.icon.true.value.constVal).to.equal('door-open');
         expect(content.skipped).to.deep.equal([]);
     });
 });
@@ -950,7 +1032,7 @@ describe('lib/pages/device-page - main', () => {
     it('short tap state with an own name: the source of the headline (the device), not the name of the item', async () => {
         const { details, page } = runtime({});
         const content = await devicePageElements(sourceSwitch, details, page, getObject, (k: string) => k, 'de');
-        const main = content.elements[0] as any;
+        const main = content.elements[0];
         expect(main.data.text.true.constVal).to.equal(content.headline);
         expect(main.data.text.false.constVal).to.equal(content.headline);
         expect(content.headline).to.equal('Waschmaschine');
@@ -1501,6 +1583,8 @@ describe('lib/pages/device-page - settings of a slot on a state', () => {
 });
 
 describe('lib/pages/device-page - navigation from the slots', () => {
+    /** the target page rooms as `setNavi` */
+    const rooms = { type: 'const', constVal: 'rooms' };
     const c = (id: string): any => objects[`${DEV}.${id}`].common;
     const first = (kind: string): number => DEVICE_PAGE_LAYOUTS[1].findIndex(k => k === kind);
 
@@ -1593,11 +1677,11 @@ describe('lib/pages/device-page - navigation from the slots', () => {
                 c(id),
                 'P',
             ) as any;
-            expect(nav.devicePageTarget, kind).to.equal('rooms');
-            expect(plain.devicePageTarget, kind).to.equal(undefined);
-            expect({ ...nav, devicePageTarget: undefined }, kind).to.deep.equal({
+            expect(nav.data.setNavi, kind).to.deep.equal(rooms);
+            expect(plain.data.setNavi, kind).to.equal(undefined);
+            expect({ ...nav, data: { ...nav.data, setNavi: undefined } }, kind).to.deep.equal({
                 ...plain,
-                devicePageTarget: undefined,
+                data: { ...plain.data, setNavi: undefined },
             });
         }
         const button = devicePageSlotItem(
@@ -1607,7 +1691,7 @@ describe('lib/pages/device-page - navigation from the slots', () => {
             c('on'),
             'An',
         ) as any;
-        expect(button.devicePageTarget).to.equal('rooms');
+        expect(button.data.setNavi).to.deep.equal(rooms);
         expect(button.data.icon.true.value.constVal).to.equal('play');
         const toggle = devicePageSlotItem(
             DEV,
@@ -1617,7 +1701,7 @@ describe('lib/pages/device-page - navigation from the slots', () => {
             'An',
         ) as any;
         expect(toggle.type).to.equal('switch');
-        expect(toggle.devicePageTarget).to.equal('rooms');
+        expect(toggle.data.setNavi).to.deep.equal(rooms);
         // navigation chosen, no page yet: nothing changes
         const pending = devicePageSlotItem(DEV, 'info', { ...ref('power'), isNavigation: true }, c('power'), 'P');
         expect(pending).to.deep.equal(devicePageSlotItem(DEV, 'info', ref('power'), c('power'), 'P'));
@@ -1633,14 +1717,14 @@ describe('lib/pages/device-page - navigation from the slots', () => {
             'Programm',
         ) as any;
         expect(nav.type).to.equal('text');
-        expect(nav.devicePageTarget).to.equal('rooms');
+        expect(nav.data.setNavi).to.deep.equal(rooms);
     });
     it('navigation slot: a text with icon and name only, own icon / color / text', () => {
         const nav = { key: '', id: '', custom: 'navigation' as const, targetPage: 'rooms' };
         const item = devicePageNavigationSlotItem('button', nav) as any;
         expect(item.type).to.equal('text');
         expect(item.role).to.equal(DEVICE_DETAIL_ROW_ROLE);
-        expect(item.devicePageTarget).to.equal('rooms');
+        expect(item.data.setNavi).to.deep.equal(rooms);
         expect(item.data.icon.true.value.constVal).to.equal(DEVICE_PAGE_NAVIGATION_ICON);
         expect(item.data.icon.true.color.constVal).to.deep.equal(Color.deviceInfo);
         expect(item.data.icon.false).to.deep.equal(item.data.icon.true);
@@ -1675,7 +1759,7 @@ describe('lib/pages/device-page - navigation from the slots', () => {
             devicePage: { layout: 1, slots },
         }) as DeviceDetailsRuntime;
         const content = await devicePageElements(
-            { type: 'switch', data: {} } as never,
+            { type: 'switch', data: {} },
             details,
             details.devicePage as DevicePageRuntime,
             getObject,
@@ -1686,10 +1770,10 @@ describe('lib/pages/device-page - navigation from the slots', () => {
         const info: any = content.elements[1 + first('info')];
         const button: any = content.elements[1 + first('button')];
         const status: any = content.elements[1 + first('status')];
-        expect(info.devicePageTarget).to.equal('rooms');
-        expect(button.devicePageTarget).to.equal('rooms');
+        expect(info.data.setNavi).to.deep.equal(rooms);
+        expect(button.data.setNavi).to.deep.equal(rooms);
         expect(button.data.text.true.constVal).to.equal('Räume');
-        expect(status.devicePageTarget).to.equal('map');
+        expect(status.data.setNavi).to.deep.equal({ type: 'const', constVal: 'map' });
         expect(status.data.icon.true.value.constVal).to.equal('map');
         expect(content.channelSlots).to.deep.equal([]);
     });
@@ -1705,31 +1789,33 @@ describe('lib/pages/device-page - navigation from the slots', () => {
             devicePage: { layout: 1, slots },
         }) as DeviceDetailsRuntime;
         const channelItem = (type: string): any => ({ type, role: '', dpInit: '', data: { icon: {} } });
-        const source: any = {
-            type: 'switch',
-            data: {},
-            devicePageChannels: {
-                [a]: { role: 'socket', item: channelItem('switch') },
-                [b]: { role: 'blind', item: channelItem('shutter') },
-            },
+        const channels: Record<string, { role: string; item: any }> = {
+            'alias.0.socket': { role: 'socket', item: channelItem('switch') },
+            'alias.0.blind': { role: 'blind', item: channelItem('shutter') },
         };
+        const withChannels = async (id: string): Promise<ioBroker.Object | null> =>
+            channels[id]
+                ? ({ type: 'channel', common: { name: id, role: channels[id].role } } as never)
+                : getObject(id);
         const content = await devicePageElements(
-            source,
+            { type: 'switch', data: {} },
             details,
             details.devicePage as DevicePageRuntime,
-            getObject,
+            withChannels,
             k => k,
             'de',
+            async item => Promise.resolve(channels[item.channelId.valueStateId]?.item),
         );
         const socket: any = content.elements[1 + a];
         const blind: any = content.elements[1 + b];
         expect(socket.type).to.equal('switch');
-        expect(socket.devicePageTarget).to.equal('rooms');
+        expect(socket.data.setNavi).to.deep.equal(rooms);
         // the popup of the HMI comes first
         expect(blind.type).to.equal('shutter');
-        expect(blind.devicePageTarget).to.equal(undefined);
-        // the item built once is not changed
-        expect(source.devicePageChannels[a].item.devicePageTarget).to.equal(undefined);
+        expect(blind.data.setNavi).to.equal(undefined);
+        // the item of the config manager is not changed
+        expect(channels['alias.0.socket'].item.data.setNavi).to.equal(undefined);
+        expect(content.channelSlots).to.deep.equal([a, b]);
     });
     it('channel slot: the navigation is not handed to the page item of the channel', () => {
         const item = devicePageChannelAdminItem(
@@ -1758,6 +1844,13 @@ describe('lib/pages/device-page - navigation from the slots', () => {
 
     describe('the tap', () => {
         const noop = (): void => undefined;
+        /**
+         * @param page name of a page
+         * @returns the data item of `setNavi`
+         */
+        const navi = (page: string): { getString: () => Promise<string> } => ({
+            getString: async () => Promise.resolve(page),
+        });
         /**
          * @param known the navigation targets of the panel
          * @param config the item
@@ -1814,8 +1907,12 @@ describe('lib/pages/device-page - navigation from the slots', () => {
             };
             const f = tapItem(
                 ['rooms'],
-                { type: 'button', devicePageTarget: 'rooms' },
-                { type: 'button', role: DEVICE_DETAIL_ROW_ROLE, data: { entity1: { set, value: set } } },
+                { type: 'button' },
+                {
+                    type: 'button',
+                    role: DEVICE_DETAIL_ROW_ROLE,
+                    data: { entity1: { set, value: set }, setNavi: navi('rooms') },
+                },
             );
             expect(await f.item.onCommand('button', '')).to.not.equal(undefined);
             expect(f.opened).to.deep.equal(['rooms']);
@@ -1829,15 +1926,27 @@ describe('lib/pages/device-page - navigation from the slots', () => {
                 custom: 'navigation',
                 targetPage: 'rooms',
             });
-            const f = tapItem(['rooms'], { ...nav }, { type: 'text', role: DEVICE_DETAIL_ROW_ROLE, data: {} });
+            expect((nav as any).data.setNavi).to.deep.equal(rooms);
+            const f = tapItem(
+                ['rooms'],
+                { ...nav },
+                { type: 'text', role: DEVICE_DETAIL_ROW_ROLE, data: { setNavi: navi('rooms') } },
+            );
             await f.item.onCommand('button', '');
             expect(f.opened).to.deep.equal(['rooms']);
+        });
+        it('setNavi of an item on another page than a device page: the normal tap, no navigation here', async () => {
+            const f = tapItem(['rooms'], { type: 'text' }, { type: 'text', data: { setNavi: navi('rooms') } });
+            (f.item as any).parent.card = 'cardGrid';
+            (f.item as any).parent.isScreensaver = false;
+            await f.item.onCommand('button', '');
+            expect(f.opened).to.deep.equal([]);
         });
         it('a target that is no page of the panel: nothing happens, one warning', async () => {
             const f = tapItem(
                 ['rooms'],
-                { type: 'text', devicePageTarget: 'gone' },
-                { type: 'text', role: DEVICE_DETAIL_ROW_ROLE, data: {} },
+                { type: 'text' },
+                { type: 'text', role: DEVICE_DETAIL_ROW_ROLE, data: { setNavi: navi('gone') } },
             );
             await f.item.onCommand('button', '');
             await f.item.onCommand('button', '');
@@ -1860,8 +1969,8 @@ describe('lib/pages/device-page - navigation from the slots', () => {
             };
             const f = tapItem(
                 ['rooms'],
-                { type: 'switch', devicePageTarget: 'rooms' },
-                { type: 'switch', role: DEVICE_DETAIL_ROW_ROLE, data: { entity1: { value } } },
+                { type: 'switch' },
+                { type: 'switch', role: DEVICE_DETAIL_ROW_ROLE, data: { entity1: { value }, setNavi: navi('rooms') } },
             );
             await f.item.onCommand('OnOff', '1');
             expect(written).to.deep.equal([true]);
@@ -1928,8 +2037,16 @@ describe('lib/pages/device-page - alias channels in slots', () => {
         expect(script.offColor).to.deep.equal({ red: 1, green: 2, blue: 3 });
         expect(script.longPress).to.equal('x.y');
     });
-    it('built when the item is configured: by slot, with the role; missing, unfitting and rejected ones reported', async () => {
-        const { page } = runtime({
+    /** roles of the alias channels of the tests */
+    const roles: Record<string, string> = {
+        'alias.0.light': 'light',
+        'alias.0.broken': 'socket',
+        'alias.0.blind': 'blind',
+    };
+    const withChannels = async (id: string): Promise<ioBroker.Object | null> =>
+        roles[id] ? ({ type: 'channel', common: { name: id, role: roles[id] } } as never) : getObject(id);
+    it('built with the page by the config manager: by slot, with the role; missing, unfitting and rejected ones reported', async () => {
+        const { details, page } = runtime({
             layout: 3,
             slots: [
                 channel('alias.0.light'),
@@ -1942,15 +2059,14 @@ describe('lib/pages/device-page - alias channels in slots', () => {
                 channel('alias.0.light'),
             ],
         });
-        const roles: Record<string, string> = {
-            'alias.0.light': 'light',
-            'alias.0.broken': 'socket',
-            'alias.0.blind': 'blind',
-        };
         const converted: string[] = [];
-        const result = await devicePageChannels(
+        const content = await devicePageElements(
+            sourceSwitch,
+            details,
             page,
-            async id => Promise.resolve(roles[id]),
+            withChannels,
+            k => k,
+            'de',
             async item => {
                 converted.push(item.channelId.valueStateId);
                 if (item.channelId.valueStateId === 'alias.0.broken') {
@@ -1960,12 +2076,13 @@ describe('lib/pages/device-page - alias channels in slots', () => {
             },
         );
         expect(converted).to.deep.equal(['alias.0.light', 'alias.0.broken', 'alias.0.light']);
-        expect(Object.keys(result.channels)).to.deep.equal(['0', '7']);
-        expect(result.channels[0]).to.deep.equal({ role: 'light', item: light });
-        expect(result.errors).to.have.length(3);
-        expect(result.errors[0]).to.contain('alias.0.gone').and.contain('not found');
-        expect(result.errors[1]).to.contain('alias.0.broken').and.contain('SET missing');
-        expect(result.errors[2]).to.contain('slot 7 (switch)').and.contain('role blind');
+        expect(content.channelSlots).to.deep.equal([0, 7]);
+        expect(content.elements[1]).to.deep.equal(light);
+        expect(content.elements[8]).to.deep.equal(light);
+        expect(content.messages).to.have.length(3);
+        expect(content.messages[0]).to.contain('slot 2 (info)').and.contain('alias.0.gone').and.contain('not found');
+        expect(content.messages[1]).to.contain('alias.0.broken').and.contain('SET missing');
+        expect(content.messages[2]).to.contain('slot 7 (switch)').and.contain('role blind');
     });
     it('the item of a channel stays as it is; a text shows its icon and has its value in field 6', () => {
         expect(devicePageChannelSlotItem('button', { role: 'light', item: light })).to.deep.equal(light);
@@ -2032,12 +2149,16 @@ describe('lib/pages/device-page - alias channels in slots', () => {
                 null,
             ],
         });
-        const source = {
-            ...sourceSwitch,
-            devicePageChannels: { 1: { role: 'light', item: light }, 6: { role: 'light', item: light } },
-        };
-        const content = await devicePageElements(source, details, page, getObject, k => k, 'de');
-        const own = content.elements[1] as any;
+        const content = await devicePageElements(
+            sourceSwitch,
+            details,
+            page,
+            withChannels,
+            k => k,
+            'de',
+            async () => Promise.resolve(light),
+        );
+        const own = content.elements[1];
         expect(own.type).to.equal('text');
         expect(own.data.entity2.value.dp).to.equal('0_userdata.0.wm.energy');
         expect(own.data.text.true.constVal).to.equal('energy');
@@ -2046,9 +2167,8 @@ describe('lib/pages/device-page - alias channels in slots', () => {
         expect(content.elements[3]).to.equal(undefined);
         expect(content.channelSlots).to.deep.equal([1, 6]);
         expect(content.skipped).to.deep.equal(['alias.0.none', '0_userdata.0.wm.gone']);
-        expect((devicePagePageConfig('dp_3', 3, 'none', content).config as any).channelSlots).to.deep.equal([1, 6]);
-        // main is the item itself without the channel items
-        expect((content.elements[0] as any).devicePageChannels).to.equal(undefined);
+        // main is the item itself without the name of the device page
+        expect(content.elements[0].devicePageName).to.equal(undefined);
     });
 });
 
@@ -2106,15 +2226,25 @@ describe('lib/pages/pageItem - device page', () => {
         delete: () => Promise<void>;
     };
     const noop = (): void => undefined;
+    /** the device page of the item, a page of the panel */
+    const NAME = devicePageName('p', DEV);
 
-    function setup(nspanel: { model: string; displayVersion: string }, isVirtual = false): any {
+    function setup(nspanel: { model: string; displayVersion: string }, isVirtual = false, targets = [NAME]): any {
         const created: FakePage[] = [];
+        const opened: string[] = [];
         const parent: Record<string, any> = { id: '3', name: 'p', alwaysOn: 'none', directChildPage: undefined };
         const panel: Record<string, any> = {
             active: parent,
             isVirtual,
             info: { nspanel },
             statesControler: { getObjectAsync: getObject },
+            navigation: {
+                hasTarget: (n: string): boolean => targets.includes(n),
+                setTargetPageByName: async (n: string): Promise<void> => {
+                    opened.push(n);
+                    return Promise.resolve();
+                },
+            },
             newPage: (config: { id: string }, pageConfig: unknown): FakePage => {
                 const page: FakePage = {
                     id: config.id,
@@ -2157,20 +2287,19 @@ describe('lib/pages/pageItem - device page', () => {
             entries: [ref('power')],
             devicePage: { layout: 2, slots: [ref('power')], status: ref('phase') },
         });
-        const item = makeItem(parent, { ...sourceSwitch, deviceDetails: details }, { type: 'switch', data: {} });
-        return { panel, parent, created, item, makeItem };
+        const item = makeItem(
+            parent,
+            { ...sourceSwitch, deviceDetails: details, devicePageName: NAME },
+            { type: 'switch', data: {} },
+        );
+        return { panel, parent, created, opened, item, makeItem, details };
     }
 
-    it('eu with the TFT: the long press opens the device page dp_<page> below the page', async () => {
+    it('eu with the TFT: the long press opens the device page by the navigation, no page is created', async () => {
         const f = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });
         expect(await f.item.onCommandLongPress('button', '')).to.equal(true);
-        expect(f.created).to.have.length(1);
-        const page = f.created[0];
-        expect(page.id).to.equal('dp_3');
-        expect(page.config.config.card).to.equal('cardDevice2');
-        expect(page.config.config.slotCount).to.equal(6);
-        expect(page.directParentPage).to.equal(f.parent);
-        expect(f.panel.active).to.equal(page);
+        expect(f.opened).to.deep.equal([NAME]);
+        expect(f.created).to.have.length(0);
     });
     for (const [model, version, virtual] of [
         ['us-l', '9.0.0', false],
@@ -2182,28 +2311,49 @@ describe('lib/pages/pageItem - device page', () => {
         it(`falls back to the detail page: ${model} ${version || 'no version'}${virtual ? ' (web)' : ''}`, async () => {
             const f = setup({ model, displayVersion: version }, virtual);
             await f.item.onCommandLongPress('button', '');
+            expect(f.opened).to.deep.equal([]);
             expect(f.created).to.have.length(1);
             expect(f.created[0].id).to.equal('dd_3');
             expect(f.created[0].config.config.card).to.equal('cardEntities');
         });
     }
+    it('falls back to the detail page when the panel has no such page (none built, not in the navigation)', async () => {
+        const f = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT }, false, []);
+        await f.item.onCommandLongPress('button', '');
+        expect(f.opened).to.deep.equal([]);
+        expect(f.created.map((p: FakePage) => p.id)).to.deep.equal(['dd_3']);
+    });
     for (const model of ['web-l', 'eu'] as const) {
         it(`web panel ${model}: device page`, async () => {
             const f = setup({ model, displayVersion: '' }, true);
             await f.item.onCommandLongPress('button', '');
-            expect(f.created[0].id).to.equal('dp_3');
+            expect(f.opened).to.deep.equal([NAME]);
         });
     }
-    it('navigation: info → detail page → back → device page → back → page of the item', async () => {
+    it('info icon: the detail page below the device page, back leads to the device page', async () => {
         const f = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });
-        await f.item.onCommandLongPress('button', '');
-        const devicePage = f.created[0];
-        const infoConfig = devicePage.config.config.elements[7];
+        const content = await devicePageElements(
+            sourceSwitch,
+            f.details,
+            f.details.devicePage,
+            getObject,
+            k => k,
+            'de',
+        );
+        const infoConfig = content.elements[7];
         expect(infoConfig.role).to.equal(DEVICE_PAGE_INFO_ROLE);
+        const devicePage: Record<string, any> = {
+            id: '12',
+            name: NAME,
+            card: 'cardDevice2',
+            basePanel: f.panel,
+            directChildPage: undefined,
+        };
+        f.panel.active = devicePage;
         const info = f.makeItem(devicePage, infoConfig, { type: 'button', role: DEVICE_PAGE_INFO_ROLE, data: {} });
         await info.onCommand('button', '');
-        const detailPage = f.created[1];
-        expect(detailPage.id).to.equal('dd_3');
+        const detailPage = f.created[0];
+        expect(detailPage.id).to.equal('dd_12');
         expect(detailPage.config.config.card).to.equal('cardEntities');
         expect(detailPage.directParentPage).to.equal(devicePage);
         expect(devicePage.directChildPage).to.equal(detailPage);
@@ -2211,17 +2361,6 @@ describe('lib/pages/pageItem - device page', () => {
         Page.prototype.goLeft.call(detailPage, true);
         await Promise.resolve();
         expect(f.panel.active).to.equal(devicePage);
-        Page.prototype.goLeft.call(devicePage, true);
-        await Promise.resolve();
-        expect(f.panel.active).to.equal(f.parent);
-    });
-    it('a second long press replaces the device page', async () => {
-        const f = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });
-        await f.item.onCommandLongPress('button', '');
-        f.panel.active = f.parent;
-        await f.item.onCommandLongPress('button', '');
-        expect(f.created[0].deleted).to.equal(true);
-        expect(f.parent.directChildPage).to.equal(f.created[1]);
     });
 
     describe('taps', () => {
@@ -2309,11 +2448,20 @@ describe('lib/pages/pageItem - device page', () => {
                 entries: [ref('power')],
                 devicePage: { layout: 2, slots: [ref('power')] },
             });
-            const config = { type: 'button', data: {}, deviceDetails: details };
+            const config = { type: 'button', data: {}, deviceDetails: details, devicePageName: NAME };
             await f.makeItem(f.parent, config, { type: 'button', data: {} }).onCommand('button', '');
-            expect(f.created.map((p: { id: string }) => p.id)).to.deep.equal(['dp_3']);
+            expect(f.opened).to.deep.equal([NAME]);
+            expect(f.created).to.have.length(0);
             // main of the device page: no device page inside, the tap does nothing
-            const main = f.created[0].config.config.elements[0];
+            const content = await devicePageElements(
+                config,
+                details as DeviceDetailsRuntime,
+                details?.devicePage as DevicePageRuntime,
+                getObject,
+                k => k,
+                'de',
+            );
+            const main = content.elements[0];
             expect(main.type).to.equal('text');
             expect(main.deviceDetails.devicePage).to.equal(undefined);
             const old = setup({ model: 'us-p', displayVersion: '9.0.0' });
@@ -2323,6 +2471,7 @@ describe('lib/pages/pageItem - device page', () => {
             const other = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });
             await other.item.onCommand('button', '');
             expect(other.created).to.have.length(0);
+            expect(other.opened).to.have.length(0);
         });
         it('main (short tap none / navigation / popup): a text, the tap does nothing', async () => {
             const f = setup({ model: 'eu', displayVersion: CARD_DEVICE_MIN_TFT });

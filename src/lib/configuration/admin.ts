@@ -324,7 +324,7 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Thermo2 entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
-     * @param generated Receives the pages generated from the page items (`media-<id>`).
+     * @param generated Receives the pages generated from the page items (`media-<id>`, device pages).
      * @returns The page for the panel configuration; without a usable circuit it has no data.
      */
     private async buildThermo2Page(
@@ -364,7 +364,7 @@ export class AdminConfiguration extends BaseClass {
                 : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
-                { card: 'cardThermo2', uniqueName: entry.uniqueName },
+                { card: 'cardThermo2', uniqueName: entry.uniqueName, alwaysOn },
                 [],
             );
             this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
@@ -426,7 +426,7 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Media entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
-     * @param generated Receives the pages generated from the page items (`media-<id>`).
+     * @param generated Receives the pages generated from the page items (`media-<id>`, device pages).
      * @returns The page for the panel configuration; with an unusable player it has no items.
      */
     private async buildMediaPage(
@@ -466,7 +466,7 @@ export class AdminConfiguration extends BaseClass {
                 : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
-                { card: 'cardMedia', uniqueName: entry.uniqueName },
+                { card: 'cardMedia', uniqueName: entry.uniqueName, alwaysOn },
                 [],
             );
             this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
@@ -549,7 +549,7 @@ export class AdminConfiguration extends BaseClass {
 
             // Create page configuration based on card type
             let newPage: PageBase;
-            // pages generated from the page items (`media-<id>`), added once the page itself is in
+            // pages generated from the page items (`media-<id>`, device pages), added once the page itself is in
             const generatedPages: ScriptConfig.PageType[] = [];
 
             switch (entry.card) {
@@ -721,7 +721,7 @@ export class AdminConfiguration extends BaseClass {
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
-                                { card: entry.card, uniqueName: entry.uniqueName },
+                                { card: entry.card, uniqueName: entry.uniqueName, alwaysOn: entry.alwaysOn },
                                 [],
                             );
                             this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
@@ -776,7 +776,7 @@ export class AdminConfiguration extends BaseClass {
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
-                                { card: entry.card, uniqueName: entry.uniqueName },
+                                { card: entry.card, uniqueName: entry.uniqueName, alwaysOn: entry.alwaysOn },
                                 [],
                             );
                             this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
@@ -954,8 +954,8 @@ export class AdminConfiguration extends BaseClass {
     }
 
     /**
-     * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item)
-     * exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
+     * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item,
+     * the device page of a device item) exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
      * with the admin page as parent (navigation node with the parent on a double press), and the page is
      * recorded as generated - its navigation is read-only in the admin. An existing page of the same name
      * that belongs to this panel is kept (the first one wins, like the deduplication of the script path),

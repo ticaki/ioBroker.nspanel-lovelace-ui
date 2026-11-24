@@ -9,6 +9,7 @@ import {
 } from '../types/deviceDetails';
 import type * as pages from '../types/pages';
 import type * as types from '../types/types';
+import type { PageItem } from './pageItem';
 import {
     DEVICE_PAGE_EMPTY_ELEMENT,
     devicePageChannelElement,
@@ -26,16 +27,15 @@ import {
  */
 function isCardDeviceConfig(config: pages.PageBase['config']): config is pages.cardDeviceDataItemOptions {
     return (
-        !!config &&
-        (config.card === 'cardDevice1' || config.card === 'cardDevice2' || config.card === 'cardDevice3') &&
-        'elements' in config
+        !!config && (config.card === 'cardDevice1' || config.card === 'cardDevice2' || config.card === 'cardDevice3')
     );
 }
 
 /**
- * The generated device page of a device item (device-page.ts): main, the slots of the layout and info as elements of
- * the HMI pages cardDevice1..3. The page items are created only while the page is shown (Page.onVisibilityChange),
- * a tap on an element is the tap of a cardGrid cell. A long press (`buttonPress3`) runs the long press action of a
+ * The device page of a device item (device-page.ts): main, the slots of the layout and info as elements of the HMI
+ * pages cardDevice1..3. A normal page of the panel: its page items come from its configuration (buildDevicePage) and
+ * are created only while the page is shown (Page.onVisibilityChange), a tap on an element is the tap of a cardGrid
+ * cell; an empty page item is an empty element. A long press (`buttonPress3`) runs the long press action of a
  * slot, anything else does nothing - it never acts like the tap.
  *
  * A status text that does not fit the status line is split into parts (splitDevicePageStatus). The `entityUpd`
@@ -68,22 +68,30 @@ export class PageDevice extends Page {
         this.layout = isDevicePageLayout(layout) ? layout : 1;
         const headline = card.data.headline;
         this.headline = headline.type === 'const' && typeof headline.constVal === 'string' ? headline.constVal : '';
-        this.slotCount = card.slotCount;
+        this.slotCount = DEVICE_PAGE_LAYOUTS[this.layout].length;
         this.channelSlots = new Set(card.channelSlots ?? []);
-        this.pageItemConfig = [...card.elements];
         this.minUpdateInterval = 1000;
     }
 
     /**
      * @param index number of a page item
-     * @returns its payload as element, the empty element without item
+     * @returns its payload as element, the empty element without item or for an empty item
      */
     private async elementAt(index: number): Promise<string> {
-        const item = this.pageItems?.[index];
+        const item = this.itemAt(index);
         if (!item) {
             return DEVICE_PAGE_EMPTY_ELEMENT;
         }
         return (await item.getPageItemPayload()) || DEVICE_PAGE_EMPTY_ELEMENT;
+    }
+
+    /**
+     * @param index number of a page item
+     * @returns the page item, undefined when there is none or it is empty (empty slot, no info, no status line)
+     */
+    private itemAt(index: number): PageItem | undefined {
+        const item = this.pageItems?.[index];
+        return item && item.config?.type !== 'empty' ? item : undefined;
     }
 
     /** Stops the rotation of the parts of the status text. */
@@ -157,9 +165,9 @@ export class PageDevice extends Page {
             return;
         }
         await super.update();
-        const statusItem = this.pageItems?.[this.slotCount + 2];
+        const statusItem = this.itemAt(this.slotCount + 2);
         const status = statusItem ? optionalValueOf(await statusItem.getPageItemPayload()) : '';
-        const mainItem = this.pageItems?.[0];
+        const mainItem = this.itemAt(0);
         // slots and info; a status icon never shows name or value, field 6 of an alias channel follows the kind of
         // its slot; names and values are cut to the text buffers of the HMI
         const elements: string[] = [];
