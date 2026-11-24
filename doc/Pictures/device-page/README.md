@@ -1,136 +1,96 @@
 # Geräteseite für „Gerät mit Details“
 
+Dieser Ordner enthält die Bilder zur Geräteseite, eine Kurz-Anleitung und die Prüftabellen für Tim.
+
+- **Ausführliche Anleitung für Nutzer:** [doc/de/deviceDetails.md](../../de/deviceDetails.md) (englisch:
+  [doc/en/deviceDetails.md](../../en/deviceDetails.md)).
+- **Welche Bilder noch fehlen, wer sie aufnimmt und wie:** [BILDER.md](BILDER.md) – dort steht auch der Abgleich
+  Web ↔ HMI.
+- Technik (Protokoll, Maße): [doc/ideas/device-details](../../ideas/device-details/README.md).
+
+Stand: 2026-11-24. Beschrieben ist der **Zielstand** (Geräteseite auf allen Modellen, Zusatz-Elemente für
+Smartphone-Web-Panels); was davon noch nicht im Branch ist, ist als „nach der Integration“ markiert.
+
+## Kurz-Anleitung
+
 Ein Item der Art **Gerät mit Details** öffnet mit einem langen Druck (Grid-Seiten) bzw. einem Tipp auf Icon oder
-Bezeichnung (cardEntities) bisher immer die **Detailseite** – eine Liste mit allen angehakten Werten des Geräts.
-Jetzt kannst du stattdessen eine **Geräteseite** öffnen lassen: ein großes Geräte-Icon, feste Plätze (Slots) für
-Werte, einen Fortschrittsbalken, Knöpfe, Schalter oder kleine Status-Icons, eine Statuszeile und unten rechts ein kleines „i“, das die
-Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Rasenmäher oder Auto.
+Bezeichnung (cardEntities) die **Detailseite** – eine Liste mit allen angehakten Werten des Geräts. Stattdessen
+kannst du eine **Geräteseite** öffnen lassen: ein großes Geräte-Icon, feste Plätze (Slots) für Werte, einen
+Fortschrittsbalken, Knöpfe, Schalter oder kleine Status-Icons, eine Statuszeile und unten rechts ein kleines „i“,
+das die Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Rasenmäher oder Auto.
 
-## So stellst du es ein
-
-1. Öffne im Seiten-Editor das Item und wähle oben die Art **Gerät mit Details** und dein Gerät.
-2. Unter der Filterliste steht **Long-Press öffnet**. Wähle **Geräteseite**.
-   - **Detailseite** ist die Vorgabe und verhält sich wie bisher.
-   - Du kannst hin- und herschalten, ohne etwas zu verlieren, solange der Dialog offen ist. Gespeichert wird die
-     Geräteseite nur, wenn beim Übernehmen **Geräteseite** gewählt ist.
+1. Im Seiten-Editor das Item öffnen, oben die Art **Gerät mit Details** und das Gerät wählen.
+2. Bei **Long-Press öffnet** **Geräteseite** wählen (Vorgabe ist **Detailseite**). Umschalten verliert nichts,
+   solange der Dialog offen ist.
 
    ![Dialog „Gerät mit Details“ mit Geräteseite](admin-overview.png)
 
-3. Wähle das **Layout**. Die kleinen Bilder zeigen, wo welcher Slot sitzt; die Nummern gehören zu den Zeilen
-   weiter unten.
-4. **Haupt-Icon**: das große Icon oben links. Leer lassen = das Icon des Items.
-5. **Statuszeile**: ein beliebiger Wert des Geräts als Text in der breiten Zeile unten, z. B. das Programm der
-   Waschmaschine. Leer = leere Zeile.
-   - Ganz oben in der Auswahl steht **Benutzerdefinierter Datenpunkt**. Damit zeigt die Statuszeile einen eigenen
-     Datenpunkt, der nicht zum Gerät gehören muss – z. B. einen Text unter `0_userdata.0`, den du per Skript selbst
-     zusammenbaust. Nach der Auswahl erscheint darunter ein Feld: ID eintippen oder mit dem Knopf **...** im
-     Objektbaum aussuchen. Solange das Feld leer ist oder es den Datenpunkt nicht gibt, bleibt die Zeile leer.
+3. **Layout** wählen – die kleinen Bilder zeigen, wo welcher Slot sitzt.
+4. **Haupt-Icon** wählen (leer = Icon des Items).
+5. **Statuszeile**: ein Wert des Geräts oder ganz oben **Benutzerdefinierter Datenpunkt** für einen eigenen
+   Datenpunkt, z. B. einen Text unter `0_userdata.0`.
 
-     ![Statuszeile mit benutzerdefiniertem Datenpunkt](admin-status-custom.png)
+   ![Statuszeile mit benutzerdefiniertem Datenpunkt](admin-status-custom.png)
 
-6. **Slots**: Für jeden Slot steht die Nummer, die Art und eine Auswahl der Werte des Geräts. Angeboten werden nur
-   Werte, die zur Art passen – „leer“ geht immer.
-   - **Benutzerdefiniert** (zweiter Eintrag nach „leer“): der Slot zeigt etwas, das nicht zum Gerät gehören muss.
-     Darunter wählst du **Datenpunkt** (irgendein Datenpunkt, z. B. unter `0_userdata.0`) oder **Kanal** (z. B.
-     ein Licht, ein Rollladen, eine Steckdose aus `alias.0`) und trägst die ID ein oder suchst sie mit **...** aus.
-     Ein Alias-Kanal sieht aus und lässt sich bedienen wie auf einer Grid-Seite: Tipp schaltet, Rollladen, Auswahl
-     und Timer öffnen ihr Popup, ein dimmbares Licht öffnet es beim Halten. Passt etwas nicht zur Art des Slots oder
-     gibt es die ID nicht, wird der Slot rot markiert und bleibt am Panel leer.
+6. **Slots** belegen: je Zeile „leer“, **Benutzerdefiniert** oder ein passender Wert des Geräts.
+   **Benutzerdefiniert** bietet **Datenpunkt** (irgendein Datenpunkt), **Kanal** (Alias-Kanal, bedient wie auf
+   einer Grid-Seite) und – bei Info-Zeile, Knopf und Status-Icon – **Navigation** (Platz nur zum Springen auf eine
+   Zielseite). Was nicht passt oder fehlt, ist rot markiert und bleibt am Panel leer.
 
-     ![Slots: eigener Datenpunkt, Alias-Kanal und ein unpassender Datenpunkt](admin-slot-custom.png)
+   ![Slots: eigener Datenpunkt, Alias-Kanal und ein unpassender Datenpunkt](admin-slot-custom.png)
 
-   - **…** rechts in jeder belegten Zeile öffnet die **Einstellungen des Elements**: eigenes Icon und eigene Farbe
-     für „wahr“ und „unwahr“, ein Farbverlauf und – bei Knöpfen und Schaltern – ein Datenpunkt, den ein langer Druck
-     schreibt. Alles ist freiwillig; der Knopf ist grün, sobald etwas eingestellt ist. Beispiel: ein Knopf für
-     „läuft / Pause“ – wähle einen An/Aus-Wert, Icon „pause“ bei wahr und „play“ bei unwahr. Der Tipp schaltet um,
-     das Icon wechselt mit.
+7. **…** rechts in jeder belegten Zeile öffnet die Einstellungen des Elements (grün, sobald etwas gesetzt ist):
+   bei Info-Zeile, großem Wert, Fortschrittsbalken, Knopf und Schalter die Pageitem-Konfiguration ohne Kanalauswahl
+   (Name, Icon und Farbe für wahr/unwahr, Farbverlauf, Text-/Icongröße, **Ist eine Navigation** mit Zielseite,
+   bei Knopf und Schalter **Langer Druck**); bei einem Status-Icon ein kleiner Dialog (Icon, Farbe, Farbverlauf,
+   Kurzer Tipp Standard/Navigation).
 
-     ![Einstellungen des Elements](admin-slot-dialog.png)
+   ![Einstellungen des Elements](admin-slot-dialog.png)
 
-   - **Von der Geräteseite auf eine andere Seite springen** – zwei Wege:
-     - **Ein belegter Slot navigiert:** **…** der Zeile öffnen, bei **Kurzer Tipp** statt „Standard“ **Navigation**
-       wählen und die **Zielseite** aussuchen. Der Slot sieht aus wie vorher (Icon, Name, Wert), aber der Tipp öffnet
-       jetzt die Seite und tut sonst nichts – ein Knopf drückt nicht mehr, ein An/Aus-Wert schaltet nicht mehr. Beim
-       Schalter-Slot navigiert der Tipp auf Icon und Name, der Schalter selbst schaltet weiter. Bei Kanälen, die ihr
-       Popup sofort öffnen (Rollladen, Tor, Schloss, Auswahl, Timer), fehlt „Kurzer Tipp“ – dort kommt immer das Popup.
-     - **Ein Platz nur zum Springen:** in der Auswahl des Slots **Benutzerdefiniert** und darunter **Navigation**
-       wählen (gibt es bei Info-Zeile, Knopf und Status-Icon). Dann **Zielseite** aussuchen und, wenn du willst, eine
-       **Beschriftung** eintragen (leer = Name der Zielseite). Icon und Farbe stellst du über **…** ein.
-     - Steht unter der Zeile rot **Zielseite nicht gefunden**, gibt es die Seite nicht (mehr). Am Panel passiert beim
-       Tipp dann nichts, im Log steht einmal eine Warnung – das gilt auch, wenn die Seite dem Panel nicht zugeordnet
-       ist.
-     - **Zurück:** Die Pfeile der Zielseite führen dorthin, wo du es für diese Seite eingerichtet hast – nicht
-       automatisch zurück zur Geräteseite. Soll „hoch“ wieder zur Seite mit dem Gerät führen, trage diese Seite bei
-       der Zielseite als übergeordnete Seite ein; die Geräteseite öffnest du von dort wieder über das Item.
-   - **Status-Icon** (nur Layout 1, Slots 7–10): zeigt nur ein kleines Icon in seiner Farbe, ohne Name und Wert.
-     Das Icon kommt automatisch (wie bei der Info-Zeile desselben Werts); ein eigenes wählst du über **…**, z. B.
-     „delete-empty“ für „Behälter leeren“ oder „air-filter“ für den Filter. Die Farbe kommt automatisch: An/Aus-Werte
-     in den Farben aktiviert/deaktiviert, andere Werte in der Farbe ihrer Gruppe.
-7. **i-Icon anzeigen** (Vorgabe an): das „i“ unten rechts öffnet die Detailseite mit den Einträgen, die du in der
-   **Filterliste** angehakt hast. Die Filterliste erreichst du weiter über ihren Knopf.
-8. **Übernehmen**.
+8. **Status-Icons** (nur Layout 1, Slots 7–10): nur ein kleines Icon in seiner Farbe. Sobald eines belegt ist,
+   erscheint das 2×2-Raster und die beiden Info-Zeilen werden schmaler.
+9. **i-Icon anzeigen** (Vorgabe an): das „i“ öffnet die Detailseite mit den angehakten Einträgen der Filterliste.
+10. Für Web-Panels mit den Modellen **Smartphone quer** / **Smartphone hochkant**: das Häkchen für die
+    zusätzlichen Elemente setzen, dann erscheinen die Zusatz-Plätze (nach der Integration, Beschriftung steht
+    noch nicht fest).
+11. **Übernehmen**, dann im Tab **Speichern**.
 
-**Geräteseite schon beim ersten Tipp:** Unter **Kurzer Tipp** gibt es zusätzlich **Geräteseite öffnen**. Dann öffnet
-schon der kurze Tipp auf das Item die Geräteseite (der lange Druck weiterhin auch). Die Auswahl ist nur möglich, wenn
-bei „Long-Press öffnet“ die Geräteseite gewählt ist. Auf Panels ohne Geräteseite öffnet der Tipp die Detailseite.
+**Geräteseite schon beim ersten Tipp:** Unter **Kurzer Tipp** gibt es **Geräteseite öffnen** – nur wählbar, wenn
+bei „Long-Press öffnet“ die Geräteseite gewählt ist.
 
 ![Kurzer Tipp: Geräteseite öffnen](admin-shortpress.png)
 
-Beim ersten Einschalten der Geräteseite werden die Info-Slots mit den angehakten Einträgen der Filterliste
-vorbelegt. Knöpfe, Schalter, Fortschrittsbalken, Status-Icons und die Statuszeile bleiben leer – die wählst du selbst.
+Die drei Layouts: **1 – Steuern** (2 Info-Zeilen, 4 Knöpfe, 4 Status-Icons), **2 – Fortschritt** (großer Wert,
+Fortschrittsbalken, 3 Info-Kacheln, 1 Knopf), **3 – Werte** (6 Info-Kacheln, 2 Schalter). Auf Smartphone-Web-Panels
+zusätzlich: Layout 1 +2 Knöpfe, Layout 2 +1 Info-Zeile und +2 Knöpfe, Layout 3 +2 Info-Zeilen und +1 Schalter.
 
-Wechselst du das Layout, bleiben die Slots nach ihrer Position erhalten (Slot 1 bleibt Slot 1 usw.). Passt ein Wert
-danach nicht mehr zur Art des Slots, wird er rot mit „passt nicht zu diesem Slot“ angezeigt. Ein Wert, den es im
-Gerät nicht mehr gibt, steht rot mit „nicht im Gerät gefunden“ da und bleibt gespeichert, bis du ihn änderst.
+**Wo es die Geräteseite gibt:** auf allen Modellen (eu, us-l, us-p, web-l, web-p). Ein Hardware-Panel braucht
+eine TFT mit den Geräteseiten (Version steht noch nicht fest); mit älterer TFT öffnet sich wie bisher die
+Detailseite. Heute im Branch: nur eu und web-l.
 
-Ist der Adapter gerade nicht gestartet, zeigen die Auswahlen nur die gespeicherten Werte; das Item lässt sich
-trotzdem unverändert speichern.
+## Bilder: Szenario und was Tim prüfen soll
 
-## Die drei Layouts
+Vorhandene Bilder; die geplanten stehen in [BILDER.md](BILDER.md) und kommen nach dem Aufnehmen hier dazu.
 
-### 1 – Steuern (Saugroboter, Rasenmäher)
-
-Zwei Info-Zeilen neben dem Icon, darunter vier Knöpfe. Optional vier kleine **Status-Icons** in einem 2×2-Raster
-direkt rechts neben dem großen Icon (z. B. WLAN, Behälter, Filter, Fehler). Sind alle vier leer, sieht die Seite aus
-wie ohne sie; ist mindestens eines belegt, erscheint das ganze Raster (leere Felder bleiben als leere Kästchen
-stehen) und die beiden Info-Zeilen werden schmaler – lange Namen werden dann früher abgeschnitten.
-
-![cardDevice1 mit Status-Icons](hmi-cardDevice1.png)
-![cardDevice1 ohne Status-Icons](hmi-cardDevice1-plain.png)
-
-### 2 – Fortschritt (Waschmaschine, Trockner, Geschirrspüler)
-
-Ein großer Wert (z. B. Restzeit), ein Fortschrittsbalken, drei kleine Info-Kacheln und ein Knopf oben rechts.
-
-![cardDevice2](hmi-cardDevice2.png)
-
-### 3 – Werte (Auto, Sensoren)
-
-Sechs Info-Kacheln und zwei Schalter.
-
-![cardDevice3](hmi-cardDevice3.png)
-
-## Was in welchen Slot passt
-
-| Art | Welche Werte (Gerät oder eigener Datenpunkt) | Welche Alias-Kanäle |
+| Bild | Szenario | Was Tim prüfen soll |
 |---|---|---|
-| Info-Zeile | alle | alle (Licht, Steckdose, Rollladen, Auswahl, Regler, Timer, Sensoren …) |
-| großer Wert | alle | alles mit einem lesbaren Wert: Sensoren, Regler, Auswahl, Timer, Licht/Steckdose (An/Aus) |
-| Fortschrittsbalken | Zahlen (0–100 %, mit Min/Max des Werts umgerechnet) | Regler (slider), Lautstärke |
-| Knopf | Taster (nur schreibbar) oder schaltbare An/Aus-Werte | alle |
-| Schalter | schaltbare An/Aus-Werte | Steckdose, Licht (auch dimmbar/farbig), Ventilator |
-| Status-Icon | alle (nur Icon und Farbe) | alle |
-
-Medien-Kanäle und Fahrpläne gehen in keinem Slot.
-
-## Wo es die Geräteseite gibt
-
-Nur auf **EU-Panels** und **Web-Panels im Querformat** mit aktueller TFT. Alle anderen Panels (US, Web-Panel im
-Hochformat, ältere TFT) öffnen wie bisher die Detailseite.
+| ![](admin-overview.png) | Dialog mit Geräteseite, Layout 1, alle Slots belegt (Gerät `0_userdata.0.devicepage.robot`) | Aufbau verständlich? Vorschau passt zu den Slot-Nummern? **Veraltet:** der Hinweis „nur auf EU-Panels und Web-Panels im Querformat“ – wird nach der Integration neu aufgenommen |
+| ![](admin-shortpress.png) | Kurzer Tipp „Geräteseite öffnen“ gewählt | Auswahl nur mit „Long-Press öffnet: Geräteseite“ möglich |
+| ![](admin-status-custom.png) | Statuszeile mit „Benutzerdefinierter Datenpunkt“ | Feld für die ID erscheint, nichts rot bei leerem Feld |
+| ![](admin-slot-custom.png) | Slots mit Datenpunkt, Alias-Kanal und einem unpassenden Datenpunkt | rote Markierung „passt nicht zu diesem Slot“. **Veraltet:** die Wahl heißt jetzt „Kanal“, dazu kommt „Navigation“ – wird neu aufgenommen |
+| ![](admin-slot-dialog.png) | „…“ eines Knopf-Slots | **Veraltet:** zeigt den früheren kleinen Dialog; Knopf-Slots öffnen jetzt die Pageitem-Konfiguration ohne Kanalauswahl – wird neu aufgenommen. Den kleinen Dialog gibt es nur noch für Status-Icons |
+| ![](hmi-cardDevice1.png) | HMI-Vorschau cardDevice1 mit Status-Icons (Werkzeug, Beispieldaten) | Raster an den Info-Zeilen ausgerichtet, Info-Zeilen schmal |
+| ![](hmi-cardDevice1-plain.png) | HMI-Vorschau cardDevice1 ohne Status-Icons | kein Raster, Info-Zeilen breit |
+| ![](hmi-cardDevice2.png) | HMI-Vorschau cardDevice2 | großer Wert, Balken, drei Kacheln, Knopf oben rechts |
+| ![](hmi-cardDevice3.png) | HMI-Vorschau cardDevice3 | sechs Kacheln zeilenweise, zwei Schalter |
+| ![](web-cardDevice1.png) | Web-Panel (Modell eu), dieselben Beispieldaten wie `hmi-cardDevice1.png` | deckt sich mit der HMI-Vorschau? **Veraltet:** Statuszeile noch linksbündig (heute mittig) – wird neu aufgenommen |
+| ![](web-cardDevice1-plain.png) | Web-Panel, cardDevice1 ohne Status-Icons | wie `hmi-cardDevice1-plain.png`; Statuszeile wie oben |
+| ![](web-cardDevice2.png) | Web-Panel, cardDevice2 | wie `hmi-cardDevice2.png` (Balkenlänge, Lage der Kacheln) |
+| ![](web-cardDevice3.png) | Web-Panel, cardDevice3 | wie `hmi-cardDevice3.png`; Statuszeile noch linksbündig – wird neu aufgenommen |
 
 ## Was Tim prüfen soll
 
-Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per Puppeteer geprüft, „✓ nur Admin“ = der Admin-Teil der Zeile geprüft, der Teil am Panel nicht; leer = nicht geprüft.
+Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per Puppeteer geprüft, „✓ nur Admin“ = der Admin-Teil der Zeile geprüft, der Teil am Panel nicht; leer = nicht geprüft. Die Zeilen 30, 32, 38–43 sind an den „…“-Dialog vom 2026-11-24 angepasst (Pageitem-Konfiguration statt des kleinen Dialogs) und deshalb wieder ungeprüft; die Zeilen ab 52 gehören zum Zielstand (alle Modelle, Zusatz-Elemente) und lassen sich erst nach der Integration prüfen.
 
 | # | Prüfung | Erwartung | Im Browser geprüft (2026-11-23) |
 |---|---|---|---|
@@ -146,7 +106,7 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 9 | Auf **Detailseite** stellen und übernehmen | `device.devicePage` ist aus den Rohdaten verschwunden | |
 | 10 | Einen gespeicherten Slot-State im Objektbaum löschen, Dialog öffnen | Slot zeigt den State rot „nicht im Gerät gefunden“, nach Übernehmen weiter gespeichert | |
 | 11 | Adapter stoppen, Dialog öffnen, Übernehmen | gespeicherte Geräteseite bleibt unverändert | |
-| 12 | Long-Press am EU-Panel (neue TFT) und am Web-Panel quer | Geräteseite erscheint mit den gewählten Slots | |
+| 12 | Long-Press am EU-Panel (neue TFT) und in jedem Web-Panel | Geräteseite erscheint mit den gewählten Slots | |
 | 13 | Dialog in hellem und dunklem Thema, schmales Fenster | Vorschaubilder und Slot-Zeilen lesbar, nichts abgeschnitten | |
 | 14 | Item mit einer Geräteseite Layout 1 von vor den Status-Icons (6 Slots) öffnen | Slots 1–6 unverändert, Slots 7–10 „Status-Icon“ leer; Übernehmen speichert 10 Slots | |
 | 15 | Layout 1: unter den Slots | Hinweis, dass die Info-Zeilen schmaler werden, sobald ein Status-Icon belegt ist | ✓ |
@@ -164,20 +124,20 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 27 | Am Panel: Steckdose (socket) und einfaches Licht (light) in Info- und Knopf-Slot | Tipp schaltet, Icon/Farbe wechseln, **kein** popupLight beim Halten; Info-Zeile zeigt An/Aus | |
 | 28 | Am Panel: dimmbares Licht im Knopf-Slot, Rollladen und Auswahl (select) im Info-Slot, Regler (slider) im Fortschritts-Slot | Licht: Tipp schaltet, Halten öffnet popupLight; Rollladen/Auswahl öffnen ihr Popup sofort, Wertfeld des Rollladens leer; Balken folgt dem Regler | |
 | 29 | Am Panel: Steckdose im Schalter-Slot (Layout 3), Temperatur-Kanal im Info-Slot und als großer Wert | Schalter schaltet und zeigt den Zustand; Temperatur mit Icon (nicht Zahl statt Icon) und Wert mit Einheit | |
-| 30 | „…“ eines Knopf-Slots mit An/Aus-Wert: Icon „pause“ bei wahr, „play“ bei unwahr, zwei Farben, übernehmen | „…“ grün; am Panel wechseln Icon und Farbe mit dem Wert, der Tipp schaltet um | ✓ nur Admin |
+| 30 | „…“ eines Knopf-Slots mit An/Aus-Wert: es öffnet die Pageitem-Konfiguration ohne Kanalauswahl (Titel mit Nummer und Art des Slots); Icon „pause“ bei wahr, „play“ bei unwahr, zwei Farben, übernehmen | „…“ grün; am Panel wechseln Icon und Farbe mit dem Wert, der Tipp schaltet um | |
 | 31 | „…“ eines Info-Slots mit Zahl: Icon bei wahr und Farbe setzen; „Farbverlauf …“ mit Min/Max | Icon/Farbe gelten immer (kein „unwahr“); mit Farbverlauf ändert sich die Farbe mit dem Wert; beim Fortschritts-Slot die Balkenfarbe | |
-| 32 | „…“ eines Knopf- und eines Schalter-Slots | Abschnitt Long-Press mit Datenpunkt-Auswahl; bei Info-/Wert-/Status-Slots fehlt er. Am Panel (HMI ab device5): langer Druck setzt den Datenpunkt (Knopf) bzw. schaltet ihn um (Schalter), kein Tipp dabei | ✓ nur Admin |
+| 32 | „…“ eines Knopf- und eines Schalter-Slots | Abschnitt **Langer Druck** mit Datenpunkt-Auswahl (keine Zielseite); bei Info-/Wert-/Fortschritts-Slots fehlt er. Am Panel (HMI ab device5): langer Druck setzt den Datenpunkt (Knopf) bzw. schaltet ihn um (Schalter), kein Tipp dabei | |
 | 33 | „…“ eines Kanal-Slots: eigenes Icon und Farbe | überschreiben die Vorgaben der Rolle am Panel | |
 | 34 | Altes Item mit Status-Icon (Feld `icon`) öffnen, „…“ des Slots | Dialog zeigt das Icon bei wahr und unwahr, „…“ grün; ohne Änderung bleibt alles wie vorher | ✓ |
 | 35 | Kurzer Tipp: **Geräteseite öffnen** bei „Long-Press öffnet: Detailseite“ | ausgegraut; mit Geräteseite wählbar. Wählen, dann auf Detailseite schalten → Kurzer Tipp springt auf „Keine“ | ✓ |
-| 36 | Am Panel: Item mit „Geräteseite öffnen“ kurz antippen (Grid und cardEntities) | Geräteseite erscheint; langer Druck ebenso; Zurück führt zur Seite des Items. Auf der Geräteseite tut ein Tipp auf das große Icon nichts. US-Panel/alte TFT: Detailseite | |
+| 36 | Am Panel: Item mit „Geräteseite öffnen“ kurz antippen (Grid und cardEntities) | Geräteseite erscheint; langer Druck ebenso; Zurück führt zur Seite des Items. Auf der Geräteseite tut ein Tipp auf das große Icon nichts. Alte TFT: Detailseite | |
 | 37 | Am Panel: langer Druck auf einen Slot ohne Long-Press-Einstellung, auf das große Icon und auf „i“ | nichts passiert (kein Schalten, keine Detailseite) | |
-| 38 | „…“ eines Info-, Wert-, Knopf-, Schalter- oder Status-Slots mit einem Wert des Geräts | Abschnitt **Kurzer Tipp** mit „Standard“ und „Navigation“; bei „Navigation“ erscheint die Zielseiten-Auswahl (dieselbe Liste wie beim Standard-Item, mit Screensaver) | |
-| 39 | „Navigation“ wählen, Zielseite aussuchen, übernehmen, Item speichern, neu öffnen | „…“ grün; Rohdaten zeigen am Slot `isNavigation: true` und `targetPage`; zurück auf „Standard“ → beide Felder weg | |
+| 38 | „…“ eines Info-, Wert-, Knopf- oder Schalter-Slots mit einem Wert des Geräts; danach „…“ eines Status-Slots | Info/Wert/Knopf/Schalter: Häkchen **Ist eine Navigation**, gesetzt erscheint die **Zielseite** (dieselbe Liste wie beim Standard-Item, mit Screensaver). Status-Slot: kleiner Dialog mit Abschnitt **Kurzer Tipp** („Standard“ / „Navigation“) | |
+| 39 | „Ist eine Navigation“ setzen (Status-Slot: „Navigation“ wählen), Zielseite aussuchen, übernehmen, Item speichern, neu öffnen | „…“ grün; Rohdaten zeigen am Slot `isNavigation: true` und `targetPage`; Häkchen wieder entfernen (bzw. „Standard“) → beide Felder weg | |
 | 40 | Zielseite eintippen, die es nicht gibt | Feld rot „Zielseite nicht gefunden“, nach Übernehmen steht dasselbe rot unter der Slot-Zeile; speichern geht trotzdem | |
 | 41 | Slot-Auswahl **Benutzerdefiniert** bei Info-Zeile, Knopf, Status-Icon | dritte Wahl **Navigation** neben Datenpunkt und Kanal; bei großem Wert, Fortschrittsbalken und Schalter fehlt sie | |
-| 42 | **Navigation** wählen: Zielseite, Beschriftung, über „…“ Icon und Farbe | „…“ ist ohne ID aktiv und zeigt nur eine Spalte (Icon/Farbe), keinen Farbverlauf, keinen „Kurzen Tipp“, keinen Long-Press; neu öffnen: alles da | |
-| 43 | „…“ eines Kanal-Slots mit Steckdose/Licht/Sensor und eines mit Rollladen/Auswahl/Timer | Steckdose/Licht/Sensor: „Kurzer Tipp“ vorhanden; Rollladen/Tor/Schloss/Auswahl/Timer: fehlt | |
+| 42 | **Navigation** wählen: Zielseite in der Zeile, über „…“ Name (Beschriftung), Icon und Farbe | „…“ ist ohne ID aktiv und zeigt Name (Hilfstext „Leer = Name der Zielseite …“) und nur eine Spalte Icon/Farbe, keinen Farbverlauf, kein „Ist eine Navigation“, keinen Langen Druck; neu öffnen: alles da | |
+| 43 | „…“ eines Kanal-Slots mit Steckdose/Licht/Sensor und eines mit Rollladen/Auswahl/Timer | Steckdose/Licht/Sensor: „Ist eine Navigation“ vorhanden; Rollladen/Tor/Schloss/Auswahl/Timer: fehlt | |
 | 44 | Am Panel und im Web-Panel: Navigations-Platz im Knopf-Slot, in der Info-Zeile und als Status-Icon antippen | Zielseite erscheint; Knopf/Info zeigen Icon und Beschriftung (leer = Seitenname), kein Wert; Status-Icon nur das Icon | |
 | 45 | Am Panel: Slot mit Wert und „Navigation“ (Info-Zeile mit Zahl, Knopf mit An/Aus-Wert) antippen | Zielseite erscheint, der Wert wird **nicht** geschaltet/gedrückt; Icon, Farbe und Wert des Slots wie vorher | |
 | 46 | Am Panel: Schalter-Slot mit „Navigation“ | Tipp auf Icon/Name öffnet die Zielseite, der Schalter rechts schaltet weiter | |
@@ -186,3 +146,11 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 49 | Auf der Zielseite die Pfeile benutzen | sie führen, wie für die Zielseite eingerichtet (nicht automatisch zur Geräteseite); über das Item kommt man wieder auf die Geräteseite | |
 | 50 | Zielseite wählen, die dem Panel nicht zugeordnet ist (oder Seite löschen), am Panel antippen | nichts passiert; im Log **eine** Warnung „target page … is not assigned to panel …“, auch bei mehrfachem Tippen | |
 | 51 | Kanal-Slot mit einer Kanal-ID, die es nicht gibt, Adapter neu starten | im Log eine Warnung `Page '<Seite>', page item <n>: Device page slot … not found!` – einmal, auch wenn die Seite mehreren Panels zugeordnet ist | |
+| 52 | us-l-Panel bzw. Web-Panel mit Modell US-Querformat: Geräteseite aller drei Layouts öffnen | sieht aus wie am EU-Panel (Bilder `us-l-cardDevice*.png` gegen `eu-cardDevice*.png`) | |
+| 53 | us-p-Panel bzw. Web-Panel mit Modell US-Hochformat: alle drei Layouts | hochkant neu angeordnet; Layout 1: Haupt-Icon oben links, 2×2-Status-Icons daneben, Info-Zeilen volle Breite, Knöpfe 2×2, Statuszeile unten. Alle belegten Slots sichtbar und bedienbar | |
+| 54 | Web-Panel „Smartphone quer“ und „Smartphone hochkant“, Häkchen für Zusatz-Elemente **aus** | eigenes Layout auf voller Bühne (640×320 bzw. 320×640), dieselben Elemente wie am Hardware-Panel, keine Zusatz-Plätze | |
+| 55 | Admin: Häkchen für die Zusatz-Elemente setzen und wieder entfernen | gesetzt: unter „Slots“ erscheinen die Zusatz-Plätze (Layout 1 +2 Knöpfe, Layout 2 +1 Info-Zeile +2 Knöpfe, Layout 3 +2 Info-Zeilen +1 Schalter); entfernt: sie verschwinden. Vorgabe bei einer neuen Geräteseite: aus | |
+| 56 | Zusatz-Plätze belegen; dieselbe Seite einem Smartphone-Web-Panel **und** einem Hardware-Panel (oder dessen Browser-Bild) zuweisen | Smartphone-Web-Panel zeigt die Zusatz-Elemente und sie lassen sich bedienen; Hardware-Panel und sein Browser-Bild zeigen sie nie, alles andere unverändert | |
+| 57 | Langer Name und langer Wert in einem Slot, auf allen fünf Modellen ansehen | Der Text endet überall an derselben Stelle (gleiche Textlängen), ohne eigene „…“ | |
+| 58 | Abgleich Web ↔ HMI nach [BILDER.md](BILDER.md) | die fünf Web-Aufnahmen (Modell eu) decken sich mit Tims Aufnahmen – bis auf die dort genannten bekannten Unterschiede | |
+
