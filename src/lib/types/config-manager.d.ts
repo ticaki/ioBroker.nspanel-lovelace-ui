@@ -857,7 +857,15 @@ declare namespace ScriptConfig {
          */
         ScreensaverEntityLongPressTrigger?: boolean | null;
     };
-    export type ScreenSaverElement = { type: ScreenSaverType } & (
+    export type ScreenSaverElement = {
+        type: ScreenSaverType;
+        /**
+         * indicator only, set by the admin (`pinned` of the item): the item keeps its place in the list
+         * `indicatorScreensaverEntity` (empty places included). Hidden it leaves the slot empty, the other
+         * items skip the slot.
+         */
+        ScreensaverEntityPinned?: boolean;
+    } & (
         | ({
               type: 'script';
               ScreensaverEntity: string;
