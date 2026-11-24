@@ -286,7 +286,7 @@ Unter den Slots steht dafür das Häkchen **Web-Panel-Elemente (web-l / web-p)**
 - **Das Häkchen zu entfernen blendet nur aus.** Die zusätzlichen Slots verschwinden aus dem Dialog und vom Web-Panel; ihre Belegung bleibt gespeichert und ist nach erneutem Anhaken wieder da.
 - **Layoutwechsel:** Die zusätzlichen Slots bleiben unter sich in ihrer Reihenfolge – der erste zusätzliche Slot bleibt der erste. Seine Art kann dabei wechseln (in Layout 1 ein Knopf, in Layout 2 und 3 eine Info-Zeile); passt die Belegung danach nicht mehr, steht sie rot mit „passt nicht zu diesem Slot“ da. Layout 1 hat nur zwei zusätzliche Slots: Beim Wechsel dorthin geht der dritte verloren – auch wenn das Häkchen gerade nicht gesetzt ist. Aus einem Status-Icon wird nie ein zusätzlicher Slot und umgekehrt.
 - **Hardware-Panels zeigen die zusätzlichen Elemente nie** – auch nicht das Browser-Bild eines echten Panels und kein Web-Panel mit einem der drei Panel-Formate. Ist dieselbe Seite einem solchen Panel und einem Smartphone-Web-Panel zugewiesen, fehlen die zusätzlichen Elemente dort einfach; alles andere ist gleich.
-- Am Web-Panel verhält sich ein zusätzliches Element wie jedes andere seiner Art (Tipp, Halten, Popup). Leere zusätzliche Slots am Ende hinterlassen keine Lücke: Die Reihe wird für die belegten Elemente neu verteilt.
+- Am Web-Panel verhält sich ein zusätzliches Element wie jedes andere seiner Art (Tipp, Halten, Popup). Leere zusätzliche Slots hinterlassen keine Lücke – auch nicht vor einem belegten: Die belegten rücken auf, die Reihe wird für sie neu verteilt.
 - Mehr Text passt dadurch nicht in ein Feld – es sind mehr Elemente, nicht längere. Namen und Werte haben überall dieselbe Höchstlänge, siehe [Grenzen](#10-grenzen).
 
 Wie das aussieht, zeigen die Bilder unter [Smartphone quer](#smartphone-quer-web-l) und [Smartphone hochkant](#smartphone-hochkant-web-p).
@@ -376,7 +376,7 @@ Die Statuszeile ist hier schmaler (262 statt 390 Pixel). Die Statustexte der Bei
 
 ### Smartphone quer (`web-l`)
 
-Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (640 × 320). Die Anordnung ist die des EU-Panels, in die Breite gezogen: Kein Textfeld ist schmaler als dort, die Info-Zeilen von Layout 1 und die Statuszeile (580 Pixel) sind deutlich breiter. Die [zusätzlichen Elemente](#zusätzliche-elemente-für-smartphone-web-panels) reihen sich ein: in Layout 1 eine Reihe mit bis zu sechs Knöpfen, in Layout 2 bis zu drei Knöpfe oben rechts und vier Info-Kacheln in einer Reihe, in Layout 3 eine dritte Spalte Info-Kacheln und ein dritter Schalter.
+Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (640 × 320). Die Anordnung ist die des EU-Panels, in die Breite gezogen: Kein Textfeld ist schmaler als dort (nur die Namen dicht nebeneinander stehender Knöpfe sind 4 Pixel schmaler), die Info-Zeilen von Layout 1 und die Statuszeile (580 Pixel) sind deutlich breiter. Die [zusätzlichen Elemente](#zusätzliche-elemente-für-smartphone-web-panels) reihen sich ein: in Layout 1 eine Reihe mit bis zu sechs Knöpfen, in Layout 2 bis zu drei Knöpfe oben rechts und vier Info-Kacheln in einer Reihe, in Layout 3 eine dritte Spalte Info-Kacheln und ein dritter Schalter.
 
 | | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|---|
@@ -434,8 +434,8 @@ Wird ein Element ohne Popup gehalten, blinkt am Hardware-Panel sein Hintergrund 
   |---|---|---|---|---|
   | **EU-Querformat**, **US-Querformat** | 390 | Gerätename 110 · Info-Zeile 164 / 110, **mit Status-Icons 86 / 110** · Knopf 104 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 429 · Info-Zeile 104 / 104 · Knopf 100 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
   | **US-Hochformat** | 262 | Gerätename 150 · Info-Zeile 156 / 104 (auch mit Status-Icons) · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
-  | **Smartphone quer** | 580 | Gerätename 110 · Info-Zeile 354 / 110, mit Status-Icons 276 / 110 · Knopf 104 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 620 · Info-Zeile 104 / 104 · Knopf 100 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
-  | **Smartphone hochkant** | 262 | Gerätename 150 (ohne Status-Icons 300) · Info-Zeile 156 / 104 · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300, zu zweit je 148, zu dritt je 100 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
+  | **Smartphone quer** | 580 | Gerätename 110 · Info-Zeile 354 / 110, mit Status-Icons 276 / 110 · Knopf 104, zu sechst je 100 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 620 · Info-Zeile 104 / 104 · Knopf 100, zu zweit oder dritt je 96 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
+  | **Smartphone hochkant** | 262 | Gerätename 150 (ohne Status-Icons 300) · Info-Zeile 156 / 104 · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300, zu zweit je 148, zu dritt je 96 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
 
   Der große Wert steht in der großen Schrift: Eine Ziffer braucht dort 33 Pixel, „12:34“ 149 Pixel.
 - **Einheiten stehen ohne Leerzeichen am Wert** („80%“, „34m²“, „60°C“). Das ist Absicht und spart Platz.
