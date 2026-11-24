@@ -247,7 +247,14 @@ function devicePageProgressPercent(value, min, max) {
   }
   return Math.min(100, Math.max(0, Math.round(percent)));
 }
-const DEVICE_PAGE_SLOT_LOOK_FIELDS = ["trueIcon", "falseIcon", "trueColor", "falseColor", "longPress"];
+const DEVICE_PAGE_SLOT_LOOK_FIELDS = [
+  "trueIcon",
+  "falseIcon",
+  "trueColor",
+  "falseColor",
+  "longPress",
+  "name"
+];
 const DEVICE_PAGE_NAVIGATION_ICON = "gesture-tap-button";
 function devicePageSlotAcceptsNavigation(kind) {
   return kind === "info" || kind === "button" || kind === "status";
@@ -292,6 +299,9 @@ function devicePageSlotLookOf(ref, withOlderIcon = true) {
   }
   if (ref.longPress) {
     look.longPress = ref.longPress;
+  }
+  if (ref.name) {
+    look.name = ref.name;
   }
   if (ref.isNavigation && ref.custom !== "navigation") {
     look.isNavigation = true;
@@ -363,10 +373,6 @@ function devicePageSlotRefOf(value, kind) {
   const targetPage = trimmedField(value, "targetPage");
   if (custom === "navigation") {
     ref = { key: "", id: "", custom };
-    const name = trimmedField(value, "name");
-    if (name) {
-      ref.name = name;
-    }
     if (targetPage) {
       ref.targetPage = targetPage;
     }

@@ -395,7 +395,12 @@ function applySlotLook(icon, look, isBoolean) {
 }
 function withDevicePageSlotLook(item, ref, common) {
   var _a, _b;
-  const { isNavigation: _isNavigation, targetPage: _targetPage, ...look } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
+  const {
+    isNavigation: _isNavigation,
+    targetPage: _targetPage,
+    name: _name,
+    ...look
+  } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
   if (Object.keys(look).length === 0) {
     return item;
   }
@@ -572,7 +577,7 @@ async function devicePageElements(source, details, page, getObject, translate, l
       present.push({ index: i, entry: ref, common });
     }
   }
-  const named = present.filter((p) => kinds[p.index] !== "status");
+  const named = present.filter((p) => kinds[p.index] !== "status" && !p.entry.name);
   const names = (0, import_device_details.deviceDetailRowNames)(
     details.deviceId,
     named.map((p) => p.entry),
@@ -584,7 +589,7 @@ async function devicePageElements(source, details, page, getObject, translate, l
   present.forEach((p) => {
     var _a2;
     const n = named.indexOf(p);
-    const name = n >= 0 ? (_a2 = names[n]) != null ? _a2 : "" : "";
+    const name = kinds[p.index] !== "status" && p.entry.name || (n >= 0 ? (_a2 = names[n]) != null ? _a2 : "" : "");
     const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, name);
     if (!item) {
       skipped.push(p.entry.id);
