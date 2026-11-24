@@ -43,6 +43,7 @@ var adminShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
 var import_pageDevice = require("../pages/pageDevice");
+var import_device_page = require("../pages/device-page");
 var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
@@ -450,6 +451,12 @@ class Panel extends import_library.BaseClass {
       }
       return false;
     });
+    if (!import_device_page.CARD_DEVICE_MODELS.has(this.info.nspanel.model)) {
+      ({ pages: options.pages, navigation: options.navigation } = (0, import_device_page.withoutDevicePages)(
+        options.pages,
+        options.navigation
+      ));
+    }
     this.info.internal.pageCount = options.pages.length;
     this.info.internal.servicePageCount = import_system_templates.systemPages.length;
     options.pages = options.pages.concat(structuredClone(import_system_templates.systemPages));

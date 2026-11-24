@@ -26,7 +26,7 @@ var import_tools = require("../const/tools");
 var import_deviceDetails = require("../types/deviceDetails");
 var import_device_page = require("./device-page");
 function isCardDeviceConfig(config) {
-  return !!config && (config.card === "cardDevice1" || config.card === "cardDevice2" || config.card === "cardDevice3") && "elements" in config;
+  return !!config && (config.card === "cardDevice1" || config.card === "cardDevice2" || config.card === "cardDevice3");
 }
 class PageDevice extends import_Page.Page {
   headline;
@@ -53,22 +53,29 @@ class PageDevice extends import_Page.Page {
     this.layout = (0, import_deviceDetails.isDevicePageLayout)(layout) ? layout : 1;
     const headline = card.data.headline;
     this.headline = headline.type === "const" && typeof headline.constVal === "string" ? headline.constVal : "";
-    this.slotCount = card.slotCount;
+    this.slotCount = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout].length;
     this.channelSlots = new Set((_a = card.channelSlots) != null ? _a : []);
-    this.pageItemConfig = [...card.elements];
     this.minUpdateInterval = 1e3;
   }
   /**
    * @param index number of a page item
-   * @returns its payload as element, the empty element without item
+   * @returns its payload as element, the empty element without item or for an empty item
    */
   async elementAt(index) {
-    var _a;
-    const item = (_a = this.pageItems) == null ? void 0 : _a[index];
+    const item = this.itemAt(index);
     if (!item) {
       return import_device_page.DEVICE_PAGE_EMPTY_ELEMENT;
     }
     return await item.getPageItemPayload() || import_device_page.DEVICE_PAGE_EMPTY_ELEMENT;
+  }
+  /**
+   * @param index number of a page item
+   * @returns the page item, undefined when there is none or it is empty (empty slot, no info, no status line)
+   */
+  itemAt(index) {
+    var _a, _b;
+    const item = (_a = this.pageItems) == null ? void 0 : _a[index];
+    return item && ((_b = item.config) == null ? void 0 : _b.type) !== "empty" ? item : void 0;
   }
   /** Stops the rotation of the parts of the status text. */
   stopStatusRotation() {
@@ -132,14 +139,13 @@ class PageDevice extends import_Page.Page {
     await super.delete();
   }
   async update() {
-    var _a, _b;
     if (!this.visibility) {
       return;
     }
     await super.update();
-    const statusItem = (_a = this.pageItems) == null ? void 0 : _a[this.slotCount + 2];
+    const statusItem = this.itemAt(this.slotCount + 2);
     const status = statusItem ? (0, import_device_page.optionalValueOf)(await statusItem.getPageItemPayload()) : "";
-    const mainItem = (_b = this.pageItems) == null ? void 0 : _b[0];
+    const mainItem = this.itemAt(0);
     const elements = [];
     const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout];
     const onOff = (on) => this.library.getTranslation(on ? "on" : "off");

@@ -54,6 +54,7 @@ var import_script_to_admin_runner = require("./lib/configuration/script-to-admin
 var import_admin_page_item = require("./lib/configuration/admin-page-item");
 var import_admin_device_details = require("./lib/configuration/admin-device-details");
 var import_device_page = require("./lib/pages/device-page");
+var import_type_pageItem = require("./lib/types/type-pageItem");
 var import_deviceDetails = require("./lib/types/deviceDetails");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
@@ -3275,7 +3276,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     let error = void 0;
     const unloggedMessages = [];
     let pageItem = void 0;
@@ -3308,38 +3309,47 @@ class NspanelLovelaceUi extends utils.Adapter {
         const deviceDetails = preItem.useNative ? void 0 : (0, import_deviceDetails.deviceDetailsRuntimeOf)(preItem.device);
         if (pageItem && deviceDetails) {
           pageItem.deviceDetails = deviceDetails;
-          if (deviceDetails.devicePage) {
-            const built = await (0, import_device_page.devicePageChannels)(
-              deviceDetails.devicePage,
-              async (id) => {
-                var _a2;
-                const obj = await this.getForeignObjectAsync(id);
-                const role = (_a2 = obj == null ? void 0 : obj.common) == null ? void 0 : _a2.role;
-                return obj ? typeof role === "string" ? role : "" : void 0;
+          if (deviceDetails.devicePage && !pageConfig) {
+            const uniqueName = (0, import_device_page.devicePageName)(prePage.uniqueName, deviceDetails.deviceId);
+            const built = await (0, import_device_page.buildDevicePage)(
+              uniqueName,
+              (_e = prePage.alwaysOn) != null ? _e : "none",
+              {
+                deviceId: deviceDetails.deviceId,
+                entries: deviceDetails.entries,
+                page: deviceDetails.devicePage,
+                main: (0, import_type_pageItem.isPageItemWithoutTemplate)(pageItem) ? pageItem : void 0
               },
-              async (slotItem) => {
-                const scriptItem = (0, import_admin_page_item.adminPageItemToScriptItem)(
-                  slotItem,
-                  (color) => this.log.warn(`Invalid color format: ${color}`)
-                );
-                return scriptItem ? (await manager.getPageItemConfig(
-                  scriptItem,
-                  // a slot is a cardGrid cell
-                  {
-                    type: "cardGrid",
-                    uniqueName: prePage.uniqueName,
-                    heading: "",
-                    items: []
-                  },
-                  []
-                )).itemConfig : void 0;
+              {
+                getObject: async (id) => {
+                  var _a2;
+                  return (_a2 = await this.getForeignObjectAsync(id)) != null ? _a2 : null;
+                },
+                translate: (key) => this.library.getTranslation(key),
+                language: this.library.getLocalLanguage(),
+                pageItemOf: async (slotItem) => {
+                  const scriptItem = (0, import_admin_page_item.adminPageItemToScriptItem)(
+                    slotItem,
+                    (color) => this.log.warn(`Invalid color format: ${color}`)
+                  );
+                  return scriptItem ? (await manager.getPageItemConfig(
+                    scriptItem,
+                    // a slot is a cardGrid cell
+                    {
+                      type: "cardGrid",
+                      uniqueName: prePage.uniqueName,
+                      heading: "",
+                      items: []
+                    },
+                    []
+                  )).itemConfig : void 0;
+                }
               }
             );
-            if (Object.keys(built.channels).length > 0) {
-              pageItem.devicePageChannels = built.channels;
-            }
-            messages.push(...built.errors);
-            unloggedMessages.push(...built.errors);
+            pageItem.devicePageName = uniqueName;
+            pageConfig = { type: void 0, uniqueName, native: built.page };
+            messages.push(...built.messages);
+            unloggedMessages.push(...built.messages);
           }
         }
       } catch (e) {

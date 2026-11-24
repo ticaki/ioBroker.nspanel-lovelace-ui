@@ -21,21 +21,19 @@ __export(device_page_exports, {
   CARD_DEVICE_MIN_TFT: () => CARD_DEVICE_MIN_TFT,
   CARD_DEVICE_MODELS: () => CARD_DEVICE_MODELS,
   DEVICE_PAGE_EMPTY_ELEMENT: () => DEVICE_PAGE_EMPTY_ELEMENT,
-  DEVICE_PAGE_PREFIX: () => DEVICE_PAGE_PREFIX,
+  buildDevicePage: () => buildDevicePage,
   cardDeviceOf: () => cardDeviceOf,
   cutToBytes: () => cutToBytes,
   devicePageChannelAdminItem: () => devicePageChannelAdminItem,
   devicePageChannelElement: () => devicePageChannelElement,
   devicePageChannelSlotItem: () => devicePageChannelSlotItem,
-  devicePageChannels: () => devicePageChannels,
   devicePageClampElement: () => devicePageClampElement,
-  devicePageElements: () => devicePageElements,
   devicePageInfoItem: () => devicePageInfoItem,
   devicePageMainElement: () => devicePageMainElement,
   devicePageMainItem: () => devicePageMainItem,
   devicePageMaxPayloadBytes: () => devicePageMaxPayloadBytes,
+  devicePageName: () => devicePageName,
   devicePageNavigationSlotItem: () => devicePageNavigationSlotItem,
-  devicePagePageConfig: () => devicePagePageConfig,
   devicePagePayload: () => devicePagePayload,
   devicePageSlotItem: () => devicePageSlotItem,
   devicePageStatusIconElement: () => devicePageStatusIconElement,
@@ -46,17 +44,22 @@ __export(device_page_exports, {
   reportMissingDevicePageTarget: () => reportMissingDevicePageTarget,
   splitDevicePageStatus: () => splitDevicePageStatus,
   supportsCardDevice: () => supportsCardDevice,
-  withDevicePageSlotLook: () => withDevicePageSlotLook
+  withDevicePageNavigation: () => withDevicePageNavigation,
+  withDevicePageSlotLook: () => withDevicePageSlotLook,
+  withoutDevicePages: () => withoutDevicePages
 });
 module.exports = __toCommonJS(device_page_exports);
 var import_Color = require("../const/Color");
 var import_definition = require("../const/definition");
 var import_text_width = require("../const/text-width");
 var import_tools = require("../const/tools");
+var import_function_and_const = require("../types/function-and-const");
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_deviceDetails = require("../types/deviceDetails");
 var import_device_details = require("./device-details");
-const DEVICE_PAGE_PREFIX = "dp_";
+function devicePageName(pageName, deviceId) {
+  return `device-${pageName}-${deviceId}`;
+}
 const CARD_DEVICE_MIN_TFT = "6.2.0";
 const CARD_DEVICE_MODELS = /* @__PURE__ */ new Set(["eu", "web-l"]);
 const DEVICE_PAGE_EMPTY_ELEMENT = "~~~~~";
@@ -68,6 +71,22 @@ function supportsCardDevice(target) {
     return true;
   }
   return !!target.displayVersion && (0, import_tools.isVersionGreaterOrEqual)(target.displayVersion, CARD_DEVICE_MIN_TFT);
+}
+function withoutDevicePages(pages, navigation) {
+  var _a;
+  const devicePages = /* @__PURE__ */ new Set();
+  for (const page of pages) {
+    if (page && (0, import_function_and_const.isCardDeviceType)((_a = page.config) == null ? void 0 : _a.card)) {
+      devicePages.add(page.uniqueID);
+    }
+  }
+  if (devicePages.size === 0) {
+    return { pages, navigation };
+  }
+  return {
+    pages: pages.filter((p) => !p || !devicePages.has(p.uniqueID)),
+    navigation: navigation.filter((n) => !n || !devicePages.has(n.name))
+  };
 }
 function cardDeviceOf(layout) {
   switch (layout) {
@@ -205,10 +224,10 @@ function devicePageMainItem(source, details, page, name) {
   const nameItem = { type: "const", constVal: name };
   const text = { true: nameItem, false: nameItem };
   const deviceDetails = { deviceId: details.deviceId, entries: details.entries };
-  if ((page.shortPress === "state" || page.shortPress === "none") && (source.type === "button" || source.type === "switch" || source.type === "text")) {
+  if (source && (page.shortPress === "state" || page.shortPress === "none") && (source.type === "button" || source.type === "switch" || source.type === "text")) {
     const item = structuredClone(source);
     item.deviceDetails = deviceDetails;
-    delete item.devicePageChannels;
+    delete item.devicePageName;
     item.dpInit = "";
     item.data.text = text;
     if (item.role === "text.states") {
@@ -219,7 +238,7 @@ function devicePageMainItem(source, details, page, name) {
     }
     return item;
   }
-  const data = source.data;
+  const data = source == null ? void 0 : source.data;
   const icon = data && "icon" in data && data.icon ? structuredClone(data.icon) : void 0;
   const entity1 = data && "entity1" in data && data.entity1 ? structuredClone(data.entity1) : void 0;
   return {
@@ -260,38 +279,6 @@ function devicePageChannelAdminItem(ref, role) {
     item.longPress = longPress;
   }
   return item;
-}
-async function devicePageChannels(page, getRole, convert) {
-  const channels = {};
-  const errors = [];
-  const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
-  for (let i = 0; i < kinds.length; i++) {
-    const ref = page.slots[i];
-    if (!ref || ref.custom !== "channel" || ref.id === "") {
-      continue;
-    }
-    const where = `Device page slot ${i + 1} (${kinds[i]}): channel ${ref.id}`;
-    try {
-      const role = await getRole(ref.id);
-      if (role === void 0) {
-        errors.push(`${where} not found!`);
-        continue;
-      }
-      if (!(0, import_deviceDetails.devicePageSlotAcceptsChannel)(kinds[i], role)) {
-        errors.push(`${where} with role ${role || "(none)"} does not fit the slot!`);
-        continue;
-      }
-      const item = await convert(devicePageChannelAdminItem(ref, role));
-      if (!item || "template" in item && item.template) {
-        errors.push(`${where} gives no page item!`);
-        continue;
-      }
-      channels[i] = { role, item };
-    } catch (e) {
-      errors.push(`${where}: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
-  return { channels, errors };
 }
 function devicePageChannelSlotItem(kind, channel) {
   var _a, _b;
@@ -437,8 +424,15 @@ function devicePageSlotItem(deviceId, kind, entry, common, name) {
   if (!item) {
     return void 0;
   }
-  const withLook = withDevicePageSlotLook(item, entry, common, kind);
-  return target ? { ...withLook, devicePageTarget: target } : withLook;
+  return withDevicePageNavigation(withDevicePageSlotLook(item, entry, common, kind), target);
+}
+function withDevicePageNavigation(item, target) {
+  const out = structuredClone(item);
+  if (target && out.data) {
+    const setNavi = { type: "const", constVal: target };
+    Object.assign(out.data, { setNavi });
+  }
+  return out;
 }
 function devicePageNavigationSlotItem(kind, ref) {
   var _a;
@@ -457,8 +451,8 @@ function devicePageNavigationSlotItem(kind, ref) {
     type: "text",
     role: import_deviceDetails.DEVICE_DETAIL_ROW_ROLE,
     dpInit: "",
-    devicePageTarget: target,
     data: {
+      setNavi: { type: "const", constVal: target },
       icon: {
         true: { value: icon, color },
         false: { value: icon, color },
@@ -546,17 +540,45 @@ function reportMissingDevicePageTarget(panel, target) {
   reported.add(target);
   return true;
 }
-async function devicePageElements(source, details, page, getObject, translate, language) {
+const EMPTY_DEVICE_PAGE_ITEM = { type: "empty", data: void 0 };
+async function devicePageChannelSlot(kind, ref, ctx) {
+  var _a;
+  const where = `channel ${ref.id}`;
+  try {
+    const obj = await ctx.getObject(ref.id);
+    if (!obj) {
+      return { error: `${where} not found!` };
+    }
+    const rawRole = (_a = obj.common) == null ? void 0 : _a.role;
+    const role = typeof rawRole === "string" ? rawRole : "";
+    if (!(0, import_deviceDetails.devicePageSlotAcceptsChannel)(kind, role)) {
+      return { error: `${where} with role ${role || "(none)"} does not fit the slot!` };
+    }
+    const item = await ctx.pageItemOf(devicePageChannelAdminItem(ref, role));
+    const slotItem = item && !("template" in item && item.template) ? devicePageChannelSlotItem(kind, { role, item }) : void 0;
+    if (!slotItem) {
+      return { error: `${where} gives no page item!` };
+    }
+    const target = (0, import_deviceDetails.devicePageChannelTakesNavigation)(role) ? (0, import_deviceDetails.devicePageSlotTargetOf)(ref) : "";
+    return { item: withDevicePageNavigation(slotItem, target) };
+  } catch (e) {
+    return { error: `${where}: ${e instanceof Error ? e.message : String(e)}` };
+  }
+}
+async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
   var _a, _b, _c;
-  const device = await getObject(details.deviceId);
-  const headline = (0, import_device_details.nameOfCommon)((_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name, language) || details.deviceId.split(".").pop() || "";
+  const { deviceId, page } = source;
+  const details = { deviceId, entries: source.entries };
+  const device = await ctx.getObject(deviceId);
+  const headline = (0, import_device_details.nameOfCommon)((_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name, ctx.language) || deviceId.split(".").pop() || "";
   const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
+  const messages = [];
   const skipped = [];
   const readCommon = async (ref) => {
     if (!ref) {
       return void 0;
     }
-    const obj = await getObject(ref.id);
+    const obj = await ctx.getObject(ref.id);
     if ((obj == null ? void 0 : obj.type) !== "state") {
       skipped.push(ref.id);
       return void 0;
@@ -573,17 +595,12 @@ async function devicePageElements(source, details, page, getObject, translate, l
       continue;
     }
     if ((ref == null ? void 0 : ref.custom) === "channel") {
-      const channel = (_c = source.devicePageChannels) == null ? void 0 : _c[i];
-      const item = channel ? devicePageChannelSlotItem(kinds[i], channel) : void 0;
-      if (item) {
-        const target = (0, import_deviceDetails.devicePageChannelTakesNavigation)(channel == null ? void 0 : channel.role) ? (0, import_deviceDetails.devicePageSlotTargetOf)(ref) : "";
-        if (target) {
-          item.devicePageTarget = target;
-        }
-        slots[i] = item;
+      const channel = await devicePageChannelSlot(kinds[i], ref, ctx);
+      if (channel.item) {
+        slots[i] = channel.item;
         channelSlots.push(i);
       } else {
-        skipped.push(ref.id);
+        messages.push(`Device page slot ${i + 1} (${kinds[i]}): ${(_c = channel.error) != null ? _c : ref.id}`);
       }
       continue;
     }
@@ -594,18 +611,18 @@ async function devicePageElements(source, details, page, getObject, translate, l
   }
   const named = present.filter((p) => kinds[p.index] !== "status" && !p.entry.name);
   const names = (0, import_device_details.deviceDetailRowNames)(
-    details.deviceId,
+    deviceId,
     named.map((p) => p.entry),
     named.map((p) => p.common),
-    translate,
-    language,
+    ctx.translate,
+    ctx.language,
     null
   );
   present.forEach((p) => {
     var _a2;
     const n = named.indexOf(p);
     const name = kinds[p.index] !== "status" && p.entry.name || (n >= 0 ? (_a2 = names[n]) != null ? _a2 : "" : "");
-    const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, name);
+    const item = devicePageSlotItem(deviceId, kinds[p.index], p.entry, p.common, name);
     if (!item) {
       skipped.push(p.entry.id);
     }
@@ -613,34 +630,31 @@ async function devicePageElements(source, details, page, getObject, translate, l
   });
   const statusRef = page.status && page.status.id !== "" ? page.status : null;
   const statusCommon = await readCommon(statusRef);
-  const status = statusRef && statusCommon ? devicePageStatusItem(details.deviceId, statusRef, statusCommon) : void 0;
+  const status = statusRef && statusCommon ? devicePageStatusItem(deviceId, statusRef, statusCommon) : void 0;
+  if (skipped.length > 0) {
+    messages.push(
+      `Device page of ${deviceId}: missing state or not fitting its slot, left empty: ${skipped.join(", ")}`
+    );
+  }
+  const elements = [
+    devicePageMainItem(source.main, details, page, headline),
+    ...slots,
+    page.showInfo ? devicePageInfoItem(details) : void 0,
+    status
+  ];
   return {
-    headline,
-    slotCount: kinds.length,
-    elements: [
-      devicePageMainItem(source, details, page, headline),
-      ...slots,
-      page.showInfo ? devicePageInfoItem(details) : void 0,
-      status
-    ],
-    skipped,
-    channelSlots
-  };
-}
-function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
-  var _a;
-  return {
-    uniqueID,
-    alwaysOn,
-    dpInit: "",
-    pageItems: [],
-    config: {
-      card: cardDeviceOf(layout),
-      data: { headline: { type: "const", constVal: content.headline } },
-      slotCount: content.slotCount,
-      elements: content.elements,
-      channelSlots: (_a = content.channelSlots) != null ? _a : []
-    }
+    page: {
+      uniqueID,
+      alwaysOn,
+      dpInit: "",
+      pageItems: elements.map((item) => item != null ? item : EMPTY_DEVICE_PAGE_ITEM),
+      config: {
+        card: cardDeviceOf(page.layout),
+        data: { headline: { type: "const", constVal: headline } },
+        channelSlots
+      }
+    },
+    messages
   };
 }
 // Annotate the CommonJS export names for ESM import in node:
@@ -648,21 +662,19 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   CARD_DEVICE_MIN_TFT,
   CARD_DEVICE_MODELS,
   DEVICE_PAGE_EMPTY_ELEMENT,
-  DEVICE_PAGE_PREFIX,
+  buildDevicePage,
   cardDeviceOf,
   cutToBytes,
   devicePageChannelAdminItem,
   devicePageChannelElement,
   devicePageChannelSlotItem,
-  devicePageChannels,
   devicePageClampElement,
-  devicePageElements,
   devicePageInfoItem,
   devicePageMainElement,
   devicePageMainItem,
   devicePageMaxPayloadBytes,
+  devicePageName,
   devicePageNavigationSlotItem,
-  devicePagePageConfig,
   devicePagePayload,
   devicePageSlotItem,
   devicePageStatusIconElement,
@@ -673,6 +685,8 @@ function devicePagePageConfig(uniqueID, layout, alwaysOn, content) {
   reportMissingDevicePageTarget,
   splitDevicePageStatus,
   supportsCardDevice,
-  withDevicePageSlotLook
+  withDevicePageNavigation,
+  withDevicePageSlotLook,
+  withoutDevicePages
 });
 //# sourceMappingURL=device-page.js.map
