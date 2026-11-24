@@ -2264,5 +2264,131 @@
       "0_userdata.0.e2e.temperature": 21.5,
       "0_userdata.0.e2e.window": false
     }
+  },
+  "09 Screensaver pinned indicator › NSPanel › the pinned item hidden: its slot stays empty, nothing moves up": {
+    "nspanel": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~3?11~{U+EB07}~65222~Pin extra~1~~~~~~~~3?12~{U+EB08}~65222~Pin extra~1"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "09 Screensaver pinned indicator › NSPanel › the pinned item shown: on its slot, the empty place before it stays empty": {
+    "nspanel": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~3?10~{U+E402}~65222~Pin shown~1~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "09 Screensaver pinned indicator › NSPanel › two more items shown: they fill the free slots and skip the pinned one": {
+    "nspanel": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~3?11~{U+EB07}~65222~Pin extra~1~~3?10~{U+E402}~65222~Pin shown~1~~3?12~{U+EB08}~65222~Pin extra~1"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "09 Screensaver pinned indicator › Web panel › the pinned item hidden: its slot stays empty, nothing moves up": {
+    "nspanel": {},
+    "web": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~3?11~{U+EB07}~65222~Pin extra~1~~~~~~~~3?12~{U+EB08}~65222~Pin extra~1~0"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "09 Screensaver pinned indicator › Web panel › the pinned item shown: on its slot, the empty place before it stays empty": {
+    "nspanel": {},
+    "web": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~3?10~{U+E402}~65222~Pin shown~1~~~~~~~0"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "09 Screensaver pinned indicator › Web panel › two more items shown: they fill the free slots and skip the pinned one": {
+    "nspanel": {},
+    "web": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~3?11~{U+EB07}~65222~Pin extra~1~~3?10~{U+E402}~65222~Pin shown~1~~3?12~{U+EB08}~65222~Pin extra~1~0"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
   }
 }
