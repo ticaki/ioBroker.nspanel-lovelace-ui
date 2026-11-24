@@ -119,10 +119,12 @@ function createLockPage(
     timers: Timer[];
     sent: string[];
     warns: string[];
+    debugs: string[];
 } {
     const timers: Timer[] = [];
     const sent: string[] = [];
     const warns: string[] = [];
+    const debugs: string[] = [];
     const adapter = {
         namespace: NS,
         config: {},
@@ -152,7 +154,9 @@ function createLockPage(
             warn: (msg: string): void => {
                 warns.push(msg);
             },
-            debug: (): void => {},
+            debug: (msg: string): void => {
+                debugs.push(msg);
+            },
         },
         basePanel: { name: 'panel1' },
         pathToStates: PATH,
@@ -174,7 +178,7 @@ function createLockPage(
         name: 'alarm1',
         id: 'alarm1',
     });
-    return { page, timers, sent, warns };
+    return { page, timers, sent, warns, debugs };
 }
 
 function activeTimers(timers: Timer[]): Timer[] {
@@ -319,6 +323,23 @@ describe('lib/pages/pageAlarm - PIN lockout', () => {
         await page.onButtonEvent({ action: 'U1', opt: '1234' });
         expect(setStatus.called).to.equal(true);
         expect(page.failCount).to.equal(0);
+    });
+
+    it('never logs the PIN on a successful entry', async () => {
+        for (const [type, status, action] of [
+            ['alarm', 'disarmed', 'A1'],
+            ['alarm', 'armed', 'D1'],
+            ['unlock', 'armed', 'U1'],
+        ] as const) {
+            const { page, warns, debugs } = createLockPage(type, status);
+
+            await page.onButtonEvent({ action, opt: '1234' });
+            expect(page.failCount).to.equal(0);
+            expect(debugs, action).to.include(`Alarm event ${action}`);
+            for (const msg of [...debugs, ...warns]) {
+                expect(msg, action).to.not.include('1234');
+            }
+        }
     });
 
     it('still aborts on triggered before the lockout check', async () => {

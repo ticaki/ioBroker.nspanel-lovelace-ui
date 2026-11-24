@@ -492,7 +492,7 @@ export class PageAlarm extends Page {
                 return;
             }
             this.failCount = 0;
-            this.log.debug(`Alarm event ${button} value: ${value}`);
+            this.log.debug(`Alarm event ${button}`);
             switch (button) {
                 case 'A1':
                 case 'A2':
