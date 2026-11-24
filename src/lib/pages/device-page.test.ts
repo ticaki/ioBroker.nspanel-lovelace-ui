@@ -842,6 +842,59 @@ describe('lib/pages/device-page - own names of the slots', () => {
         // without own name the channel names itself
         expect(devicePageChannelAdminItem({ ...slot, name: undefined }, 'socket').name).to.equal(undefined);
     });
+    it('configuration: the font of the icon on every slot, the fields of a channel item only on a channel slot', () => {
+        const extra = {
+            textSize: 3,
+            useValue: true,
+            useValueConditions: ' val > 1 ',
+            minValueBrightness: 5,
+            colormode: true,
+            modeList: ['a', '', 7],
+            valueEntry: { valueStateId: 'x.name' },
+            secondRow: '',
+        };
+        const page = devicePageConfigOf({
+            layout: 3,
+            slots: [
+                { key: '', id: 'alias.0.l', custom: 'channel', ...extra },
+                { ...ref('power'), ...extra },
+                { ...ref('power'), textSize: 9 },
+            ],
+        });
+        expect(page?.slots[0]).to.deep.equal({
+            key: '',
+            id: 'alias.0.l',
+            custom: 'channel',
+            textSize: 3,
+            useValue: true,
+            useValueConditions: 'val > 1',
+            minValueBrightness: 5,
+            colormode: true,
+            modeList: ['a'],
+            valueEntry: emptyChannelValueConfig('x.name'),
+        });
+        expect(page?.slots[1]).to.deep.equal({ ...ref('power'), textSize: 3 });
+        // no font of the HMI
+        expect(page?.slots[2]).to.deep.equal(ref('power'));
+        // the channel item gets them all
+        const item = devicePageChannelAdminItem(page?.slots[0] ?? { key: '', id: '' }, 'dimmer');
+        expect(item).to.deep.include({ textSize: 3, useValue: true, minValueBrightness: 5, colormode: true });
+        const script = adminPageItemToScriptItem(item) as any;
+        expect(script.fontSize).to.equal(3);
+    });
+    it('font of the icon: on the icon of a state or navigation slot, not in a status or progress slot', () => {
+        const common = objects[`${DEV}.power`].common;
+        const info: any = devicePageSlotItem(DEV, 'info', { ...ref('power'), textSize: 3 }, common, 'P');
+        expect(info.data.icon.textSize).to.deep.equal({ type: 'const', constVal: 3 });
+        const progress: any = devicePageSlotItem(DEV, 'progress', { ...ref('power'), textSize: 3 }, common, 'P');
+        expect(progress.data.icon?.textSize).to.equal(undefined);
+        const nav = { key: '', id: '', custom: 'navigation' as const, targetPage: 'rooms', textSize: 1 as const };
+        expect((devicePageNavigationSlotItem('button', nav) as any).data.icon.textSize).to.deep.equal({
+            type: 'const',
+            constVal: 1,
+        });
+        expect((devicePageNavigationSlotItem('status', nav) as any).data.icon.textSize).to.equal(undefined);
+    });
     it('the own name of a state slot is no look of its icon', () => {
         const item = devicePageSlotItem(
             DEV,

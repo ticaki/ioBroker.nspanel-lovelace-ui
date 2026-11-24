@@ -658,7 +658,6 @@
     "deviceDetailsDialog_slotLongPressHint": "A long press sets the data point to true on a button and toggles it on a switch.",
     "deviceDetailsDialog_slotLook": "Icon and color",
     "deviceDetailsDialog_slotLookHint": "Numbers and texts have no \"false\": they show the icon and the color of \"true\".",
-    "deviceDetailsDialog_slotName": "Name",
     "deviceDetailsDialog_slotNameHint": "Empty = the automatic name. A long name is cut off at the width of the field.",
     "deviceDetailsDialog_slotNameNavigationHint": "Empty = the name of the target page. A long name is cut off at the width of the field.",
     "deviceDetailsDialog_slotScale": "Color scale …",

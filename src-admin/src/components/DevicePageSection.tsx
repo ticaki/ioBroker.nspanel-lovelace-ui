@@ -26,7 +26,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { I18n, type AdminConnection, type IobTheme, type ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import DevicePageSlotDialog from './DevicePageSlotDialog';
-import { CHANNEL_ROLES_LIST } from '../../../src/lib/types/adminShareConfig';
+import { CHANNEL_ROLES_LIST, type AdminPageItemConfig } from '../../../src/lib/types/adminShareConfig';
 import {
     DEVICE_PAGE_LAYOUTS,
     deviceDetailNameKey,
@@ -55,7 +55,10 @@ import {
     isDevicePageCustomSource,
     withDevicePageSlotNavigation,
     devicePagePreviewAreas,
+    devicePageSlotDialogItem,
     devicePageSlotDialogValue,
+    devicePageSlotItemOptions,
+    devicePageSlotLookOfItem,
     devicePageSlotOf,
     devicePageSlotSelectValue,
     devicePageStateOptions,
@@ -68,6 +71,7 @@ import {
     withDevicePageSlotLook,
     withDevicePageStatus,
     type DevicePageCustomObject,
+    type DevicePageSlotItemOptions,
     type DevicePageStateOption,
     type DevicePageStateProblem,
 } from '../devicePageConfig';
@@ -109,6 +113,18 @@ export interface DevicePageSectionProps {
      * @returns true when its target page is not among the pages that can be chosen
      */
     targetProblem: (slot: DevicePageSlotRef | null) => boolean;
+    /**
+     * opens the page item dialog for the settings of a slot that shows a name (a status slot keeps its small dialog)
+     *
+     * @param item the settings of the slot as page item
+     * @param options what the dialog offers for the slot
+     * @param onApply the saved settings
+     */
+    slotItemDialog: (
+        item: AdminPageItemConfig,
+        options: DevicePageSlotItemOptions,
+        onApply: (saved: AdminPageItemConfig) => void,
+    ) => void;
 }
 
 interface DevicePageSectionState {
@@ -430,7 +446,8 @@ export default class DevicePageSection extends React.Component<DevicePageSection
     }
 
     /**
-     * Opens the settings of the element of a slot.
+     * Opens the settings of the element of a slot: the page item dialog without the channel selection for a slot that
+     * shows a name, the small dialog (icons, colors, tap, long press) for a status icon.
      *
      * @param kind the kind of the slot
      * @param index index of the slot (0 = slot 1)
@@ -438,20 +455,25 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      */
     private openSlotSettings(kind: DevicePageSlotKind, index: number, slot: DevicePageSlotRef): void {
         const role = slot.custom === 'channel' ? this.state.objects[slot.id]?.role : undefined;
+        const title = `${index + 1} ${DevicePageSection.kindLabel(kind)}`;
+        if (kind !== 'status') {
+            this.props.slotItemDialog(
+                devicePageSlotDialogItem(slot),
+                devicePageSlotItemOptions(kind, slot, role, title),
+                (item: AdminPageItemConfig): void =>
+                    this.props.onChange(
+                        withDevicePageSlotLook(this.props.value, index, devicePageSlotLookOfItem(item)),
+                    ),
+            );
+            return;
+        }
         const navigationSlot = slot.custom === 'navigation';
-        this.slotDialogRef.current?.openWith(
-            index,
-            `${index + 1} ${DevicePageSection.kindLabel(kind)}`,
-            devicePageSlotDialogValue(slot),
-            {
-                // a navigation slot has no state: one icon and color, its tap is fixed
-                longPress: !navigationSlot && devicePageSlotTakesLongPress(kind, slot, role),
-                tap: !navigationSlot && devicePageSlotTakesNavigation(slot, role),
-                single: navigationSlot,
-                // a status icon shows no name
-                name: kind !== 'status',
-            },
-        );
+        this.slotDialogRef.current?.openWith(index, title, devicePageSlotDialogValue(slot), {
+            // a navigation slot has no state: one icon and color, its tap is fixed
+            longPress: !navigationSlot && devicePageSlotTakesLongPress(kind, slot, role),
+            tap: !navigationSlot && devicePageSlotTakesNavigation(slot, role),
+            single: navigationSlot,
+        });
     }
 
     /**

@@ -658,7 +658,6 @@
     "deviceDetailsDialog_slotLongPressHint": "Una pressione lunga imposta il punto dati su true per un pulsante e lo commuta per un interruttore.",
     "deviceDetailsDialog_slotLook": "Icona e colore",
     "deviceDetailsDialog_slotLookHint": "Numeri e testi non hanno \"falso\": mostrano l'icona e il colore di \"vero\".",
-    "deviceDetailsDialog_slotName": "Nome",
     "deviceDetailsDialog_slotNameHint": "Vuoto = nome automatico. Un nome lungo viene tagliato alla larghezza del campo.",
     "deviceDetailsDialog_slotNameNavigationHint": "Vuoto = nome della pagina di destinazione. Un nome lungo viene tagliato alla larghezza del campo.",
     "deviceDetailsDialog_slotScale": "Scala di colori …",

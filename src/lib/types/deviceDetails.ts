@@ -10,7 +10,14 @@
  * first by `role`, and where the role does not carry it by the end of the id (`dp`).
  */
 
-import { isIconColorScaleElement, type IconColorElement } from './adminShareConfig';
+import {
+    isHmiTextSize,
+    isIconColorScaleElement,
+    normalizeChannelId,
+    type AdminPageItemConfig,
+    type HmiTextSize,
+    type IconColorElement,
+} from './adminShareConfig';
 
 /** sendTo command of main.ts: the states of a device for the filter list ({@link DeviceDetailsInfo}) */
 export const SENDTO_GET_DEVICE_DETAILS_COMMAND = 'getDeviceDetails';
@@ -502,13 +509,40 @@ export type DevicePageStateRef = DeviceDetailEntryConfig & {
 };
 
 /**
- * The own settings of a slot (dialog "settings of the element"), the fields and their form are those of a standard
- * page item (AdminPageItemConfig): icon and color while the state is true / false, a color scale, the state a long
- * press writes and the own name. Everything optional, missing = as before (mask entry / kind / role of the channel,
- * no long press, automatic name).
+ * Fields of the page item dialog that only the page item of an alias channel takes (the config manager builds it as a
+ * cardGrid cell, which of them a role reads says the dialog): value text instead of the icon and its condition, the
+ * dynamic name, the mode list of a light / selection, the ranges of the volume and light sliders, the color mode,
+ * the second row of a blind and the timer of the screensaver. A state slot has none of them.
+ */
+export const DEVICE_PAGE_CHANNEL_ITEM_FIELDS = [
+    'useValue',
+    'useValueConditions',
+    'valueEntry',
+    'inSel_Alias',
+    'modeList',
+    'minValue',
+    'maxValue',
+    'secondRow',
+    'useScreensaverTimer',
+    'minValueBrightness',
+    'maxValueBrightness',
+    'minValueColorTemp',
+    'maxValueColorTemp',
+    'colormode',
+] as const;
+
+/** the fields of {@link DEVICE_PAGE_CHANNEL_ITEM_FIELDS}, in the form of the page item */
+export type DevicePageChannelItemFields = Pick<AdminPageItemConfig, (typeof DEVICE_PAGE_CHANNEL_ITEM_FIELDS)[number]>;
+
+/**
+ * The own settings of a slot (the page item dialog without the choice of the data point / channel), the fields and
+ * their form are those of a standard page item (AdminPageItemConfig): own name, icon and color while the state is
+ * true / false, a color scale, the font of the icon, the state a long press writes, the navigation of the short tap
+ * and - only for an alias channel - {@link DevicePageChannelItemFields}. Everything optional, missing = as before
+ * (mask entry / kind / role of the channel, no long press, automatic name).
  * A number or a text has no false: it shows the true icon and color.
  */
-export type DevicePageSlotLook = {
+export type DevicePageSlotLook = DevicePageChannelItemFields & {
     /** MDI name */
     trueIcon?: string;
     /** MDI name */
@@ -538,6 +572,11 @@ export type DevicePageSlotLook = {
      * the width of the field like it. A `status` slot shows no name - it is kept there but does nothing.
      */
     name?: string;
+    /**
+     * font of the icon (`¬<font>` like on cardGrid), missing = the font of the HMI. Not in a `status` or `progress`
+     * slot (the small status cell, the bar has no icon) - kept there but does nothing.
+     */
+    textSize?: HmiTextSize;
 };
 
 /** the text fields of {@link DevicePageSlotLook} */
@@ -571,6 +610,15 @@ export type DevicePageSlotRef = DevicePageStateRef &
     DevicePageSlotLook & {
         custom?: 'state' | 'channel' | 'navigation';
     };
+
+/**
+ * @param kind the kind of a slot
+ * @returns true when the font of its icon can be set ({@link DevicePageSlotLook.textSize}): not the small cell of a
+ * `status` slot, not a `progress` slot (the bar has no icon)
+ */
+export function devicePageSlotTakesTextSize(kind: DevicePageSlotKind): boolean {
+    return kind !== 'status' && kind !== 'progress';
+}
 
 /** icon of a navigation slot without own icon */
 export const DEVICE_PAGE_NAVIGATION_ICON = 'gesture-tap-button';
@@ -666,13 +714,16 @@ export function devicePageSlotLookOf(ref: DevicePageSlotRef, withOlderIcon = tru
     if (ref.name) {
         look.name = ref.name;
     }
+    if (ref.textSize !== undefined) {
+        look.textSize = ref.textSize;
+    }
     if (ref.isNavigation && ref.custom !== 'navigation') {
         look.isNavigation = true;
         if (ref.targetPage) {
             look.targetPage = ref.targetPage;
         }
     }
-    return look;
+    return ref.custom === 'channel' ? { ...look, ...devicePageChannelItemFieldsOf(ref) } : look;
 }
 
 /**
@@ -823,11 +874,81 @@ function devicePageStateRefOf(value: unknown, keepIcon: boolean): DevicePageStat
 /**
  * @param value an object
  * @param key name of a field
+ * @returns the value of the field, undefined when it is missing
+ */
+function fieldOf(value: object, key: string): unknown {
+    return Object.entries(value).find(([k]) => k === key)?.[1];
+}
+
+/**
+ * @param value an object
+ * @param key name of a field
  * @returns the trimmed text of the field, '' when it is missing or no text
  */
 function trimmedField(value: object, key: string): string {
-    const found: unknown = Object.entries(value).find(([k]) => k === key)?.[1];
+    const found = fieldOf(value, key);
     return typeof found === 'string' ? found.trim() : '';
+}
+
+/**
+ * @param value an object
+ * @param key name of a field
+ * @returns the number of the field, undefined when it is missing or no finite number
+ */
+function numberField(value: object, key: string): number | undefined {
+    const found = fieldOf(value, key);
+    return typeof found === 'number' && Number.isFinite(found) ? found : undefined;
+}
+
+/**
+ * The fields of the page item of an alias channel slot ({@link DEVICE_PAGE_CHANNEL_ITEM_FIELDS}) as the page item
+ * dialog stores them: a switch only when true, a text only when not empty (trimmed), a number only when finite, the
+ * mode list only with entries, the dynamic name only with a state.
+ *
+ * @param value a stored slot
+ * @returns the fields that are set
+ */
+export function devicePageChannelItemFieldsOf(value: object): DevicePageChannelItemFields {
+    const out: DevicePageChannelItemFields = {};
+    for (const key of ['useValue', 'useScreensaverTimer', 'colormode'] as const) {
+        if (fieldOf(value, key) === true) {
+            out[key] = true;
+        }
+    }
+    for (const key of ['useValueConditions', 'inSel_Alias', 'secondRow'] as const) {
+        const text = trimmedField(value, key);
+        if (text) {
+            out[key] = text;
+        }
+    }
+    for (const key of [
+        'minValue',
+        'maxValue',
+        'minValueBrightness',
+        'maxValueBrightness',
+        'minValueColorTemp',
+        'maxValueColorTemp',
+    ] as const) {
+        const n = numberField(value, key);
+        if (n !== undefined) {
+            out[key] = n;
+        }
+    }
+    const modeList = fieldOf(value, 'modeList');
+    if (Array.isArray(modeList)) {
+        const entries = modeList.filter((e): e is string => typeof e === 'string' && e !== '');
+        if (entries.length > 0) {
+            out.modeList = entries;
+        }
+    }
+    const valueEntry = fieldOf(value, 'valueEntry');
+    if (valueEntry && typeof valueEntry === 'object') {
+        const entry = normalizeChannelId(valueEntry);
+        if (entry.valueStateId.trim() !== '') {
+            out.valueEntry = entry;
+        }
+    }
+    return out;
 }
 
 /**
@@ -867,6 +988,13 @@ function devicePageSlotRefOf(value: unknown, kind: DevicePageSlotKind): DevicePa
     if (ref.trueIcon || ref.falseIcon) {
         // the older icon counts only while no own icon is set
         delete ref.icon;
+    }
+    const textSize = fieldOf(value, 'textSize');
+    if (isHmiTextSize(textSize)) {
+        ref.textSize = textSize;
+    }
+    if (ref.custom === 'channel') {
+        Object.assign(ref, devicePageChannelItemFieldsOf(value));
     }
     const scale: unknown = 'scale' in value ? value.scale : undefined;
     if (isIconColorScaleElement(scale)) {

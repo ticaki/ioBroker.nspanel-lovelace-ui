@@ -36,6 +36,7 @@ import {
     devicePageChannelTakesLongPress,
     devicePageSlotAcceptsChannel,
     devicePageSlotLookOf,
+    devicePageSlotTakesTextSize,
     deviceDetailRowKind,
     type DeviceDetailEntryConfig,
     type DeviceDetailsRuntime,
@@ -454,9 +455,10 @@ export interface DevicePageChannelItem {
 export type DevicePageChannelItems = Record<number, DevicePageChannelItem>;
 
 /**
- * The admin page item an alias channel of a slot is converted from: a standard item of the channel with the own look
- * of the slot - the same fields a page item has (`trueIcon`, `falseIcon`, `trueColor`, `falseColor`, `scale`,
- * `name`, `longPress` where the role takes one), everything else the defaults of the role.
+ * The admin page item an alias channel of a slot is converted from: a standard item of the channel with the settings
+ * of the slot - the fields of the page item dialog (`name`, icons, colors, `scale`, `textSize`, the fields of
+ * DEVICE_PAGE_CHANNEL_ITEM_FIELDS, `longPress` where the role takes one), everything else the defaults of the role.
+ * The navigation of the short tap is no field of the channel item - the device page handles it.
  *
  * @param ref the slot (`custom: 'channel'`)
  * @param role common.role of the channel
@@ -643,6 +645,17 @@ function colorItem(hex: string): NSPanel.DataItemsOptions | undefined {
     return { type: 'const', constVal: Color.ConvertHexToRgb(hex) };
 }
 
+/**
+ * @param kind the kind of the slot
+ * @param look the own look
+ * @returns the font of the icon as data item, undefined when none is set or the slot takes none
+ */
+function slotTextSizeItem(kind: DevicePageSlotKind, look: DevicePageSlotLook): NSPanel.DataItemsOptions | undefined {
+    return look.textSize !== undefined && devicePageSlotTakesTextSize(kind)
+        ? { type: 'const', constVal: look.textSize }
+        : undefined;
+}
+
 /** icon and color of one state of an icon */
 type LookBranch = { value?: NSPanel.DataItemsOptions | null; color?: NSPanel.DataItemsOptions | null };
 
@@ -691,19 +704,22 @@ function applySlotLook(
  * - a color scale colors the icon (the bar of a `progress` slot) by the value of a number between the false and the
  *   true color - the row gets the state as `entity1` for it,
  * - a long press writes a state (`longPress`): a button sets it to true, a switch toggles it - only where the page
- *   item is a button or a switch ({@link devicePageSlotTakesLongPress}).
+ *   item is a button or a switch ({@link devicePageSlotTakesLongPress}),
+ * - the font of the icon (`textSize`, like on cardGrid) where the slot takes one ({@link devicePageSlotTakesTextSize}).
  *
- * A page item without icon stays as it is.
+ * A page item without icon stays as it is. The name is set when the item is built (devicePageElements).
  *
  * @param item the page item of the slot (changed)
  * @param ref the slot
  * @param common common of the state
+ * @param kind the kind of the slot
  * @returns the page item
  */
 export function withDevicePageSlotLook(
     item: NSPanel.PageItemDataItemsOptions,
     ref: DevicePageSlotRef,
     common: DeviceDetailStateCommon,
+    kind: DevicePageSlotKind,
 ): NSPanel.PageItemDataItemsOptions {
     // the older icon of a status slot is already in the item (devicePageStatusIconItem); the navigation of the tap
     // is no look (devicePageSlotItem)
@@ -717,11 +733,15 @@ export function withDevicePageSlotLook(
         return item;
     }
     const isBoolean = common.type === 'boolean';
+    const textSize = slotTextSizeItem(kind, look);
     if (item.type === 'text' || item.type === 'button' || item.type === 'switch') {
         if (!item.data?.icon) {
             return item;
         }
         applySlotLook(item.data.icon, look, isBoolean);
+        if (textSize) {
+            item.data.icon.textSize = textSize;
+        }
         if (look.scale && common.type === 'number' && !item.data.entity1) {
             item.data.entity1 = { value: { type: 'triggered', dp: ref.id } };
         }
@@ -730,6 +750,9 @@ export function withDevicePageSlotLook(
         }
     } else if (item.type === 'input_sel' && item.data?.icon) {
         applySlotLook(item.data.icon, look, isBoolean);
+        if (textSize) {
+            item.data.icon.textSize = textSize;
+        }
     }
     return item;
 }
@@ -756,7 +779,7 @@ export function devicePageSlotItem(
     if (!item) {
         return undefined;
     }
-    const withLook = withDevicePageSlotLook(item, entry, common);
+    const withLook = withDevicePageSlotLook(item, entry, common, kind);
     return target ? { ...withLook, devicePageTarget: target } : withLook;
 }
 
@@ -764,7 +787,8 @@ export function devicePageSlotItem(
  * The page item of a navigation slot (`custom: 'navigation'`): a text with icon and name only - no state, field 6
  * stays empty. The tap opens the target page (`devicePageTarget`, PageItem.onCommand). Icon and color are the own
  * ones of the slot (`trueIcon`, `trueColor`), else {@link DEVICE_PAGE_NAVIGATION_ICON} in the color of the group
- * info; the name is the own text, else the name of the target page.
+ * info, the font of the icon the own one ({@link devicePageSlotTakesTextSize}); the name is the own text, else the
+ * name of the target page.
  *
  * @param kind the kind of the slot
  * @param ref the slot
@@ -785,13 +809,18 @@ export function devicePageNavigationSlotItem(
         constVal: Color.deviceInfo,
     };
     const name: NSPanel.DataItemsOptions = { type: 'const', constVal: ref.name || target };
+    const textSize = slotTextSizeItem(kind, ref);
     return {
         type: 'text',
         role: DEVICE_DETAIL_ROW_ROLE,
         dpInit: '',
         devicePageTarget: target,
         data: {
-            icon: { true: { value: icon, color }, false: { value: icon, color } },
+            icon: {
+                true: { value: icon, color },
+                false: { value: icon, color },
+                ...(textSize ? { textSize } : {}),
+            },
             text: { true: name, false: name },
         },
     };
