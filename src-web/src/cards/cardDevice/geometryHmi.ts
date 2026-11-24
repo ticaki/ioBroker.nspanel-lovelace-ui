@@ -331,5 +331,5 @@ export const US_L_GEOMETRY: DeviceGeometryTable = shiftTable(EU_GEOMETRY, US_L_S
 export const US_P_GEOMETRY: DeviceGeometryTable = {
     1: portraitPage1(70, [190, 230], [272, 358], STATUS_P, INFO_P),
     2: portraitPage2(68, 184, [234, 274, 314], 356, STATUS_P, INFO_P),
-    3: portraitPage3(67, [182, 234, 286], [342, 394], STATUS_P, INFO_P),
+    3: portraitPage3(68, [182, 234, 286], [342, 394], STATUS_P, INFO_P),
 };

@@ -789,7 +789,10 @@ describe('device page geometry: web-p', () => {
 
     it('cardDevice3: 3 or 4 rows of two info tiles, 2 or 3 switch rows', () => {
         const full = geometry(3, 0b111);
-        expect(full.main).toEqual(usP(3).main);
+        // main like us-p, at the top of the web-p stack: the us-p HMI has it 1 px lower (y 68, off its hidden
+        // debug area mSpecial - the web panel has no such area)
+        expect(full.main).toEqual({ icon: { x: 85, y: 67, w: 150, h: 82 }, name: { x: 10, y: 151, w: 300, h: 26 } });
+        expect(usP(3).main).toEqual({ icon: { x: 85, y: 68, w: 150, h: 82 }, name: { x: 10, y: 152, w: 300, h: 26 } });
         expect(xs([...full.slots.slice(0, 6), full.extras[0], full.extras[1]])).toEqual([
             10, 162, 10, 162, 10, 162, 10, 162,
         ]);
