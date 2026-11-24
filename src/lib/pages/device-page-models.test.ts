@@ -4,6 +4,7 @@
  * (web-l, web-p) the same message with the elements of the extra slots appended.
  */
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { hasGlyph, textWidth } from '../const/text-width';
@@ -43,6 +44,7 @@ import {
     type DevicePageBuildContext,
 } from './device-page';
 import { PageDevice } from './pageDevice';
+import { PageItem } from './pageItem';
 
 const LAYOUTS: readonly DevicePageLayout[] = [1, 2, 3];
 const HMI_MODELS: readonly NSpanelModel[] = ['eu', 'us-l', 'us-p'];
@@ -592,6 +594,149 @@ describe('lib/pages/pageDevice - message per model', () => {
         expect(await pressedOn('eu')).to.deep.equal([1, n]);
         expect(await pressedOn('us-p')).to.deep.equal([1, n]);
     });
+});
+
+/**
+ * A PageDevice made by its real constructor on a panel that only has what the page touches.
+ *
+ * @param model model of the panel
+ * @param pageConfig the configuration of the page (buildDevicePage)
+ * @param isVirtual the web clone of a panel
+ * @returns the page and what it sent
+ */
+function realPage(model: NSpanelModel, pageConfig: PageBase, isVirtual: boolean): { page: PageDevice; sent: string[] } {
+    const sent: string[] = [];
+    const noop = (): void => undefined;
+    const adapter: any = {
+        log: { silly: noop, debug: noop, info: noop, warn: noop, error: noop },
+        controller: {},
+        unload: false,
+        library: { getTranslation: (s: string): string => s },
+        setTimeout: (): number => 1,
+        clearTimeout: noop,
+        setInterval: (): number => 1,
+        clearInterval: noop,
+        config: {},
+    };
+    const panel: any = {
+        info: { nspanel: { model } },
+        isVirtual,
+        isOnline: true,
+        persistentPageItems: {},
+        panelSend: { addMessage: (m: string) => sent.push(m) },
+        navigation: { buildNavigationString: () => 'button~bSubPrev~<~65535~~~button~bSubNext~>~65535~~' },
+        lastCard: '',
+    };
+    const page = new PageDevice(
+        { card: pageConfig.config?.card ?? 'cardDevice1', panel, id: '7', name: 'device-test', adapter },
+        pageConfig,
+    );
+    return { page, sent };
+}
+
+describe('lib/pages/pageDevice - the real constructor leaves out the extra slots of an HMI model', () => {
+    afterEach(() => sinon.restore());
+
+    /**
+     * Shows a page: every page item it creates is recorded (PageItem.getPageItem is where an item is made and
+     * subscribes its states).
+     *
+     * @param page the page
+     * @returns the numbers of the page items that were created
+     */
+    const show = async (page: PageDevice): Promise<number[]> => {
+        const created: number[] = [];
+        sinon.restore();
+        sinon.stub(PageItem, 'getPageItem').callsFake(async (config: any, options: any) => {
+            const index = Number(String(config.id).split('?')[1]);
+            created.push(index);
+            return {
+                config: options,
+                getPageItemPayload: async () =>
+                    options.type === 'empty' ? '' : `${options.type}~${config.id}~I~2~Name${index}~1`,
+                delete: async () => undefined,
+            } as any;
+        });
+        const p: any = page;
+        await p.init();
+        p.visibility = true;
+        p.pageItems = await p.createPageItems(p.pageItemConfig);
+        await page.update();
+        return created;
+    };
+
+    for (const layout of LAYOUTS) {
+        const n = DEVICE_PAGE_LAYOUTS[layout].length;
+        const e = DEVICE_PAGE_EXTRA_SLOTS[layout].length;
+        // every extra slot filled with something of its kind, the first one with an alias channel
+        const extras = DEVICE_PAGE_EXTRA_SLOTS[layout].map((kind, k) =>
+            k === 0
+                ? { key: '', id: 'alias.0.socket', custom: 'channel' }
+                : kind === 'info'
+                  ? ref('energy')
+                  : kind === 'button'
+                    ? ref('start')
+                    : ref('on'),
+        );
+        const baseSlots = DEVICE_PAGE_LAYOUTS[layout].map((kind, i) =>
+            (kind === 'info' || kind === 'value') && i === 0 ? ref('power') : null,
+        );
+        const channelItem: any = { type: 'switch', role: '', dpInit: '', data: { icon: {} } };
+        const pageItemOf: DevicePageBuildContext['pageItemOf'] = async item =>
+            Promise.resolve(item.channelId.valueStateId === 'alias.0.socket' ? channelItem : undefined);
+        const configs = async (): Promise<{ plain: PageBase; withExtras: PageBase }> => {
+            const a = runtimeOf({ layout, slots: baseSlots, status: ref('power') });
+            const b = runtimeOf({ layout, slots: [...baseSlots, ...extras], status: ref('power'), webExtras: true });
+            const withExtras = (await build(b.page, b.details, pageItemOf)).page;
+            expect(withExtras.pageItems).to.have.length(n + 3 + e);
+            // the alias channel of the first extra slot
+            expect((withExtras.config as any).channelSlots).to.deep.equal([n]);
+            return { plain: (await build(a.page, a.details, pageItemOf)).page, withExtras };
+        };
+
+        it(`layout ${layout}: eu, us-l and us-p (hardware and web clone) create only the items 0..${n + 2}`, async () => {
+            const { plain, withExtras } = await configs();
+            for (const model of HMI_MODELS) {
+                for (const isVirtual of [false, true]) {
+                    const at = `${model}${isVirtual ? ' clone' : ''}`;
+                    const a = realPage(model, structuredClone(withExtras), isVirtual);
+                    const b = realPage(model, structuredClone(plain), isVirtual);
+                    // the page keeps the configuration of the page without extra slots
+                    expect(a.page.pageItemConfig, at).to.have.length(n + 3);
+                    expect(a.page.pageItemConfig, at).to.deep.equal(b.page.pageItemConfig);
+                    expect(a.page.config, at).to.deep.equal(b.page.config);
+                    expect((a.page.config as any).channelSlots ?? [], at).to.deep.equal([]);
+                    // no item is created (and so nothing subscribed) for an extra slot
+                    expect(await show(a.page), at).to.deep.equal(Array.from({ length: n + 3 }, (_v, i) => i));
+                    await show(b.page);
+                    // and the message is the one of the page without extra slots: nothing behind info
+                    expect(a.sent, at).to.have.length(1);
+                    expect(a.sent[0], at).to.equal(b.sent[0]);
+                    const fields = a.sent[0].split('~');
+                    expect(fields, at).to.have.length(2 + 12 + 6 * (n + 2));
+                    expect(fields[14 + 6 * (n + 1) + 1], at).to.equal(`7?${n + 1}`);
+                }
+            }
+        });
+
+        it(`layout ${layout}: web-l and web-p create all items, the ${e} extra ones at ${n + 3}..${n + 2 + e}`, async () => {
+            const { withExtras } = await configs();
+            for (const model of WEB_MODELS) {
+                const a = realPage(model, structuredClone(withExtras), true);
+                expect(a.page.pageItemConfig, model).to.have.length(n + 3 + e);
+                expect(a.page.pageItemConfig, model).to.deep.equal(withExtras.pageItems);
+                expect((a.page.config as any).channelSlots, model).to.deep.equal([n]);
+                expect(await show(a.page), model).to.deep.equal(Array.from({ length: n + 3 + e }, (_v, i) => i));
+                expect(a.sent, model).to.have.length(1);
+                const fields = a.sent[0].split('~');
+                expect(fields, model).to.have.length(2 + 12 + 6 * (n + 2 + e));
+                const tail = fields.slice(14 + 6 * (n + 2));
+                for (let k = 0; k < e; k++) {
+                    expect(tail[k * 6 + 1], `${model} extra ${k}`).to.equal(`7?${n + 3 + k}`);
+                }
+            }
+        });
+    }
 });
 
 describe('lib/pages/device-page - length of the message per model', () => {
