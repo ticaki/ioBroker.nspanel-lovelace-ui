@@ -369,14 +369,16 @@ export const DEVICE_PAGE_FIELDS_US_P: Readonly<Record<DevicePageLayout, DevicePa
  * The text fields of the device pages of the web panel on `web-l` (640x320, `src-web/src/cards/cardDevice/
  * geometryWeb.ts`, `webLandscapeGeometry`; a test of the web panel pins the boxes). The layout of eu on the full
  * width with the extra slots: the status line has 580 px, the info rows of layout 1 and the bar of layout 2 reach the
- * right edge; every other field is as wide as on eu (more elements, not more text). Rows that hold a varying number
- * of elements are given with their narrowest field.
+ * right edge; every other field is as wide as on eu (more elements, not more text) - except the names of buttons that
+ * stand side by side, which are 4 px narrower to keep a gap between two names. Rows that hold a varying number of
+ * elements are given with their narrowest field: the buttons of layout 1 have 104 px, six in a row 100 px; the buttons
+ * of layout 2 have 100 px, two or three in a row 96 px.
  */
 export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
     1: {
         mainName: 110,
         status: 580,
-        slots: { info: { name: 354, value: 110 }, button: { name: 104 } },
+        slots: { info: { name: 354, value: 110 }, button: { name: 100 } },
         slotsWithStatus: { info: { name: 276, value: 110 } },
     },
     2: {
@@ -386,7 +388,7 @@ export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DeviceP
             value: { name: 190, value: 190, valueFont: 4 },
             progress: { name: 620 },
             info: { name: 104, value: 104 },
-            button: { name: 100 },
+            button: { name: 96 },
         },
     },
     3: {
@@ -400,14 +402,14 @@ export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DeviceP
  * The text fields of the device pages of the web panel on `web-p` (320x640, `geometryWeb.ts`,
  * `webPortraitGeometry`): the layout of us-p with the extra slots, every field as wide as on us-p, the status line
  * 262 px. Narrowest case of the fields that vary: the name of main of layout 1 has 300 px without status icons (main
- * then stands in the middle), the buttons of layout 2 share one row - one button 300 px, two 148 px, three 100 px (the
- * width of this button on eu).
+ * then stands in the middle), the buttons of layout 2 share one row - one button 300 px, two 148 px, three stand side
+ * by side in 100 px each (the width of this button on eu) with a name of 96 px, which keeps 4 px between two names.
  */
 export const DEVICE_PAGE_FIELDS_WEB_P: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
     1: DEVICE_PAGE_FIELDS_US_P[1],
     2: {
         ...DEVICE_PAGE_FIELDS_US_P[2],
-        slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 100 } },
+        slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 96 } },
     },
     3: DEVICE_PAGE_FIELDS_US_P[3],
 };
