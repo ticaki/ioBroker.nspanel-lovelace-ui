@@ -120,8 +120,8 @@ export function shortPressToSave(device: Pick<DeviceDetailsConfig, 'shortPress' 
 
 /**
  * @param from a slot
- * @returns its own settings as they are stored (own look, color scale, long press, the navigation of the short tap,
- * the older status icon)
+ * @returns its own settings as they are stored (own look, color scale, long press, own name, the navigation of the
+ * short tap, the older status icon)
  */
 function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
     const out: Partial<DevicePageSlotRef> = {};
@@ -149,7 +149,7 @@ function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
  * @param config the device page
  * @param index index of the slot (0 = slot 1)
  * @param ref what the slot shows, null = empty
- * @returns the device page with the slot; the own settings of the slot (icons, colors, color scale, long press) stay
+ * @returns the device page with the slot; the own settings of the slot (icons, colors, color scale, long press, name) stay
  * when something else is chosen for it, an emptied slot loses them
  */
 export function withDevicePageSlot(
@@ -198,10 +198,7 @@ export function withDevicePageSlotLook(
         next.custom = slot.custom;
     }
     if (slot.custom === 'navigation') {
-        // target and text of a navigation slot are edited at the slot, not in the dialog
-        if (slot.name) {
-            next.name = slot.name;
-        }
+        // the target of a navigation slot is edited at the slot, not in the dialog
         if (slot.targetPage) {
             next.targetPage = slot.targetPage;
         }
@@ -283,45 +280,32 @@ export function customDevicePageSlot(source: DevicePageCustomSource, id: string)
 }
 
 /**
- * Target page and text of a navigation slot (`custom: 'navigation'`); another slot stays as it is.
+ * Target page of a navigation slot (`custom: 'navigation'`); another slot stays as it is. Its text is set in the
+ * settings of the element like the name of every other slot ({@link withDevicePageSlotLook}).
  *
  * @param config the device page
  * @param index index of the slot (0 = slot 1)
- * @param change the new target page and / or text, '' = none
- * @param change.targetPage name of the target page
- * @param change.name text of the element
+ * @param targetPage name of the target page, '' = none
  * @returns the device page with the change
  */
 export function withDevicePageSlotNavigation(
     config: DevicePageConfig,
     index: number,
-    change: { targetPage?: string; name?: string },
+    targetPage: string,
 ): DevicePageConfig {
     const slot = config.slots[index];
     if (slot?.custom !== 'navigation') {
         return config;
     }
-    if (
-        (change.targetPage === undefined || change.targetPage === (slot.targetPage ?? '')) &&
-        (change.name === undefined || change.name === (slot.name ?? ''))
-    ) {
+    if (targetPage === (slot.targetPage ?? '')) {
         // nothing new (the selection reports its value again when it is shown)
         return config;
     }
     const next: DevicePageSlotRef = { ...slot };
-    if (change.targetPage !== undefined) {
-        if (change.targetPage) {
-            next.targetPage = change.targetPage;
-        } else {
-            delete next.targetPage;
-        }
-    }
-    if (change.name !== undefined) {
-        if (change.name) {
-            next.name = change.name;
-        } else {
-            delete next.name;
-        }
+    if (targetPage) {
+        next.targetPage = targetPage;
+    } else {
+        delete next.targetPage;
     }
     const slots = [...config.slots];
     slots[index] = next;

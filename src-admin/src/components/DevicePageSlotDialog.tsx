@@ -1,11 +1,11 @@
 /**
  * "Settings of the element": the small settings of one slot of the device page (doc/ideas/device-details/README.md,
  * section Geräteseite). The fields are those of a standard page item (ChannelConfigDialog / AdminPageItemConfig) and
- * are edited with its building blocks: icon and color for true and false, the color scale (ChannelColorDialog), the
- * short tap (standard or navigation to a page) and the state a long press writes.
+ * are edited with its building blocks: the own name, icon and color for true and false, the color scale
+ * (ChannelColorDialog), the short tap (standard or navigation to a page) and the state a long press writes.
  *
- * The dialog is made of sections ({@link DevicePageSlotDialog.renderLook}, {@link DevicePageSlotDialog.renderTap},
- * {@link DevicePageSlotDialog.renderActions}):
+ * The dialog is made of sections ({@link DevicePageSlotDialog.renderName}, {@link DevicePageSlotDialog.renderLook},
+ * {@link DevicePageSlotDialog.renderTap}, {@link DevicePageSlotDialog.renderActions}):
  * further settings of an element get a section of their own and a field in `DevicePageSlotLook`.
  */
 import React from 'react';
@@ -36,6 +36,8 @@ export interface DevicePageSlotDialogOptions {
     tap: boolean;
     /** the element has one icon and color only (navigation slot): no false, no color scale */
     single: boolean;
+    /** the element shows a name that can be replaced by an own one (not a status icon) */
+    name: boolean;
 }
 
 export interface DevicePageSlotDialogProps {
@@ -92,7 +94,7 @@ export default class DevicePageSlotDialog extends React.Component<
             open: false,
             index: 0,
             name: '',
-            options: { longPress: false, tap: false, single: false },
+            options: { longPress: false, tap: false, single: false, name: false },
             look: {},
         };
     }
@@ -153,7 +155,10 @@ export default class DevicePageSlotDialog extends React.Component<
      * @param field a text field of the settings
      * @param value its new value, '' = not set
      */
-    private setField(field: 'trueIcon' | 'falseIcon' | 'trueColor' | 'falseColor' | 'longPress', value: string): void {
+    private setField(
+        field: 'trueIcon' | 'falseIcon' | 'trueColor' | 'falseColor' | 'longPress' | 'name',
+        value: string,
+    ): void {
         this.setState(prev => {
             const look: DevicePageSlotLook = { ...prev.look };
             if (value) {
@@ -263,6 +268,33 @@ export default class DevicePageSlotDialog extends React.Component<
                     )}
                 </Box>
             </Box>
+        );
+    }
+
+    /**
+     * Section name: the own name of the element in place of the automatic one - only where the element shows a name.
+     * It is stored trimmed, empty = the automatic name.
+     *
+     * @returns the section, null when the element shows no name
+     */
+    private renderName(): React.JSX.Element | null {
+        const { look, options } = this.state;
+        if (!options.name) {
+            return null;
+        }
+        return (
+            <TextField
+                variant="standard"
+                label={I18n.t('deviceDetailsDialog_slotName')}
+                value={look.name ?? ''}
+                placeholder={I18n.t('deviceDetailsDialog_slotAuto')}
+                helperText={I18n.t(
+                    options.single ? 'deviceDetailsDialog_slotNameNavigationHint' : 'deviceDetailsDialog_slotNameHint',
+                )}
+                onChange={e => this.setField('name', e.target.value)}
+                slotProps={{ inputLabel: { shrink: true } }}
+                data-dd="device-page-slot-name"
+            />
         );
     }
 
@@ -429,6 +461,7 @@ export default class DevicePageSlotDialog extends React.Component<
                         >
                             {I18n.t('deviceDetailsDialog_slotSettingsHint')}
                         </Typography>
+                        {this.renderName()}
                         {this.renderLook()}
                         {this.renderTap()}
                         {this.renderActions()}

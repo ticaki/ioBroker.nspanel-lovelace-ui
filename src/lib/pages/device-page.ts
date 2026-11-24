@@ -456,7 +456,7 @@ export type DevicePageChannelItems = Record<number, DevicePageChannelItem>;
 /**
  * The admin page item an alias channel of a slot is converted from: a standard item of the channel with the own look
  * of the slot - the same fields a page item has (`trueIcon`, `falseIcon`, `trueColor`, `falseColor`, `scale`,
- * `longPress` where the role takes one), everything else the defaults of the role.
+ * `name`, `longPress` where the role takes one), everything else the defaults of the role.
  *
  * @param ref the slot (`custom: 'channel'`)
  * @param role common.role of the channel
@@ -707,7 +707,12 @@ export function withDevicePageSlotLook(
 ): NSPanel.PageItemDataItemsOptions {
     // the older icon of a status slot is already in the item (devicePageStatusIconItem); the navigation of the tap
     // is no look (devicePageSlotItem)
-    const { isNavigation: _isNavigation, targetPage: _targetPage, ...look } = devicePageSlotLookOf(ref, false);
+    const {
+        isNavigation: _isNavigation,
+        targetPage: _targetPage,
+        name: _name,
+        ...look
+    } = devicePageSlotLookOf(ref, false);
     if (Object.keys(look).length === 0) {
         return item;
     }
@@ -993,8 +998,8 @@ export async function devicePageElements(
         }
         return obj.common;
     };
-    // the slots that exist, for the names (duplicates are told apart only among the slots that show a name - a status
-    // icon has none)
+    // the slots that exist, for the names (duplicates are told apart only among the slots that show an automatic
+    // name - a status icon has none, an own name stands as it is)
     const present: { index: number; entry: DevicePageSlotRef; common: DeviceDetailStateCommon }[] = [];
     const slots: (NSPanel.PageItemDataItemsOptions | undefined)[] = kinds.map(() => undefined);
     const channelSlots: number[] = [];
@@ -1027,7 +1032,7 @@ export async function devicePageElements(
             present.push({ index: i, entry: ref, common });
         }
     }
-    const named = present.filter(p => kinds[p.index] !== 'status');
+    const named = present.filter(p => kinds[p.index] !== 'status' && !p.entry.name);
     const names = deviceDetailRowNames(
         details.deviceId,
         named.map(p => p.entry),
@@ -1038,7 +1043,7 @@ export async function devicePageElements(
     );
     present.forEach(p => {
         const n = named.indexOf(p);
-        const name = n >= 0 ? (names[n] ?? '') : '';
+        const name = (kinds[p.index] !== 'status' && p.entry.name) || (n >= 0 ? (names[n] ?? '') : '');
         const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, name);
         if (!item) {
             skipped.push(p.entry.id);

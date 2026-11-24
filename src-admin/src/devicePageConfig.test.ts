@@ -36,6 +36,7 @@ import {
 import { screensaverTargetPage } from '../../src/lib/types/adminShareConfig';
 import {
     DEVICE_PAGE_LAYOUTS,
+    devicePageSlotHasLook,
     type DeviceDetailsConfig,
     type DevicePageConfig,
     type DeviceStateInfo,
@@ -279,6 +280,37 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         });
     });
 
+    it('own name of a slot: set by the dialog (trimmed), empty = automatic, kept by the save', () => {
+        const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
+        const withState = withDevicePageSlot(page, 0, { key: 'temperature', id: 'x.t' });
+        const named = withDevicePageSlotLook(withState, 0, { name: '  Kühlschrank  ' });
+        expect(named.slots[0]).to.deep.equal({ key: 'temperature', id: 'x.t', name: 'Kühlschrank' });
+        expect(devicePageSlotHasLook(named.slots[0])).to.equal(true);
+        expect(devicePageSlotDialogValue(named.slots[0] ?? { key: '', id: '' })).to.deep.equal({ name: 'Kühlschrank' });
+        expect(devicePageToSave({ devicePage: named })?.slots[0]).to.deep.equal(named.slots[0]);
+        // empty: the automatic name again
+        expect(withDevicePageSlotLook(named, 0, { name: '   ' }).slots[0]).to.deep.equal({
+            key: 'temperature',
+            id: 'x.t',
+        });
+        // an own data point and an alias channel take it as well
+        const state = withDevicePageSlotLook(withDevicePageSlot(page, 1, customDevicePageSlot('state', 'x.y')), 1, {
+            name: 'Mine',
+        });
+        expect(state.slots[1]).to.deep.equal({ key: '', id: 'x.y', custom: 'state', name: 'Mine' });
+        const channel = withDevicePageSlotLook(
+            withDevicePageSlot(page, 1, customDevicePageSlot('channel', 'alias.0.l')),
+            1,
+            { name: 'Lamp' },
+        );
+        expect(devicePageToSave({ devicePage: channel })?.slots[1]).to.deep.equal({
+            key: '',
+            id: 'alias.0.l',
+            custom: 'channel',
+            name: 'Lamp',
+        });
+    });
+
     it('user defined slot: own data point or alias channel, the choice stays without id', () => {
         const page: DevicePageConfig = { layout: 3, slots: [], showInfo: true };
         const options = devicePageStateOptions(DEV, STATES, 'info', null);
@@ -344,7 +376,7 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         expect(devicePageToSave({ devicePage: nav })?.slots[s]).to.deep.equal(nav.slots[s]);
     });
 
-    it('navigation slot: offered where icon and name are enough, target and text at the slot', () => {
+    it('navigation slot: offered where icon and name are enough, target at the slot, text in the dialog', () => {
         expect(devicePageCustomSources('button', null)).to.deep.equal(['state', 'channel', 'navigation']);
         expect(devicePageCustomSources('info', null)).to.deep.equal(['state', 'channel', 'navigation']);
         expect(devicePageCustomSources('status', null)).to.deep.equal(['state', 'channel', 'navigation']);
@@ -361,17 +393,15 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         const b = DEVICE_PAGE_LAYOUTS[1].indexOf('button');
         let page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
         page = withDevicePageSlot(page, b, fresh);
-        page = withDevicePageSlotNavigation(page, b, { targetPage: 'rooms' });
-        page = withDevicePageSlotNavigation(page, b, { name: 'Räume' });
+        page = withDevicePageSlotNavigation(page, b, 'rooms');
         expect(page.slots[b]).to.deep.equal({
             key: '',
             id: '',
             custom: 'navigation',
             targetPage: 'rooms',
-            name: 'Räume',
         });
-        // icon and color come from the dialog - target and text stay
-        const look = withDevicePageSlotLook(page, b, { trueIcon: 'floor-plan', trueColor: '#00ff00' });
+        // icon, color and text come from the dialog - the target stays
+        const look = withDevicePageSlotLook(page, b, { trueIcon: 'floor-plan', trueColor: '#00ff00', name: ' Räume ' });
         expect(look.slots[b]).to.deep.equal({
             key: '',
             id: '',
@@ -384,8 +414,14 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         expect(devicePageToSave({ devicePage: look })?.slots[b]).to.deep.equal(look.slots[b]);
         // "user defined" chosen again: nothing is lost
         expect(devicePageSlotOf(DEVICE_PAGE_CUSTOM, [], [], look.slots[b])).to.deep.equal(look.slots[b]);
+        // the dialog starts with the text
+        expect(devicePageSlotDialogValue(look.slots[b]!).name).to.equal('Räume');
         // emptied text and target
-        const cleared = withDevicePageSlotNavigation(look, b, { targetPage: '', name: '' });
+        const cleared = withDevicePageSlotNavigation(
+            withDevicePageSlotLook(look, b, { trueIcon: 'floor-plan', trueColor: '#00ff00', name: '' }),
+            b,
+            '',
+        );
         expect(cleared.slots[b]).to.deep.equal({
             key: '',
             id: '',
@@ -395,7 +431,7 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         });
         // another slot is not touched
         const other = withDevicePageSlot(page, 0, { key: '', id: 'x.p' });
-        expect(withDevicePageSlotNavigation(other, 0, { targetPage: 'rooms' })).to.equal(other);
+        expect(withDevicePageSlotNavigation(other, 0, 'rooms')).to.equal(other);
         // a state slot with the short tap navigation that becomes a navigation slot keeps its target, not the choice
         const state: DevicePageConfig = {
             layout: 1,

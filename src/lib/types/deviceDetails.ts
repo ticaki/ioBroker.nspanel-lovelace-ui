@@ -503,8 +503,9 @@ export type DevicePageStateRef = DeviceDetailEntryConfig & {
 
 /**
  * The own settings of a slot (dialog "settings of the element"), the fields and their form are those of a standard
- * page item (AdminPageItemConfig): icon and color while the state is true / false, a color scale and the state a long
- * press writes. Everything optional, missing = as before (mask entry / kind / role of the channel, no long press).
+ * page item (AdminPageItemConfig): icon and color while the state is true / false, a color scale, the state a long
+ * press writes and the own name. Everything optional, missing = as before (mask entry / kind / role of the channel,
+ * no long press, automatic name).
  * A number or a text has no false: it shows the true icon and color.
  */
 export type DevicePageSlotLook = {
@@ -530,10 +531,24 @@ export type DevicePageSlotLook = {
     isNavigation?: boolean;
     /** name of the page the short tap opens, only with {@link isNavigation} */
     targetPage?: string;
+    /**
+     * own name of the element, missing or '' = the automatic name: of a state the name of the mask entry / of the
+     * state with the text that tells duplicates apart, of an alias channel the name of its page item, of a navigation
+     * slot the name of the target page. It replaces the automatic name completely (no text appended) and is cut to
+     * the width of the field like it. A `status` slot shows no name - it is kept there but does nothing.
+     */
+    name?: string;
 };
 
 /** the text fields of {@link DevicePageSlotLook} */
-export const DEVICE_PAGE_SLOT_LOOK_FIELDS = ['trueIcon', 'falseIcon', 'trueColor', 'falseColor', 'longPress'] as const;
+export const DEVICE_PAGE_SLOT_LOOK_FIELDS = [
+    'trueIcon',
+    'falseIcon',
+    'trueColor',
+    'falseColor',
+    'longPress',
+    'name',
+] as const;
 
 /**
  * What a slot of the device page shows:
@@ -547,14 +562,14 @@ export const DEVICE_PAGE_SLOT_LOOK_FIELDS = ['trueIcon', 'falseIcon', 'trueColor
  *   ({@link devicePageSlotAcceptsNavigation} says in which slots). `name` is its text ('' = the name of the target
  *   page), `trueIcon` / `trueColor` its icon and color.
  *
+ * Every slot that shows a name may have its own ({@link DevicePageSlotLook.name}).
+ *
  * With `custom` the `id` may be '' (chosen in the admin, nothing entered yet): the slot stays empty - a navigation
  * slot stays empty without target page.
  */
 export type DevicePageSlotRef = DevicePageStateRef &
     DevicePageSlotLook & {
         custom?: 'state' | 'channel' | 'navigation';
-        /** text of a navigation slot (`custom: 'navigation'`), missing = the name of the target page */
-        name?: string;
     };
 
 /** icon of a navigation slot without own icon */
@@ -647,6 +662,9 @@ export function devicePageSlotLookOf(ref: DevicePageSlotRef, withOlderIcon = tru
     }
     if (ref.longPress) {
         look.longPress = ref.longPress;
+    }
+    if (ref.name) {
+        look.name = ref.name;
     }
     if (ref.isNavigation && ref.custom !== 'navigation') {
         look.isNavigation = true;
@@ -816,7 +834,7 @@ function trimmedField(value: object, key: string): string {
  * @param value a stored slot
  * @param kind the kind of the slot
  * @returns the slot: a state of the device, an own data point or an alias channel (`custom`, trimmed id, also an
- * empty one - the choice stays), with its own look (icons trimmed, colors only as `#rrggbb`, empty ones left out);
+ * empty one - the choice stays), with its own look (icons and name trimmed, colors only as `#rrggbb`, empty ones left out);
  * null when it is none
  */
 function devicePageSlotRefOf(value: unknown, kind: DevicePageSlotKind): DevicePageSlotRef | null {
@@ -827,12 +845,8 @@ function devicePageSlotRefOf(value: unknown, kind: DevicePageSlotKind): DevicePa
     const custom = 'custom' in value ? value.custom : undefined;
     const targetPage = trimmedField(value, 'targetPage');
     if (custom === 'navigation') {
-        // no state: only the target, the text and the look
+        // no state: only the target and the look (with the text)
         ref = { key: '', id: '', custom };
-        const name = trimmedField(value, 'name');
-        if (name) {
-            ref.name = name;
-        }
         if (targetPage) {
             ref.targetPage = targetPage;
         }

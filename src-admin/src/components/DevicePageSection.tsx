@@ -19,7 +19,6 @@ import {
     Radio,
     RadioGroup,
     Select,
-    TextField,
     Tooltip,
     Typography,
 } from '@mui/material';
@@ -449,13 +448,15 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                 longPress: !navigationSlot && devicePageSlotTakesLongPress(kind, slot, role),
                 tap: !navigationSlot && devicePageSlotTakesNavigation(slot, role),
                 single: navigationSlot,
+                // a status icon shows no name
+                name: kind !== 'status',
             },
         );
     }
 
     /**
      * The fields of a user defined slot: an own data point (any state), an alias channel (the channels with a role
-     * that fits the kind of the slot, picked like in the page item dialog) or a navigation (target page and text; icon
+     * that fits the kind of the slot, picked like in the page item dialog) or a navigation (target page; text, icon
      * and color in the settings of the element) - the navigation only where icon and name are enough.
      *
      * @param kind the kind of the slot
@@ -516,21 +517,8 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         data-dd="device-page-slot-navigation"
                     >
                         {this.props.targetSelect(slot, page =>
-                            this.props.onChange(
-                                withDevicePageSlotNavigation(this.props.value, index, { targetPage: page }),
-                            ),
+                            this.props.onChange(withDevicePageSlotNavigation(this.props.value, index, page)),
                         )}
-                        <TextField
-                            variant="standard"
-                            label={I18n.t('deviceDetailsDialog_slotNavigationName')}
-                            value={slot.name ?? ''}
-                            onChange={e =>
-                                this.props.onChange(
-                                    withDevicePageSlotNavigation(this.props.value, index, { name: e.target.value }),
-                                )
-                            }
-                            slotProps={{ inputLabel: { shrink: true } }}
-                        />
                     </Box>
                 ) : source === 'channel' ? (
                     <EntitySelector
