@@ -212,7 +212,7 @@ const DEVICE_PAGE_FIELDS_WEB_L = {
   1: {
     mainName: 110,
     status: 580,
-    slots: { info: { name: 354, value: 110 }, button: { name: 104 } },
+    slots: { info: { name: 354, value: 110 }, button: { name: 100 } },
     slotsWithStatus: { info: { name: 276, value: 110 } }
   },
   2: {
@@ -222,7 +222,7 @@ const DEVICE_PAGE_FIELDS_WEB_L = {
       value: { name: 190, value: 190, valueFont: 4 },
       progress: { name: 620 },
       info: { name: 104, value: 104 },
-      button: { name: 100 }
+      button: { name: 96 }
     }
   },
   3: {
@@ -235,7 +235,7 @@ const DEVICE_PAGE_FIELDS_WEB_P = {
   1: DEVICE_PAGE_FIELDS_US_P[1],
   2: {
     ...DEVICE_PAGE_FIELDS_US_P[2],
-    slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 100 } }
+    slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 96 } }
   },
   3: DEVICE_PAGE_FIELDS_US_P[3]
 };
