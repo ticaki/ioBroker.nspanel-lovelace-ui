@@ -55,6 +55,7 @@ const PageAlarmMessageDefault = {
   numpad: "disable",
   flashing: "disable"
 };
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
 const alarmStates = ["disarmed", "armed", "arming", "pending", "triggered"];
 class PageAlarm extends import_Page.Page {
   status = "armed";
@@ -121,6 +122,8 @@ class PageAlarm extends import_Page.Page {
   pin = "0";
   failCount = 0;
   pinFailTimeout = null;
+  /** wait time of the running PIN lockout in seconds, as shown on the panel */
+  pinLockSeconds = 0;
   constructor(config, options) {
     var _a, _b;
     super(config, options);
@@ -240,7 +243,7 @@ class PageAlarm extends import_Page.Page {
       if (this.pinFailTimeout) {
         message.button1 = `${this.library.getTranslation("locked_for")}`;
         message.status1 = "";
-        message.button2 = ` ${2 ** this.failCount} s`;
+        message.button2 = ` ${this.pinLockSeconds} s`;
         message.status2 = "";
         message.button3 = "";
         message.status3 = "";
@@ -307,7 +310,7 @@ class PageAlarm extends import_Page.Page {
       if (this.pinFailTimeout) {
         message.button1 = `${this.library.getTranslation("locked_for")}`;
         message.status1 = "";
-        message.button2 = ` ${2 ** this.failCount} s`;
+        message.button2 = ` ${this.pinLockSeconds} s`;
         message.status2 = "";
         message.button3 = "";
         message.status3 = "";
@@ -447,16 +450,18 @@ class PageAlarm extends import_Page.Page {
       if (this.status === "triggered") {
         return;
       }
-      if (this.pin && this.pin != value) {
+      if (this.pin && this.pinFailTimeout) {
+        this.startPinLockout();
         this.log.warn(
-          `Wrong pin entered. try ${++this.failCount}! Delay next attempt by ${2 ** this.failCount} seconds`
+          `PIN attempt during lockout rejected. try ${this.failCount}! Delay next attempt by ${this.pinLockSeconds} seconds`
         );
-        this.pinFailTimeout = this.adapter.setTimeout(
-          async () => {
-            this.pinFailTimeout = null;
-            void this.update();
-          },
-          2 ** this.failCount * 1e3
+        await this.update();
+        return;
+      }
+      if (this.pin && this.pin != value) {
+        this.startPinLockout();
+        this.log.warn(
+          `Wrong pin entered. try ${this.failCount}! Delay next attempt by ${this.pinLockSeconds} seconds`
         );
         await this.update();
         return;
@@ -522,6 +527,24 @@ class PageAlarm extends import_Page.Page {
         }
       }
     }
+  }
+  /**
+   * Count a failed PIN attempt and (re)start the lockout with 2^failCount seconds.
+   * The timer duration is capped to the largest value setTimeout accepts (2^31-1 ms),
+   * the counter itself is not limited.
+   */
+  startPinLockout() {
+    if (this.pinFailTimeout) {
+      this.adapter.clearTimeout(this.pinFailTimeout);
+      this.pinFailTimeout = null;
+    }
+    this.failCount++;
+    const delayMs = Math.min(2 ** this.failCount * 1e3, MAX_TIMEOUT_MS);
+    this.pinLockSeconds = Math.floor(delayMs / 1e3);
+    this.pinFailTimeout = this.adapter.setTimeout(() => {
+      this.pinFailTimeout = null;
+      void this.update();
+    }, delayMs);
   }
   delayUpdate() {
     if (this.updatePanelTimeout) {

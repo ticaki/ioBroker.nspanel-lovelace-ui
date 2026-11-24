@@ -27,6 +27,8 @@ const PageAlarmMessageDefault: pages.PageAlarmMessage = {
     numpad: 'disable',
     flashing: 'disable',
 };
+/** largest delay setTimeout accepts (32-bit signed int), adapter.setTimeout throws above it */
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
 const alarmStates: pages.AlarmStates[] = ['disarmed', 'armed', 'arming', 'pending', 'triggered'];
 
 /**
@@ -109,6 +111,8 @@ export class PageAlarm extends Page {
     private pin: string = '0';
     private failCount: number = 0;
     private pinFailTimeout: ioBroker.Timeout | undefined | null = null;
+    /** wait time of the running PIN lockout in seconds, as shown on the panel */
+    private pinLockSeconds: number = 0;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
@@ -242,7 +246,7 @@ export class PageAlarm extends Page {
             if (this.pinFailTimeout) {
                 message.button1 = `${this.library.getTranslation('locked_for')}`;
                 message.status1 = '';
-                message.button2 = ` ${2 ** this.failCount} s`;
+                message.button2 = ` ${this.pinLockSeconds} s`;
                 message.status2 = '';
                 message.button3 = '';
                 message.status3 = '';
@@ -310,7 +314,7 @@ export class PageAlarm extends Page {
             if (this.pinFailTimeout) {
                 message.button1 = `${this.library.getTranslation('locked_for')}`;
                 message.status1 = '';
-                message.button2 = ` ${2 ** this.failCount} s`;
+                message.button2 = ` ${this.pinLockSeconds} s`;
                 message.status2 = '';
                 message.button3 = '';
                 message.status3 = '';
@@ -470,17 +474,19 @@ export class PageAlarm extends Page {
                 this.log.warn(`Pin is missing`);
                 return;
             }*/
-            if (this.pin && this.pin != value) {
+            // during a running lockout every PIN attempt is rejected without checking the PIN - also the correct one
+            if (this.pin && this.pinFailTimeout) {
+                this.startPinLockout();
                 this.log.warn(
-                    `Wrong pin entered. try ${++this.failCount}! Delay next attempt by ${2 ** this.failCount} seconds`,
+                    `PIN attempt during lockout rejected. try ${this.failCount}! Delay next attempt by ${this.pinLockSeconds} seconds`,
                 );
-
-                this.pinFailTimeout = this.adapter.setTimeout(
-                    async () => {
-                        this.pinFailTimeout = null;
-                        void this.update();
-                    },
-                    2 ** this.failCount * 1000,
+                await this.update();
+                return;
+            }
+            if (this.pin && this.pin != value) {
+                this.startPinLockout();
+                this.log.warn(
+                    `Wrong pin entered. try ${this.failCount}! Delay next attempt by ${this.pinLockSeconds} seconds`,
                 );
                 await this.update();
                 return;
@@ -552,6 +558,25 @@ export class PageAlarm extends Page {
         //if (event.page && event.id && this.pageItems) {
         //    this.pageItems[event.id as any].setPopupAction(event.action, event.opt);
         //}
+    }
+
+    /**
+     * Count a failed PIN attempt and (re)start the lockout with 2^failCount seconds.
+     * The timer duration is capped to the largest value setTimeout accepts (2^31-1 ms),
+     * the counter itself is not limited.
+     */
+    private startPinLockout(): void {
+        if (this.pinFailTimeout) {
+            this.adapter.clearTimeout(this.pinFailTimeout);
+            this.pinFailTimeout = null;
+        }
+        this.failCount++;
+        const delayMs = Math.min(2 ** this.failCount * 1000, MAX_TIMEOUT_MS);
+        this.pinLockSeconds = Math.floor(delayMs / 1000);
+        this.pinFailTimeout = this.adapter.setTimeout(() => {
+            this.pinFailTimeout = null;
+            void this.update();
+        }, delayMs);
     }
 
     delayUpdate(): void {
