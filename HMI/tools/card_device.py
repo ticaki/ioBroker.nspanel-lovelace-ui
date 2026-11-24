@@ -33,7 +33,9 @@ The same on every model (the adapter has constants for it): protocol and field o
 devStatus, the text buffers and strCommand of every page (943 / 875 / 1019), fonts per role (font ids are the same
 on all models; us-p fonts 0/2 are another face with other widths), touch behaviour. What differs is geometry only -
 the adapter has to measure names, values and the status line with the widths of the model (geometry file).
-check_area stops when a box leaves the visible area or lies on a swipe strip and reports overlapping boxes.
+check_area stops when a box (or the hotspot over an element) leaves the visible area or lies on a touch area the
+page keeps from cardGrid - the arrows, the swipe strips, the hidden hotspot mSpecial in the header (on us-p it
+reaches down to y 67) - and reports overlapping boxes of different elements.
 Copies never keep the editor group of their template (ungroup; us-p has grouped objects on cardGrid/cardEntities).
 
 Each page is a fresh copy of cardGrid: header, arrows, swipe strips, tmSerial (receive, ack/CRC, pageType switch),
@@ -284,9 +286,10 @@ LAYOUTS_PORTRAIT = {
         'status': PORTRAIT_STATUS, 'info': PORTRAIT_INFO,
     },
     # values: icon top in the middle, name below over the full width, 2 x 3 info tiles (148 px), the two switches
-    # as rows
+    # as rows. Icon and name start at y 68 / 152 as on cardDevice2: mSpecial of us-p (x 174..256) reaches down to
+    # y 67.
     'cardDevice3': {
-        'main': (85, 67, 150, 82, 4), 'mainName': (10, 151, 300, 26, 0, 1), 'statusXcen': 1,
+        'main': (85, 68, 150, 82, 4), 'mainName': (10, 152, 300, 26, 0, 1), 'statusXcen': 1,
         'slots': [info_tile(10 + 152 * (k % 2), 182 + 52 * (k // 2), 148) for k in range(6)]
         + [switch_row(10, 342, 300), switch_row(10, 394, 300)],
         'status': PORTRAIT_STATUS, 'info': PORTRAIT_INFO,
@@ -339,21 +342,32 @@ def model_layouts(model, grid):
 
 
 def check_area(page, layout, model):
-    """every box of the layout lies on the stage, in the visible x range and off the swipe strips; returns notes
-    about boxes of different elements that overlap (the two sets of an info row and neighbouring status cells are
-    meant to)"""
+    """every box of the layout (and every hotspot over an element) lies on the stage, in the visible x range and
+    off every touch area the page keeps from cardGrid: the arrows bPrev/bNext, the swipe strips and the hidden
+    hotspot mSpecial in the header (us-p: y 1..67, one row lower than on EU and us-l) - SystemExit otherwise.
+    Returns notes about boxes of different elements that overlap (the two sets of an info row and neighbouring
+    status cells are meant to)."""
     width, height = STAGE[model]
     x0, x1 = VISIBLE[model]
     name = page.objs[0].name
-    strips = [(o.name, (o.get('x'), o.get('y'), o.get('w'), o.get('h'))) for o in page.objs
-              if o.name.startswith('mSwipe')]
     boxes = [('main', layout['main'][:4]), ('main', layout['mainName'][:4]), ('status', layout['status'][:4]),
              ('info', layout['info'][:4])]
+    new = {'bMain', 'tMainName', 'tStatus', 'bInfo'}
     for k, spec in enumerate(layout['slots'], 1):
         group = 'status block' if spec['kind'] == 'status' else f'slot {k}'
         boxes += [(group, spec[n][:4]) for n in ('icon', 'name', 'value', 'bar', 'switch') if n in spec]
+        new |= set(slot_names(k, spec['kind'])[1])
+        if spec['kind'] in HOTSPOT:
+            boxes.append((group, hotspot_rect(spec)))
+            new.add(f'mSlot{k}')
     for k, spec in layout.get('narrow', {}).items():
         boxes += [(f'slot {k} narrow', spec[n][:4]) for n in ('icon', 'name', 'value')]
+        new |= set(narrow_names(k))
+    # what takes a touch and is not built here: buttons (98) and hotspots (109) of the cardGrid copy
+    strips = [(o.name, (o.get('x'), o.get('y'), o.get('w'), o.get('h'))) for o in page.objs
+              if o.name not in new and o.has('x') and o.get('type') in (98, 109)]
+    if not {'bPrev', 'bNext', 'mSwipePrev', 'mSwipeNext'} <= {n for n, _ in strips}:
+        raise SystemExit(f'{name}: the arrows and swipe strips of {SOURCE} are missing')
 
     def hit(a, b):
         return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]

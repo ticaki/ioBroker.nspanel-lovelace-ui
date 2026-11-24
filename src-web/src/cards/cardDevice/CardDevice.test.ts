@@ -526,7 +526,7 @@ describe('cardDevice on the models', () => {
         expect(tag(washer, 'slot-2')).toContain('left:10px;top:184px;width:300px;height:42px');
         expect(tag(washer, 'slot-6')).toContain('left:10px;top:356px;width:300px;height:80px');
         const car = render(usP3, 'cardDevice3', 'us-p');
-        expect(tag(car, 'main')).toContain('left:10px;top:67px;width:300px;height:110px');
+        expect(tag(car, 'main')).toContain('left:10px;top:68px;width:300px;height:110px');
         expect(tag(car, 'slot-2')).toContain('left:162px;top:182px;width:148px;height:51px');
         expect(tag(car, 'slot-7-label')).toContain('left:10px;top:350px;width:248px;height:34px');
         expect(car.match(/data-role="toggle"/g) ?? []).toHaveLength(2);

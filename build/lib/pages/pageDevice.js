@@ -25,9 +25,6 @@ var import_Page = require("../classes/Page");
 var import_tools = require("../const/tools");
 var import_deviceDetails = require("../types/deviceDetails");
 var import_device_page = require("./device-page");
-function isCardDeviceConfig(config) {
-  return !!config && (config.card === "cardDevice1" || config.card === "cardDevice2" || config.card === "cardDevice3");
-}
 class PageDevice extends import_Page.Page {
   headline;
   slotCount;
@@ -42,15 +39,15 @@ class PageDevice extends import_Page.Page {
   statusIndex = 0;
   /** the interval that shows the next part; only while there is more than one */
   statusTimer = void 0;
-  constructor(config, options) {
+  constructor(config, pageConfig) {
     var _a;
+    const options = (0, import_device_page.devicePageOfModel)(pageConfig, config.panel.info.nspanel.model);
     super(config, options);
     const card = options.config;
-    if (!isCardDeviceConfig(card)) {
+    if (!(0, import_device_page.isCardDeviceConfig)(card)) {
       throw new Error("PageDevice: invalid config card");
     }
-    const layout = Number(card.card.slice("cardDevice".length));
-    this.layout = (0, import_deviceDetails.isDevicePageLayout)(layout) ? layout : 1;
+    this.layout = (0, import_device_page.layoutOfCardDevice)(card.card);
     const headline = card.data.headline;
     this.headline = headline.type === "const" && typeof headline.constVal === "string" ? headline.constVal : "";
     this.slotCount = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout].length;
@@ -67,6 +64,29 @@ class PageDevice extends import_Page.Page {
       return import_device_page.DEVICE_PAGE_EMPTY_ELEMENT;
     }
     return await item.getPageItemPayload() || import_device_page.DEVICE_PAGE_EMPTY_ELEMENT;
+  }
+  /**
+   * @returns the kinds of the extra slots this panel shows behind info: those of the layout on a web model, none on
+   * an HMI model
+   */
+  extraKinds() {
+    return (0, import_deviceDetails.devicePageExtraSlotKinds)(this.layout, this.basePanel.info.nspanel.model);
+  }
+  /**
+   * The element of a slot: a status icon never shows name or value, field 6 of an alias channel follows the kind of
+   * its slot; names and values are cut to the text buffers of the HMI.
+   *
+   * @param slot index of the slot (0 = slot 1, the extra slots follow the slots of the layout)
+   * @param kind the kind of the slot
+   * @param onOff the text of on (true) / off (false) in the language of the panel
+   * @returns the element
+   */
+  async slotElement(slot, kind, onOff) {
+    let element = await this.elementAt((0, import_device_page.devicePageSlotItemIndex)(this.layout, slot));
+    if (this.channelSlots.has(slot)) {
+      element = (0, import_device_page.devicePageChannelElement)(kind, element, onOff);
+    }
+    return kind === "status" ? (0, import_device_page.devicePageStatusIconElement)(element) : (0, import_device_page.devicePageClampElement)(element);
   }
   /**
    * @param index number of a page item
@@ -149,13 +169,13 @@ class PageDevice extends import_Page.Page {
     const elements = [];
     const kinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout];
     const onOff = (on) => this.library.getTranslation(on ? "on" : "off");
-    for (let index = 1; index <= this.slotCount + 1; index++) {
-      let element = await this.elementAt(index);
-      const kind = kinds[index - 1];
-      if (kind && this.channelSlots.has(index - 1)) {
-        element = (0, import_device_page.devicePageChannelElement)(kind, element, onOff);
-      }
-      elements.push(kind === "status" ? (0, import_device_page.devicePageStatusIconElement)(element) : (0, import_device_page.devicePageClampElement)(element));
+    for (let slot = 0; slot < this.slotCount; slot++) {
+      elements.push(await this.slotElement(slot, kinds[slot], onOff));
+    }
+    elements.push((0, import_device_page.devicePageClampElement)(await this.elementAt(this.slotCount + 1)));
+    const extraKinds = this.extraKinds();
+    for (let extra = 0; extra < extraKinds.length; extra++) {
+      elements.push(await this.slotElement(this.slotCount + extra, extraKinds[extra], onOff));
     }
     this.sendToPanel(
       (0, import_device_page.devicePagePayload)(
@@ -173,10 +193,10 @@ class PageDevice extends import_Page.Page {
     );
   }
   /**
-   * A long press on an element: a slot runs the long press of its page item (the action configured for the slot, a
-   * channel item what it does on cardGrid). main and the info icon have none - they keep the device part of the
-   * item, whose long press would open the detail page from here. Without an action nothing happens: the press is
-   * always handled, the caller (Panel) never treats it as a tap.
+   * A long press on an element: a slot (also an extra slot of a web model) runs the long press of its page item (the
+   * action configured for the slot, a channel item what it does on cardGrid). main and the info icon have none -
+   * they keep the device part of the item, whose long press would open the detail page from here. Without an action
+   * nothing happens: the press is always handled, the caller (Panel) never treats it as a tap.
    *
    * @param id number of the element
    * @param popup popup of the event
@@ -187,7 +207,10 @@ class PageDevice extends import_Page.Page {
    */
   async onButtonPress3(id, popup, action, value, event = null) {
     const index = typeof id === "number" ? id : parseInt(id);
-    if (index >= 1 && index <= this.slotCount) {
+    const firstExtra = (0, import_device_page.devicePageSlotItemIndex)(this.layout, this.slotCount);
+    const isSlot = index >= 1 && index <= this.slotCount;
+    const isExtraSlot = index >= firstExtra && index < firstExtra + this.extraKinds().length;
+    if (isSlot || isExtraSlot) {
       await super.onButtonPress3(id, popup, action, value, event);
     }
     return true;

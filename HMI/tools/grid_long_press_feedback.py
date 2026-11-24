@@ -34,7 +34,10 @@ Fix, per page:
   restore          if(tmLP.tim!=500): tmLP.tim=500, the cell gets bco=defaultBcoColor (what the page 'load' gave
                    every button and text) and a button its design bco2 back. In every cell 'up' behind 'tmLP.en=0'
                    (in front of the send, which stays as it is) and at the end of tc0 'up' together with tmLP.en=0
-                   (tc0 gets every release, also one the cell does not get).
+                   (tc0 gets every release, also one the cell does not get). In tc0 the tmLP.en=0 stands inside
+                   the if: tc0 stops the timer only once the cell blinks. A release before the 500 ms that
+                   reaches tc0 but not the cell leaves tmLP running - it then arms the long press and the cell
+                   blinks until the next release anywhere on the page (not seen, see device-page-hmi.md).
 Other ways out: a page change (popup, pageType of the adapter after sleepReached, navigation) loads the page again,
 bco2, tmLP.tim and the variables are local and start with their design values. An entityUpd while a cell is held
 writes neither bco nor bco2 of a cell (checked: the only writer of a bco on the page is the 'load' loop, which must
