@@ -44,6 +44,16 @@ export function isPageItemDataItemsOptions(obj: any): obj is NSPanel.PageItemDat
 
     return false;
 }
+
+/**
+ * @param item a page item configuration
+ * @returns true for an item without template (the item itself, not resolved by its page)
+ */
+export function isPageItemWithoutTemplate(
+    item: NSPanel.PageItemDataItemsOptions,
+): item is NSPanel.PageItemDataItemsOptionsWithOutTemplate {
+    return !('template' in item && item.template);
+}
 export function islistCommandUnion(F: any): F is NSPanel.listCommandUnion {
     switch (F as NSPanel.listCommandUnion) {
         case 'flip': {

@@ -82,7 +82,8 @@ import {
 } from './lib/configuration/script-to-admin-runner';
 import { adminPageItemToScriptItem } from './lib/configuration/admin-page-item';
 import { deviceDetailsInfo } from './lib/configuration/admin-device-details';
-import { devicePageChannels } from './lib/pages/device-page';
+import { buildDevicePage, devicePageName } from './lib/pages/device-page';
+import { isPageItemWithoutTemplate } from './lib/types/type-pageItem';
 import {
     deviceDetailsRuntimeOf,
     deviceShortPressOf,
@@ -3801,13 +3802,17 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     async convertAdminPageItemToPageItemConfig(
         preItem: AdminPageItemConfig | undefined,
-        prePage: { card: string; uniqueName: string },
+        /** the page of the item; `alwaysOn` is handed on to the page generated from the item (device page) */
+        prePage: { card: string; uniqueName: string; alwaysOn?: 'none' | 'always' | 'action' | 'ignore' },
         messages: string[],
     ): Promise<{
         pageItem: NSPanel.PageItemDataItemsOptions | undefined;
         messages: string[];
         error: string | undefined;
-        /** page the config manager generated from the item (`media-<id>` behind a media item) - the caller adds it */
+        /**
+         * page the config manager generated from the item (`media-<id>` behind a media item, the device page of a
+         * device item) - the caller adds it
+         */
         pageConfig?: ScriptConfig.PageType;
         /**
          * the messages nobody has logged yet (the config manager logs its own): the slots of a device page that were
@@ -3859,42 +3864,49 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const deviceDetails = preItem.useNative ? undefined : deviceDetailsRuntimeOf(preItem.device);
                 if (pageItem && deviceDetails) {
                     pageItem.deviceDetails = deviceDetails;
-                    if (deviceDetails.devicePage) {
-                        // alias channels in the slots of the device page: their page items are built here, the
-                        // device page itself only when it is opened
-                        const built = await devicePageChannels(
-                            deviceDetails.devicePage,
-                            async id => {
-                                const obj = await this.getForeignObjectAsync(id);
-                                const role: unknown = obj?.common?.role;
-                                return obj ? (typeof role === 'string' ? role : '') : undefined;
+                    if (deviceDetails.devicePage && !pageConfig) {
+                        // the device page: a page of its own below the page of the item, built here like the media
+                        // page of a media item - the admin configuration adds it as generated page
+                        const uniqueName = devicePageName(prePage.uniqueName, deviceDetails.deviceId);
+                        const built = await buildDevicePage(
+                            uniqueName,
+                            prePage.alwaysOn ?? 'none',
+                            {
+                                deviceId: deviceDetails.deviceId,
+                                entries: deviceDetails.entries,
+                                page: deviceDetails.devicePage,
+                                main: isPageItemWithoutTemplate(pageItem) ? pageItem : undefined,
                             },
-                            async slotItem => {
-                                const scriptItem = adminPageItemToScriptItem(slotItem, color =>
-                                    this.log.warn(`Invalid color format: ${color}`),
-                                );
-                                return scriptItem
-                                    ? (
-                                          await manager.getPageItemConfig(
-                                              scriptItem,
-                                              // a slot is a cardGrid cell
-                                              {
-                                                  type: 'cardGrid',
-                                                  uniqueName: prePage.uniqueName,
-                                                  heading: '',
-                                                  items: [],
-                                              },
-                                              [],
-                                          )
-                                      ).itemConfig
-                                    : undefined;
+                            {
+                                getObject: async id => (await this.getForeignObjectAsync(id)) ?? null,
+                                translate: key => this.library.getTranslation(key),
+                                language: this.library.getLocalLanguage(),
+                                pageItemOf: async slotItem => {
+                                    const scriptItem = adminPageItemToScriptItem(slotItem, color =>
+                                        this.log.warn(`Invalid color format: ${color}`),
+                                    );
+                                    return scriptItem
+                                        ? (
+                                              await manager.getPageItemConfig(
+                                                  scriptItem,
+                                                  // a slot is a cardGrid cell
+                                                  {
+                                                      type: 'cardGrid',
+                                                      uniqueName: prePage.uniqueName,
+                                                      heading: '',
+                                                      items: [],
+                                                  },
+                                                  [],
+                                              )
+                                          ).itemConfig
+                                        : undefined;
+                                },
                             },
                         );
-                        if (Object.keys(built.channels).length > 0) {
-                            pageItem.devicePageChannels = built.channels;
-                        }
-                        messages.push(...built.errors);
-                        unloggedMessages.push(...built.errors);
+                        pageItem.devicePageName = uniqueName;
+                        pageConfig = { type: undefined, uniqueName, native: built.page };
+                        messages.push(...built.messages);
+                        unloggedMessages.push(...built.messages);
                     }
                 }
             } catch (e: any) {

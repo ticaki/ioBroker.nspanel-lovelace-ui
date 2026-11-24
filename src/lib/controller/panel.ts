@@ -27,6 +27,7 @@ import type { IClientPublishOptions } from 'mqtt';
 import type { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
 import { PageDevice } from '../pages/pageDevice';
+import { CARD_DEVICE_MODELS, withoutDevicePages } from '../pages/device-page';
 import { Navigation, SCREENSAVER_NAV_INDEX, type NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
@@ -572,6 +573,14 @@ export class Panel extends BaseClass {
             }
             return false;
         });
+        if (!CARD_DEVICE_MODELS.has(this.info.nspanel.model)) {
+            // the HMI of this model has no device page: its device items open the detail page
+            // (PageItem.openDeviceOf), the page and its node would only be a broken page
+            ({ pages: options.pages, navigation: options.navigation } = withoutDevicePages(
+                options.pages,
+                options.navigation,
+            ));
+        }
         this.info.internal.pageCount = options.pages.length;
         this.info.internal.servicePageCount = systemPages.length;
         // clones: pages and nodes are changed per panel (Page.init() replaces the item configs, Navigation

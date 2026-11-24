@@ -3,7 +3,6 @@ import type * as typePageItem from './type-pageItem';
 import type * as pages from './pages';
 import type { PageItemTemplateOption, ScreensaverArea } from './adminShareConfig';
 import type { DeviceDetailsRuntime } from './deviceDetails';
-import type { DevicePageChannelItems } from '../pages/device-page';
 
 export namespace NSPanel {
     type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
@@ -1544,15 +1543,10 @@ export namespace NSPanel {
          */
         deviceDetails?: DeviceDetailsRuntime;
         /**
-         * device with details: the alias channels of the slots of its device page as page items, by the index of
-         * their slot - built when the item is configured (device-page.ts devicePageChannels)
+         * device with details: unique name of its device page (device-page.ts devicePageName) - the long press
+         * navigates there when the panel can show it
          */
-        devicePageChannels?: DevicePageChannelItems;
-        /**
-         * an element of a device page whose short tap navigates: name of the target page (device-page.ts) - the tap
-         * does nothing else
-         */
-        devicePageTarget?: string;
+        devicePageName?: string;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };
@@ -1728,7 +1722,7 @@ export namespace NSPanel {
         // Popup Cards
         | 'popupNotify'
         | 'popupNotify2'
-        // generated device page of a device item (device-page.ts), not selectable in the admin
+        // device page of a device item (device-page.ts), not selectable in the admin
         | 'cardDevice1'
         | 'cardDevice2'
         | 'cardDevice3'

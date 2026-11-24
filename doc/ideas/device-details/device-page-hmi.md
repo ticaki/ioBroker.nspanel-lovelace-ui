@@ -460,7 +460,7 @@ Zwei Rechnungen in Byte, je Element die sechs Felder `Typ+ID+Icon+Farbe+Name+Wer
 - **(a) alle Puffer voll:** jedes Feld so lang wie der Puffer, in dem es landet (Typ 10, ID 23, Icon 10, Farbe 5,
   Name 31, Wert 31 bzw. `tTmp` 10 bei progress/switch, Status 63, Überschrift 40); Felder, die die Seite nicht liest,
   mit dem, was der Adapter schickt.
-- **(b) wie der Adapter baut:** ID 12 (`dp_<Seitenindex>?<n>`), ein Icon 4, Farbe 5, längster Typ der Art (`input_sel`
+- **(b) wie der Adapter baut:** ID höchstens 12 (`<Seitenindex>?<n>`), ein Icon 4, Farbe 5, längster Typ der Art (`input_sel`
   9 bei info, `button`/`switch` 6, `text` 4), Name und Wert bis zum Puffer, Wert eines Knopfs/Schalters 1 (`0`/`1`),
   progress 3 (`100`), Status-Icons ohne Name und Wert (der Adapter schickt beide Felder leer), Pfeile und info-Icon
   ohne Name und Wert.

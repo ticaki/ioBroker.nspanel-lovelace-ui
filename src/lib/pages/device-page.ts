@@ -2,7 +2,9 @@
  * The device page of a device item (doc/ideas/device-details/README.md, section Geräteseite): optionally a long press
  * opens it instead of the detail page. HMI pages cardDevice1 / cardDevice2 / cardDevice3: a big device icon (main),
  * the slots of the layout ({@link DEVICE_PAGE_LAYOUTS}), a wide status line (field 6 of main) and an optional info icon
- * that opens the detail page. Generated at runtime like the detail page, not editable.
+ * that opens the detail page. A normal page of the panel: the config manager builds its configuration
+ * ({@link buildDevicePage}) when the item is configured, the panel creates it at the start like every other page
+ * (a generated sub page of the page of the item, read-only in the navigation flow like `media-<id>`).
  *
  * `entityUpd~<heading>~<navigation>~<main>~<slot1>~…~<slotN>~<info>`, every element the 6 fields of a cardGrid cell
  * `type~intName~icon~iconColor~displayName~optionalValue`.
@@ -11,6 +13,7 @@ import { Color } from '../const/Color';
 import { MAX_PANEL_PAYLOAD_BYTES } from '../const/definition';
 import { ELLIPSIS, ELLIPSIS_FALLBACK, fitText, hasGlyph, textWidth } from '../const/text-width';
 import { isVersionGreaterOrEqual } from '../const/tools';
+import { isCardDeviceType } from '../types/function-and-const';
 import { emptyChannelValueConfig, type AdminPageItemConfig } from '../types/adminShareConfig';
 import type { NSPanel } from '../types/NSPanel';
 import type { PageBase } from '../types/pages';
@@ -57,10 +60,13 @@ import {
 } from './device-details';
 
 /**
- * prefix of the id of a generated device page, followed by the id of the page it was opened from (short like the
- * detail page: the ids of the elements `<page>?<n>` must fit the id buffers of the HMI)
+ * @param pageName unique name of the page the device item lies on
+ * @param deviceId id of the device
+ * @returns unique name of the device page of this device on this page
  */
-export const DEVICE_PAGE_PREFIX = 'dp_';
+export function devicePageName(pageName: string, deviceId: string): string {
+    return `device-${pageName}-${deviceId}`;
+}
 
 /**
  * first TFT version with the pages cardDevice1..3.
@@ -98,6 +104,33 @@ export function supportsCardDevice(target: CardDeviceTarget): boolean {
         return true;
     }
     return !!target.displayVersion && isVersionGreaterOrEqual(target.displayVersion, CARD_DEVICE_MIN_TFT);
+}
+
+/**
+ * The pages and nodes of a panel without the device pages: for a model whose HMI has none ({@link CARD_DEVICE_MODELS})
+ * - its device items open the detail page instead, a device page would be a broken page.
+ *
+ * @param pages the pages of the panel
+ * @param navigation its navigation nodes
+ * @returns both without the device pages and their nodes
+ */
+export function withoutDevicePages<
+    P extends { uniqueID: string; config?: { card: string } } | null | undefined,
+    N extends { name: string } | null | undefined,
+>(pages: P[], navigation: N[]): { pages: P[]; navigation: N[] } {
+    const devicePages = new Set<string>();
+    for (const page of pages) {
+        if (page && isCardDeviceType(page.config?.card)) {
+            devicePages.add(page.uniqueID);
+        }
+    }
+    if (devicePages.size === 0) {
+        return { pages, navigation };
+    }
+    return {
+        pages: pages.filter(p => !p || !devicePages.has(p.uniqueID)),
+        navigation: navigation.filter(n => !n || !devicePages.has(n.name)),
+    };
 }
 
 /**
@@ -370,14 +403,16 @@ function withIcon(icon: IconOptions | undefined, name: string): IconOptions {
  * nothing). A short tap `navigation`, `popup` or `devicePage` is not built here: main is a text with icon, name and
  * on/off of the item, without action. Its field 6 is replaced by the status line ({@link devicePageMainElement}).
  *
- * @param source runtime configuration of the device item
+ * Without a source (no item behind the page) main is a text with the icon of the device page and the name.
+ *
+ * @param source runtime configuration of the device item, undefined = none
  * @param details the device part of the item
  * @param page the device page
  * @param name the name of the device (the headline of the device page)
  * @returns the page item of main
  */
 export function devicePageMainItem(
-    source: NSPanel.PageItemDataItemsOptionsWithOutTemplate,
+    source: NSPanel.PageItemDataItemsOptionsWithOutTemplate | undefined,
     details: DeviceDetailsRuntime,
     page: DevicePageRuntime,
     name: string,
@@ -388,12 +423,13 @@ export function devicePageMainItem(
     // page - there is no long press on the device page
     const deviceDetails: DeviceDetailsRuntime = { deviceId: details.deviceId, entries: details.entries };
     if (
+        source &&
         (page.shortPress === 'state' || page.shortPress === 'none') &&
         (source.type === 'button' || source.type === 'switch' || source.type === 'text')
     ) {
         const item = structuredClone(source);
         item.deviceDetails = deviceDetails;
-        delete item.devicePageChannels;
+        delete item.devicePageName;
         item.dpInit = '';
         item.data.text = text;
         // text.states takes the name from common.states of the text - the name is fixed here
@@ -405,7 +441,7 @@ export function devicePageMainItem(
         }
         return item;
     }
-    const data = source.data;
+    const data = source?.data;
     const icon: IconOptions | undefined = data && 'icon' in data && data.icon ? structuredClone(data.icon) : undefined;
     const entity1 = data && 'entity1' in data && data.entity1 ? structuredClone(data.entity1) : undefined;
     return {
@@ -443,16 +479,13 @@ export function devicePageInfoItem(details: DeviceDetailsRuntime): NSPanel.PageI
     };
 }
 
-/** an alias channel of a slot as page item, built when the item is configured ({@link devicePageChannels}) */
+/** an alias channel of a slot as page item, built with the page ({@link buildDevicePage}) */
 export interface DevicePageChannelItem {
     /** common.role of the channel */
     role: string;
     /** the page item of the channel as the config manager builds it for a normal page */
     item: NSPanel.PageItemDataItemsOptions;
 }
-
-/** the alias channels of the slots of a device page by the index of their slot (0 = slot 1) */
-export type DevicePageChannelItems = Record<number, DevicePageChannelItem>;
 
 /**
  * The admin page item an alias channel of a slot is converted from: a standard item of the channel with the settings
@@ -466,7 +499,7 @@ export type DevicePageChannelItems = Record<number, DevicePageChannelItem>;
  */
 export function devicePageChannelAdminItem(ref: DevicePageSlotRef, role: string): AdminPageItemConfig {
     // the navigation of the tap is not handed to the channel item: it stays the item of its role (value, switch),
-    // the tap is caught on the device page (devicePageElements)
+    // the device page adds the target where the tap reaches the adapter (buildDevicePage)
     const {
         longPress,
         isNavigation: _isNavigation,
@@ -478,54 +511,6 @@ export function devicePageChannelAdminItem(ref: DevicePageSlotRef, role: string)
         item.longPress = longPress;
     }
     return item;
-}
-
-/**
- * The alias channels of the slots of a device page as page items, built once when the item is configured (the device
- * page itself is built when it is opened). A channel that does not exist, whose role does not fit the kind of its
- * slot ({@link devicePageSlotAcceptsChannel}) or that the config manager rejects is left out and reported.
- *
- * @param page the device page
- * @param getRole reads common.role of a channel, undefined when the object does not exist
- * @param convert builds the page item of an admin page item (config manager), may throw
- * @returns the page items by slot and the reasons of the channels left out
- */
-export async function devicePageChannels(
-    page: DevicePageRuntime,
-    getRole: (id: string) => Promise<string | undefined>,
-    convert: (item: AdminPageItemConfig) => Promise<NSPanel.PageItemDataItemsOptions | undefined>,
-): Promise<{ channels: DevicePageChannelItems; errors: string[] }> {
-    const channels: DevicePageChannelItems = {};
-    const errors: string[] = [];
-    const kinds = DEVICE_PAGE_LAYOUTS[page.layout];
-    for (let i = 0; i < kinds.length; i++) {
-        const ref = page.slots[i];
-        if (!ref || ref.custom !== 'channel' || ref.id === '') {
-            continue;
-        }
-        const where = `Device page slot ${i + 1} (${kinds[i]}): channel ${ref.id}`;
-        try {
-            const role = await getRole(ref.id);
-            if (role === undefined) {
-                errors.push(`${where} not found!`);
-                continue;
-            }
-            if (!devicePageSlotAcceptsChannel(kinds[i], role)) {
-                errors.push(`${where} with role ${role || '(none)'} does not fit the slot!`);
-                continue;
-            }
-            const item = await convert(devicePageChannelAdminItem(ref, role));
-            // a template item (timeTable) is resolved by its page - no slot can show it
-            if (!item || ('template' in item && item.template)) {
-                errors.push(`${where} gives no page item!`);
-                continue;
-            }
-            channels[i] = { role, item };
-        } catch (e) {
-            errors.push(`${where}: ${e instanceof Error ? e.message : String(e)}`);
-        }
-    }
-    return { channels, errors };
 }
 
 /**
@@ -707,7 +692,7 @@ function applySlotLook(
  *   item is a button or a switch ({@link devicePageSlotTakesLongPress}),
  * - the font of the icon (`textSize`, like on cardGrid) where the slot takes one ({@link devicePageSlotTakesTextSize}).
  *
- * A page item without icon stays as it is. The name is set when the item is built (devicePageElements).
+ * A page item without icon stays as it is. The name is set when the item is built (buildDevicePage).
  *
  * @param item the page item of the slot (changed)
  * @param ref the slot
@@ -779,13 +764,32 @@ export function devicePageSlotItem(
     if (!item) {
         return undefined;
     }
-    const withLook = withDevicePageSlotLook(item, entry, common, kind);
-    return target ? { ...withLook, devicePageTarget: target } : withLook;
+    return withDevicePageNavigation(withDevicePageSlotLook(item, entry, common, kind), target);
+}
+
+/**
+ * The short tap of a slot that navigates: the target page as `setNavi`, the field of every navigation item (the
+ * navigation flow reads it). On the device page the tap then only navigates (PageItem.onCommand).
+ *
+ * @param item the page item of the slot
+ * @param target name of the target page, '' = the tap does what the element does on its own
+ * @returns the page item
+ */
+export function withDevicePageNavigation(
+    item: NSPanel.PageItemDataItemsOptions,
+    target: string,
+): NSPanel.PageItemDataItemsOptions {
+    const out = structuredClone(item);
+    if (target && out.data) {
+        const setNavi: NSPanel.DataItemsOptions = { type: 'const', constVal: target };
+        Object.assign(out.data, { setNavi });
+    }
+    return out;
 }
 
 /**
  * The page item of a navigation slot (`custom: 'navigation'`): a text with icon and name only - no state, field 6
- * stays empty. The tap opens the target page (`devicePageTarget`, PageItem.onCommand). Icon and color are the own
+ * stays empty. The tap opens the target page (`setNavi`, PageItem.onCommand). Icon and color are the own
  * ones of the slot (`trueIcon`, `trueColor`), else {@link DEVICE_PAGE_NAVIGATION_ICON} in the color of the group
  * info, the font of the icon the own one ({@link devicePageSlotTakesTextSize}); the name is the own text, else the
  * name of the target page.
@@ -814,8 +818,8 @@ export function devicePageNavigationSlotItem(
         type: 'text',
         role: DEVICE_DETAIL_ROW_ROLE,
         dpInit: '',
-        devicePageTarget: target,
         data: {
+            setNavi: { type: 'const', constVal: target },
             icon: {
                 true: { value: icon, color },
                 false: { value: icon, color },
@@ -977,50 +981,116 @@ export function reportMissingDevicePageTarget(panel: object, target: string): bo
     return true;
 }
 
-/** the elements of the device page in the order of its page items */
-export interface DevicePageElements {
-    headline: string;
-    /** number of slots of the layout */
-    slotCount: number;
+/**
+ * What a device page is built from: the device, the slots, the status line and the info icon - nothing about who opens
+ * the page. Today the device item of a page brings it (its `main`), the page itself does not depend on it.
+ */
+export interface DevicePageSource {
+    /** id of the device or channel object: headline and mask of the states */
+    deviceId: string;
+    /** the rows of the detail page the info icon opens */
+    entries: DeviceDetailEntryConfig[];
+    /** layout, slots, status line, info icon and icon */
+    page: DevicePageRuntime;
+    /** page item main takes icon, state and tap from (the device item); missing = a text with the icon of the page */
+    main?: NSPanel.PageItemDataItemsOptionsWithOutTemplate;
+}
+
+/** what {@link buildDevicePage} reads with */
+export interface DevicePageBuildContext {
+    /** reads an object */
+    getObject: (id: string) => Promise<ioBroker.Object | null>;
+    /** translates a key (library.getTranslation) */
+    translate: (key: string) => string;
+    /** the language of the system */
+    language: ioBroker.Languages;
     /**
-     * page items: [main, slot1 … slotN, info, status] - undefined = empty slot / no info / no status. The index is the
-     * number of the item in its id `<page>?<index>`.
+     * the page item of an admin page item, built the normal way (config manager, as a cardGrid cell), undefined when
+     * it gives none; may throw
      */
-    elements: (NSPanel.PageItemDataItemsOptions | undefined)[];
-    /** slots whose state or channel does not exist or does not fit the kind of the slot (log) */
-    skipped: string[];
-    /** index of the slots (0 = slot 1) that show an alias channel ({@link devicePageChannelElement}) */
-    channelSlots: number[];
+    pageItemOf: (item: AdminPageItemConfig) => Promise<NSPanel.PageItemDataItemsOptions | undefined>;
+}
+
+/** an empty slot, no info icon, no status line: an empty page item (the element stays empty, PageDevice) */
+const EMPTY_DEVICE_PAGE_ITEM: NSPanel.PageItemDataItemsOptions = { type: 'empty', data: undefined };
+
+/**
+ * The page item of an alias channel in a slot, built by the config manager.
+ *
+ * @param kind the kind of the slot
+ * @param ref the slot (`custom: 'channel'`)
+ * @param ctx what the page is built with
+ * @returns the page item, or the reason why the slot stays empty
+ */
+async function devicePageChannelSlot(
+    kind: DevicePageSlotKind,
+    ref: DevicePageSlotRef,
+    ctx: DevicePageBuildContext,
+): Promise<{ item?: NSPanel.PageItemDataItemsOptions; error?: string }> {
+    const where = `channel ${ref.id}`;
+    try {
+        const obj = await ctx.getObject(ref.id);
+        if (!obj) {
+            return { error: `${where} not found!` };
+        }
+        const rawRole: unknown = obj.common?.role;
+        const role = typeof rawRole === 'string' ? rawRole : '';
+        if (!devicePageSlotAcceptsChannel(kind, role)) {
+            return { error: `${where} with role ${role || '(none)'} does not fit the slot!` };
+        }
+        const item = await ctx.pageItemOf(devicePageChannelAdminItem(ref, role));
+        // a template item (timeTable) is resolved by its page - no slot can show it
+        const slotItem =
+            item && !('template' in item && item.template)
+                ? devicePageChannelSlotItem(kind, { role, item })
+                : undefined;
+        if (!slotItem) {
+            return { error: `${where} gives no page item!` };
+        }
+        // the tap navigates where it reaches the adapter - elsewhere the popup of the HMI comes first
+        const target = devicePageChannelTakesNavigation(role) ? devicePageSlotTargetOf(ref) : '';
+        return { item: withDevicePageNavigation(slotItem, target) };
+    } catch (e) {
+        return { error: `${where}: ${e instanceof Error ? e.message : String(e)}` };
+    }
 }
 
 /**
- * Everything the device page needs, read from the objects of the device and its states.
+ * The configuration of a device page, built like every other page when the panel configuration is built (the
+ * objects are read here once, not when the page is opened). Its page items are the elements in the order
+ * `[main, slot1 … slotN, info, status]` - an empty slot, no info and no status line an empty item:
+ * - main: {@link devicePageMainItem},
+ * - a slot with a state of the device or an own data point: the item of the mask of the detail page (icon, name,
+ *   color group, the text that tells duplicates apart) with the own settings of the slot ({@link devicePageSlotItem}),
+ * - a slot with an alias channel: the page item the config manager builds for the channel on a normal page,
+ * - a navigation slot: icon and name ({@link devicePageNavigationSlotItem}),
+ * - the short tap of a slot that navigates: `setNavi` ({@link withDevicePageNavigation}),
+ * - info and the hidden status item.
  *
- * @param source runtime configuration of the device item (main)
- * @param details the device part of the item
- * @param page the device page
- * @param getObject reads an object (states controller, cached)
- * @param translate translates a key (library.getTranslation)
- * @param language the language of the system
- * @returns headline, page items and the skipped slots
+ * @param uniqueID unique name of the page
+ * @param alwaysOn alwaysOn of the page
+ * @param source device, slots, status line and info
+ * @param ctx what the page is read and built with
+ * @returns the page configuration and the slots left empty (missing state or channel, not fitting the slot)
  */
-export async function devicePageElements(
-    source: NSPanel.PageItemDataItemsOptionsWithOutTemplate,
-    details: DeviceDetailsRuntime,
-    page: DevicePageRuntime,
-    getObject: (id: string) => Promise<ioBroker.Object | null>,
-    translate: (key: string) => string,
-    language: ioBroker.Languages,
-): Promise<DevicePageElements> {
-    const device = await getObject(details.deviceId);
-    const headline = nameOfCommon(device?.common?.name, language) || details.deviceId.split('.').pop() || '';
+export async function buildDevicePage(
+    uniqueID: string,
+    alwaysOn: 'none' | 'always' | 'action' | 'ignore',
+    source: DevicePageSource,
+    ctx: DevicePageBuildContext,
+): Promise<{ page: PageBase; messages: string[] }> {
+    const { deviceId, page } = source;
+    const details: DeviceDetailsRuntime = { deviceId, entries: source.entries };
+    const device = await ctx.getObject(deviceId);
+    const headline = nameOfCommon(device?.common?.name, ctx.language) || deviceId.split('.').pop() || '';
     const kinds = DEVICE_PAGE_LAYOUTS[page.layout];
+    const messages: string[] = [];
     const skipped: string[] = [];
     const readCommon = async (ref: DevicePageStateRef | null): Promise<DeviceDetailStateCommon | undefined> => {
         if (!ref) {
             return undefined;
         }
-        const obj = await getObject(ref.id);
+        const obj = await ctx.getObject(ref.id);
         if (obj?.type !== 'state') {
             skipped.push(ref.id);
             return undefined;
@@ -1035,24 +1105,16 @@ export async function devicePageElements(
     for (let i = 0; i < kinds.length; i++) {
         const ref = page.slots[i] ?? null;
         if (ref?.custom === 'navigation') {
-            // no state: icon and name, the tap opens the target page
             slots[i] = devicePageNavigationSlotItem(kinds[i], ref);
             continue;
         }
         if (ref?.custom === 'channel') {
-            // an alias channel: its page item was built when the item was configured, it brings its own name
-            const channel = source.devicePageChannels?.[i];
-            const item = channel ? devicePageChannelSlotItem(kinds[i], channel) : undefined;
-            if (item) {
-                // the tap navigates where it reaches the adapter - elsewhere the popup of the HMI comes first
-                const target = devicePageChannelTakesNavigation(channel?.role) ? devicePageSlotTargetOf(ref) : '';
-                if (target) {
-                    item.devicePageTarget = target;
-                }
-                slots[i] = item;
+            const channel = await devicePageChannelSlot(kinds[i], ref, ctx);
+            if (channel.item) {
+                slots[i] = channel.item;
                 channelSlots.push(i);
             } else {
-                skipped.push(ref.id);
+                messages.push(`Device page slot ${i + 1} (${kinds[i]}): ${channel.error ?? ref.id}`);
             }
             continue;
         }
@@ -1063,17 +1125,17 @@ export async function devicePageElements(
     }
     const named = present.filter(p => kinds[p.index] !== 'status' && !p.entry.name);
     const names = deviceDetailRowNames(
-        details.deviceId,
+        deviceId,
         named.map(p => p.entry),
         named.map(p => p.common),
-        translate,
-        language,
+        ctx.translate,
+        ctx.language,
         null,
     );
     present.forEach(p => {
         const n = named.indexOf(p);
         const name = (kinds[p.index] !== 'status' && p.entry.name) || (n >= 0 ? (names[n] ?? '') : '');
-        const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, name);
+        const item = devicePageSlotItem(deviceId, kinds[p.index], p.entry, p.common, name);
         if (!item) {
             skipped.push(p.entry.id);
         }
@@ -1082,49 +1144,30 @@ export async function devicePageElements(
     // an own data point without id (not entered yet): no status line, nothing to report
     const statusRef = page.status && page.status.id !== '' ? page.status : null;
     const statusCommon = await readCommon(statusRef);
-    const status =
-        statusRef && statusCommon ? devicePageStatusItem(details.deviceId, statusRef, statusCommon) : undefined;
+    const status = statusRef && statusCommon ? devicePageStatusItem(deviceId, statusRef, statusCommon) : undefined;
+    if (skipped.length > 0) {
+        messages.push(
+            `Device page of ${deviceId}: missing state or not fitting its slot, left empty: ${skipped.join(', ')}`,
+        );
+    }
+    const elements = [
+        devicePageMainItem(source.main, details, page, headline),
+        ...slots,
+        page.showInfo ? devicePageInfoItem(details) : undefined,
+        status,
+    ];
     return {
-        headline,
-        slotCount: kinds.length,
-        elements: [
-            devicePageMainItem(source, details, page, headline),
-            ...slots,
-            page.showInfo ? devicePageInfoItem(details) : undefined,
-            status,
-        ],
-        skipped,
-        channelSlots,
-    };
-}
-
-/**
- * The page configuration of the device page: not editable, the headline is the name of the device.
- *
- * @param uniqueID id of the page
- * @param layout the layout
- * @param alwaysOn alwaysOn of the page the item lies on
- * @param content headline and elements ({@link devicePageElements})
- * @returns the page configuration
- */
-export function devicePagePageConfig(
-    uniqueID: string,
-    layout: DevicePageLayout,
-    alwaysOn: 'none' | 'always' | 'action' | 'ignore',
-    content: Pick<DevicePageElements, 'headline' | 'slotCount' | 'elements'> &
-        Partial<Pick<DevicePageElements, 'channelSlots'>>,
-): PageBase {
-    return {
-        uniqueID,
-        alwaysOn,
-        dpInit: '',
-        pageItems: [],
-        config: {
-            card: cardDeviceOf(layout),
-            data: { headline: { type: 'const', constVal: content.headline } },
-            slotCount: content.slotCount,
-            elements: content.elements,
-            channelSlots: content.channelSlots ?? [],
+        page: {
+            uniqueID,
+            alwaysOn,
+            dpInit: '',
+            pageItems: elements.map(item => item ?? EMPTY_DEVICE_PAGE_ITEM),
+            config: {
+                card: cardDeviceOf(page.layout),
+                data: { headline: { type: 'const', constVal: headline } },
+                channelSlots,
+            },
         },
+        messages,
     };
 }

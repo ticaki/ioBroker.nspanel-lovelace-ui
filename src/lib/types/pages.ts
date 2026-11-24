@@ -245,20 +245,18 @@ export type PageOthersConfigs =
     | cardChartPieDataItemOptions
     | cardDeviceDataItemOptions;
 
-/** the HMI pages of the generated device page (device-page.ts) */
+/** the HMI pages of the device page (device-page.ts) */
 export type cardDeviceTypes = Extract<PageTypeCards, 'cardDevice1' | 'cardDevice2' | 'cardDevice3'>;
 
 /**
- * generated device page of a device item (device-page.ts): the page items are `elements` - main, the slots of the
- * layout, info and the hidden status item (undefined = empty slot / no info / no status)
+ * device page of a device item (device-page.ts buildDevicePage): its page items are the elements - main, the slots of
+ * the layout (the card says the layout), info and the hidden status item (an empty item = empty slot / no info / no
+ * status)
  */
 export type cardDeviceDataItemOptions = {
     card: cardDeviceTypes;
     /** name of the device as const headline */
     data: { headline: NSPanel.DataItemsOptions };
-    /** number of slots of the layout */
-    slotCount: number;
-    elements: (NSPanel.PageItemDataItemsOptions | undefined)[];
     /** index of the slots (0 = slot 1) that show an alias channel: their field 6 is fitted to the kind of the slot */
     channelSlots?: number[];
 };
