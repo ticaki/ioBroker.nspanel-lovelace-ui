@@ -131,7 +131,8 @@ describe('lib/types/deviceDetails - models of the device page', () => {
         expect(devicePageSlotFields(2, 'button', false, 'us-p')).to.deep.equal({ name: 300 });
         expect(devicePageSlotFields(2, 'value', false, 'us-p')).to.deep.equal({ name: 172, value: 172, valueFont: 4 });
         expect(devicePageSlotFields(3, 'switch', false, 'us-p')).to.deep.equal({ name: 212 });
-        // web-l: eu on the full width - info rows and bar reach the right edge, the rest keeps the eu widths
+        // web-l: eu on the full width - info rows and bar reach the right edge, the rest keeps the eu widths; only
+        // the names of buttons that stand side by side are 4 px narrower (a gap between two names)
         expect(devicePageSlotFields(1, 'info', false, 'web-l')).to.deep.equal({ name: 354, value: 110 });
         expect(devicePageSlotFields(1, 'info', true, 'web-l')).to.deep.equal({ name: 276, value: 110 });
         expect(devicePageSlotFields(2, 'progress', false, 'web-l')).to.deep.equal({ name: 620 });
@@ -142,20 +143,25 @@ describe('lib/types/deviceDetails - models of the device page', () => {
             for (const kind of DEVICE_PAGE_LAYOUTS[layout].filter(k => k !== 'status')) {
                 const w = devicePageSlotFields(layout, kind, false, 'web-l');
                 const e = devicePageSlotFields(layout, kind, false, 'eu');
-                expect(w?.name ?? 0, `web-l ${layout} ${kind}`).to.be.at.least(e?.name ?? 0);
+                expect(w?.name ?? 0, `web-l ${layout} ${kind}`).to.be.at.least(
+                    (e?.name ?? 0) - (kind === 'button' ? 4 : 0),
+                );
                 expect(w?.value, `web-l ${layout} ${kind}`).to.equal(e?.value);
                 expect(w?.valueFont, `web-l ${layout} ${kind}`).to.equal(e?.valueFont);
             }
         }
-        // web-p: us-p with the extra slots - only the buttons of layout 2 share a row (three: 100 px like eu)
+        expect(devicePageSlotFields(1, 'button', false, 'web-l')).to.deep.equal({ name: 100 });
+        expect(devicePageSlotFields(2, 'button', false, 'web-l')).to.deep.equal({ name: 96 });
+        // web-p: us-p with the extra slots - only the buttons of layout 2 share a row (three: 100 px like eu, their
+        // names 4 px narrower)
         expect(DEVICE_PAGE_FIELDS_WEB_P[1]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[1]);
         expect(DEVICE_PAGE_FIELDS_WEB_P[3]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[3]);
         expect(DEVICE_PAGE_FIELDS_WEB_P[2]).to.deep.equal({
             ...DEVICE_PAGE_FIELDS_US_P[2],
-            slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 100 } },
+            slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 96 } },
         });
         expect(devicePageSlotFields(2, 'button', false, 'web-p')?.name).to.equal(
-            devicePageSlotFields(2, 'button', false, 'eu')?.name,
+            (devicePageSlotFields(2, 'button', false, 'eu')?.name ?? 0) - 4,
         );
     });
     it('the fields of eu, us-l and us-p are the boxes of the HMI pages (device-page-geometry.json)', () => {

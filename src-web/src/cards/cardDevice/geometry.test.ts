@@ -117,6 +117,25 @@ function textWidths(slot: SlotGeometry): Record<string, number> {
     }
 }
 
+/** the additional slots of a kind that `mask` fills, in protocol order */
+function filledOfKind(layout: DeviceLayout, mask: number, kind: string): number[] {
+    return DEVICE_EXTRA_KINDS[layout].flatMap((k, j) => (k === kind && (mask >> j) & 1 ? [j] : []));
+}
+
+/** the mask with as many filled additional slots of every kind as `mask`, filled from the first one */
+function compact(layout: DeviceLayout, mask: number): number {
+    const kinds = DEVICE_EXTRA_KINDS[layout];
+    let out = 0;
+    for (const kind of new Set(kinds)) {
+        const count = filledOfKind(layout, mask, kind).length;
+        kinds
+            .flatMap((k, j) => (k === kind ? [j] : []))
+            .slice(0, count)
+            .forEach(j => (out |= 1 << j));
+    }
+    return out;
+}
+
 describe('device page geometry: models', () => {
     it('has the slot kinds of the protocol on every model', () => {
         for (const model of PANEL_MODELS) {
@@ -165,6 +184,160 @@ describe('device page geometry: models', () => {
                 }
             }
         }
+    });
+});
+
+describe('device page geometry: additional slots of the web models leave no holes', () => {
+    const WEB = ['web-l', 'web-p'] as const;
+    const geometry = (
+        model: (typeof WEB)[number],
+        layout: DeviceLayout,
+        mask: number,
+        status: boolean,
+    ): DeviceGeometry => deviceGeometry(layout, standard(layout, status), model, additional(layout, mask));
+
+    it('an additional slot has a place exactly when it is filled - every mask, page and model', () => {
+        for (const model of WEB) {
+            for (const layout of LAYOUTS) {
+                const kinds = DEVICE_EXTRA_KINDS[layout];
+                for (let mask = 0; mask < 1 << kinds.length; mask++) {
+                    const g = geometry(model, layout, mask, true);
+                    expect(g.extras, `${model} ${layout} ${mask}`).toHaveLength(kinds.length);
+                    g.extras.forEach((s, j) => {
+                        const at = `${model} cardDevice${layout} mask ${mask.toString(2)} extra ${j + 1}`;
+                        expect(s?.kind, at).toBe((mask >> j) & 1 ? kinds[j] : undefined);
+                    });
+                }
+            }
+        }
+    });
+
+    it('the filled ones of a kind stand on the first places of their kind, in their order', () => {
+        // the page is laid out as if the filled slots were the first ones of their kind: an empty slot in front
+        // of a filled one changes nothing but which slot stands on the place
+        for (const model of WEB) {
+            for (const layout of LAYOUTS) {
+                const kinds = DEVICE_EXTRA_KINDS[layout];
+                for (let mask = 0; mask < 1 << kinds.length; mask++) {
+                    for (const status of layout === 1 ? [false, true] : [false]) {
+                        const at = `${model} cardDevice${layout} mask ${mask.toString(2)} status ${status}`;
+                        const g = geometry(model, layout, mask, status);
+                        const dense = geometry(model, layout, compact(layout, mask), status);
+                        expect({ ...g, extras: [] }, at).toEqual({ ...dense, extras: [] });
+                        for (const kind of new Set(kinds)) {
+                            const own = filledOfKind(layout, mask, kind).map(j => g.extras[j]);
+                            const first = filledOfKind(layout, compact(layout, mask), kind).map(j => dense.extras[j]);
+                            expect(own, `${at} ${kind}`).toEqual(first);
+                            expect(own.every(s => s !== undefined)).toBe(true);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    it('a page with one filled additional slot looks the same whichever slot of the kind it is', () => {
+        // cardDevice1: button 1 or 2, cardDevice2: button 1 or 2, cardDevice3: info 1 or 2
+        const pairs: [DeviceLayout, number, number][] = [
+            [1, 0b01, 0b10],
+            [2, 0b010, 0b100],
+            [2, 0b011, 0b101],
+            [3, 0b001, 0b010],
+            [3, 0b101, 0b110],
+        ];
+        for (const model of WEB) {
+            for (const [layout, first, second] of pairs) {
+                const a = geometry(model, layout, first, true);
+                const b = geometry(model, layout, second, true);
+                const boxes = (g: DeviceGeometry): Box[][] =>
+                    elements(g)
+                        .map(e => e.boxes)
+                        .sort((x, y) => x[0].y - y[0].y || x[0].x - y[0].x);
+                expect(boxes(b), `${model} cardDevice${layout} ${second.toString(2)}`).toEqual(boxes(a));
+            }
+        }
+    });
+
+    it('the five cases with an empty slot in front of a filled one', () => {
+        const x = (s: SlotGeometry | undefined): number | undefined => (s ? slotBoxes(s)[0].x : undefined);
+        const y = (s: SlotGeometry | undefined): number | undefined => (s ? slotBoxes(s)[0].y : undefined);
+        // web-l cardDevice1, only additional button 2: a row of five, it is the fifth
+        const l1 = geometry('web-l', 1, 0b10, false);
+        expect([...l1.slots.slice(2, 6), ...l1.extras].map(x)).toEqual([10, 139, 268, 397, undefined, 526]);
+        // web-p cardDevice1, only additional button 2: at the left of the third row
+        const p1 = geometry('web-p', 1, 0b10, true);
+        expect(p1.extras.map(x)).toEqual([undefined, 10]);
+        expect(p1.extras.map(y)).toEqual([undefined, 501]);
+        // web-l cardDevice2, additional button 1 empty, 2 filled: two buttons, the big value stays where it is
+        for (const mask of [0b100, 0b101]) {
+            const l2 = geometry('web-l', 2, mask, false);
+            expect([l2.slots[5], l2.extras[1], l2.extras[2]].map(x), `${mask}`).toEqual([430, undefined, 530]);
+            expect(l2.slots[0], `${mask}`).toEqual(DEVICE_GEOMETRY[2].slots[0]);
+        }
+        // web-p cardDevice2, the same: two buttons of 148 px
+        const p2 = geometry('web-p', 2, 0b101, false);
+        expect([p2.slots[5], p2.extras[1], p2.extras[2]].map(x)).toEqual([10, undefined, 162]);
+        expect(p2.extras[2]).toMatchObject({ icon: { w: 148 }, name: { w: 148 } });
+        // web-l cardDevice3, additional info 1 empty, 2 filled: at the top of the third column
+        const l3 = geometry('web-l', 3, 0b010, false);
+        expect(l3.extras[0]).toBeUndefined();
+        expect(l3.extras[1]).toMatchObject({ icon: { x: 469, y: 69 } });
+        // web-p cardDevice3, the same: at the left of the fourth row
+        const p3 = geometry('web-p', 3, 0b010, false);
+        expect(p3.extras[0]).toBeUndefined();
+        expect(p3.extras[1]).toMatchObject({ icon: { x: 10, y: 395 }, name: { x: 46, y: 393 } });
+        expect(p3.extras[1]).toEqual(geometry('web-p', 3, 0b001, false).extras[0]);
+    });
+});
+
+describe('device page geometry: names of neighbouring buttons', () => {
+    it('keep at least 4 px between them on every model, page and mask (eu: 104 px every 108 px)', () => {
+        let rows = 0;
+        for (const model of PANEL_MODELS) {
+            for (const layout of LAYOUTS) {
+                for (const v of variants(layout)) {
+                    const g = deviceGeometry(layout, v.slots, model, v.extras);
+                    const names = [...g.slots, ...g.extras]
+                        .flatMap(s => (s?.kind === 'button' ? [s] : []))
+                        .sort((a, b) => a.name.y - b.name.y || a.name.x - b.name.x);
+                    names.forEach((b, i) => {
+                        const at = `${model} ${v.name} button ${i + 1}`;
+                        // the name is centred below the icon and never wider than it
+                        expect(b.name.x - b.icon.x, at).toBe(b.icon.x + b.icon.w - (b.name.x + b.name.w));
+                        expect(b.name.x, at).toBeGreaterThanOrEqual(b.icon.x);
+                        const next = names[i + 1];
+                        if (next && next.name.y === b.name.y) {
+                            rows++;
+                            expect(next.name.x - (b.name.x + b.name.w), at).toBeGreaterThanOrEqual(4);
+                        }
+                    });
+                }
+            }
+        }
+        expect(rows).toBeGreaterThan(0);
+    });
+
+    it('only buttons that stand side by side get the narrower name: 100 / 96 / 96 px', () => {
+        const name = (model: 'web-l' | 'web-p', layout: DeviceLayout, mask: number): number[] => {
+            const g = deviceGeometry(layout, standard(layout, false), model, additional(layout, mask));
+            return [...g.slots, ...g.extras].flatMap(s => (s?.kind === 'button' ? [s.name.w] : []));
+        };
+        // web-l cardDevice1: 4 and 5 buttons are spread (104 px), 6 stand side by side
+        expect(name('web-l', 1, 0b00)).toEqual([104, 104, 104, 104]);
+        expect(name('web-l', 1, 0b01)).toEqual([104, 104, 104, 104, 104]);
+        expect(name('web-l', 1, 0b10)).toEqual([104, 104, 104, 104, 104]);
+        expect(name('web-l', 1, 0b11)).toEqual([100, 100, 100, 100, 100, 100]);
+        // web-l cardDevice2: the buttons end at the right edge side by side
+        expect(name('web-l', 2, 0b000)).toEqual([100]);
+        expect(name('web-l', 2, 0b010)).toEqual([96, 96]);
+        expect(name('web-l', 2, 0b100)).toEqual([96, 96]);
+        expect(name('web-l', 2, 0b110)).toEqual([96, 96, 96]);
+        // web-p cardDevice1: two per row with 4 px between them
+        expect(name('web-p', 1, 0b11)).toEqual([148, 148, 148, 148, 148, 148]);
+        // web-p cardDevice2: one 300, two 148 with 4 px between them, three side by side
+        expect(name('web-p', 2, 0b000)).toEqual([300]);
+        expect(name('web-p', 2, 0b010)).toEqual([148, 148]);
+        expect(name('web-p', 2, 0b110)).toEqual([96, 96, 96]);
     });
 });
 
@@ -297,7 +470,7 @@ describe('device page geometry: web-l', () => {
         }
     });
 
-    it('gives every filled additional slot a place of its kind, an empty one at the end of its row none', () => {
+    it('gives every filled additional slot a place of its kind, an empty one none', () => {
         for (const layout of LAYOUTS) {
             const kinds = DEVICE_EXTRA_KINDS[layout];
             expect(geometry(layout, 0).extras, `layout ${layout}`).toEqual(kinds.map(() => undefined));
@@ -305,15 +478,17 @@ describe('device page geometry: web-l', () => {
             expect(full.map(s => s?.kind)).toEqual(kinds);
             for (let mask = 0; mask < 1 << kinds.length; mask++) {
                 geometry(layout, mask).extras.forEach((s, j) => {
-                    if ((mask >> j) & 1) {
-                        expect(s?.kind, `layout ${layout} mask ${mask} extra ${j + 1}`).toBe(kinds[j]);
-                    }
+                    const at = `layout ${layout} mask ${mask} extra ${j + 1}`;
+                    expect(s?.kind, at).toBe((mask >> j) & 1 ? kinds[j] : undefined);
                 });
             }
         }
     });
 
-    it('never makes a text box narrower than on eu (more elements, not more text)', () => {
+    it('never makes a text box narrower than on eu - but the names of buttons side by side, by 4 px', () => {
+        /** eu width of a field; the name of a button whose name field is inset (a dense row) may be 4 px less */
+        const least = (s: SlotGeometry, field: string, eu: number): number =>
+            s.kind === 'button' && field === 'name' && s.name.x > s.icon.x ? eu - 4 : eu;
         for (const layout of LAYOUTS) {
             for (const v of variants(layout)) {
                 const web = deviceGeometry(layout, v.slots, 'web-l', v.extras);
@@ -324,7 +499,7 @@ describe('device page geometry: web-l', () => {
                 web.slots.forEach((s, i) => {
                     for (const [field, w] of Object.entries(textWidths(s))) {
                         expect(w, `${v.name} slot ${i + 1} ${field}`).toBeGreaterThanOrEqual(
-                            textWidths(eu.slots[i])[field],
+                            least(s, field, textWidths(eu.slots[i])[field]),
                         );
                     }
                 });
@@ -336,7 +511,7 @@ describe('device page geometry: web-l', () => {
                     const like = eu.slots.filter(e => e.kind === s.kind).map(textWidths);
                     for (const [field, w] of Object.entries(textWidths(s))) {
                         expect(w, `${v.name} extra ${j + 1} ${field}`).toBeGreaterThanOrEqual(
-                            Math.max(...like.map(l => l[field])),
+                            least(s, field, Math.max(...like.map(l => l[field]))),
                         );
                     }
                 });
@@ -363,15 +538,28 @@ describe('device page geometry: web-l', () => {
             526,
             undefined,
         ]);
-        // only the second additional button: its place is the sixth, the fifth stays free
-        expect(xs(geometry(1, 0b10).extras)).toEqual([424, 528]);
+        // only the second additional button: it takes the fifth place, the row has five buttons - no hole
+        expect(xs([...geometry(1, 0b10).slots.slice(2, 6), ...geometry(1, 0b10).extras])).toEqual([
+            10,
+            139,
+            268,
+            397,
+            undefined,
+            526,
+        ]);
         expect(xs([...geometry(1, 0b11).slots.slice(2, 6), ...geometry(1, 0b11).extras])).toEqual([
             8, 112, 216, 320, 424, 528,
         ]);
+        // six buttons stand side by side: the name field is 4 px narrower, 4 px between two names
         expect(geometry(1, 0b11).extras[1]).toEqual({
             kind: 'button',
             icon: { x: 528, y: 190, w: 104, h: 52 },
-            name: { x: 528, y: 244, w: 104, h: 26 },
+            name: { x: 530, y: 244, w: 100, h: 26 },
+        });
+        expect(geometry(1, 0b01).extras[0]).toEqual({
+            kind: 'button',
+            icon: { x: 526, y: 190, w: 104, h: 52 },
+            name: { x: 526, y: 244, w: 104, h: 26 },
         });
         expect(geometry(1, 0, false).slots[0]).toEqual({
             kind: 'info',
@@ -404,10 +592,29 @@ describe('device page geometry: web-l', () => {
         expect(xs([full.slots[5], full.extras[1], full.extras[2]])).toEqual([330, 430, 530]);
         // three buttons: the big value moves up to main and ends where the buttons begin
         expect(full.slots[0]).toMatchObject({ icon: { x: 106 }, value: { x: 140, w: 190 }, name: { x: 140, w: 190 } });
+        // side by side: names of 96 px, 4 px between them
+        expect(full.slots[5]).toEqual({
+            kind: 'button',
+            icon: { x: 330, y: 67, w: 100, h: 50 },
+            name: { x: 332, y: 119, w: 96, h: 26 },
+        });
+        expect(full.extras[2]).toMatchObject({ icon: { x: 530, w: 100 }, name: { x: 532, w: 96 } });
         // two buttons: standard and the first additional one
         const two = geometry(2, 0b010);
         expect(xs([two.slots[5], two.extras[1], two.extras[2]])).toEqual([430, 530, undefined]);
         expect(two.extras[0]).toBeUndefined();
+        expect(two.extras[1]).toMatchObject({ icon: { x: 530, w: 100 }, name: { x: 532, w: 96 } });
+        expect(two.slots[0]).toEqual(DEVICE_GEOMETRY[2].slots[0]);
+        // two buttons, the second additional one: the same places, the big value does not move
+        const other = geometry(2, 0b100);
+        expect(xs([other.slots[5], other.extras[1], other.extras[2]])).toEqual([430, undefined, 530]);
+        expect(other.slots[0]).toEqual(DEVICE_GEOMETRY[2].slots[0]);
+        // one button: the box of eu at the right edge
+        expect(plain.slots[5]).toEqual({
+            kind: 'button',
+            icon: { x: 530, y: 67, w: 100, h: 50 },
+            name: { x: 530, y: 119, w: 100, h: 26 },
+        });
     });
 
     it('cardDevice3: the info tiles in 2 columns, a third one for the additional ones; 2 or 3 switches in a row', () => {
@@ -441,6 +648,10 @@ describe('device page geometry: web-l', () => {
         const onlySwitch = geometry(3, 0b100);
         expect(xs(onlySwitch.slots.slice(0, 6))).toEqual([114, 372, 114, 372, 114, 372]);
         expect(xs([...onlySwitch.slots.slice(6), onlySwitch.extras[2]])).toEqual([10, 217, 424]);
+        // only the second additional info: at the top of the third column, not below a hole
+        const second = geometry(3, 0b010);
+        expect(second.extras[0]).toBeUndefined();
+        expect(second.extras[1]).toEqual(full.extras[0]);
     });
 });
 
@@ -675,16 +886,15 @@ describe('device page geometry: web-p', () => {
         ).toEqual([107, 357]);
     });
 
-    it('gives every filled additional slot a place of its kind, an empty one at the end none', () => {
+    it('gives every filled additional slot a place of its kind, an empty one none', () => {
         for (const layout of LAYOUTS) {
             const kinds = DEVICE_EXTRA_KINDS[layout];
             expect(geometry(layout, 0).extras, `layout ${layout}`).toEqual(kinds.map(() => undefined));
             expect(geometry(layout, 0b111).extras.map(s => s?.kind)).toEqual(kinds);
             for (let mask = 0; mask < 1 << kinds.length; mask++) {
                 geometry(layout, mask).extras.forEach((s, j) => {
-                    if ((mask >> j) & 1) {
-                        expect(s?.kind, `layout ${layout} mask ${mask} extra ${j + 1}`).toBe(kinds[j]);
-                    }
+                    const at = `layout ${layout} mask ${mask} extra ${j + 1}`;
+                    expect(s?.kind, at).toBe((mask >> j) & 1 ? kinds[j] : undefined);
                 });
             }
         }
@@ -718,9 +928,11 @@ describe('device page geometry: web-p', () => {
                         return;
                     }
                     if (layout === 2 && slot.kind === 'button') {
-                        // 1 button 300 px like us-p, 2 share the width (148), 3 have the 100 px of eu
+                        // 1 button 300 px like us-p, 2 share the width (148), 3 have the 100 px of eu (their
+                        // names 96 px, they stand side by side)
                         const w = slotBoxes(slot)[0].w;
                         expect([300, 148, 100], `${at} ${i}`).toContain(w);
+                        expect(slot.name.w, `${at} ${i}`).toBe(w === 100 ? 96 : w);
                         expect(slotBoxes(slot).map(b => b.h)).toEqual(slotBoxes(like).map(b => b.h));
                         return;
                     }
@@ -743,9 +955,11 @@ describe('device page geometry: web-p', () => {
         // the status block stands right of main, like on us-p
         expect(full.main).toEqual(usP(1).main);
         expect(full.slots.slice(6)).toEqual(usP(1).slots.slice(6));
-        // only the first additional button: the third row with one button
+        // only one additional button, the first or the second: the third row with one button at the left
         expect(xs(geometry(1, 0b01).extras)).toEqual([10, undefined]);
         expect(ys(geometry(1, 0b01).extras)).toEqual([501, undefined]);
+        expect(xs(geometry(1, 0b10).extras)).toEqual([undefined, 10]);
+        expect(ys(geometry(1, 0b10).extras)).toEqual([undefined, 501]);
         const plain = geometry(1, 0b00);
         expect(plain.extras).toEqual([undefined, undefined]);
         expect(ys(plain.slots.slice(0, 6))).toEqual([233, 291, 374, 374, 478, 478]);
@@ -773,14 +987,20 @@ describe('device page geometry: web-p', () => {
             value: { x: 206, y: 435, w: 104, h: 26 },
         });
         expect(xs([full.slots[5], full.extras[1], full.extras[2]])).toEqual([10, 110, 210]);
+        // three buttons stand side by side: names of 96 px, 4 px between them
         expect(full.extras[2]).toEqual({
             kind: 'button',
             icon: { x: 210, y: 496, w: 100, h: 52 },
-            name: { x: 210, y: 550, w: 100, h: 26 },
+            name: { x: 212, y: 550, w: 96, h: 26 },
         });
+        expect(full.slots[5]).toMatchObject({ icon: { x: 10, w: 100 }, name: { x: 12, w: 96 } });
         const two = geometry(2, 0b010);
         expect(xs([two.slots[5], two.extras[1], two.extras[2]])).toEqual([10, 162, undefined]);
-        expect(two.extras[1]).toMatchObject({ icon: { w: 148 }, name: { w: 148 } });
+        expect(two.extras[1]).toMatchObject({ icon: { w: 148 }, name: { x: 162, w: 148 } });
+        // the second additional button alone takes the place of the first
+        const other = geometry(2, 0b100);
+        expect(xs([other.slots[5], other.extras[1], other.extras[2]])).toEqual([10, undefined, 162]);
+        expect(other.extras[2]).toEqual(two.extras[1]);
         const plain = geometry(2, 0b000);
         expect(plain.extras).toEqual([undefined, undefined, undefined]);
         expect(plain.slots[5]).toMatchObject({ icon: { x: 10, w: 300 }, name: { x: 10, w: 300 } });
@@ -813,5 +1033,10 @@ describe('device page geometry: web-p', () => {
         const onlySwitch = geometry(3, 0b100);
         expect(onlySwitch.extras.slice(0, 2)).toEqual([undefined, undefined]);
         expect(onlySwitch.extras[2]?.kind).toBe('switch');
+        // only the second additional info: at the left of the fourth row
+        const second = geometry(3, 0b010);
+        expect(second.extras[0]).toBeUndefined();
+        expect(second.extras[1]).toEqual(geometry(3, 0b001).extras[0]);
+        expect(xs([second.extras[1]])).toEqual([10]);
     });
 });

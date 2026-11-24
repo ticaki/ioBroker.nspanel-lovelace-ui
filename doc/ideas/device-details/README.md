@@ -715,6 +715,12 @@ entityUpd~Waschmaschine~<nav>~switch~12?0~<icon>~<farbe>~Waschmaschine~Schleuder
 ~text~12?9~<icon>~<farbe>~Wasser~12 l~~~~~~~button~12?11~<icon>~<farbe>~Pause~0
 ```
 
+Die Nachricht behält die Positionen (der leere Zusatz-Slot 2 steht als `~~~~~` an seiner Stelle), **gezeichnet wird
+ohne Loch**: Das Web-Panel setzt jede Reihe nur für die belegten Zusatz-Elemente ihrer Art, in ihrer Reihenfolge. Im
+Beispiel hat die Seite zwei Knöpfe – „Start“ (Slot 6) und direkt daneben „Pause“ (Zusatz-Slot 3) am Platz des ersten
+Zusatz-Knopfs; der große Wert bleibt, wo er mit zwei Knöpfen steht. „Pause“ bleibt dabei Zusatz-Slot 3: Tipp und
+Long-Press senden `12?11`. Leere Slots des Layouts (Slot 1 … N) bleiben dagegen wie in der HMI eine Lücke.
+
 **Konfiguration:**
 
 - Die Zusatz-Slots stehen in `DevicePageConfig.slots` hinter den Slots des Layouts (`slots[N] … slots[N + E - 1]`,
@@ -767,14 +773,16 @@ den eu-Tabellen, web-p mit den us-p-Tabellen).
 
 **Feldbreiten je Modell** (`DEVICE_PAGE_FIELDS_BY_MODEL`, px in Font 0, Info und Wert als Name / Wert; nur die
 Statuszeile misst der Adapter, die übrigen Felder schneidet das Panel an der Feldgrenze ab). Ein Test vergleicht eu,
-us-l und us-p mit `device-page-geometry.json`. Bei Reihen mit wechselnder Elementzahl (Web) steht der schmalste Fall.
+us-l und us-p mit `device-page-geometry.json`. Bei Reihen mit wechselnder Elementzahl (Web) steht der schmalste Fall;
+Knöpfe, die ohne Zwischenraum nebeneinander stehen, haben ein 4 px schmaleres Namensfeld (zwischen zwei Namen bleiben
+4 px wie auf eu). Ein Test des Web-Panels (`adapterTables.test.ts`) vergleicht web-l und web-p mit dessen Layout.
 
 | Modell | Layout 1 | Layout 2 | Layout 3 |
 |---|---|---|---|
 | eu, us-l | main 110 · Info 164 / 110, mit Status-Icons 86 / 110 · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 429 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
 | us-p | main 150 · Info 156 / 104 (auch mit Status-Icons) · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 300 | main 300 · Info 112 / 112 · Schalter 212 |
-| web-l | main 110 · Info 354 / 110, mit Status-Icons 276 / 110 · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 620 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
-| web-p | main 150 (ohne Status-Icons 300) · Info 156 / 104 · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 100 (drei in einer Reihe; zwei 148, einer 300) | main 300 · Info 112 / 112 · Schalter 212 |
+| web-l | main 110 · Info 354 / 110, mit Status-Icons 276 / 110 · Knopf 100 (sechs in einer Reihe; vier oder fünf 104) | main 96 · Wert 190 / 190 (Font 4) · Balken 620 · Info 104 / 104 · Knopf 96 (zwei oder drei nebeneinander; einer 100) | main 100 · Info 125 / 125 · Schalter 125 |
+| web-p | main 150 (ohne Status-Icons 300) · Info 156 / 104 · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 96 (drei in einer Reihe; zwei 148, einer 300) | main 300 · Info 112 / 112 · Schalter 212 |
 
 Layouts der Web-Modelle: [SMARTPHONE.md, „Geräteseiten“](../../web-panel/SMARTPHONE.md#geräteseiten-carddevice13).
 

@@ -286,7 +286,7 @@ For this the tick box **Web panel elements (web-l / web-p)** stands below the sl
 - **Removing the tick only hides them.** The additional slots disappear from the dialog and from the web panel; what was chosen for them stays saved and is back after ticking again.
 - **Change of layout:** the additional slots keep their order among themselves – the first additional slot stays the first. Its kind may change (a button in layout 1, an info line in layouts 2 and 3); if what was chosen no longer fits, it is shown in red with "does not fit this slot". Layout 1 has only two additional slots: changing to it loses the third – even while the tick is not set. A status icon never becomes an additional slot and vice versa.
 - **Hardware panels never show the additional elements** – nor does the browser picture of a real panel or a web panel with one of the three panel formats. If the same page is assigned to such a panel and to a smartphone web panel, the additional elements are simply missing there; everything else is the same.
-- On the web panel an additional element behaves like any other of its kind (tap, hold, popup). Empty additional slots at the end leave no gap: the row is laid out anew for the filled elements.
+- On the web panel an additional element behaves like any other of its kind (tap, hold, popup). Empty additional slots leave no gap – not even in front of a filled one: the filled ones move up, the row is laid out anew for them.
 - No more text fits into a field because of this – there are more elements, not longer ones. Names and values have the same maximum length everywhere, see [Limits](#10-limits).
 
 How this looks is shown by the pictures under [Smartphone landscape](#smartphone-landscape-web-l) and [Smartphone portrait](#smartphone-portrait-web-p).
@@ -376,7 +376,7 @@ The status line is narrower here (262 instead of 390 pixels). The status texts o
 
 ### Smartphone landscape (`web-l`)
 
-A standalone web panel with this model uses the whole area (640 × 320). The arrangement is that of the EU panel, stretched in width: no text field is narrower than there, the info lines of layout 1 and the status line (580 pixels) are clearly wider. The [additional elements](#additional-elements-for-smartphone-web-panels) fall into line: in layout 1 one row with up to six buttons, in layout 2 up to three buttons at the top right and four info tiles in one row, in layout 3 a third column of info tiles and a third switch.
+A standalone web panel with this model uses the whole area (640 × 320). The arrangement is that of the EU panel, stretched in width: no text field is narrower than there (only the names of buttons standing close together are 4 pixels narrower), the info lines of layout 1 and the status line (580 pixels) are clearly wider. The [additional elements](#additional-elements-for-smartphone-web-panels) fall into line: in layout 1 one row with up to six buttons, in layout 2 up to three buttons at the top right and four info tiles in one row, in layout 3 a third column of info tiles and a third switch.
 
 | | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|---|
@@ -434,8 +434,8 @@ If an element without a popup is held, its background blinks green and grey afte
   |---|---|---|---|---|
   | **EU landscape**, **US landscape** | 390 | device name 110 · info line 164 / 110, **with status icons 86 / 110** · button 104 | device name 96 · large value 190 · progress bar 429 · info line 104 / 104 · button 100 | device name 100 · info line 125 / 125 · switch 125 |
   | **US portrait** | 262 | device name 150 · info line 156 / 104 (also with status icons) · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300 | device name 300 · info line 112 / 112 · switch 212 |
-  | **Smartphone landscape** | 580 | device name 110 · info line 354 / 110, with status icons 276 / 110 · button 104 | device name 96 · large value 190 · progress bar 620 · info line 104 / 104 · button 100 | device name 100 · info line 125 / 125 · switch 125 |
-  | **Smartphone portrait** | 262 | device name 150 (without status icons 300) · info line 156 / 104 · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300, two of them 148 each, three 100 each | device name 300 · info line 112 / 112 · switch 212 |
+  | **Smartphone landscape** | 580 | device name 110 · info line 354 / 110, with status icons 276 / 110 · button 104, six of them 100 each | device name 96 · large value 190 · progress bar 620 · info line 104 / 104 · button 100, two or three of them 96 each | device name 100 · info line 125 / 125 · switch 125 |
+  | **Smartphone portrait** | 262 | device name 150 (without status icons 300) · info line 156 / 104 · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300, two of them 148 each, three 96 each | device name 300 · info line 112 / 112 · switch 212 |
 
   The large value is drawn in the big font: a digit needs 33 pixels there, "12:34" 149 pixels.
 - **Units stand at the value without a space** ("80%", "34m²", "60°C"). This is intended and saves room.
