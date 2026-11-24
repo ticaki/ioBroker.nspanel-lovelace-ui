@@ -10,7 +10,7 @@ Stand: 2026-11-24, nach der Integration (Geräteseite auf allen fünf Modellen).
 | Wer | Was | Anzahl | Stand |
 |---|---|---|---|
 | automatisch (Puppeteer, Web-Panel) | Geräteseiten je Modell und die Detailseite | 23 (eu 5, us-l 3, us-p 3, web-l 6, web-p 6) | **aufgenommen und angesehen** |
-| automatisch (Puppeteer, Admin) | Dialoge | 9 (2 vorhanden, 3 neu aufzunehmen, 4 neu) | in Arbeit (Integration) |
+| automatisch (Puppeteer, Admin) | Dialoge | 9 (2 vorhanden, 3 neu aufgenommen, 4 neu) | **aufgenommen und angesehen** |
 | **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) | – |
 
 Das Web-Panel zeichnet jedes Modell: die Hardware-Modelle eu, us-l und us-p wie die HMI, dazu web-l und web-p.
@@ -140,23 +140,24 @@ nur in den Notizen, nicht im Repo.
 
 ## Admin-Aufnahmen
 
-Alle: Screenshot Admin, automatisch (Puppeteer, Admin). Die Integration nimmt sie am Dev-Server auf und legt sie
-unter diesen Namen ab; die Doku bindet sie schon ein.
+Alle: Screenshot Admin, automatisch (Puppeteer, Admin), aufgenommen am Dev-Server (2026-11-24); die Doku bindet sie
+ein. `admin-filterlist.png` zeigt ein nachgebautes Shelly 2.5 („Wohnzimmer-Rollladen“,
+`shelly.0.SHSW-25#A1B2C3D4E5F6#1`), `admin-slot-custom.png` und `admin-web-extra.png` die Zielseite
+`devicepage_rooms`.
 
 | Dateiname | Was zu sehen sein soll | Verwendet in | Stand |
 |---|---|---|---|
-| `admin-device-item.png` | Pageitem-Konfiguration, Art **Gerät mit Details**, Gerät `0_userdata.0.devicepage.robot` („Robbi – … Einträge angehakt“), Kurzer Tipp, Knopf Filterliste, **Long-Press öffnet: Detailseite** (kein Geräteseiten-Bereich) | Doku Schnellstart 1 | ☐ in Arbeit (Integration) |
-| `admin-filterlist.png` | Dialog **Filterliste** eines Geräts mit Maske und gleichnamigen Zeilen (z. B. Shelly mit mehreren Temperaturen): angehakte oben, Spalten Eintrag/State, Feld **2. Zeile** sichtbar | Doku §3 | ☐ in Arbeit (Integration) |
+| `admin-device-item.png` | Pageitem-Konfiguration, Art **Gerät mit Details**, Gerät `0_userdata.0.devicepage.robot` („Robbi – … Einträge angehakt“), Kurzer Tipp, Knopf Filterliste, **Long-Press öffnet: Detailseite** (kein Geräteseiten-Bereich) | Doku Schnellstart 1 | ☑ |
+| `admin-filterlist.png` | Dialog **Filterliste** eines Geräts mit Maske und gleichnamigen Zeilen (z. B. Shelly mit mehreren Temperaturen): angehakte oben, Spalten Eintrag/State, Feld **2. Zeile** sichtbar | Doku §3 | ☑ |
 | `admin-shortpress.png` | **vorhanden, bleibt:** Kurzer Tipp mit „Geräteseite öffnen“, Filterliste-Knopf, Long-Press öffnet: Geräteseite | Doku §2; README | ☑ |
-| `admin-overview.png` | **vorhanden, neu aufnehmen:** ganzer Dialog mit Geräteseite Layout 1, alle zehn Slots belegt, Haupt-Icon, Statuszeile, darunter das Häkchen „Web-Panel-Elemente (web-l / web-p)“ (aus) und „i-Icon anzeigen“. Das alte Bild zeigt noch den Hinweis „nur auf EU-Panels und Web-Panels im Querformat“ | Doku Schnellstart 2, §5; README | ☐ in Arbeit (Integration) |
+| `admin-overview.png` | **vorhanden, neu aufnehmen:** ganzer Dialog mit Geräteseite Layout 1, alle zehn Slots belegt, Haupt-Icon, Statuszeile, darunter das Häkchen „Web-Panel-Elemente (web-l / web-p)“ (aus) und „i-Icon anzeigen“. Das alte Bild zeigt noch den Hinweis „nur auf EU-Panels und Web-Panels im Querformat“ | Doku Schnellstart 2, §5; README | ☑ |
 | `admin-status-custom.png` | **vorhanden, bleibt:** Statuszeile „Benutzerdefinierter Datenpunkt“ mit ID-Feld | Doku §5 Statuszeile; README | ☑ |
-| `admin-slot-custom.png` | **vorhanden, neu aufnehmen** (die Wahl heißt jetzt „Kanal“, dazu „Navigation“): Slots mit Benutzerdefiniert → Datenpunkt, → Kanal, → **Navigation** mit Zielseite und ein Datenpunkt mit „passt nicht zu diesem Slot“ | Doku §5 Benutzerdefiniert; README | ☐ in Arbeit (Integration) |
-| `admin-slot-dialog.png` | **vorhanden, neu aufnehmen** (zeigt noch den früheren kleinen Dialog): „…“ eines **Knopf**-Slots = Pageitem-Konfiguration ohne Kanalauswahl, Titel mit „4 Knopf“, Name, Icon `pause`/`play` und Farben für wahr/unwahr, Langer Druck | Doku §5 Einstellungen des Elements; README | ☐ in Arbeit (Integration) |
-| `admin-slot-dialog-status.png` | „…“ eines **Status-Icon**-Slots: kleiner Dialog „Einstellungen des Elements“ mit Icon/Farbe, „Farbverlauf …“ und „Kurzer Tipp“ | Doku §5 Einstellungen des Elements | ☐ in Arbeit (Integration) |
-| `admin-web-extra.png` | Bereich der Geräteseite mit **gesetztem Häkchen** „Web-Panel-Elemente (web-l / web-p)“: darunter die zusätzlichen Slots (am besten Layout 2: 7 Info-Zeile, 8–9 Knopf) | Doku §5 Zusätzliche Elemente | ☐ in Arbeit (Integration) |
+| `admin-slot-custom.png` | **vorhanden, neu aufnehmen** (die Wahl heißt jetzt „Kanal“, dazu „Navigation“): Slots mit Benutzerdefiniert → Datenpunkt, → Kanal, → **Navigation** mit Zielseite und ein Datenpunkt mit „passt nicht zu diesem Slot“ | Doku §5 Benutzerdefiniert; README | ☑ |
+| `admin-slot-dialog.png` | **vorhanden, neu aufnehmen** (zeigt noch den früheren kleinen Dialog): „…“ eines **Knopf**-Slots = Pageitem-Konfiguration ohne Kanalauswahl, Titel mit „4 Knopf“, Name, Icon `pause`/`play` und Farben für wahr/unwahr, Langer Druck | Doku §5 Einstellungen des Elements; README | ☑ |
+| `admin-slot-dialog-status.png` | „…“ eines **Status-Icon**-Slots: kleiner Dialog „Einstellungen des Elements“ mit Icon/Farbe, „Farbverlauf …“ und „Kurzer Tipp“ | Doku §5 Einstellungen des Elements | ☑ |
+| `admin-web-extra.png` | Bereich der Geräteseite mit **gesetztem Häkchen** „Web-Panel-Elemente (web-l / web-p)“: darunter die zusätzlichen Slots (am besten Layout 2: 7 Info-Zeile, 8–9 Knopf) | Doku §5 Zusätzliche Elemente | ☑ |
 
-In der Doku stehen an den fünf Bildern, die es noch nicht gibt bzw. die veraltet sind, die Kommentare
-`<!-- BILD FOLGT … -->` / `<!-- BILD NEU AUFNEHMEN … -->` – sie können weg, sobald die Dateien da sind.
+Die Kommentare `<!-- BILD FOLGT … -->` / `<!-- BILD NEU AUFNEHMEN … -->` in der Doku sind entfernt.
 
 ## Hardware-Fotos (Tim)
 

@@ -57,7 +57,6 @@ So sieht eine Geräteseite aus (Layout „Steuern“ am EU-Panel):
 7. **Übernehmen** und danach im Tab **Speichern**. – *Ergebnis: der Adapter startet neu.*
 8. **Am Panel ausprobieren:** das Item auf einer Grid-Seite lange drücken, auf einer Entities-Seite links auf Icon oder Bezeichnung tippen (das braucht eine aktuelle TFT, siehe [Grenzen](#10-grenzen)). – *Ergebnis: die Detailseite erscheint, ihre Überschrift ist der Name des Geräts.*
 
-<!-- BILD FOLGT (BILDER.md): admin-device-item.png -->
 ![Die Pageitem-Konfiguration mit der Art Gerät mit Details: Gerät, Kurzer Tipp, Knopf Filterliste und Long-Press öffnet: Detailseite](../Pictures/device-page/admin-device-item.png)
 
 ## Schnellstart: Geräteseite
@@ -120,7 +119,6 @@ Du kannst zwischen den Auswahlen hin- und herschalten, ohne etwas zu verlieren, 
 
 Der Knopf **Filterliste** öffnet die Liste aller Werte des Geräts.
 
-<!-- BILD FOLGT (BILDER.md): admin-filterlist.png -->
 ![Die Filterliste: angehakte Einträge oben, je Zeile der Eintrag und der dafür gefundene State, bei gleichnamigen Zeilen das Feld 2. Zeile](../Pictures/device-page/admin-filterlist.png)
 
 | Element | Bedeutung |
@@ -216,7 +214,6 @@ Der Knopf **…** rechts in jeder belegten Zeile öffnet die Einstellungen diese
 
 Für Info-Zeile, großen Wert, Fortschrittsbalken, Knopf und Schalter ist es die bekannte [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration) – ohne die Auswahl des Kanals:
 
-<!-- BILD NEU AUFNEHMEN (BILDER.md): admin-slot-dialog.png zeigt noch den früheren kleinen Dialog -->
 ![Die Einstellungen eines Knopf-Slots: Name, Icon und Farbe für wahr und unwahr, Langer Druck](../Pictures/device-page/admin-slot-dialog.png)
 
 | Feld | Bedeutung |
@@ -234,7 +231,6 @@ Ein Beispiel – ein Knopf für „läuft / Pause“: einen An/Aus-Wert in einen
 
 **Status-Icons** haben einen eigenen kleinen Dialog **Einstellungen des Elements**: Icon und Farbe für wahr und unwahr, **Farbverlauf …** und **Kurzer Tipp** (**Standard** oder **Navigation** mit Zielseite).
 
-<!-- BILD FOLGT (BILDER.md): admin-slot-dialog-status.png -->
 ![Der kleine Dialog Einstellungen des Elements für ein Status-Icon: Icon und Farbe für wahr und unwahr, Farbverlauf und Kurzer Tipp](../Pictures/device-page/admin-slot-dialog-status.png)
 
 ### Von der Geräteseite auf eine andere Seite springen
@@ -280,7 +276,6 @@ Die Modelle **Smartphone quer** (`web-l`) und **Smartphone hochkant** (`web-p`) 
 
 Unter den Slots steht dafür das Häkchen **Web-Panel-Elemente (web-l / web-p)** (Vorgabe: aus). Sein Tooltip erklärt es: *Zusätzliche Slots dieses Layouts. Nur eigenständige Web-Panels der Modelle web-l und web-p zeigen sie, alle anderen Panels zeigen die Seite ohne sie.* Ist es gesetzt, erscheinen darunter die zusätzlichen Slots, fortlaufend weiternummeriert. Jeder wird belegt und eingestellt wie ein anderer Slot derselben Art – gleiche Auswahl, gleiches **…**. Vorbelegt ist keiner.
 
-<!-- BILD FOLGT (BILDER.md): admin-web-extra.png -->
 ![Der Bereich der Geräteseite mit gesetztem Häkchen Web-Panel-Elemente (web-l / web-p): unter den Slots des Layouts stehen die zusätzlichen Slots](../Pictures/device-page/admin-web-extra.png)
 
 - **Das Häkchen zu entfernen blendet nur aus.** Die zusätzlichen Slots verschwinden aus dem Dialog und vom Web-Panel; ihre Belegung bleibt gespeichert und ist nach erneutem Anhaken wieder da.

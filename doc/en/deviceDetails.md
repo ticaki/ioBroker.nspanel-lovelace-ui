@@ -57,7 +57,6 @@ This is what a device page looks like (layout "Control" on the EU panel):
 7. **Apply** and then **Save** in the tab. – *Result: the adapter restarts.*
 8. **Try it on the panel:** long press the item on a grid page, on an entities page tap the icon or the name on the left (this needs a current TFT, see [Limits](#10-limits)). – *Result: the detail page appears, its heading is the name of the device.*
 
-<!-- BILD FOLGT (BILDER.md): admin-device-item.png -->
 ![The Pageitem Configuration with the kind Device with details: device, short tap, the button Filter list and Long press opens: Detail page](../Pictures/device-page/admin-device-item.png)
 
 ## Quick start: device page
@@ -120,7 +119,6 @@ You can switch between the choices without losing anything as long as the dialog
 
 The button **Filter list** opens the list of all values of the device.
 
-<!-- BILD FOLGT (BILDER.md): admin-filterlist.png -->
 ![The filter list: ticked entries at the top, per row the entry and the state found for it, for rows with the same name the field 2nd line](../Pictures/device-page/admin-filterlist.png)
 
 | Element | Meaning |
@@ -216,7 +214,6 @@ The button **…** at the right of every filled row opens the settings of this o
 
 For info line, large value, progress bar, button and switch it is the familiar [Pageitem Configuration](PageConfig-Dialoge#1-pageitem-configuration) – without the choice of the channel:
 
-<!-- BILD NEU AUFNEHMEN (BILDER.md): admin-slot-dialog.png zeigt noch den früheren kleinen Dialog -->
 ![The settings of a button slot: name, icon and color for true and false, long press](../Pictures/device-page/admin-slot-dialog.png)
 
 | Field | Meaning |
@@ -234,7 +231,6 @@ An example – one button for "running / pause": put an on/off value into a butt
 
 **Status icons** have a small dialog of their own, **Settings of the element**: icon and colour for true and false, **Color scale …** and **Short tap** (**Standard** or **Navigation** with a target page).
 
-<!-- BILD FOLGT (BILDER.md): admin-slot-dialog-status.png -->
 ![The small dialog Settings of the element for a status icon: icon and colour for true and false, colour scale and short tap](../Pictures/device-page/admin-slot-dialog-status.png)
 
 ### Jumping from the device page to another page
@@ -280,7 +276,6 @@ The models **Smartphone landscape** (`web-l`) and **Smartphone portrait** (`web-
 
 For this the tick box **Web panel elements (web-l / web-p)** stands below the slots (default: off). Its tooltip explains it: *Additional slots of this layout. Only standalone web panels of the models web-l and web-p show them, all other panels show the page without them.* When it is set, the additional slots appear below it, numbered on. Each one is filled and set up like any other slot of the same kind – same selection, same **…**. None is prefilled.
 
-<!-- BILD FOLGT (BILDER.md): admin-web-extra.png -->
 ![The area of the device page with the tick box Web panel elements (web-l / web-p) set: the additional slots stand below the slots of the layout](../Pictures/device-page/admin-web-extra.png)
 
 - **Removing the tick only hides them.** The additional slots disappear from the dialog and from the web panel; what was chosen for them stays saved and is back after ticking again.
