@@ -370,6 +370,9 @@ function colorItem(hex) {
   }
   return { type: "const", constVal: import_Color.Color.ConvertHexToRgb(hex) };
 }
+function slotTextSizeItem(kind, look) {
+  return look.textSize !== void 0 && (0, import_deviceDetails.devicePageSlotTakesTextSize)(kind) ? { type: "const", constVal: look.textSize } : void 0;
+}
 function applySlotLook(icon, look, isBoolean) {
   const branches = [
     { key: "true", name: look.trueIcon, color: look.trueColor },
@@ -393,18 +396,27 @@ function applySlotLook(icon, look, isBoolean) {
     icon.scale = { type: "const", constVal: look.scale };
   }
 }
-function withDevicePageSlotLook(item, ref, common) {
+function withDevicePageSlotLook(item, ref, common, kind) {
   var _a, _b;
-  const { isNavigation: _isNavigation, targetPage: _targetPage, ...look } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
+  const {
+    isNavigation: _isNavigation,
+    targetPage: _targetPage,
+    name: _name,
+    ...look
+  } = (0, import_deviceDetails.devicePageSlotLookOf)(ref, false);
   if (Object.keys(look).length === 0) {
     return item;
   }
   const isBoolean = common.type === "boolean";
+  const textSize = slotTextSizeItem(kind, look);
   if (item.type === "text" || item.type === "button" || item.type === "switch") {
     if (!((_a = item.data) == null ? void 0 : _a.icon)) {
       return item;
     }
     applySlotLook(item.data.icon, look, isBoolean);
+    if (textSize) {
+      item.data.icon.textSize = textSize;
+    }
     if (look.scale && common.type === "number" && !item.data.entity1) {
       item.data.entity1 = { value: { type: "triggered", dp: ref.id } };
     }
@@ -413,6 +425,9 @@ function withDevicePageSlotLook(item, ref, common) {
     }
   } else if (item.type === "input_sel" && ((_b = item.data) == null ? void 0 : _b.icon)) {
     applySlotLook(item.data.icon, look, isBoolean);
+    if (textSize) {
+      item.data.icon.textSize = textSize;
+    }
   }
   return item;
 }
@@ -422,7 +437,7 @@ function devicePageSlotItem(deviceId, kind, entry, common, name) {
   if (!item) {
     return void 0;
   }
-  const withLook = withDevicePageSlotLook(item, entry, common);
+  const withLook = withDevicePageSlotLook(item, entry, common, kind);
   return target ? { ...withLook, devicePageTarget: target } : withLook;
 }
 function devicePageNavigationSlotItem(kind, ref) {
@@ -437,13 +452,18 @@ function devicePageNavigationSlotItem(kind, ref) {
     constVal: import_Color.Color.deviceInfo
   };
   const name = { type: "const", constVal: ref.name || target };
+  const textSize = slotTextSizeItem(kind, ref);
   return {
     type: "text",
     role: import_deviceDetails.DEVICE_DETAIL_ROW_ROLE,
     dpInit: "",
     devicePageTarget: target,
     data: {
-      icon: { true: { value: icon, color }, false: { value: icon, color } },
+      icon: {
+        true: { value: icon, color },
+        false: { value: icon, color },
+        ...textSize ? { textSize } : {}
+      },
       text: { true: name, false: name }
     }
   };
@@ -572,7 +592,7 @@ async function devicePageElements(source, details, page, getObject, translate, l
       present.push({ index: i, entry: ref, common });
     }
   }
-  const named = present.filter((p) => kinds[p.index] !== "status");
+  const named = present.filter((p) => kinds[p.index] !== "status" && !p.entry.name);
   const names = (0, import_device_details.deviceDetailRowNames)(
     details.deviceId,
     named.map((p) => p.entry),
@@ -584,7 +604,7 @@ async function devicePageElements(source, details, page, getObject, translate, l
   present.forEach((p) => {
     var _a2;
     const n = named.indexOf(p);
-    const name = n >= 0 ? (_a2 = names[n]) != null ? _a2 : "" : "";
+    const name = kinds[p.index] !== "status" && p.entry.name || (n >= 0 ? (_a2 = names[n]) != null ? _a2 : "" : "");
     const item = devicePageSlotItem(details.deviceId, kinds[p.index], p.entry, p.common, name);
     if (!item) {
       skipped.push(p.entry.id);

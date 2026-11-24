@@ -1,6 +1,7 @@
 /**
- * "Settings of the element": the small settings of one slot of the device page (doc/ideas/device-details/README.md,
- * section Geräteseite). The fields are those of a standard page item (ChannelConfigDialog / AdminPageItemConfig) and
+ * "Settings of the element": the small settings of a status icon of the device page (a `status` slot, the 2x2 grid
+ * of layout 1 - doc/ideas/device-details/README.md, section Geräteseite). A slot that shows a name is edited in the
+ * page item dialog itself (ChannelConfigDialog without the channel selection). The fields are those of a standard page item (ChannelConfigDialog / AdminPageItemConfig) and
  * are edited with its building blocks: icon and color for true and false, the color scale (ChannelColorDialog), the
  * short tap (standard or navigation to a page) and the state a long press writes.
  *

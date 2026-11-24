@@ -28,8 +28,13 @@ import { I18n, type AdminConnection, type IobTheme, type ThemeType } from '@iobr
 import { EntitySelector } from './EntitySelector';
 import DeviceDetailsFilterDialog from './DeviceDetailsFilterDialog';
 import DevicePageSection from './DevicePageSection';
-import { isLongPressTarget, longPressTargetOf, type LongPressTarget } from '../devicePageConfig';
-import { ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
+import {
+    isLongPressTarget,
+    longPressTargetOf,
+    type DevicePageSlotItemOptions,
+    type LongPressTarget,
+} from '../devicePageConfig';
+import { ADAPTER_NAME, type AdminPageItemConfig } from '../../../src/lib/types/adminShareConfig';
 import {
     buildDeviceDetailRows,
     deviceShortPressOf,
@@ -125,6 +130,18 @@ export interface DeviceDetailsSectionProps {
      * @returns true when its target page is not among the pages that can be chosen
      */
     devicePageTargetProblem: (slot: DevicePageSlotRef | null) => boolean;
+    /**
+     * opens the page item dialog for the settings of a slot of the device page (without the channel selection)
+     *
+     * @param item the settings of the slot as page item
+     * @param options what the dialog offers for the slot
+     * @param onApply the saved settings
+     */
+    devicePageSlotItemDialog: (
+        item: AdminPageItemConfig,
+        options: DevicePageSlotItemOptions,
+        onApply: (saved: AdminPageItemConfig) => void,
+    ) => void;
     /** for the color theme in the color dialog of a slot of the device page */
     adapterName?: string;
 }
@@ -441,6 +458,7 @@ export default class DeviceDetailsSection extends React.Component<
                         iconSelect={this.props.devicePageIconSelect}
                         targetSelect={this.props.devicePageTargetSelect}
                         targetProblem={this.props.devicePageTargetProblem}
+                        slotItemDialog={this.props.devicePageSlotItemDialog}
                         adapterName={this.props.adapterName}
                         instance={Number(this.props.instance) || 0}
                     />

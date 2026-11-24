@@ -759,6 +759,155 @@ describe('lib/pages/device-page - elements', () => {
     });
 });
 
+describe('lib/pages/device-page - own names of the slots', () => {
+    const tr = (k: string): string => k;
+    const nameOf = (item: unknown): unknown => (item as any)?.data?.text?.true?.constVal;
+    it('configuration: kept trimmed on every slot, an empty one is left out', () => {
+        const page = devicePageConfigOf({
+            layout: 3,
+            slots: [
+                { ...ref('power'), name: ' Pumpe ' },
+                { key: '', id: OWN, custom: 'state', name: 'Meldung' },
+                { key: '', id: 'alias.0.l', custom: 'channel', name: 'Lampe' },
+                { ...ref('power'), name: '  ' },
+            ],
+        });
+        expect(page?.slots[0]).to.deep.equal({ ...ref('power'), name: 'Pumpe' });
+        expect(page?.slots[1]).to.deep.equal({ key: '', id: OWN, custom: 'state', name: 'Meldung' });
+        expect(page?.slots[2]).to.deep.equal({ key: '', id: 'alias.0.l', custom: 'channel', name: 'Lampe' });
+        expect(page?.slots[3]).to.deep.equal(ref('power'));
+        expect(devicePageSlotHasLook(page?.slots[0])).to.equal(true);
+        expect(devicePageSlotLookOf({ ...ref('power'), name: 'Pumpe' })).to.deep.equal({ name: 'Pumpe' });
+    });
+    it('state and own data point: the own name replaces the automatic one, without second name line; empty = automatic', async () => {
+        const { details, page } = runtime({
+            layout: 3,
+            slots: [
+                { ...ref('power'), subName: 'Relais', name: 'Pumpe' },
+                { key: '', id: OWN, custom: 'state', name: 'Meldung' },
+                { key: '', id: OWN, custom: 'state', name: '' },
+                { ...ref('door'), name: '' },
+                null,
+                null,
+                null,
+                null,
+            ],
+        });
+        const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
+        expect(nameOf(content.elements[1])).to.equal('Pumpe');
+        expect(nameOf(content.elements[2])).to.equal('Meldung');
+        expect(nameOf(content.elements[3])).to.equal('message');
+        expect(nameOf(content.elements[4])).to.equal('door');
+    });
+    it('duplicates: a slot with an own name does not count, the others are told apart among themselves', async () => {
+        const one = runtime({ layout: 3, slots: [ref('power'), { ...ref('power'), name: 'Pumpe' }] });
+        const content = await devicePageElements(sourceSwitch, one.details, one.page, getObject, tr, 'de');
+        expect(nameOf(content.elements[1])).to.equal('power');
+        expect(nameOf(content.elements[2])).to.equal('Pumpe');
+
+        const two = runtime({
+            layout: 3,
+            slots: [ref('power'), { ...ref('power'), subName: 'B' }, { ...ref('power'), name: 'Pumpe' }],
+        });
+        const both = await devicePageElements(sourceSwitch, two.details, two.page, getObject, tr, 'de');
+        const withoutOwn = runtime({ layout: 3, slots: [ref('power'), { ...ref('power'), subName: 'B' }] });
+        const expected = await devicePageElements(
+            sourceSwitch,
+            withoutOwn.details,
+            withoutOwn.page,
+            getObject,
+            tr,
+            'de',
+        );
+        expect(nameOf(both.elements[1])).to.equal(nameOf(expected.elements[1]));
+        expect(nameOf(both.elements[2])).to.equal('power B');
+        expect(nameOf(both.elements[3])).to.equal('Pumpe');
+    });
+    it('a status slot shows no name, also with an own one', async () => {
+        const status = DEVICE_PAGE_LAYOUTS[1].indexOf('status');
+        const slots: ({ key: string; id: string; name?: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
+        slots[status] = { ...ref('door'), name: 'Tür' };
+        const { details, page } = runtime({ slots });
+        const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
+        expect(nameOf(content.elements[1 + status])).to.equal('');
+    });
+    it('alias channel: the own name goes to the page item of the channel, the look does not take it', () => {
+        const slot = { key: '', id: 'alias.0.s', custom: 'channel' as const, name: 'Steckdose' };
+        expect(devicePageChannelAdminItem(slot, 'socket')).to.deep.equal({
+            channelId: emptyChannelValueConfig('alias.0.s'),
+            name: 'Steckdose',
+        });
+        const script = adminPageItemToScriptItem(devicePageChannelAdminItem(slot, 'socket')) as any;
+        expect(script.name).to.equal('Steckdose');
+        // without own name the channel names itself
+        expect(devicePageChannelAdminItem({ ...slot, name: undefined }, 'socket').name).to.equal(undefined);
+    });
+    it('configuration: the font of the icon on every slot, the fields of a channel item only on a channel slot', () => {
+        const extra = {
+            textSize: 3,
+            useValue: true,
+            useValueConditions: ' val > 1 ',
+            minValueBrightness: 5,
+            colormode: true,
+            modeList: ['a', '', 7],
+            valueEntry: { valueStateId: 'x.name' },
+            secondRow: '',
+        };
+        const page = devicePageConfigOf({
+            layout: 3,
+            slots: [
+                { key: '', id: 'alias.0.l', custom: 'channel', ...extra },
+                { ...ref('power'), ...extra },
+                { ...ref('power'), textSize: 9 },
+            ],
+        });
+        expect(page?.slots[0]).to.deep.equal({
+            key: '',
+            id: 'alias.0.l',
+            custom: 'channel',
+            textSize: 3,
+            useValue: true,
+            useValueConditions: 'val > 1',
+            minValueBrightness: 5,
+            colormode: true,
+            modeList: ['a'],
+            valueEntry: emptyChannelValueConfig('x.name'),
+        });
+        expect(page?.slots[1]).to.deep.equal({ ...ref('power'), textSize: 3 });
+        // no font of the HMI
+        expect(page?.slots[2]).to.deep.equal(ref('power'));
+        // the channel item gets them all
+        const item = devicePageChannelAdminItem(page?.slots[0] ?? { key: '', id: '' }, 'dimmer');
+        expect(item).to.deep.include({ textSize: 3, useValue: true, minValueBrightness: 5, colormode: true });
+        const script = adminPageItemToScriptItem(item) as any;
+        expect(script.fontSize).to.equal(3);
+    });
+    it('font of the icon: on the icon of a state or navigation slot, not in a status or progress slot', () => {
+        const common = objects[`${DEV}.power`].common;
+        const info: any = devicePageSlotItem(DEV, 'info', { ...ref('power'), textSize: 3 }, common, 'P');
+        expect(info.data.icon.textSize).to.deep.equal({ type: 'const', constVal: 3 });
+        const progress: any = devicePageSlotItem(DEV, 'progress', { ...ref('power'), textSize: 3 }, common, 'P');
+        expect(progress.data.icon?.textSize).to.equal(undefined);
+        const nav = { key: '', id: '', custom: 'navigation' as const, targetPage: 'rooms', textSize: 1 as const };
+        expect((devicePageNavigationSlotItem('button', nav) as any).data.icon.textSize).to.deep.equal({
+            type: 'const',
+            constVal: 1,
+        });
+        expect((devicePageNavigationSlotItem('status', nav) as any).data.icon.textSize).to.equal(undefined);
+    });
+    it('the own name of a state slot is no look of its icon', () => {
+        const item = devicePageSlotItem(
+            DEV,
+            'info',
+            { ...ref('power'), name: 'Pumpe' },
+            objects[`${DEV}.power`].common,
+            'Pumpe',
+        );
+        const plain = devicePageSlotItem(DEV, 'info', ref('power'), objects[`${DEV}.power`].common, 'Pumpe');
+        expect(item).to.deep.equal(plain);
+    });
+});
+
 describe('lib/pages/device-page - main', () => {
     it('short tap state: the item itself, own icon, colors kept, no device page inside', () => {
         const { details, page } = runtime({ icon: 'washing-machine-alert' });

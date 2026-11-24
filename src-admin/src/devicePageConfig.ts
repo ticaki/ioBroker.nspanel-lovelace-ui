@@ -8,7 +8,11 @@ import {
     devicePageSlotAccepts,
     devicePageSlotAcceptsChannel,
     devicePageSlotAcceptsNavigation,
+    devicePageChannelItemFieldsOf,
     devicePageSlotLookOf,
+    devicePageSlotTakesLongPress,
+    devicePageSlotTakesNavigation,
+    devicePageSlotTakesTextSize,
     devicePageSlotTargetOf,
     deviceShortPressOf,
     fitDevicePageSlots,
@@ -23,7 +27,13 @@ import {
     type DeviceShortPress,
     type DeviceStateInfo,
 } from '../../src/lib/types/deviceDetails';
-import { screensaverTargetPage } from '../../src/lib/types/adminShareConfig';
+import {
+    emptyChannelValueConfig,
+    isHmiTextSize,
+    isIconColorScaleElement,
+    screensaverTargetPage,
+    type AdminPageItemConfig,
+} from '../../src/lib/types/adminShareConfig';
 import { switchOption, type OptionStash } from './itemOptionStash';
 
 /**
@@ -120,8 +130,8 @@ export function shortPressToSave(device: Pick<DeviceDetailsConfig, 'shortPress' 
 
 /**
  * @param from a slot
- * @returns its own settings as they are stored (own look, color scale, long press, the navigation of the short tap,
- * the older status icon)
+ * @returns its own settings as they are stored (own look, color scale, font of the icon, long press, own name, the
+ * navigation of the short tap, the older status icon) - not the fields of a channel item, they belong to its role
  */
 function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
     const out: Partial<DevicePageSlotRef> = {};
@@ -139,6 +149,9 @@ function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
     if (from.scale) {
         out.scale = from.scale;
     }
+    if (from.textSize !== undefined) {
+        out.textSize = from.textSize;
+    }
     if (from.icon) {
         out.icon = from.icon;
     }
@@ -149,7 +162,7 @@ function slotSettingsOf(from: DevicePageSlotRef): Partial<DevicePageSlotRef> {
  * @param config the device page
  * @param index index of the slot (0 = slot 1)
  * @param ref what the slot shows, null = empty
- * @returns the device page with the slot; the own settings of the slot (icons, colors, color scale, long press) stay
+ * @returns the device page with the slot; the own settings of the slot (icons, colors, color scale, long press, name) stay
  * when something else is chosen for it, an emptied slot loses them
  */
 export function withDevicePageSlot(
@@ -198,10 +211,7 @@ export function withDevicePageSlotLook(
         next.custom = slot.custom;
     }
     if (slot.custom === 'navigation') {
-        // target and text of a navigation slot are edited at the slot, not in the dialog
-        if (slot.name) {
-            next.name = slot.name;
-        }
+        // the target of a navigation slot is edited at the slot, not in the dialog
         if (slot.targetPage) {
             next.targetPage = slot.targetPage;
         }
@@ -222,9 +232,104 @@ export function withDevicePageSlotLook(
     if (look.scale) {
         next.scale = look.scale;
     }
+    if (look.textSize !== undefined) {
+        next.textSize = look.textSize;
+    }
     const slots = [...config.slots];
-    slots[index] = next;
+    slots[index] = next.custom === 'channel' ? { ...next, ...devicePageChannelItemFieldsOf(look) } : next;
     return { ...config, slots };
+}
+
+/** what the page item dialog offers for a slot of the device page (ChannelConfigDialog, slot mode) */
+export interface DevicePageSlotItemOptions {
+    /** number and kind of the slot, for the title */
+    title: string;
+    /** what the slot shows: a state (of the device or an own data point), an alias channel or a navigation */
+    source: 'state' | 'channel' | 'navigation';
+    /** the short tap can navigate ({@link devicePageSlotTakesNavigation}) - never for a navigation slot */
+    tap: boolean;
+    /** the slot takes a long press action ({@link devicePageSlotTakesLongPress}) */
+    longPress: boolean;
+    /** the font of the icon can be set ({@link devicePageSlotTakesTextSize}) */
+    textSize: boolean;
+    /**
+     * the value text instead of the icon (`useValue`, `useValueConditions` by the role): only an alias channel in a
+     * `button` or `switch` slot - in the other slots the device page shows the icon of a text item, not its value
+     * (devicePageChannelSlotItem), a state slot builds no value text in the icon at all
+     */
+    iconText: boolean;
+}
+
+/**
+ * What the page item dialog offers for a slot that shows a name (not a `status` slot - it keeps its small dialog).
+ *
+ * @param kind the kind of the slot
+ * @param slot the slot
+ * @param role common.role of the channel of a channel slot
+ * @param title number and kind of the slot
+ * @returns the options
+ */
+export function devicePageSlotItemOptions(
+    kind: DevicePageSlotKind,
+    slot: DevicePageSlotRef,
+    role: string | null | undefined,
+    title: string,
+): DevicePageSlotItemOptions {
+    const source = slot.custom === 'channel' ? 'channel' : slot.custom === 'navigation' ? 'navigation' : 'state';
+    return {
+        title,
+        source,
+        tap: source !== 'navigation' && devicePageSlotTakesNavigation(slot, role),
+        longPress: source !== 'navigation' && devicePageSlotTakesLongPress(kind, slot, role),
+        textSize: devicePageSlotTakesTextSize(kind),
+        iconText: source === 'channel' && (kind === 'button' || kind === 'switch'),
+    };
+}
+
+/**
+ * The page item the dialog opens a slot with: its settings in the fields of a page item; the channel of a channel
+ * slot (the dialog reads its role and hides its selection), no channel for a state or navigation slot.
+ *
+ * @param slot the slot
+ * @returns the page item for ChannelConfigDialog.openWith
+ */
+export function devicePageSlotDialogItem(slot: DevicePageSlotRef): AdminPageItemConfig {
+    return {
+        channelId: emptyChannelValueConfig(slot.custom === 'channel' ? slot.id : ''),
+        ...devicePageSlotLookOf(slot),
+    };
+}
+
+/**
+ * @param item the page item the dialog saved for a slot
+ * @returns its settings as slot look: empty texts left out, colors / icons / name trimmed by
+ * {@link withDevicePageSlotLook}; the fields of a channel item ({@link devicePageChannelItemFieldsOf}) are kept only by
+ * a channel slot
+ */
+export function devicePageSlotLookOfItem(item: AdminPageItemConfig): DevicePageSlotLook {
+    const look: DevicePageSlotLook = devicePageChannelItemFieldsOf(item);
+    for (const field of ['name', 'trueIcon', 'falseIcon', 'trueColor', 'falseColor'] as const) {
+        const text = item[field]?.trim();
+        if (text) {
+            look[field] = text;
+        }
+    }
+    if (item.longPress) {
+        look.longPress = item.longPress;
+    }
+    if (isIconColorScaleElement(item.scale)) {
+        look.scale = item.scale;
+    }
+    if (isHmiTextSize(item.textSize)) {
+        look.textSize = item.textSize;
+    }
+    if (item.isNavigation) {
+        look.isNavigation = true;
+        if (item.targetPage) {
+            look.targetPage = item.targetPage;
+        }
+    }
+    return look;
 }
 
 /** value of the entry "user defined" in the selection of a slot and of the status line - no id of a state */
@@ -283,45 +388,32 @@ export function customDevicePageSlot(source: DevicePageCustomSource, id: string)
 }
 
 /**
- * Target page and text of a navigation slot (`custom: 'navigation'`); another slot stays as it is.
+ * Target page of a navigation slot (`custom: 'navigation'`); another slot stays as it is. Its text is set in the
+ * settings of the element like the name of every other slot ({@link withDevicePageSlotLook}).
  *
  * @param config the device page
  * @param index index of the slot (0 = slot 1)
- * @param change the new target page and / or text, '' = none
- * @param change.targetPage name of the target page
- * @param change.name text of the element
+ * @param targetPage name of the target page, '' = none
  * @returns the device page with the change
  */
 export function withDevicePageSlotNavigation(
     config: DevicePageConfig,
     index: number,
-    change: { targetPage?: string; name?: string },
+    targetPage: string,
 ): DevicePageConfig {
     const slot = config.slots[index];
     if (slot?.custom !== 'navigation') {
         return config;
     }
-    if (
-        (change.targetPage === undefined || change.targetPage === (slot.targetPage ?? '')) &&
-        (change.name === undefined || change.name === (slot.name ?? ''))
-    ) {
+    if (targetPage === (slot.targetPage ?? '')) {
         // nothing new (the selection reports its value again when it is shown)
         return config;
     }
     const next: DevicePageSlotRef = { ...slot };
-    if (change.targetPage !== undefined) {
-        if (change.targetPage) {
-            next.targetPage = change.targetPage;
-        } else {
-            delete next.targetPage;
-        }
-    }
-    if (change.name !== undefined) {
-        if (change.name) {
-            next.name = change.name;
-        } else {
-            delete next.name;
-        }
+    if (targetPage) {
+        next.targetPage = targetPage;
+    } else {
+        delete next.targetPage;
     }
     const slots = [...config.slots];
     slots[index] = next;
