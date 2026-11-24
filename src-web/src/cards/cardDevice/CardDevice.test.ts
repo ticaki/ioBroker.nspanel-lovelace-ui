@@ -2,11 +2,17 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { initialGlobalState } from '../../store/PanelStore';
-import type { Entity6 } from '../../protocol/types';
+import type { Entity6, PanelModel } from '../../protocol/types';
 import type { CardProps } from '../CardContract';
 import { Pressable, type PressableProps } from '../cardEntities/shared/Pressable';
 import { CardDevice, DEVICE_LONG_PRESS_MS, deviceTouch } from './CardDevice';
 import { handleCommand, initial, parseEntityUpd, type CardDeviceModel } from './parse';
+import device1 from '../../../scripts/examples/cardDevice1.txt?raw';
+import webL1 from '../../../scripts/examples/web-l-cardDevice1.txt?raw';
+import webL1Plain from '../../../scripts/examples/web-l-cardDevice1-plain.txt?raw';
+import webL2 from '../../../scripts/examples/web-l-cardDevice2.txt?raw';
+import webL3 from '../../../scripts/examples/web-l-cardDevice3.txt?raw';
+import webL3Plain from '../../../scripts/examples/web-l-cardDevice3-plain.txt?raw';
 
 interface Sent {
     press: unknown[][];
@@ -397,5 +403,99 @@ describe('cardDevice1 status block rendering', () => {
     it('moves the info rows right while the block is shown', () => {
         expect(html(0)).toContain('left:126px;top:76px');
         expect(html(1)).toContain('left:204px;top:76px');
+    });
+});
+
+describe('cardDevice on the models', () => {
+    /** renders the `entityUpd` of an example of scripts/examples as the store does on this model */
+    function render(example: string, pageType: string, model: PanelModel): string {
+        const line = example.split('\n').find(l => l.startsWith('entityUpd~')) ?? '';
+        const ctx = { pageType, pageArgs: [], model };
+        const parsed = parseEntityUpd(line.split('~').slice(1), initial(), ctx);
+        return renderToStaticMarkup(
+            React.createElement(CardDevice, {
+                model: parsed,
+                ctx,
+                global: initialGlobalState(model),
+                send: () => undefined,
+                press: () => undefined,
+                openPopup: () => undefined,
+            }),
+        );
+    }
+
+    it('web-l cardDevice1: the two additional buttons are touch areas like the standard ones', () => {
+        const out = render(webL1, 'cardDevice1', 'web-l');
+        expect(tag(out, 'slot-3')).toContain('left:8px;top:190px;width:104px;height:80px');
+        expect(tag(out, 'slot-6')).toContain('left:320px;top:190px;width:104px;height:80px');
+        expect(tag(out, 'extra-1')).toContain('data-pressable');
+        expect(tag(out, 'extra-1')).toContain('data-id="9?0?11"');
+        expect(tag(out, 'extra-1')).toContain('left:424px;top:190px;width:104px;height:80px');
+        expect(tag(out, 'extra-2')).toContain('data-id="9?0?12"');
+        expect(tag(out, 'extra-2')).toContain('left:528px;top:190px;width:104px;height:80px');
+        expect(out).toContain('Zone<');
+        expect(out).toContain('Leeren<');
+        // status line over the width, info icon at the right edge
+        expect(out).toContain('left:10px;top:289px;width:580px;height:30px');
+        expect(tag(out, 'info')).toContain('left:594px;top:288px;width:36px;height:32px');
+    });
+
+    it('web-l without additional slots: nothing is drawn for them, the row is spread', () => {
+        const out = render(webL1Plain, 'cardDevice1', 'web-l');
+        expect(out).not.toContain('data-role="extra-');
+        expect(tag(out, 'slot-3')).toContain('left:10px;top:190px');
+        expect(tag(out, 'slot-6')).toContain('left:526px;top:190px');
+        const car = render(webL3Plain, 'cardDevice3', 'web-l');
+        expect(car).not.toContain('data-role="extra-');
+        expect(tag(car, 'slot-8-label')).toContain('left:320px;top:236px');
+    });
+
+    it('web-l cardDevice2 and cardDevice3: additional info tiles, buttons and the switch', () => {
+        const washer = render(webL2, 'cardDevice2', 'web-l');
+        expect(tag(washer, 'extra-1')).toContain('left:490px;top:226px;width:140px;height:51px');
+        expect(washer).toContain('48 l<');
+        expect(tag(washer, 'slot-6')).toContain('left:330px;top:67px;width:100px;height:78px');
+        expect(tag(washer, 'extra-2')).toContain('left:430px;top:67px');
+        expect(tag(washer, 'extra-3')).toContain('left:530px;top:67px');
+        expect(tag(washer, 'slot-2')).toContain('left:10px;top:179px;width:620px;height:42px');
+        const car = render(webL3, 'cardDevice3', 'web-l');
+        expect(tag(car, 'extra-1')).toContain('left:469px;top:67px;width:161px;height:51px');
+        expect(tag(car, 'extra-2')).toContain('left:469px;top:119px');
+        expect(tag(car, 'extra-3-label')).toContain('data-id="9?0?11"');
+        expect(tag(car, 'extra-3-label')).toContain('left:424px;top:236px;width:159px;height:34px');
+        expect(car.match(/data-role="toggle"/g) ?? []).toHaveLength(3);
+        expect(car).not.toContain('…');
+    });
+
+    it('eu and us-l show only the standard part, also of a payload with additional slots', () => {
+        for (const model of ['eu', 'us-l'] as const) {
+            const out = render(webL1, 'cardDevice1', model);
+            expect(out, model).not.toContain('data-role="extra-');
+            expect(out, model).not.toContain('Zone<');
+            expect(out, model).not.toContain('transform');
+        }
+        // eu draws a payload with additional slots exactly like the one without
+        expect(render(webL1, 'cardDevice1', 'eu')).toBe(render(device1, 'cardDevice1', 'eu'));
+    });
+
+    it('us-l: the eu page 15 px to the right', () => {
+        const eu = render(device1, 'cardDevice1', 'eu');
+        const usl = render(device1, 'cardDevice1', 'us-l');
+        expect(tag(eu, 'main')).toContain('left:10px;top:68px;width:110px;height:114px');
+        expect(tag(usl, 'main')).toContain('left:25px;top:68px;width:110px;height:114px');
+        expect(tag(eu, 'slot-6')).toContain('left:334px;top:190px');
+        expect(tag(usl, 'slot-6')).toContain('left:349px;top:190px');
+        expect(eu).toContain('left:10px;top:289px;width:390px;height:30px');
+        expect(usl).toContain('left:25px;top:289px;width:390px;height:30px');
+        expect(tag(usl, 'info')).toContain('left:419px;top:288px');
+    });
+
+    it('PHASE 2 - us-p and web-p: the provisional fallback draws the eu page scaled to the stage', () => {
+        for (const model of ['us-p', 'web-p'] as const) {
+            const out = render(webL1, 'cardDevice1', model);
+            expect(out, model).toContain(`transform:scale(${320 / 450});transform-origin:0 62px`);
+            expect(tag(out, 'main'), model).toContain('left:10px;top:68px;width:110px;height:114px');
+            expect(out, model).not.toContain('data-role="extra-');
+        }
     });
 });

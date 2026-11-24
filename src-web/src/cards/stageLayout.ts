@@ -10,6 +10,10 @@ import { stageSize } from '../style/theme';
  *
  * A card that gets a real web layout is **removed from this list** - from then on it is drawn
  * on the full stage and sees `web-p` / `web-l` in `global.model`. Nothing else has to change.
+ *
+ * The device pages (cardDevice1-3) are not in the list: they bring a geometry per model
+ * (`cardDevice/layout.ts`) - web-l a layout of its own with additional slots; a model without one
+ * (us-p, web-p until their tables exist) draws the provisional fallback of that file.
  */
 export const CENTERED_ON_WEB: ReadonlySet<string> = new Set([
     'pageStartup',
@@ -21,9 +25,6 @@ export const CENTERED_ON_WEB: ReadonlySet<string> = new Set([
     'cardChart',
     'cardLChart',
     'cardPChart',
-    'cardDevice1',
-    'cardDevice2',
-    'cardDevice3',
 ]);
 
 /**

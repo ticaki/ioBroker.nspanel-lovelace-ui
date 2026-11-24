@@ -60,6 +60,69 @@ Geometrie-Vorgaben Web (Bühnenpixel, TitleBar 62 hoch, Inhalt ab y 62/72):
   pageStartup) bleiben in ihrer eu- bzw. us-p-Geometrie und werden auf der Bühne zentriert
   (web-l: horizontal, web-p: vertikal).
 
+## Geräteseiten (cardDevice1–3)
+
+Stand: 2026-11-24. Die Geräteseiten ([device-page-hmi.md](../ideas/device-details/device-page-hmi.md)) haben im
+Web-Panel eine **Geometrie je Modell** (`src-web/src/cards/cardDevice/`). Sie stehen nicht in `CENTERED_ON_WEB`,
+die Karte sieht also immer das echte Modell.
+
+| Modell | Geometrie | Quelle |
+| --- | --- | --- |
+| eu | Tabelle der eu-HMI, unverändert | `geometryHmi.ts` `EU_GEOMETRY` |
+| us-l | eu-Tabelle **15 px nach rechts** (sichtbarer Bereich x 15–464) | `geometryHmi.ts` `US_L_GEOMETRY` |
+| web-l | eigenes Layout auf 640 px mit Zusatz-Elementen | `geometryWeb.ts` `webLandscapeGeometry` |
+| us-p, web-p | **vorläufiger Rückfall** (Phase 2 ersetzt ihn): eu-Seite ohne Zusatz-Elemente, auf die Bühnenbreite verkleinert (320 / 450) | `layout.ts` `FALLBACK` |
+
+- **Neues Modell:** Tabelle (Hardware, aus `doc/ideas/device-details/device-page-geometry.json`) bzw. Layout-Funktion
+  (Web) anlegen und in `GEOMETRY` in `layout.ts` eintragen – sonst nichts. Eine Box darf `font` und `align`
+  mitbringen, wenn das Modell von der Vorgabe der Elementart abweicht.
+- **us-l:** Die Verschiebung ist aus der HMI abgelesen (`HMI/us-l/nspanel-us-l-v6.2.0.HMI` gegen
+  `HMI/nspanel-v6.2.0.HMI`): Überschrift, Pfeile und alle Objekte von cardEntities und cardThermo2 +15 px, die
+  Zellen von cardGrid +16, von cardGrid2 +14; y, Breite und Höhe gleich. Wie bei cardThermo2 verschiebt die Karte
+  nur ihren Inhalt, die Kopfzeile (`TitleBar`) zeichnet das Web-Panel auf us-l bei allen Karten wie eu.
+
+### Zusatz-Elemente der Web-Modelle
+
+Der Adapter hängt sie bei `web-l` und `web-p` **hinter das info-Icon**; eu, us-l und us-p (auch als Web-Klon)
+bekommen und zeigen nur den Standardteil.
+
+```
+entityUpd~<heading>~<prev 6>~<next 6>~<main 6>~<slot 1..N je 6>~<info 6>~<extra 1..E je 6>
+```
+
+| Seite | N | Zusatz-Slots (E) | damit |
+| --- | --- | --- | --- |
+| cardDevice1 | 10 | button, button | 6 Knöpfe |
+| cardDevice2 | 6 | info, button, button | 4 Infos, 3 Knöpfe |
+| cardDevice3 | 8 | info, info, switch | 8 Infos, 3 Schalter |
+
+Ein Zusatz-Element verhält sich wie ein Standard-Slot seiner Art (Tipp, Long-Press, Popup). Fehlende oder leere
+Zusatz-Elemente hinterlassen keine Lücke: jede Reihe wird für die Elemente gesetzt, die sie tragen muss – bis zum
+letzten belegten Zusatz-Slot ihrer Art. Der Parser liest die Zusatz-Slots nur bei einem Web-Modell
+(`ParseContext.model`).
+
+### Layout web-l (Bühne 640 × 320)
+
+Kopfzeile wie die anderen web-l-Karten, Inhalt x 10–629 (kein HMI-Rand), y, Schriften und Elementarten wie eu.
+**Kein Textfeld ist schmaler als auf eu** (der Adapter kürzt Namen und Werte auf die eu-Breiten); die Breite geht in
+mehr Elemente, nicht in längere Texte. Statuszeile auf allen drei Seiten **x 10, y 289, 580 × 30, mittig**
+(eu 390 px), info-Icon x 594, y 288, 36 × 32.
+
+| Seite | Aufbau | x-Positionen |
+| --- | --- | --- |
+| cardDevice1 | main und Status-Block (2×2) wie eu. Info-Zeilen 1–2: Icon x 126 (mit Status-Icons 204), Name bis x 518 (354 bzw. 276 px), Wert x 520, 110 px rechtsbündig. Darunter **eine Reihe mit 4–6 Knöpfen** (104 × 52, Name 104 × 26, y 190 / 244) | 4: 10 / 182 / 354 / 526 · 5: 10 / 139 / 268 / 397 / 526 · 6: 8 / 112 / 216 / 320 / 424 / 528 |
+| cardDevice2 | main und großer Wert wie eu (bei 3 Knöpfen Icon x 106, Wert und Name x 140 statt 110 / 146). **1–3 Knöpfe oben rechts** (100 × 50, Name 100 × 26), rechtsbündig, Slot 6 zuerst. Balken und sein Name 620 px. Darunter **eine Reihe mit 3–4 Info-Kacheln** (140 px wie eu) | Knöpfe 1: 530 · 2: 430 / 530 · 3: 330 / 430 / 530 · Infos 3: 10 / 250 / 490 · 4: 10 / 170 / 330 / 490 |
+| cardDevice3 | main wie eu. Info-Kacheln (161 px wie eu) in den Zeilen y 69 / 121 / 173: Slots 1–6 zeilenweise in zwei Spalten wie eu, die **Zusatz-Infos in einer dritten Spalte** (oben, Mitte). Darunter **eine Reihe mit 2–3 Schaltern** (y 228–277) | Infos 2 Spalten: 114 / 372 · 3 Spalten: 114 / 292 / 469 · Schalter 2: 10 / 320 (213 px wie eu) · 3: 10 / 217 / 424 (206 px: Name x + 34, Schalter x + 161, 45 px) |
+
+Voll belegt und ohne Zusatz-Elemente (Beispiele `src-web/scripts/examples/web-l-cardDevice*.txt`):
+
+![web-l cardDevice1](../Pictures/device-page/web-l-cardDevice1.png)
+![web-l cardDevice1 ohne Zusatz-Elemente](../Pictures/device-page/web-l-cardDevice1-plain.png)
+![web-l cardDevice2](../Pictures/device-page/web-l-cardDevice2.png)
+![web-l cardDevice2 ohne Zusatz-Elemente](../Pictures/device-page/web-l-cardDevice2-plain.png)
+![web-l cardDevice3](../Pictures/device-page/web-l-cardDevice3.png)
+![web-l cardDevice3 ohne Zusatz-Elemente](../Pictures/device-page/web-l-cardDevice3-plain.png)
+
 ## Screensaver: Plätze pro Modell
 
 `ScreenSaverConst` (`definition.ts`) und die Kopie `screensaverSlotLimits` (`adminShareConfig.ts`,

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { PanelModel } from '../../protocol/types';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import { DEVICE_GEOMETRY, deviceGeometry, deviceLayout, progressPercent, statusBlockVisible } from './layout';
 import { handleCommand, initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
@@ -6,12 +7,24 @@ import device1 from '../../../scripts/examples/cardDevice1.txt?raw';
 import device1Plain from '../../../scripts/examples/cardDevice1-plain.txt?raw';
 import device2 from '../../../scripts/examples/cardDevice2.txt?raw';
 import device3 from '../../../scripts/examples/cardDevice3.txt?raw';
+import webL1 from '../../../scripts/examples/web-l-cardDevice1.txt?raw';
+import webL1Plain from '../../../scripts/examples/web-l-cardDevice1-plain.txt?raw';
+import webL2 from '../../../scripts/examples/web-l-cardDevice2.txt?raw';
+import webL2Plain from '../../../scripts/examples/web-l-cardDevice2-plain.txt?raw';
+import webL3 from '../../../scripts/examples/web-l-cardDevice3.txt?raw';
+import webL3Plain from '../../../scripts/examples/web-l-cardDevice3-plain.txt?raw';
 
 const EXAMPLES: Readonly<Record<string, string>> = {
     cardDevice1: device1,
     'cardDevice1-plain': device1Plain,
     cardDevice2: device2,
     cardDevice3: device3,
+    'web-l-cardDevice1': webL1,
+    'web-l-cardDevice1-plain': webL1Plain,
+    'web-l-cardDevice2': webL2,
+    'web-l-cardDevice2-plain': webL2Plain,
+    'web-l-cardDevice3': webL3,
+    'web-l-cardDevice3-plain': webL3Plain,
 };
 
 const NAV = ['button', 'bSubPrev', '<', '65535', '', '', 'button', 'bSubNext', '>', '65535', '', ''];
@@ -28,8 +41,8 @@ function el(type: string, id: string, name = '', value = '', icon = 'X', color =
 
 const EMPTY = ['', '', '', '', '', ''];
 
-function ctx(pageType: string): { pageType: string; pageArgs: string[] } {
-    return { pageType, pageArgs: [] };
+function ctx(pageType: string, model?: PanelModel): { pageType: string; pageArgs: string[]; model?: PanelModel } {
+    return { pageType, pageArgs: [], model };
 }
 
 describe('cardDevice layouts', () => {
@@ -258,8 +271,93 @@ describe('cardDevice parse', () => {
     it('starts empty and does not handle entityUpdateDetail', () => {
         const m = initial();
         expect(m.slots).toHaveLength(10);
+        expect(m.extras).toEqual([]);
         expect(m.status).toBe('');
         expect(parseEntityUpdateDetail(['x'], m, ctx('cardDevice1'))).toBeUndefined();
+    });
+});
+
+describe('cardDevice parse: additional slots of the web models', () => {
+    const HARDWARE: readonly PanelModel[] = ['eu', 'us-l', 'us-p'];
+    const WEB: readonly PanelModel[] = ['web-l', 'web-p'];
+    const PAGES = [
+        { pageType: 'cardDevice1', slots: 10, extras: ['button', 'button'] },
+        { pageType: 'cardDevice2', slots: 6, extras: ['text', 'button', 'button'] },
+        { pageType: 'cardDevice3', slots: 8, extras: ['text', 'text', 'switch'] },
+    ] as const;
+
+    it('a web model reads them behind the info icon: 2 / 3 / 3 per page', () => {
+        for (const page of PAGES) {
+            for (const model of WEB) {
+                const m = parseEntityUpd(example(`web-l-${page.pageType}`), initial(), ctx(page.pageType, model));
+                expect(m.slots, page.pageType).toHaveLength(page.slots);
+                expect(m.info.id, page.pageType).toBe('9?0?info');
+                expect(
+                    m.extras.map(e => e.type),
+                    page.pageType,
+                ).toEqual(page.extras);
+                expect(m.extras.every(e => !isEmptySlot(e))).toBe(true);
+                // the ids go on behind those of the standard slots
+                expect(m.extras.map(e => e.id)).toEqual(page.extras.map((_, j) => `9?0?${page.slots + 1 + j}`));
+            }
+        }
+    });
+
+    it('the standard part of a payload with additional slots is the payload without them', () => {
+        for (const page of PAGES) {
+            const web = parseEntityUpd(example(`web-l-${page.pageType}`), initial(), ctx(page.pageType, 'web-l'));
+            const eu = parseEntityUpd(example(page.pageType), initial(), ctx(page.pageType, 'eu'));
+            expect({ ...web, extras: [] }, page.pageType).toEqual(eu);
+        }
+    });
+
+    it('a hardware model (also as a web clone) has none, whatever follows the info icon', () => {
+        for (const page of PAGES) {
+            for (const model of [...HARDWARE, undefined]) {
+                const m = parseEntityUpd(example(`web-l-${page.pageType}`), initial(), ctx(page.pageType, model));
+                expect(m.extras, `${page.pageType} ${model}`).toEqual([]);
+                expect(m.slots).toHaveLength(page.slots);
+                expect(m.info.id).toBe('9?0?info');
+            }
+        }
+    });
+
+    it('a web model without additional slots in the payload gets empty ones', () => {
+        for (const page of PAGES) {
+            for (const name of [page.pageType, `web-l-${page.pageType}-plain`]) {
+                const m = parseEntityUpd(example(name), initial(), ctx(page.pageType, 'web-l'));
+                expect(m.extras, name).toHaveLength(page.extras.length);
+                expect(m.extras.every(isEmptySlot), name).toBe(true);
+                expect(m.info.id, name).toBe('9?0?info');
+            }
+        }
+    });
+
+    it('reads a payload that ends in the middle of the additional slots', () => {
+        const args = example('web-l-cardDevice2');
+        // cut behind the first additional slot (info), the two buttons are missing
+        const m = parseEntityUpd(args.slice(0, args.length - 12), initial(), ctx('cardDevice2', 'web-l'));
+        expect(m.extras.map(isEmptySlot)).toEqual([false, true, true]);
+        expect(m.extras[0]).toMatchObject({ displayName: 'Wasser', optionalValue: '48 l' });
+    });
+
+    it('an old cardDevice1 payload with 6 slots has no additional slots on a web model either', () => {
+        const slots6 = Array.from({ length: 6 }, (_, i) => el('text', `s${i + 1}`)).flat();
+        const m = parseEntityUpd(
+            ['T', ...NAV, ...el('text', 'm'), ...slots6, ...el('button', 'info')],
+            initial(),
+            ctx('cardDevice1', 'web-l'),
+        );
+        expect(m.info.id).toBe('info');
+        expect(m.extras).toHaveLength(2);
+        expect(m.extras.every(isEmptySlot)).toBe(true);
+    });
+
+    it('devStatus keeps the additional slots', () => {
+        const before = parseEntityUpd(example('web-l-cardDevice3'), initial(), ctx('cardDevice3', 'web-l'));
+        const after = handleCommand('devStatus', ['Teil 2'], before, ctx('cardDevice3', 'web-l'));
+        expect(after?.extras).toBe(before.extras);
+        expect(after?.status).toBe('Teil 2');
     });
 });
 
@@ -288,7 +386,7 @@ describe('cardDevice1 status block', () => {
     it('0 status icons: block hidden, wide info rows', () => {
         const s = slots(0);
         expect(statusBlockVisible(1, s)).toBe(false);
-        const g = deviceGeometry(1, s);
+        const g = deviceGeometry(1, s, 'eu');
         expect(g.slots[0]).toEqual({
             kind: 'info',
             icon: { x: 126, y: 76, w: 36, h: 34 },
@@ -301,7 +399,7 @@ describe('cardDevice1 status block', () => {
     it('1 status icon: block shown, narrow info rows', () => {
         const s = slots(1);
         expect(statusBlockVisible(1, s)).toBe(true);
-        const g = deviceGeometry(1, s);
+        const g = deviceGeometry(1, s, 'eu');
         expect(g.slots[0]).toEqual({
             kind: 'info',
             icon: { x: 204, y: 76, w: 36, h: 34 },
@@ -328,7 +426,7 @@ describe('cardDevice1 status block', () => {
         const many = Array.from({ length: 8 }, (_, i) => ({ ...initial().slots[0], type: 'text', id: `s${i}` }));
         expect(statusBlockVisible(2, many)).toBe(false);
         expect(statusBlockVisible(3, many)).toBe(false);
-        expect(deviceGeometry(3, many)).toBe(DEVICE_GEOMETRY[3]);
+        expect(deviceGeometry(3, many, 'eu')).toBe(DEVICE_GEOMETRY[3]);
     });
 });
 

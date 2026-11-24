@@ -12,6 +12,7 @@ import { Pressable } from '../cardEntities/shared/Pressable';
 import { HmiTextBox, Toggle, type NextionAlign } from '../cardEntities/shared/widgets';
 import {
     STATUS_FRAME_COLOR,
+    deviceFallbackScale,
     deviceGeometry,
     progressPercent,
     statusBlockVisible,
@@ -23,6 +24,9 @@ import type { CardDeviceModel } from './parse';
 
 /** Hold time of the `tmLP` timer the device pages copied from cardGrid */
 export const DEVICE_LONG_PRESS_MS = 500;
+
+/** Width of the on/off switch of the HMI (picture in the 50 px box of `btOnOff`) */
+const TOGGLE_WIDTH = 45;
 
 /** Entity types whose popup opens as soon as the element is touched (cardGrid cell of the HMI) */
 const POPUP_ON_TOUCH: ReadonlySet<string> = new Set(['shutter', 'shutter2', 'input_sel', 'timer']);
@@ -96,8 +100,11 @@ function unionBox(boxes: readonly Box[]): Box {
  * cardDevice1 / cardDevice2 / cardDevice3: the page of one device - big icon (main), fixed slots
  * (info, value, progress, button, switch, status), the status line (field 6 of main, replaced by
  * `devStatus`) and the info icon at the bottom right. main and every slot are touched like a grid tile
- * ({@link deviceTouch}). Rebuilt from the eu HMI pixel by pixel; on web-l the page is drawn in the
- * eu geometry (`CENTERED_ON_WEB`). Texts are cut at the border of their field like on the panel.
+ * ({@link deviceTouch}). The boxes come from the geometry of the model ({@link deviceGeometry}): eu and us-l
+ * are rebuilt from the HMI pixel by pixel, web-l has a layout of its own on the full stage with additional
+ * slots behind the standard ones (same kinds, same touch). A model without a geometry yet (us-p, web-p) draws
+ * the eu page scaled to its stage ({@link deviceFallbackScale}). Texts are cut at the border of their field
+ * like on the panel.
  */
 export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
     /**
@@ -164,8 +171,9 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                 y={b.y - origin.y}
                 w={b.w}
                 h={b.h}
-                font={font}
-                xcen={xcen}
+                // a box of the geometry may bring its own font and alignment, else those of the element kind
+                font={b.font ?? font}
+                xcen={b.align ?? xcen}
             />
         );
     }
@@ -221,13 +229,13 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
      *
      * @param entity the slot
      * @param slot its cell
-     * @param index index of the slot
+     * @param role data-role of the slot
      * @param visible the block is shown (at least one status slot is filled)
      */
     private renderStatusCell(
         entity: Entity6,
         slot: StatusSlotGeometry,
-        index: number,
+        role: string,
         visible: boolean,
     ): React.JSX.Element | null {
         if (!visible) {
@@ -236,8 +244,8 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         const { cell } = slot;
         return (
             <div
-                key={`slot-${index + 1}`}
-                data-role={`slot-${index + 1}`}
+                key={role}
+                data-role={role}
                 data-kind="status"
                 style={{
                     position: 'absolute',
@@ -264,21 +272,31 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         );
     }
 
+    /**
+     * A standard or additional slot in its boxes; an empty one (or one the page has no place for) draws nothing.
+     *
+     * @param entity the slot
+     * @param slot its boxes, `undefined`: no place on this page
+     * @param role data-role of the slot (`slot-<k>`, `extra-<j>`)
+     * @param statusVisible the status block is shown
+     */
     private renderSlot(
         entity: Entity6,
-        slot: SlotGeometry,
-        index: number,
+        slot: SlotGeometry | undefined,
+        role: string,
         statusVisible: boolean,
     ): React.JSX.Element | null {
+        if (slot === undefined) {
+            return null;
+        }
         if (slot.kind === 'status') {
-            return this.renderStatusCell(entity, slot, index, statusVisible);
+            return this.renderStatusCell(entity, slot, role, statusVisible);
         }
         if (isEmptySlot(entity)) {
             return null;
         }
         const fg = theme.foreground;
         const iconColor = color565ToCss(entity.iconColor);
-        const role = `slot-${index + 1}`;
         switch (slot.kind) {
             case 'info':
                 return this.tapArea(role, 'info', entity, [slot.icon, slot.name, slot.value], o => [
@@ -348,6 +366,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                             <Toggle
                                 on={isOn(entity.optionalValue)}
                                 onChange={(on): void => this.onSwitch(entity, on)}
+                                width={Math.min(TOGGLE_WIDTH, slot.toggle.w)}
                             />
                         </div>
                     </div>
@@ -358,8 +377,9 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
 
     render(): React.JSX.Element {
         const { model, ctx, global, press } = this.props;
-        const geometry = deviceGeometry(model.layout, model.slots);
+        const geometry = deviceGeometry(model.layout, model.slots, global.model, model.extras);
         const statusVisible = statusBlockVisible(model.layout, model.slots);
+        const scale = deviceFallbackScale(global.model);
         const { main, info } = model;
         return (
             <div
@@ -384,7 +404,16 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                     data-device=""
                     // spans the stage above the title bar: only the elements take the touches,
                     // the navigation arrows stay reachable
-                    style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        // provisional fallback of a model without a geometry (us-p, web-p): the eu page, shrunk
+                        // to the width of the stage below the title bar
+                        ...(scale === 1
+                            ? {}
+                            : { transform: `scale(${scale})`, transformOrigin: `0 ${theme.titleBarHeight}px` }),
+                    }}
                 >
                     {isEmptySlot(main)
                         ? null
@@ -393,7 +422,10 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                               this.text('name', main.displayName, geometry.main.name, 0, 1, theme.foreground, o),
                           ])}
                     {geometry.slots.map((slot, i) =>
-                        this.renderSlot(model.slots[i] ?? emptyEntity(), slot, i, statusVisible),
+                        this.renderSlot(model.slots[i] ?? emptyEntity(), slot, `slot-${i + 1}`, statusVisible),
+                    )}
+                    {geometry.extras.map((slot, j) =>
+                        this.renderSlot(model.extras[j] ?? emptyEntity(), slot, `extra-${j + 1}`, statusVisible),
                     )}
                     <div data-role="status">
                         {this.text('status', model.status, geometry.status, 0, geometry.statusAlign, theme.foreground)}

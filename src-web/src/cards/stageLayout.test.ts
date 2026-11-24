@@ -114,6 +114,15 @@ describe('cardStage', () => {
         }
     });
 
+    it('gives the device pages the full stage and the real model: they bring a geometry per model', () => {
+        for (const pageType of ['cardDevice1', 'cardDevice2', 'cardDevice3']) {
+            expect(CENTERED_ON_WEB.has(pageType), pageType).toBe(false);
+            expect(cardStage(pageType, 'web-p')).toEqual({ model: 'web-p', left: 0, top: 0, width: 320, height: 640 });
+            expect(cardStage(pageType, 'web-l')).toEqual({ model: 'web-l', left: 0, top: 0, width: 640, height: 320 });
+            expect(cardStage(pageType, 'us-l')).toEqual({ model: 'us-l', left: 0, top: 0, width: 480, height: 320 });
+        }
+    });
+
     it('maps the web models to their base model', () => {
         expect(baseModel('web-l')).toBe('eu');
         expect(baseModel('web-p')).toBe('us-p');

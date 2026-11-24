@@ -588,7 +588,10 @@ und Zusatz-Slots“.
 
 ### Web-Panel
 
-`src-web/src/cards/cardDevice`: die drei Seiten in der Geometrie der eu-HMI.
+`src-web/src/cards/cardDevice`: die drei Seiten mit einer Geometrie je Modell – eu wie die HMI, us-l 15 px nach
+rechts, web-l ein eigenes Layout auf voller Breite mit Zusatz-Elementen hinter dem info-Icon; us-p und web-p
+zeichnen vorerst einen Rückfall. Aufbau, Zusatz-Slots und Maße:
+[SMARTPHONE.md, „Geräteseiten“](../../web-panel/SMARTPHONE.md#geräteseiten-carddevice13).
 
 - **Statuszeile:** Feld 6 von main, ein stehender Text, an der Feldgrenze abgeschnitten (keine eigenen „…“),
   Ausrichtung wie in der HMI (auf allen drei Layouts mittig). `devStatus~<text>` ersetzt nur diesen Text (`handleCommand` in
