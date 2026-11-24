@@ -195,6 +195,10 @@ gewählt ist“.
 
 <img alt="Der Bildschirmschoner-Editor mit dem Modell Smartphone hochkant: acht Indikatoren über der Uhr, acht Plätze unten" src="../Pictures/webPanel/webpanel-07-screensaver-web-p.png" width="100%"/>
 
+### Plätze der Geräteseite
+
+Die Geräteseite eines Items [Gerät mit Details](deviceDetails) kann auf *Smartphone quer* und *Smartphone hochkant* zusätzliche Elemente zeigen (mehr Knöpfe, Info-Zeilen und Schalter). Sie werden im Dialog des Items eingeschaltet; welche es je Layout sind und wie die Seite je Modell aussieht, steht unter [Zusätzliche Elemente für Smartphone-Web-Panels](deviceDetails#zusätzliche-elemente-für-smartphone-web-panels) und [Aussehen je Panel-Modell](deviceDetails#8-aussehen-je-panel-modell).
+
 ### Zeilen einer Benachrichtigung
 
 Wie viele Zeilen eine [Benachrichtigung](Screensaver-Notify) zeigt, hängt von der Textgröße ab:
