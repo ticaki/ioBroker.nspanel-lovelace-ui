@@ -1,17 +1,25 @@
-# Geräteseite in der HMI: cardDevice1, cardDevice2, cardDevice3 (EU)
+# Geräteseite in der HMI: cardDevice1, cardDevice2, cardDevice3 (EU, us-l, us-p)
 
 Drei neue Seiten für **ein** Gerät (Saugroboter, Waschmaschine, Pkw …): großes Geräte-Icon, feste Anzahl Slots mit
 festen Elementarten, Statuszeile unten, info-Icon unten rechts. Gebaut mit `HMI/tools/card_device.py`, Vorschau unter
 `doc/Pictures/device-page/hmi-cardDevice{1,2,3}.png` (cardDevice1 mit Status-Icons, ohne: `hmi-cardDevice1-plain.png`).
-Nur EU; us-l und us-p sind nicht angepasst.
+Die Abschnitte bis „Empfang einer zu langen Nachricht“ beschreiben die EU-Seiten; Protokoll, Slots, Puffer und
+Verhalten gelten für alle Modelle. Was bei us-l und us-p anders ist (Bauweg, Geometrie, RAM, Prüfliste), steht in
+[„us-l und us-p“](#us-l-und-us-p). Die Geometrie aller drei Modelle als Daten:
+[device-page-geometry.json](device-page-geometry.json).
 
 ## Bauen
 
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py /tmp/swipe.HMI /tmp/feedback.HMI [<ref.tft>]
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/feedback.HMI nspanel-v6.2.0.device10.HMI --preview doc/Pictures/device-page
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/feedback.HMI nspanel-v6.2.0.device10.HMI --preview doc/Pictures/device-page --geometry doc/ideas/device-details/device-page-geometry.json
 ```
+
+`card_device.py` erkennt das Modell am Projekt (`pageStartup` sendet `event,startup,<Version>,<Modell>,…`) und nimmt
+das passende Layout; der Aufruf ist für alle Modelle gleich. us-l und us-p: siehe [„us-l und us-p“](#us-l-und-us-p).
+`--geometry <datei.json>` setzt den Schlüssel des Modells in der JSON-Datei (die anderen bleiben). Die EU-Ausgabe ist
+mit der Modell-Weiche Byte für Byte dieselbe wie vorher (`cmp` gegen `device10`, auch die vier EU-Vorschaubilder).
 
 Reihenfolge: `swipe_release_fix.py` → `grid_long_press_feedback.py` (Long-Press-Blinken auf cardGrid, cardGrid2,
 cardGrid3) → `card_device.py` (baut die Geräteseiten und gibt ihnen dasselbe Blinken). `card_device.py` nimmt das
@@ -421,19 +429,22 @@ Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts
 | cardDevice2 | 61 | 875 | 2349 | 2785 | **799** | 591 |
 | cardDevice3 | 74 | 1019 | 2828 | 3264 | **320** | 180 |
 
-Das ist die Schätzung für `device10` (mit `vaLPCell`, +7 je Seite gegenüber `device9`). **Gemessen** ist `device9`:
-die Seitentabelle von `/mnt/projekte/nspanel-v6.2.0.device9.tft` (Tims Kompilat, gelesen mit
-`nav_long_press_blink.tft_ram`, global 436) – die Schätzung liegt 130 (cardDevice1), 38 (cardDevice2) und 91
-(cardDevice3) Byte darunter. `device10` = gemessener Stand + 8 für die neue Variable:
+Das ist die Schätzung für `device10` (mit `vaLPCell`, +7 je Seite gegenüber `device9`). **Gemessen** sind `device9`
+und `device10`: die Seitentabellen von `/mnt/projekte/nspanel-v6.2.0.device9.tft` und `…device10.tft` (Tims
+Kompilate, gelesen mit `nav_long_press_blink.tft_ram`, global 436) – die Schätzung liegt bei `device10` 131
+(cardDevice1), 39 (cardDevice2) und 88 (cardDevice3) Byte darunter:
 
-| Seite | `device9` gemessen (global + Seite) | frei | `device10` (+8) | frei |
+| Seite | `device9` gemessen (global + Seite) | frei | `device10` gemessen | frei |
 |---|---|---|---|---|
 | cardGrid | 2720 | 864 | 2728 | 856 |
 | cardGrid2 | 3064 | 520 | 3072 | 512 |
 | cardGrid3 | 2588 | 996 | 2596 | 988 |
 | cardDevice1 | 3324 | 260 | 3332 | **252** |
 | cardDevice2 | 2816 | 768 | 2824 | 760 |
-| cardDevice3 | 3348 | 236 | 3356 | **228** |
+| cardDevice3 | 3348 | 236 | 3352 | **232** |
+
+Die EU-Datei `device10` ist damit im Editor kompiliert (die TFT liegt vor); der Code der Seiten ist auf us-l und us-p
+derselbe.
 
 Der Zweig für `devStatus` ist nur Code und kostet kein RAM. Gegenüber `device7` fehlt je Seite `gStatus` (−147
 geschätzt); auf cardDevice1 und 2 ist außerdem `strCommand` wieder kleiner (1015 → 943 bzw. 943 → 875, je −72 bzw.
@@ -524,7 +535,260 @@ RAM. cardDevice1 bleibt die engste Seite (das Werkzeug meldet Stände über 3400
 Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevice2/3 auf 7 (je −4), `tStatus`
 63 → 47 (−16; der Adapter müsste die Abschnitte dann auf 47 Byte begrenzen).
 
+## us-l und us-p
+
+Teststände (nicht kompiliert): `/home/tim/device-page-hmi/nspanel-us-l-v6.2.0.device10.HMI` und
+`/home/tim/device-page-hmi/nspanel-us-p-v6.2.0.device10.HMI`, gebaut aus den unveränderten 6.2.0-Projekten in
+`HMI/us-l/` und `HMI/us-p/`.
+
+### Was gegenüber 6.2.0 dazukommt
+
+Vergleich der Live-Seiten von EU `device10` mit `HMI/nspanel-v6.2.0.HMI`, Objekt für Objekt (Attribute und Code je
+Ereignis). `device10` entsteht Byte für Byte aus `nspanel-v6.2.0.entities5.HMI` und den drei Werkzeugen (nachgebaut,
+`cmp` gleich); `entities5` unterscheidet sich von 6.2.0 nur in cardEntities, cardEntities2 und den pageType-Einträgen.
+Handänderungen aus dem Editor, die kein Werkzeug abdeckt, gibt es außer der Seite cardEntities2 nicht.
+
+| Abweichung EU `device10` ↔ EU 6.2.0 | Werkzeug | us-l / us-p |
+|---|---|---|
+| Swipe-Streifen `mSwipeNext/Up/Prev`: `up` = `click bNext/bPrev,0` (EU 45 Streifen auf 15 Seiten) | `swipe_release_fix.py` | übertragen: 42 Streifen auf 14 Seiten je Modell, dazu die 9 der drei neuen Seiten |
+| cardGrid, cardGrid2, cardGrid3: Long-Press-Blinken (`vaLPCell`, Blöcke in `tmLP`, `tc0` `up`, `down`/`up` jeder Zelle) | `grid_long_press_feedback.py` | übertragen, Werkzeug unverändert (us-p cardGrid2 hat 9 Zellen) |
+| cardEntities `m0…m3` `down`: else-if-Kette, letzter Zweig „jeder andere Typ“ sendet `event,buttonPress3,<entn>,button` | Teil 2 von `entities2_five_rows.py` | übertragen mit `entities_left_tap.py` (läuft ohne cardEntities2): us-l `m0…m3`, us-p `m0…m5` |
+| neue Seiten cardDevice1–3, Einträge in main.HMI, pageType-Zweige `cardDevice1–3` in allen Seiten mit tmSerial (EU 36) | `card_device.py` | übertragen: Abschnitte 35/36/37.pa, Seiten-IDs 35–37, Zweige in 34 Seiten |
+| Seite cardEntities2 (im Editor als Kopie von cardEntities angelegt, dann `entities2_five_rows.py` Teil 1), ihr Eintrag in main.HMI, pageType-Zweig `cardEntities2` in allen 36 Seiten mit Umschalter | Editor + `entities2_five_rows.py` | **nicht übertragen** – Entscheidung von Tim: cardEntities2 wird nicht weiterverfolgt, die EU-Seite bleibt liegen |
+
+Schon in 6.2.0 verschieden und **nicht angefasst**: die Zeilen-Flächen `m<n>` von cardEntities setzen auf EU
+zusätzlich `tempIconColor=tIcon<r>.pco`, auf us-l/us-p nicht (deren popupSlider liest die Variable nicht).
+Nebenbei behoben: auf us-p prüfte der alte Text-Zweig der Zeilen 5 und 6 `type4` statt des eigenen Typs; der neue
+letzte Zweig nimmt den Typ der Zeile.
+
+### Bauen
+
+```
+M=us-l   # bzw. us-p
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py HMI/$M/nspanel-$M-v6.2.0.HMI /tmp/$M-1.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py /tmp/$M-1.HMI /tmp/$M-2.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/entities_left_tap.py /tmp/$M-2.HMI /tmp/$M-3.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/$M-3.HMI nspanel-$M-v6.2.0.device10.HMI --preview doc/Pictures/device-page --geometry doc/ideas/device-details/device-page-geometry.json
+```
+
+- Vier Schritte statt drei: die EU-Basis `entities5` hat den Links-Tipp schon, bei us-l/us-p bringt ihn
+  `entities_left_tap.py` (auf EU 6.2.0 liefert es für cardEntities denselben Code wie `entities5`, geprüft).
+- Jeder Schritt prüft die Prüfsummen (`Hmi.check()`) und den Round-Trip jeder geänderten Seite; jeder ist auf seiner
+  eigenen Ausgabe wirkungslos (für `card_device.py` und `entities_left_tap.py` auf beiden Modellen geprüft).
+- Vorschaubilder heißen mit Modell: `hmi-us-l-cardDevice1.png`, `hmi-us-p-cardDevice1.png` usw.; die EU-Namen
+  bleiben. Die Vorschau zeichnet mit den Schriften des jeweiligen Projekts.
+
+### Gleich auf allen Modellen
+
+Protokoll und Feldreihenfolge, Anzahl und Art der Slots (cardDevice1 N=10, cardDevice2 N=6, cardDevice3 N=8),
+`devStatus`, Textpuffer (Name/Wert 31 Byte, Statuszeile 63 Byte, IDs 23, Icons 10 bzw. 7 auf cardDevice1),
+`strCommand` (943 / 875 / 1019) samt Begrenzung beim Empfang, Schriften je Rolle (Font-IDs 0, 1, 3, 4 gibt es auf
+allen Modellen; die Icon-Schriften sind dieselben Dateien), Tippflächen, Long-Press, Popups, Blinken, tmSerial und
+Quittung. Der Code der Seiten ist bis auf die Koordinaten des gezeichneten Balkens (cardDevice2) derselbe wie auf EU;
+us-p cardDevice1 hat keinen zweiten (schmalen) Zeilensatz. **Abweichungen von den festen Werten des Adapters: keine.**
+
+Verschieden ist nur die Geometrie – und damit die Breiten, mit denen der Adapter Namen, Werte und Statuszeile misst.
+
+### us-l: EU-Layout, 15 px nach rechts
+
+Sichtbar ist auf us-l x 15–464 (EU 0–449). Die Verschiebung wird am Projekt gemessen, nicht angenommen: die Kopfzeile
+von cardGrid liegt auf us-l genau 15 px rechts der EU-Kopfzeile (`bPrev` 24 statt 9, `tHeading` 80 statt 65, `bNext`
+406 statt 391); cardEntities liegt mit jedem Objekt ebenfalls 15 px weiter rechts. (Die Zellen von cardGrid us-l
+liegen 16 px weiter rechts – maßgeblich ist der sichtbare Bereich, also 15.) `card_device.py` bricht ab, wenn die
+drei Kopf-Objekte nicht dieselbe Verschiebung zeigen oder sie nicht zum sichtbaren Bereich passt.
+
+Alle Objekte der EU-Tabellen oben gelten mit x + 15 (Inhalt x 25–454, Statuszeile x 25–414, info-Icon x 419–454),
+y, Breiten, Höhen, Schriften unverändert. Der Balken von cardDevice2 wird bei x 25 gezeichnet. Die Swipe-Streifen
+von us-l liegen bei x 0–8 und 471–479, also außerhalb.
+
+![us-l cardDevice1](../../Pictures/device-page/hmi-us-l-cardDevice1.png)
+![us-l cardDevice1 ohne Status-Icons](../../Pictures/device-page/hmi-us-l-cardDevice1-plain.png)
+![us-l cardDevice2](../../Pictures/device-page/hmi-us-l-cardDevice2.png)
+![us-l cardDevice3](../../Pictures/device-page/hmi-us-l-cardDevice3.png)
+
+### us-p: eigene Anordnung (320 × 480)
+
+Kopfzeile wie cardGrid us-p (`bPrev` 9/16 50×50, `tHeading` 60/24 200×30 Font 2, `bNext` 261/16 50×50). Inhalt
+x 10–309 (300 px, die Swipe-Streifen liegen bei x 0–8 und 311–319), y 67–443; unten die Statuszeile y 447–476 mit
+**262 px** (EU/us-l 390) und rechts daneben das info-Icon x 274–309. Alle Texte ycen 1, isbr 0, einzeilig.
+
+Schriften: dieselben Rollen wie EU. Font 1, 3, 4 (Icons, großer Wert) sind dieselben Dateien wie auf EU. Font 0
+(Namen, Werte, Statuszeile) ist auf us-p eine andere Variante: 2201 statt 2248 Zeichen, teils andere Breiten, kein
+`€`; `°`, `²`, Umlaute sind vorhanden. Der Adapter muss auf us-p mit den us-p-Breiten messen (`font_widths.py` liefert
+sie je Modell).
+
+#### cardDevice1 „Steuern“
+
+![us-p cardDevice1](../../Pictures/device-page/hmi-us-p-cardDevice1.png)
+![us-p cardDevice1 ohne Status-Icons](../../Pictures/device-page/hmi-us-p-cardDevice1-plain.png)
+
+| Objekt | x | y | w | h | Font | Ausrichtung | txt_maxl |
+|---|---|---|---|---|---|---|---|
+| bMain | 10 | 70 | 150 | 86 | 4 | mittig | 7 |
+| tMainName | 10 | 158 | 150 | 26 | 0 | mittig | 31 |
+| tStat7 / tStat8 (status, oben) | 166 / 237 | 70 | 72 | 57 | 1 | mittig | 7 |
+| tStat9 / tStat10 (unten) | 166 / 237 | 126 | 72 | 57 | 1 | mittig | 7 |
+| bEntity1 / bEntity2 (info) | 10 | 190 / 230 | 36 | 34 | 1 | mittig | 7 |
+| tEntity1 / tEntity2 | 48 | 194 / 234 | 156 | 26 | 0 | links | 31 |
+| tValue1 / tValue2 | 206 | 194 / 234 | 104 | 26 | 0 | rechts | 31 |
+| bEntity3–6 (button, 2 × 2) | 10 / 162 | 272 / 358 | 148 | 52 | 3 | mittig | 7 |
+| tEntity3–6 | 10 / 162 | 326 / 412 | 148 | 26 | 0 | mittig | 31 |
+| tStatus | 10 | 447 | 262 | 30 | 0 | mittig | 63 |
+| bInfo | 274 | 446 | 36 | 32 | 1 | mittig | 7 |
+
+- Haupt-Icon oben links mit dem Namen darunter, rechts daneben der Status-Block: 2 × 2 Zellen à 72 × 57 px
+  (Nachbarn 1 px überlappend, Block x 166–308, y 70–182 – so hoch wie Icon und Name zusammen). Raster wie auf EU
+  aus den Rahmen der Zellen (`style` 1, `borderw` 1, `borderc` 14823).
+- Die zwei info-Zeilen gehen über die volle Breite und hängen **nicht** vom Status-Block ab: es gibt nur einen
+  Zeilensatz (kein `bEntityS/tEntityS/tValueS`, 6 Objekte weniger als EU). Sind alle vier Status-Slots leer, ist der
+  Block ausgeblendet und der Platz rechts vom Haupt-Icon bleibt frei.
+- Knöpfe als 2 × 2: Slot 3 oben links, 4 oben rechts, 5 unten links, 6 unten rechts.
+
+#### cardDevice2 „Fortschritt“
+
+![us-p cardDevice2](../../Pictures/device-page/hmi-us-p-cardDevice2.png)
+
+| Objekt | x | y | w | h | Font | Ausrichtung | txt_maxl |
+|---|---|---|---|---|---|---|---|
+| bMain | 10 | 68 | 90 | 82 | 4 | mittig | 10 |
+| tMainName | 10 | 152 | 90 | 26 | 0 | mittig | 31 |
+| tIcon1 (value, Icon) | 102 | 91 | 34 | 36 | 1 | mittig | 10 |
+| tValue1 (value) | 138 | 68 | 172 | 82 | 4 | links | 31 |
+| tEntity1 | 138 | 152 | 172 | 26 | 0 | links | 31 |
+| mSlot1 (Hotspot value) | 102 | 68 | 208 | 110 | – | – | – |
+| tEntity2 (progress, Name) | 10 | 184 | 300 | 26 | 0 | links | 31 |
+| Balken slot 2 (gezeichnet) | 10 | 212 | 300 | 14 | – | Rahmen 1 px, Füllung innen 298 × 12 | – |
+| mSlot2 (Hotspot progress) | 10 | 184 | 300 | 42 | – | – | – |
+| bEntity3–5 (info, Zeilen) | 10 | 234 / 274 / 314 | 36 | 34 | 1 | mittig | 10 |
+| tEntity3–5 | 48 | 238 / 278 / 318 | 156 | 26 | 0 | links | 31 |
+| tValue3–5 | 206 | 238 / 278 / 318 | 104 | 26 | 0 | rechts | 31 |
+| bEntity6 (button) | 10 | 356 | 300 | 52 | 3 | mittig | 10 |
+| tEntity6 | 10 | 410 | 300 | 26 | 0 | mittig | 31 |
+| tStatus | 10 | 447 | 262 | 30 | 0 | mittig | 63 |
+| bInfo | 274 | 446 | 36 | 32 | 1 | mittig | 10 |
+
+- Der große Wert hat 172 px (EU 190): „12:34“ braucht 149 px, „100%“ 152 px, „100 %“ 167 px.
+- Die drei Infos sind hier volle Zeilen (Name links, Wert rechts) statt der schmalen Kacheln der EU-Seite; der Knopf
+  liegt darunter über die volle Breite (auf EU oben rechts).
+
+#### cardDevice3 „Werte“
+
+![us-p cardDevice3](../../Pictures/device-page/hmi-us-p-cardDevice3.png)
+
+| Objekt | x | y | w | h | Font | Ausrichtung | txt_maxl |
+|---|---|---|---|---|---|---|---|
+| bMain | 85 | 67 | 150 | 82 | 4 | mittig | 10 |
+| tMainName | 10 | 151 | 300 | 26 | 0 | mittig | 31 |
+| bEntity1–6 (info) | 10 / 162 (Spalte) | 184 / 236 / 288 (Zeile) | 34 | 48 | 1 | mittig | 10 |
+| tEntity1–6 | 46 / 198 | 182 / 234 / 286 | 112 | 25 | 0 | links | 31 |
+| tValue1–6 | 46 / 198 | 208 / 260 / 312 | 112 | 25 | 0 | rechts | 31 |
+| tIcon7 / tIcon8 (switch) | 10 | 350 / 402 | 34 | 34 | 1 | mittig | 10 |
+| tEntity7 / tEntity8 | 46 | 354 / 406 | 212 | 26 | 0 | links | 31 |
+| btOnOff7 / btOnOff8 | 260 | 342 / 394 | 50 | 50 | Bild 1/2 | – | 3 |
+| mSlot7 / mSlot8 (Hotspot Icon + Name) | 10 | 350 / 402 | 248 | 34 | – | – | – |
+| tStatus | 10 | 447 | 262 | 30 | 0 | mittig | 63 |
+| bInfo | 274 | 446 | 36 | 32 | 1 | mittig | 10 |
+
+- Haupt-Icon oben in der Mitte, sein Name darunter über die volle Breite. Kacheln zeilenweise wie auf EU (Slot 1
+  links oben, Slot 2 rechts oben …), die zwei Schalter als Zeilen untereinander.
+- Die engste Seite in der Höhe: der zweite Schalter endet bei y 443, die Statuszeile beginnt bei 447.
+
+### Feldbreiten für den Adapter je Modell
+
+us-l wie EU (Tabelle „Feldbreiten für den Adapter“ oben). us-p, gemessen mit den us-p-Tabellen von Font 0:
+
+| Seite | main-Name | Statuszeile | Slot-Name | Slot-Wert |
+|---|---|---|---|---|
+| cardDevice1 | 150 px | **262 px**, 1 Zeile, mittig | info: 156 px (mit und ohne Status-Icons); button: 148 px | info: 104 px |
+| cardDevice2 | 90 px | **262 px**, 1 Zeile, mittig | value: 172 px; progress: 300 px; info: 156 px; button: 300 px | value: 172 px **Font 4**; info: 104 px |
+| cardDevice3 | 300 px | **262 px**, 1 Zeile, mittig | info: 112 px; switch: 212 px | info: 112 px |
+
+Statuszeile in Zahlen: EU 390 px, us-l 390 px, us-p 262 px – auf allen drei Seiten des Modells gleich, überall
+≤ 63 Byte je Abschnitt. Die Werte stehen als `statusWidth` je Seite in `device-page-geometry.json`.
+
+### Geometrie als Daten
+
+`doc/ideas/device-details/device-page-geometry.json`, erzeugt mit `card_device.py --geometry` aus den **gebauten**
+Seiten (die Boxen sind die Attribute der Objekte, nur der Balken kommt aus dem Layout, weil er gezeichnet wird):
+
+```
+{ "eu" | "us-l" | "us-p": {
+    "stage": {w, h}, "visible": {x, w}, "layout": "landscape" | "portrait", "shiftX": 0 | 15,
+    "pages": { "cardDevice1" | "cardDevice2" | "cardDevice3": {
+        "slotCount", "statusWidth", "strCommand",
+        "header": {"prev", "heading", "next"},
+        "main": {"icon", "name"},
+        "slots": [ {"slot", "kind", "icon"?, "name"?, "value"?, "bar"?, "toggle"?, "touch"?, "cell"?, "narrow"?} ],
+        "status", "info" } } } }
+```
+
+Jede Box: `object` (Name in der HMI), `x`, `y`, `w`, `h`, bei Texten und Knöpfen `font`, `align`
+(`left`/`center`/`right`) und `maxBytes` (`txt_maxl`). `cell` = Status-Zelle (mit `border`), `bar` = gezeichneter
+Balken, `toggle` = Schalter `btOnOff`, `touch` = Hotspot `mSlot<k>`, `narrow` = der zweite Satz `icon`/`name`/`value`
+einer info-Zeile, der statt des breiten gezeigt wird, solange der Status-Block sichtbar ist (nur EU und us-l,
+cardDevice1 Slot 1–2). Das Web-Panel baut seine Layouts aus dieser Datei.
+
+### RAM je Seite und Modell
+
+Schätzung des Werkzeugs (9 + 7 je Objekt + Textpuffer, global 436), davor der Stand der Seite in 6.2.0. Gemessen ist
+für us-l und us-p nichts (keine TFT). Die Spalte „erwartet“ überträgt die Messung der EU-`device10`-TFT: us-l hat
+auf allen sechs Seiten dieselben Objekte und Puffer wie EU; us-p ebenso auf cardGrid, cardGrid3, cardDevice2 und
+cardDevice3.
+
+| Seite | us-l geschätzt (vorher → nachher, mit global) | us-l erwartet | us-p geschätzt (vorher → nachher, mit global) | us-p erwartet |
+|---|---|---|---|---|
+| cardGrid | 2726 → 2733 | 2728 (856 frei) | 2726 → 2733 | 2728 (856 frei) |
+| cardGrid2 | 3062 → 3069 | 3072 (512 frei) | 3230 → 3237 (9 Zellen) | etwa 3240 (rund 345 frei) |
+| cardGrid3 | 2610 → 2617 | 2596 (988 frei) | 2610 → 2617 | 2596 (988 frei) |
+| cardDevice1 | neu: 3201 (Kopie von cardGrid: 2733) | 3332 (**252 frei**) | neu: 3015 (71 Objekte, kein schmaler Zeilensatz) | etwa 3145 (rund 440 frei) |
+| cardDevice2 | neu: 2785 | 2824 (760 frei) | neu: 2785 | 2824 (760 frei) |
+| cardDevice3 | neu: 3264 | 3352 (**232 frei**) | neu: 3264 | 3352 (**232 frei**) |
+| cardEntities | 2768, unverändert (nur Code) | – | 3212, unverändert (nur Code) | – |
+
+`card_device.py` bricht über 3584 ab und meldet Stände über 3400; kein Modell kommt in die Nähe. Die anderen 14
+Seiten mit Swipe-Streifen und die Seiten mit neuem pageType-Zweig ändern nur Code (kein RAM).
+
+### us-l und us-p: im Nextion-Editor prüfen
+
+Für jedes der beiden Projekte:
+
+1. Datei öffnen – keine Meldung „resource file damaged“. Seitenliste: 38 Seiten, cardDevice1, cardDevice2,
+   cardDevice3 stehen **hinten** (IDs 35, 36, 37), alle bisherigen Seiten an ihrer alten Stelle.
+2. Kompilieren – keine Fehler, keine Warnung „Component overlap“. Der Code der drei Seiten ist der der EU-Datei, die
+   kompiliert ist; neu gegenüber EU sind nur:
+   - die Koordinaten in `fill`/`draw` des Balkens im tmSerial von cardDevice2 (us-l `25,207,…`, us-p `10,212,300,14`,
+     Füllung `sys0*298/100`);
+   - us-p cardDevice1 ohne `bEntityS/tEntityS/tValueS1–2` (im tmSerial fehlt der Block „wide and narrow set“);
+   - cardEntities `m0…m3` (us-p `m0…m5`): die Kette `}else if(type<r>.txt=="…")` mit dem letzten Zweig
+     `}else if(type<r>.txt!="delete"&&type<r>.txt!="")`.
+3. **RAM-Werte melden** (Editor-Anzeige „global + Seite“) für cardDevice1, cardDevice2, cardDevice3, cardGrid,
+   cardGrid2, cardGrid3 – je Modell. Erwartung siehe Tabelle oben; wichtig sind cardDevice1 und cardDevice3
+   (us-l 252 / 232 frei erwartet) und us-p cardGrid2.
+4. Ansehen (Editor-Vorschau oder Simulator, `pageType~cardDevice<n>` und ein `entityUpd` mit allen Elementen):
+   - us-l: jedes Element sitzt 15 px weiter rechts als auf EU; links von x 15 und rechts von x 464 liegt nichts
+     (auch das info-Icon nicht), der Balken von cardDevice2 beginnt bei x 25 unter dem Namen.
+   - us-p: Anordnung wie in den Bildern oben. cardDevice1: Status-Raster rechts neben dem Haupt-Icon, 2 × 2 Knöpfe;
+     cardDevice2: Wert in Font 4 neben dem Icon, Balken über die volle Breite, Knopf unten; cardDevice3: Kacheln
+     2 × 3, Schalter als Zeilen, Abstand zur Statuszeile (4 px). Statuszeile mittig, info-Icon rechts daneben.
+   - us-p: Texte in Font 0 (andere Schrift als EU) – passen Namen und Werte in ihre Felder, ist der Punkt `.` zu
+     sehen (in dieser Schrift ein Zeichen ohne Kantenglättung)?
+5. Am Panel bzw. im Simulator dieselben Schritte wie für EU (Schritte 4–9 unten): Ereignisse je Platz, Popups,
+   überlange Nachricht, `devStatus`, Long-Press-Blinken – auf us-p auch die 2 × 2-Knöpfe und die großen
+   Status-Zellen; auf us-p cardDevice1 gibt es keine schmalen Zeilen.
+6. Kleine Anpassungen:
+   - Swipe: Tipp auf den Rand links/rechts/oben einer Kartenseite sendet beim Loslassen `buttonPress2` des Pfeils.
+   - cardGrid, cardGrid2 (us-p: alle 9 Zellen), cardGrid3: Long-Press-Blinken wie EU Schritt 9.
+   - cardEntities: Tipp links auf eine Zeile mit Typ `switch`, `button` oder `text` sendet genau ein
+     `event,buttonPress3,<entn>,button`; `light`, `shutter`, `number` … öffnen weiter ihr Popup; leere Zeile nichts.
+     Auf us-p auch Zeile 5.
+
+Der Adapter schickt die Geräteseite bisher nur an EU (`withoutDevicePages` nimmt us-l, us-p, web-p aus) und misst
+mit den EU-Breiten; für us-p braucht er die Breiten dieser Seite (Statuszeile 262 px). Das ist nicht Teil der HMI.
+
 ## Im Nextion-Editor prüfen
+
+Die Schritte gelten für die EU-Datei; für us-l und us-p zusätzlich die Liste in
+[„us-l und us-p: im Nextion-Editor prüfen“](#us-l-und-us-p-im-nextion-editor-prüfen).
 
 1. `nspanel-v6.2.0.device10.HMI` öffnen – keine Meldung „resource file damaged“ (Prüfsummen sind per `Hmi.check()`
    geprüft).
@@ -543,7 +807,7 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
    zwischen `// >> long press feedback` und `// << long press feedback` in `tmLP`, `tc0` `up` und in `down`/`up`
    jedes Elements – darin `if(tmLP.tim!=500)`, `bEntity1.bco2=bEntity1.bco` und `tEntity<k>.bco=…` (Textfelder).
 3. RAM-Anzeige des Editors je Seite mit der Tabelle „gemessen“ oben vergleichen (`device10`: cardDevice1 252 Byte
-   frei, cardDevice3 228, cardGrid2 512).
+   frei, cardDevice3 232, cardGrid2 512).
 4. Am Panel: `pageType~cardDevice1` und ein `entityUpd` mit allen Elementen; Tipp auf info/button/main/Schalter/info-Icon,
    ausgeblendete Elemente (`delete`), Balken bei 0/50/100 und nach Rückkehr aus einem Popup (der Adapter schickt nach
    renderCurrentPage neu). cardDevice1: Wechsel mit/ohne Status-Icons in beiden Richtungen (Zeilen springen um,
@@ -654,4 +918,15 @@ Sparmöglichkeiten, falls der Editor mehr anzeigt: Icon-Puffer auch auf cardDevi
 - Status-Raster: ob die Nextion bei `style` 1 und `borderw` 1 genau 1 px zeichnet und die überlappenden Rahmen sauber
   aufeinanderliegen, ist nur aus der Vorlage cardPower (2 px) abgeleitet, nicht am Gerät gesehen. Beim Umschalten
   der Zeilensätze kann es kurz flackern (der breite Satz wird erst beschrieben, dann ausgeblendet).
-- Kompilierung, RAM-Wert des Editors und Verhalten am Panel sind ungeprüft.
+- EU `device10` ist kompiliert: `/mnt/projekte/nspanel-v6.2.0.device10.tft` (2026-11-23 22:25) hat eine Seitentabelle
+  mit 40 Seiten, deren Werte zu `device10` passen (siehe „Puffer und RAM“). Die Hinweise „nicht kompiliert“ weiter oben
+  stammen von vor diesem Kompilat. Das Verhalten am Panel ist ungeprüft.
+- **us-l und us-p:** nicht kompiliert, kein RAM-Wert aus dem Editor, nichts am Panel oder im Simulator gesehen. Geprüft
+  sind Prüfsummen, Round-Trip, dass der Code der Seiten dem der kompilierten EU-Datei entspricht (bis auf die
+  Balken-Koordinaten und den fehlenden schmalen Zeilensatz auf us-p), dass jede Box im sichtbaren Bereich und neben
+  den Swipe-Streifen liegt, sich keine Boxen verschiedener Elemente überschneiden und keine zwei Objekte
+  deckungsgleich sind. Die Vorschaubilder sind aus den Objekten und den Schriften des Projekts gezeichnet, nicht vom
+  Display. Die us-p-Anordnung ist ein Vorschlag nach Tims Skizze (cardDevice1) bzw. nach den Vorgaben
+  (cardDevice2/3) – ob Abstände und Größen am Gerät gefallen, ist offen.
+- us-p: Ein Popup aus einer Status-Zelle, das Blinken der großen Zellen (72 × 57) und der breite Knopf von
+  cardDevice2 (300 px Press-Fläche) sind am Gerät nicht gesehen.
