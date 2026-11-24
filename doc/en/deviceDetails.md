@@ -42,9 +42,9 @@ What to take depends on what you want to see on the panel:
 | also reach the whole list of values from the device page | device page with the **i icon** – it opens the detail page |
 | operate a light, a blind or a socket with its usual popup | a **Standard** item with an alias channel, see [Pageitem Configuration](PageConfig-Dialoge#1-pageitem-configuration) – such a channel can also be put into a slot of the device page |
 
-This is what a device page looks like (layout "Control" with own icons for the buttons, EU panel):
+This is what a device page looks like (layout "Control" on the EU panel):
 
-![Device page of a robot vacuum: big icon, four status icons, two info lines, four buttons and at the bottom the status line with the i icon](../Pictures/device-page/web-cardDevice1.png)
+![Device page of a robot vacuum: big icon, four status icons, two info lines, four buttons and at the bottom the status line with the i icon](../Pictures/device-page/eu-cardDevice1.png)
 
 ## Quick start: device with detail page
 
@@ -135,7 +135,6 @@ A new item starts with the entries you last ticked for a device of **the same ad
 
 **The detail page** is a normal entities page. Its heading is the name of the device, the back arrow leads to the page it was opened from. Per page it shows as many rows as every entities page of the model (EU/US landscape and smartphone landscape 4, US portrait 5, smartphone portrait 8); more rows page on.
 
-<!-- BILD FOLGT (BILDER.md): eu-detail-page.png -->
 ![The detail page of a robot vacuum on the EU panel: battery, signal, firmware and area as rows with icon, name and value](../Pictures/device-page/eu-detail-page.png)
 
 What a row shows and can do depends on the state:
@@ -258,11 +257,12 @@ Only layout 1 has four places of the kind **Status icon** (slots 7–10): small 
 - A status icon shows **only an icon in its colour**, without name and value.
 - The icon comes automatically (the same as in an info line with this value); an own one is chosen through **…**, e.g. `delete-empty` for "empty the bin".
 - The colour comes automatically: on/off values in the colours *activated* / *deactivated* of the [colour theme](colorTheme), other values in the colour of their group.
-- If all four are empty, the page looks as it does without them. If **at least one** is filled, the whole grid appears (empty fields stay as empty boxes) and the two info lines get **narrower** – long names are then cut off earlier. The dialog points this out below the slots.
+- If all four are empty, the page looks as it does without them. If **at least one** is filled, the whole grid appears; empty fields stay as empty boxes.
+- On the **EU panel**, in **US landscape** and on **Smartphone landscape** the status icons sit between the big icon and the info lines: as soon as the grid appears, the two info lines get **narrower** – long names are then cut off earlier. The dialog points this out below the slots. In **US portrait** and on **Smartphone portrait** the info lines sit below the grid and always keep their width.
 
 | With status icons | Without status icons |
 |---|---|
-| <img alt="Layout 1 with four status icons in the grid next to the big icon, the info lines are narrow" src="../Pictures/device-page/web-cardDevice1.png" width="100%"/> | <img alt="Layout 1 without status icons, the info lines use the whole width" src="../Pictures/device-page/web-cardDevice1-plain.png" width="100%"/> |
+| <img alt="Layout 1 on the EU panel with four status icons in the grid next to the big icon, the info lines are narrow" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="Layout 1 on the EU panel without status icons, the info lines use the whole width" src="../Pictures/device-page/eu-cardDevice1-plain.png" width="100%"/> |
 
 ### Show i icon
 
@@ -270,30 +270,30 @@ Default: on. The "i" at the bottom right opens the detail page with the ticked e
 
 ### Additional elements for smartphone web panels
 
-The models **Smartphone landscape** and **Smartphone portrait** of a [web panel](WebPanel#4-choosing-the-model-format-and-places) have more room and can show additional elements per layout:
+The models **Smartphone landscape** (`web-l`) and **Smartphone portrait** (`web-p`) of a [web panel](WebPanel#4-choosing-the-model-format-and-places) have more room and can show additional elements per layout:
 
-| Layout | on every panel | additionally on smartphone web panels | there in total |
-|---|---|---|---|
-| **1 – Control** | 2 info lines, 4 buttons, 4 status icons | 2 buttons | 6 buttons |
-| **2 – Progress** | large value, progress bar, 3 info lines, 1 button | 1 info line, 2 buttons | 4 info lines, 3 buttons |
-| **3 – Values** | 6 info lines, 2 switches | 2 info lines, 1 switch | 8 info lines, 3 switches |
+| Layout | on every panel | additionally on smartphone web panels | slot numbers | there in total |
+|---|---|---|---|---|
+| **1 – Control** | 2 info lines, 4 buttons, 4 status icons | 2 buttons | 11–12 | 6 buttons |
+| **2 – Progress** | large value, progress bar, 3 info lines, 1 button | 1 info line, 2 buttons | 7 (info line), 8–9 (buttons) | 4 info lines, 3 buttons |
+| **3 – Values** | 6 info lines, 2 switches | 2 info lines, 1 switch | 9–10 (info lines), 11 (switch) | 8 info lines, 3 switches |
 
-For this there is a tick box in the area of the device page (default: off). Only when it is set do the additional places appear below **Slots**.
-
-<!-- TODO nach Integration: genaue Beschriftung des Häkchens (und sein Hilfstext) aus admin/i18n/en/translations.json wörtlich einsetzen; Position im Dialog (über/unter den Slots) und Nummern/Bezeichnung der Zusatz-Plätze prüfen; prüfen, was beim Ausschalten mit belegten Zusatz-Plätzen passiert (bleiben sie gespeichert?) -->
+For this the tick box **Web panel elements (web-l / web-p)** stands below the slots (default: off). Its tooltip explains it: *Additional slots of this layout. Only standalone web panels of the models web-l and web-p show them, all other panels show the page without them.* When it is set, the additional slots appear below it, numbered on. Each one is filled and set up like any other slot of the same kind – same selection, same **…**. None is prefilled.
 
 <!-- BILD FOLGT (BILDER.md): admin-web-extra.png -->
-![The area of the device page with the tick box for the additional elements set: the additional places stand below Slots](../Pictures/device-page/admin-web-extra.png)
+![The area of the device page with the tick box Web panel elements (web-l / web-p) set: the additional slots stand below the slots of the layout](../Pictures/device-page/admin-web-extra.png)
 
-- **Hardware panels never show the additional elements** – nor does the browser picture of a real panel or a web panel with one of the three panel formats.
-- If the same page is assigned to a hardware panel and to a smartphone web panel, the hardware panel shows the places it knows; the additional ones are simply missing there.
-- The text lengths are the same on all models, see [Limits](#10-limits).
+- **Removing the tick only hides them.** The additional slots disappear from the dialog and from the web panel; what was chosen for them stays saved and is back after ticking again.
+- **Change of layout:** the additional slots keep their order among themselves – the first additional slot stays the first. Its kind may change (a button in layout 1, an info line in layouts 2 and 3); if what was chosen no longer fits, it is shown in red with "does not fit this slot". Layout 1 has only two additional slots: changing to it loses the third – even while the tick is not set. A status icon never becomes an additional slot and vice versa.
+- **Hardware panels never show the additional elements** – nor does the browser picture of a real panel or a web panel with one of the three panel formats. If the same page is assigned to such a panel and to a smartphone web panel, the additional elements are simply missing there; everything else is the same.
+- On the web panel an additional element behaves like any other of its kind (tap, hold, popup). Empty additional slots at the end leave no gap: the row is laid out anew for the filled elements.
+- No more text fits into a field because of this – there are more elements, not longer ones. Names and values have the same maximum length everywhere, see [Limits](#10-limits).
 
 How this looks is shown by the pictures under [Smartphone landscape](#smartphone-landscape-web-l) and [Smartphone portrait](#smartphone-portrait-web-p).
 
 ## 6. The three layouts
 
-The pictures show the EU panel with own icons; the other models follow in [section 8](#8-appearance-per-panel-model).
+The pictures show the EU panel with the icons the adapter chooses by itself (own icons and colours are set through **…**). The other models follow in [section 8](#8-appearance-per-panel-model).
 
 ### 1 – Control
 
@@ -303,7 +303,7 @@ For devices you start and stop: robot vacuum, lawn mower.
 - 4 **buttons** below (slots 3–6),
 - 4 **status icons** in a 2×2 grid next to the big icon (slots 7–10), see [Status icons](#status-icons).
 
-![Layout 1 – Control: robot vacuum with battery and area as info lines, the buttons Start, Pause, Dock and Find and four status icons](../Pictures/device-page/web-cardDevice1.png)
+![Layout 1 – Control: robot vacuum with battery and area as info lines, the buttons Start, Pause, Charge and Find and four status icons](../Pictures/device-page/eu-cardDevice1.png)
 
 ### 2 – Progress
 
@@ -314,7 +314,7 @@ For devices with a programme that runs down: washing machine, dryer, dishwasher.
 - 3 **info lines** as small tiles (slots 3–5),
 - 1 **button** at the top right (slot 6).
 
-![Layout 2 – Progress: washing machine with the remaining time as large value, progress bar, programme, temperature and spin speed and the button Pause](../Pictures/device-page/web-cardDevice2.png)
+![Layout 2 – Progress: washing machine with the remaining time as large value, progress bar, programme, temperature and spin speed and the button Pause; the name below the icon is cut off at the edge of its field](../Pictures/device-page/eu-cardDevice2.png)
 
 ### 3 – Values
 
@@ -323,9 +323,7 @@ For devices with many readings: car, sensors.
 - 6 **info lines** as tiles in two columns (slots 1–6, row by row: 1 top left, 2 top right, 3 middle left …),
 - 2 **switches** below (slots 7–8).
 
-<!-- TODO nach Integration: /mnt/projekte/nspanel emu/cardDevice3-neu.png (2026-11-24) zeigt Layout 3 mit einer Spalte aus fünf Status-Icons am rechten Rand und schmaleren Info-Kacheln. Wenn das der Zielstand ist: hier, unter "Status icons" (bisher "only layout 1"), in der Tabelle der Zusatz-Elemente und in §10 (Feldbreiten) nachziehen. -->
-
-![Layout 3 – Values: car with six values in two columns and the switches Climate and Charging](../Pictures/device-page/web-cardDevice3.png)
+![Layout 3 – Values: car with six values in two columns and the switches Climate and Charging](../Pictures/device-page/eu-cardDevice3.png)
 
 The same on all three layouts: at the top the heading (the name of the device) with the arrows, at the top left the big **main icon** with the name of the device, at the bottom the **status line** and to its right the **i icon**.
 
@@ -344,61 +342,63 @@ Media channels and timetables fit into no slot.
 
 ## 8. Appearance per panel model
 
-The device page exists on every model. What stands in which slot is the same everywhere – only the arrangement follows the format. The pictures show the same three devices per model: a robot vacuum (layout 1), a washing machine (layout 2) and a car (layout 3), here with the icons the adapter chooses by itself.
+The device page exists on all five models. What stands in which slot is the same everywhere – only the arrangement follows the format. The preview in the dialog of the admin shows the arrangement of the EU panel; how the page looks on the other models is shown by the pictures here.
 
-<!-- TODO nach Integration: alle Aussagen dieses Abschnitts am Code prüfen (heute: supportsCardDevice/CARD_DEVICE_MODELS nur eu und web-l). Insbesondere: us-l wirklich wie EU; Anordnung us-p für Layout 2 und 3 beschreiben (bisher kenne ich nur Layout 1); eigenes Layout web-l/web-p auf voller Bühne beschreiben; ob ein Web-Panel mit Panel-Format (eu/us-l/us-p) genau wie die Hardware zeichnet. -->
-
-<!-- BILD FOLGT (BILDER.md): alle Bilder dieses Abschnitts außer web-cardDevice*.png -->
+The pictures show the same three devices per model: a robot vacuum (layout 1), a washing machine (layout 2) and a car (layout 3), with the icons the adapter chooses by itself. They were taken in the web panel with the respective model; the texts on the panel are German.
 
 ### EU landscape (`eu`)
 
 | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|
-| <img alt="EU panel, layout 1: robot vacuum Robbi with status icons, battery and area, four buttons and status line" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="EU panel, layout 2: washing machine with remaining time, progress bar, three info tiles and one button" src="../Pictures/device-page/eu-cardDevice2.png" width="100%"/> | <img alt="EU panel, layout 3: car with six info tiles and two switches" src="../Pictures/device-page/eu-cardDevice3.png" width="100%"/> |
+| <img alt="EU panel, layout 1: robot vacuum Robbi with status icons, battery and area, four buttons and status line" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="EU panel, layout 2: washing machine with remaining time, progress bar, three info tiles and one button at the top right" src="../Pictures/device-page/eu-cardDevice2.png" width="100%"/> | <img alt="EU panel, layout 3: car with six info tiles and two switches" src="../Pictures/device-page/eu-cardDevice3.png" width="100%"/> |
 
 ### US landscape (`us-l`)
 
-Like the EU panel.
+The same arrangement as on the EU panel. The content sits 15 pixels further right because the visible area of the US display lies there.
 
 | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|
-| <img alt="US panel in landscape, layout 1: the same arrangement as on the EU panel" src="../Pictures/device-page/us-l-cardDevice1.png" width="100%"/> | <img alt="US panel in landscape, layout 2: the same arrangement as on the EU panel" src="../Pictures/device-page/us-l-cardDevice2.png" width="100%"/> | <img alt="US panel in landscape, layout 3: the same arrangement as on the EU panel" src="../Pictures/device-page/us-l-cardDevice3.png" width="100%"/> |
+| <img alt="US panel in landscape, layout 1: the same arrangement as on the EU panel, shifted a little to the right" src="../Pictures/device-page/us-l-cardDevice1.png" width="100%"/> | <img alt="US panel in landscape, layout 2: the same arrangement as on the EU panel, shifted a little to the right" src="../Pictures/device-page/us-l-cardDevice2.png" width="100%"/> | <img alt="US panel in landscape, layout 3: the same arrangement as on the EU panel, shifted a little to the right" src="../Pictures/device-page/us-l-cardDevice3.png" width="100%"/> |
 
 ### US portrait (`us-p`)
 
-In portrait the elements are arranged anew. Layout 1: the main icon at the top left, the 2×2 status icons to its right, below them the info lines across the full width, the buttons in a 2×2 block and the status line at the bottom.
+In portrait the elements are arranged anew:
+
+- **Layout 1:** the main icon at the top left with the name below it, to its right the status icons as a 2×2 block. Below them the two info lines across the full width, then the four buttons as a 2×2 block (slot 3 top left, 4 top right, 5 bottom left, 6 bottom right). The info lines always have the same width here; without status icons the place next to the main icon stays free.
+- **Layout 2:** main icon and large value at the top, the progress bar below. The three infos are full lines (name left, value right) instead of tiles, the button lies below them across the full width.
+- **Layout 3:** the main icon at the top in the middle, its name below across the full width. The six info tiles in two columns, the two switches as lines one below the other.
+
+The status line is narrower here (262 instead of 390 pixels). The status texts of the examples no longer fit – the pictures show their first part, see [Alternating status text](#9-operation-on-the-panel).
 
 | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|
-| <img alt="US panel in portrait, layout 1: main icon at the top left, status icons next to it, info lines across the full width, buttons as a 2×2 block, status line at the bottom" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US panel in portrait, layout 2: washing machine with remaining time, progress bar, info tiles and button one below the other" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US panel in portrait, layout 3: car with info tiles and switches one below the other" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
+| <img alt="US panel in portrait, layout 1: main icon at the top left, status icons next to it, info lines across the full width, buttons as a 2×2 block, status line at the bottom" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US panel in portrait, layout 2: main icon and remaining time at the top, progress bar, three info lines and the button across the full width" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US panel in portrait, layout 3: main icon at the top in the middle, six info tiles in two columns and two switch lines" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
 
 ### Smartphone landscape (`web-l`)
 
-A standalone web panel with this model uses the whole area (640 × 320) with an arrangement of its own. Upper row: without additional elements; lower row: with the [additional elements](#additional-elements-for-smartphone-web-panels).
+A standalone web panel with this model uses the whole area (640 × 320). The arrangement is that of the EU panel, stretched in width: no text field is narrower than there, the info lines of layout 1 and the status line (580 pixels) are clearly wider. The [additional elements](#additional-elements-for-smartphone-web-panels) fall into line: in layout 1 one row with up to six buttons, in layout 2 up to three buttons at the top right and four info tiles in one row, in layout 3 a third column of info tiles and a third switch.
 
 | | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|---|
-| Standard | <img alt="Smartphone landscape, layout 1 without additional elements" src="../Pictures/device-page/web-l-cardDevice1.png" width="100%"/> | <img alt="Smartphone landscape, layout 2 without additional elements" src="../Pictures/device-page/web-l-cardDevice2.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 without additional elements" src="../Pictures/device-page/web-l-cardDevice3.png" width="100%"/> |
-| with extras | <img alt="Smartphone landscape, layout 1 with six buttons" src="../Pictures/device-page/web-l-cardDevice1-extra.png" width="100%"/> | <img alt="Smartphone landscape, layout 2 with four info lines and three buttons" src="../Pictures/device-page/web-l-cardDevice2-extra.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 with eight info lines and three switches" src="../Pictures/device-page/web-l-cardDevice3-extra.png" width="100%"/> |
+| without web panel elements | <img alt="Smartphone landscape, layout 1 without additional elements: four buttons across the whole width" src="../Pictures/device-page/web-l-cardDevice1-plain.png" width="100%"/> | <img alt="Smartphone landscape, layout 2 without additional elements: one button at the top right, three info tiles" src="../Pictures/device-page/web-l-cardDevice2-plain.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 without additional elements: six info tiles in two columns, two switches" src="../Pictures/device-page/web-l-cardDevice3-plain.png" width="100%"/> |
+| with web panel elements | <img alt="Smartphone landscape, layout 1 with six buttons in one row" src="../Pictures/device-page/web-l-cardDevice1.png" width="100%"/> | <img alt="Smartphone landscape, layout 2 with three buttons at the top right and four info tiles" src="../Pictures/device-page/web-l-cardDevice2.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 with eight info tiles in three columns and three switches" src="../Pictures/device-page/web-l-cardDevice3.png" width="100%"/> |
 
 ### Smartphone portrait (`web-p`)
 
-A standalone web panel with this model uses the whole area (320 × 640) with an arrangement of its own.
+A standalone web panel with this model uses the whole area (320 × 640). The arrangement is that of US portrait; the additional height carries the [additional elements](#additional-elements-for-smartphone-web-panels) as further lines: in layout 1 a third row with two buttons, in layout 2 a fourth info line and up to three buttons in one row, in layout 3 a fourth row of info tiles and a third switch line. Without them the lines spread over the height with larger gaps. Without status icons the main icon of layout 1 stands in the middle. As in US portrait the status line is 262 pixels wide.
 
 | | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|---|
-| Standard | <img alt="Smartphone portrait, layout 1 without additional elements" src="../Pictures/device-page/web-p-cardDevice1.png" width="100%"/> | <img alt="Smartphone portrait, layout 2 without additional elements" src="../Pictures/device-page/web-p-cardDevice2.png" width="100%"/> | <img alt="Smartphone portrait, layout 3 without additional elements" src="../Pictures/device-page/web-p-cardDevice3.png" width="100%"/> |
-| with extras | <img alt="Smartphone portrait, layout 1 with six buttons" src="../Pictures/device-page/web-p-cardDevice1-extra.png" width="100%"/> | <img alt="Smartphone portrait, layout 2 with four info lines and three buttons" src="../Pictures/device-page/web-p-cardDevice2-extra.png" width="100%"/> | <img alt="Smartphone portrait, layout 3 with eight info lines and three switches" src="../Pictures/device-page/web-p-cardDevice3-extra.png" width="100%"/> |
+| without web panel elements | <img alt="Smartphone portrait, layout 1 without additional elements: two rows of two buttons each" src="../Pictures/device-page/web-p-cardDevice1-plain.png" width="100%"/> | <img alt="Smartphone portrait, layout 2 without additional elements: three info lines and one button" src="../Pictures/device-page/web-p-cardDevice2-plain.png" width="100%"/> | <img alt="Smartphone portrait, layout 3 without additional elements: three rows of info tiles and two switch lines" src="../Pictures/device-page/web-p-cardDevice3-plain.png" width="100%"/> |
+| with web panel elements | <img alt="Smartphone portrait, layout 1 with three rows of two buttons each" src="../Pictures/device-page/web-p-cardDevice1.png" width="100%"/> | <img alt="Smartphone portrait, layout 2 with four info lines and three buttons in one row" src="../Pictures/device-page/web-p-cardDevice2.png" width="100%"/> | <img alt="Smartphone portrait, layout 3 with four rows of info tiles and three switch lines" src="../Pictures/device-page/web-p-cardDevice3.png" width="100%"/> |
 
 ### A real panel in the browser
 
-The [browser picture of a real panel](WebPanel#2-opening-a-real-panel-in-the-browser) and a web panel with one of the three panel formats look like the hardware – that is, as in the sections EU, US landscape and US portrait above.
+The [browser picture of a real panel](WebPanel#2-opening-a-real-panel-in-the-browser) and a web panel with one of the three panel formats draw the page like the hardware of the respective model – that is, as in the sections EU, US landscape and US portrait above and always without additional elements.
 
 ## 9. Operation on the panel
 
-**Opening.** On a grid page **long press** the item: after about half a second the background of the tile blinks green and grey – this shows that the long press is recognised; on **release** the page opens. On an entities page a tap on the icon or the name on the left is enough. With the short tap **Open the device page** a short tap is enough on both.
-
-<!-- TODO nach Integration: Blinken beim langen Druck – gilt es auf allen Hardware-Modellen (Changelog heute: "needs a new TFT, eu") und zeigt es auch das Web-Panel? Text danach anpassen. -->
+**Opening.** On a grid page **long press** the item: after about half a second the background of the tile blinks green and grey on a hardware panel – this shows that the long press is recognised; on **release** the page opens. On an entities page a tap on the icon or the name on the left is enough. With the short tap **Open the device page** a short tap is enough on both.
 
 **Back.** The arrow at the top left leads from the device page to the page of the item, from the detail page to the page it was opened from (behind the "i", that is, back to the device page).
 
@@ -417,28 +417,30 @@ The [browser picture of a real panel](WebPanel#2-opening-a-real-panel-in-the-bro
 | **i icon** | opens the detail page | like the short tap |
 | **Status line** | nothing | nothing |
 
-If an element without a popup is held, its background blinks green and grey after half a second; the action is triggered on release. A long press never counts as a short tap: if no long press is set for the element, nothing happens.
+If an element without a popup is held, its background blinks green and grey after half a second on a hardware panel; the action is triggered on release. The **web panel does not show this blinking** – neither on the grid page nor on the device page; the long press works the same there, only without the feedback. A long press never counts as a short tap: if no long press is set for the element, nothing happens.
 
 **Popups** are the usual ones (light, blind, selection, slider, timer …). After closing, the device page is there again. A popup from a status icon has no heading.
 
-**Alternating status text.** If the text does not fit into the status line, the adapter splits it at word boundaries into at most **three parts** and shows them one after the other, changing every **3 seconds**, round and round. What would be left after the third part is dropped; the third then ends with "…". If the text changes, the display starts again with the first part. While a popup is open, the change pauses.
+**Alternating status text.** If the text does not fit into the status line – its width depends on the model, see [Limits](#10-limits) –, the adapter splits it at word boundaries into at most **three parts** and shows them one after the other, changing every **3 seconds**, round and round. What would be left after the third part is dropped; the third then ends with "…". If the text changes, the display starts again with the first part. While a popup is open, the change pauses.
 
 ## 10. Limits
 
-- **TFT version.** On a hardware panel the device page needs a TFT version that contains it. With an older TFT the long press (and the short tap **Open the device page**) opens the **detail page** instead. The tap on icon or name on an entities page and the blinking on a long press need the new TFT as well. A web panel needs no TFT.
-  <!-- TODO nach Integration: TFT-Version eintragen (CARD_DEVICE_MIN_TFT steht vorläufig auf 6.2.0 und wird zum Release angehoben); je Modell (eu / us-l / us-p) prüfen, ob dieselbe Version gilt; prüfen, ob es nach der Integration noch ein Modell gibt, das immer auf die Detailseite zurückfällt. -->
-- **Names and values: at most 31 characters** (umlauts and special characters count twice). Anything longer is cut off without "…". Mostly, however, the field ends before that – then the panel cuts off at the edge of the field, even in the middle of a letter. This is the same on all models. The font is 24 pixels high, a letter is just under 10 pixels wide on average:
+- **TFT version.** On a hardware panel the device page needs a TFT version that contains it – on all three hardware models. With an older TFT the long press (and the short tap **Open the device page**) opens the **detail page** instead. The dialog puts it this way: *On hardware panels the device page needs a current TFT. Panels with an older TFT show the detail page.* The tap on icon or name on an entities page and the blinking on a long press need the new TFT as well. A web panel needs no TFT and always shows the device page.
+  <!-- TODO: Version folgt – die erste TFT mit den Geräteseiten steht noch nicht fest (CARD_DEVICE_MIN_TFT steht vorläufig auf 6.2.0 und wird zum Release angehoben); hier eintragen, sobald sie feststeht. -->
+- **Names and values: at most 31 bytes** – that is 31 characters, umlauts and special characters count twice. Anything longer is cut off without "…". This limit is the same on all models, also for the additional elements of the smartphone web panels.
+- **The visible width depends on the model.** Mostly the field ends before the 31 bytes are reached – then the panel cuts off at the edge of the field, even in the middle of a letter (in the picture of layout 2 above the name "Waschmaschine" below the icon). Widths in pixels; the font is 24 pixels high, a letter is just under 10 pixels wide on average. Info line as *name / value*:
 
-  | Layout | Name of the device below the icon | Name of a slot | Value of a slot |
-  |---|---|---|---|
-  | **1 – Control** | 110 px | info line 164 px, **with status icons 86 px**; button 104 px | info line 110 px |
-  | **2 – Progress** | 96 px | large value 190 px; progress bar 429 px; info line 104 px; button 100 px | large value 190 px in the big font (a digit 33 px); info line 104 px |
-  | **3 – Values** | 100 px | info line 125 px; switch 125 px | info line 125 px |
+  | Model | Status line | Layout 1 | Layout 2 | Layout 3 |
+  |---|---|---|---|---|
+  | **EU landscape**, **US landscape** | 390 | device name 110 · info line 164 / 110, **with status icons 86 / 110** · button 104 | device name 96 · large value 190 · progress bar 429 · info line 104 / 104 · button 100 | device name 100 · info line 125 / 125 · switch 125 |
+  | **US portrait** | 262 | device name 150 · info line 156 / 104 (also with status icons) · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300 | device name 300 · info line 112 / 112 · switch 212 |
+  | **Smartphone landscape** | 580 | device name 110 · info line 354 / 110, with status icons 276 / 110 · button 104 | device name 96 · large value 190 · progress bar 620 · info line 104 / 104 · button 100 | device name 100 · info line 125 / 125 · switch 125 |
+  | **Smartphone portrait** | 262 | device name 150 (without status icons 300) · info line 156 / 104 · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300, two of them 148 each, three 100 each | device name 300 · info line 112 / 112 · switch 212 |
 
-  <!-- TODO nach Integration: "Textlängen überall gleich" und die Feldbreiten gegen DEVICE_PAGE_FIELDS und die us-p-/Web-Layouts prüfen (Tabelle = EU-HMI, doc/ideas/device-details/device-page-hmi.md). -->
+  The large value is drawn in the big font: a digit needs 33 pixels there, "12:34" 149 pixels.
 - **Units stand at the value without a space** ("80%", "34m²", "60°C"). This is intended and saves room.
 - **The large value** has a font of its own with digits, letters (also ä, ö, ü) and the characters `: % ° , . - /`. It cannot show a **€**.
-- **The status line** has one line (390 pixels wide). Longer text alternates in up to three parts, see [Operation on the panel](#9-operation-on-the-panel).
+- **The status line** has one line; its width is in the table above. Longer text alternates in up to three parts (each at most 63 bytes), see [Operation on the panel](#9-operation-on-the-panel).
 - **Numbers cannot be adjusted on the detail page**, even if the state is writable. Switches, buttons and values with a value list can be operated. If you need a slider, put an alias channel (slider) into a slot of the device page.
 - **The kind of a slot is fixed.** You choose *what* a slot shows, not *how*: number, position and kind of the places are given by the layout.
 - **Generated pages cannot be edited.** Device page and detail page are not in the page list of the tab PageConfig. In the [navigation flow](naviFlow) the device page appears read-only (with a lock) below the page of its item.
@@ -450,8 +452,10 @@ The technical details (protocol, dimensions) are available for developers in [do
 - **The detail page comes instead of the device page.** The TFT of the panel is too old, see [Limits](#10-limits).
 - **On the entities page nothing happens on a tap on the left.** That needs the new TFT as well. The switch on the right of the row works independently of it.
 - **A slot stays empty on the panel.** The state or channel does not exist (any more) or does not fit the kind of the slot – the row is then red in the dialog. For a channel a warning is written to the log when the adapter starts (*Page '…', page item …: Device page slot …*).
-- **The info lines in layout 1 suddenly cut off earlier.** A status icon is filled; the two info lines are then narrower (name 86 instead of 164 pixels).
-- **Slots are missing after a change of layout.** The slots are kept by their number. Layout 2 has only 6 slots: going from layout 1 there and back loses the status icons 7–10.
+- **The info lines in layout 1 suddenly cut off earlier.** A status icon is filled; on the EU panel, in US landscape and on Smartphone landscape the two info lines are then narrower (on the EU panel the name 86 instead of 164 pixels).
+- **Slots are missing after a change of layout.** The slots are kept by their number. Layout 2 has only 6 slots: going from layout 1 there and back loses the status icons 7–10. Of the additional slots of the smartphone web panels the third is lost when changing to layout 1.
+- **The additional elements are missing on the panel.** They only appear on standalone web panels with the models *Smartphone landscape* and *Smartphone portrait* – and only while the tick box **Web panel elements (web-l / web-p)** is set.
+- **Nothing blinks in the web panel on a long press.** Only the hardware panel shows the blinking; the web panel still triggers on release.
 - **A long press on a button of the device page does nothing.** No **Long press** is set for the element. This is intended: a long press is never taken as a short tap.
 - **The tap on a navigation slot does nothing.** The target page no longer exists or is not assigned to this panel. The log holds one warning about it (*… the target page "…" of element … is not assigned to panel … - the tap does nothing!*).
 - **No way leads back from the target page to the device page.** See the note under [Jumping from the device page to another page](#jumping-from-the-device-page-to-another-page).

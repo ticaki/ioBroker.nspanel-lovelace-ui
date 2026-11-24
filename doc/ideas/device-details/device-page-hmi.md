@@ -782,8 +782,9 @@ Für jedes der beiden Projekte:
      `event,buttonPress3,<entn>,button`; `light`, `shutter`, `number` … öffnen weiter ihr Popup; leere Zeile nichts.
      Auf us-p auch Zeile 5.
 
-Der Adapter schickt die Geräteseite bisher nur an EU (`withoutDevicePages` nimmt us-l, us-p, web-p aus) und misst
-mit den EU-Breiten; für us-p braucht er die Breiten dieser Seite (Statuszeile 262 px). Das ist nicht Teil der HMI.
+Der Adapter schickt die Geräteseite seit 2026-11-24 an alle Modelle und misst die Statuszeile mit den Breiten des
+jeweiligen Modells (us-p 262 px, `devicePageFields(layout, model)`), siehe
+[README, „Modelle und Zusatz-Slots“](README.md#modelle-und-zusatz-slots).
 
 ## Im Nextion-Editor prüfen
 

@@ -4,12 +4,10 @@ Dieser Ordner enthält die Bilder zur Geräteseite, eine Kurz-Anleitung und die 
 
 - **Ausführliche Anleitung für Nutzer:** [doc/de/deviceDetails.md](../../de/deviceDetails.md) (englisch:
   [doc/en/deviceDetails.md](../../en/deviceDetails.md)).
-- **Welche Bilder noch fehlen, wer sie aufnimmt und wie:** [BILDER.md](BILDER.md) – dort steht auch der Abgleich
-  Web ↔ HMI.
+- **Liste aller Bilder, Aufnahmeweg und Abgleich Web ↔ HMI:** [BILDER.md](BILDER.md).
 - Technik (Protokoll, Maße): [doc/ideas/device-details](../../ideas/device-details/README.md).
 
-Stand: 2026-11-24. Beschrieben ist der **Zielstand** (Geräteseite auf allen Modellen, Zusatz-Elemente für
-Smartphone-Web-Panels); was davon noch nicht im Branch ist, ist als „nach der Integration“ markiert.
+Stand: 2026-11-24 – Geräteseite auf allen fünf Modellen, Web-Panel-Elemente für die Smartphone-Web-Panels.
 
 ## Kurz-Anleitung
 
@@ -25,7 +23,7 @@ das die Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Ra
 
    ![Dialog „Gerät mit Details“ mit Geräteseite](admin-overview.png)
 
-3. **Layout** wählen – die kleinen Bilder zeigen, wo welcher Slot sitzt.
+3. **Layout** wählen – die kleinen Bilder zeigen, wo welcher Slot sitzt (Anordnung des EU-Panels).
 4. **Haupt-Icon** wählen (leer = Icon des Items).
 5. **Statuszeile**: ein Wert des Geräts oder ganz oben **Benutzerdefinierter Datenpunkt** für einen eigenen
    Datenpunkt, z. B. einen Text unter `0_userdata.0`.
@@ -48,11 +46,13 @@ das die Detailseite öffnet. Das passt z. B. für Waschmaschine, Saugroboter, Ra
    ![Einstellungen des Elements](admin-slot-dialog.png)
 
 8. **Status-Icons** (nur Layout 1, Slots 7–10): nur ein kleines Icon in seiner Farbe. Sobald eines belegt ist,
-   erscheint das 2×2-Raster und die beiden Info-Zeilen werden schmaler.
+   erscheint das 2×2-Raster; auf eu, us-l und web-l werden die beiden Info-Zeilen dann schmaler.
 9. **i-Icon anzeigen** (Vorgabe an): das „i“ öffnet die Detailseite mit den angehakten Einträgen der Filterliste.
-10. Für Web-Panels mit den Modellen **Smartphone quer** / **Smartphone hochkant**: das Häkchen für die
-    zusätzlichen Elemente setzen, dann erscheinen die Zusatz-Plätze (nach der Integration, Beschriftung steht
-    noch nicht fest).
+10. **Web-Panel-Elemente (web-l / web-p)** (Häkchen unter den Slots, Vorgabe aus): angehakt erscheinen darunter
+    die zusätzlichen Slots – Layout 1: 11–12 (2 Knöpfe), Layout 2: 7 (Info-Zeile) und 8–9 (2 Knöpfe), Layout 3:
+    9–10 (2 Info-Zeilen) und 11 (Schalter). Nur eigenständige Web-Panels der Modelle web-l (Smartphone quer) und
+    web-p (Smartphone hochkant) zeigen sie. Häkchen entfernen blendet sie aus, ihre Einstellungen bleiben
+    gespeichert.
 11. **Übernehmen**, dann im Tab **Speichern**.
 
 **Geräteseite schon beim ersten Tipp:** Unter **Kurzer Tipp** gibt es **Geräteseite öffnen** – nur wählbar, wenn
@@ -61,36 +61,45 @@ bei „Long-Press öffnet“ die Geräteseite gewählt ist.
 ![Kurzer Tipp: Geräteseite öffnen](admin-shortpress.png)
 
 Die drei Layouts: **1 – Steuern** (2 Info-Zeilen, 4 Knöpfe, 4 Status-Icons), **2 – Fortschritt** (großer Wert,
-Fortschrittsbalken, 3 Info-Kacheln, 1 Knopf), **3 – Werte** (6 Info-Kacheln, 2 Schalter). Auf Smartphone-Web-Panels
-zusätzlich: Layout 1 +2 Knöpfe, Layout 2 +1 Info-Zeile und +2 Knöpfe, Layout 3 +2 Info-Zeilen und +1 Schalter.
+Fortschrittsbalken, 3 Info-Kacheln, 1 Knopf), **3 – Werte** (6 Info-Kacheln, 2 Schalter).
 
-**Wo es die Geräteseite gibt:** auf allen Modellen (eu, us-l, us-p, web-l, web-p). Ein Hardware-Panel braucht
-eine TFT mit den Geräteseiten (Version steht noch nicht fest); mit älterer TFT öffnet sich wie bisher die
-Detailseite. Heute im Branch: nur eu und web-l.
+**Wo es die Geräteseite gibt:** auf allen Panels – EU, US quer (us-l), US hochkant (us-p) und Web-Panels (auch
+Smartphone quer / hochkant). Hardware-Panels brauchen eine aktuelle TFT (Version folgt); mit älterer TFT öffnet
+sich wie bisher die Detailseite. Web-Klone von Hardware-Panels sehen aus wie die Hardware.
+
+**Textlängen:** Name und Wert höchstens 31 Byte, Statuszeile 63 Byte je Abschnitt – auf allen Modellen gleich. Die
+sichtbare Breite ist je Modell verschieden (Statuszeile: eu/us-l 390 px, us-p und web-p 262 px, web-l 580 px).
+
+**Blinken beim langen Druck** zeigt nur die HMI, das Web-Panel nicht.
 
 ## Bilder: Szenario und was Tim prüfen soll
 
-Vorhandene Bilder; die geplanten stehen in [BILDER.md](BILDER.md) und kommen nach dem Aufnehmen hier dazu.
+Alle Panel-Bilder sind Web-Panel-Aufnahmen mit dem jeweiligen Modell (statisch gerendert, siehe
+[BILDER.md](BILDER.md)); sie zeigen dieselbe Belegung wie Tims Aufnahmen der EU-HMI.
 
 | Bild | Szenario | Was Tim prüfen soll |
 |---|---|---|
-| ![](admin-overview.png) | Dialog mit Geräteseite, Layout 1, alle Slots belegt (Gerät `0_userdata.0.devicepage.robot`) | Aufbau verständlich? Vorschau passt zu den Slot-Nummern? **Veraltet:** der Hinweis „nur auf EU-Panels und Web-Panels im Querformat“ – wird nach der Integration neu aufgenommen |
+| ![](admin-overview.png) | Dialog mit Geräteseite, Layout 1, alle Slots belegt (Gerät `0_userdata.0.devicepage.robot`) | Aufbau verständlich? Vorschau passt zu den Slot-Nummern? Die Integration nimmt das Bild neu auf (neuer Hinweistext, Häkchen Web-Panel-Elemente) |
 | ![](admin-shortpress.png) | Kurzer Tipp „Geräteseite öffnen“ gewählt | Auswahl nur mit „Long-Press öffnet: Geräteseite“ möglich |
 | ![](admin-status-custom.png) | Statuszeile mit „Benutzerdefinierter Datenpunkt“ | Feld für die ID erscheint, nichts rot bei leerem Feld |
-| ![](admin-slot-custom.png) | Slots mit Datenpunkt, Alias-Kanal und einem unpassenden Datenpunkt | rote Markierung „passt nicht zu diesem Slot“. **Veraltet:** die Wahl heißt jetzt „Kanal“, dazu kommt „Navigation“ – wird neu aufgenommen |
-| ![](admin-slot-dialog.png) | „…“ eines Knopf-Slots | **Veraltet:** zeigt den früheren kleinen Dialog; Knopf-Slots öffnen jetzt die Pageitem-Konfiguration ohne Kanalauswahl – wird neu aufgenommen. Den kleinen Dialog gibt es nur noch für Status-Icons |
-| ![](hmi-cardDevice1.png) | HMI-Vorschau cardDevice1 mit Status-Icons (Werkzeug, Beispieldaten) | Raster an den Info-Zeilen ausgerichtet, Info-Zeilen schmal |
-| ![](hmi-cardDevice1-plain.png) | HMI-Vorschau cardDevice1 ohne Status-Icons | kein Raster, Info-Zeilen breit |
-| ![](hmi-cardDevice2.png) | HMI-Vorschau cardDevice2 | großer Wert, Balken, drei Kacheln, Knopf oben rechts |
-| ![](hmi-cardDevice3.png) | HMI-Vorschau cardDevice3 | sechs Kacheln zeilenweise, zwei Schalter |
-| ![](web-cardDevice1.png) | Web-Panel (Modell eu), dieselben Beispieldaten wie `hmi-cardDevice1.png` | deckt sich mit der HMI-Vorschau? **Veraltet:** Statuszeile noch linksbündig (heute mittig) – wird neu aufgenommen |
-| ![](web-cardDevice1-plain.png) | Web-Panel, cardDevice1 ohne Status-Icons | wie `hmi-cardDevice1-plain.png`; Statuszeile wie oben |
-| ![](web-cardDevice2.png) | Web-Panel, cardDevice2 | wie `hmi-cardDevice2.png` (Balkenlänge, Lage der Kacheln) |
-| ![](web-cardDevice3.png) | Web-Panel, cardDevice3 | wie `hmi-cardDevice3.png`; Statuszeile noch linksbündig – wird neu aufgenommen |
+| ![](admin-slot-custom.png) | Slots mit Datenpunkt, Kanal und einem unpassenden Datenpunkt | rote Markierung „passt nicht zu diesem Slot“; die Integration nimmt das Bild neu auf (Wahl „Kanal“ und „Navigation“) |
+| ![](admin-slot-dialog.png) | „…“ eines Knopf-Slots | die Integration nimmt das Bild neu auf: Knopf-Slots öffnen die Pageitem-Konfiguration ohne Kanalauswahl; den kleinen Dialog gibt es nur noch für Status-Icons (`admin-slot-dialog-status.png`) |
+| ![](eu-cardDevice1.png) | eu, Layout 1 „Robbi“ mit vier Status-Icons | Raster an den Info-Zeilen ausgerichtet, Info-Zeilen schmal; deckt sich mit Tims Aufnahme 202151 |
+| ![](eu-cardDevice1-plain.png) | eu, Layout 1 ohne Status-Icons | kein Raster, Info-Zeilen breit; Tims Aufnahme 160356 |
+| ![](eu-cardDevice2.png) | eu, Layout 2 „Waschmaschine“, Balken 62 % | großer Wert, Balken, drei Kacheln, Knopf oben rechts; der Gerätename unter dem Icon ist an der Feldgrenze (96 px) abgeschnitten – so gewollt? Tims Aufnahme 160338 |
+| ![](eu-cardDevice3.png) | eu, Layout 3 „ID.3“ | sechs Kacheln zeilenweise, zwei Schalter; Tims Aufnahme 160313 |
+| ![](eu-detail-page.png) | eu, Detailseite „Robbi“ | vier Zeilen mit Icon, Name, Wert; Tims Aufnahme 202318 |
+| ![](us-l-cardDevice1.png) ![](us-l-cardDevice2.png) ![](us-l-cardDevice3.png) | us-l, Layouts 1–3 | wie eu, Inhalt 15 px weiter rechts. Die Kopfzeile zeichnet das Web-Panel auf us-l wie eu (auf der echten us-l-HMI sitzt auch sie 15 px weiter rechts) |
+| ![](us-p-cardDevice1.png) ![](us-p-cardDevice2.png) ![](us-p-cardDevice3.png) | us-p, Layouts 1–3; Statuszeile zeigt den ersten Abschnitt des Texts | Anordnung wie in den HMI-Vorschauen `hmi-us-p-cardDevice*.png`; passt die Aufteilung für Tim? |
+| ![](web-l-cardDevice1-plain.png) ![](web-l-cardDevice2-plain.png) ![](web-l-cardDevice3-plain.png) | web-l ohne Web-Panel-Elemente | Elemente über die Breite verteilt, keine Lücke |
+| ![](web-l-cardDevice1.png) ![](web-l-cardDevice2.png) ![](web-l-cardDevice3.png) | web-l mit Web-Panel-Elementen (6 Knöpfe; 4 Infos + 3 Knöpfe; 8 Infos + 3 Schalter) | Reihenfolge und Lage der zusätzlichen Elemente |
+| ![](web-p-cardDevice1-plain.png) ![](web-p-cardDevice2-plain.png) ![](web-p-cardDevice3-plain.png) | web-p ohne Web-Panel-Elemente | Zeilen teilen sich die Höhe, kein Loch über der Statuszeile |
+| ![](web-p-cardDevice1.png) ![](web-p-cardDevice2.png) ![](web-p-cardDevice3.png) | web-p mit Web-Panel-Elementen | dritte Knopfreihe, vierte Info-Zeile und drei Knöpfe in einer Reihe, vierte Kachelreihe und dritter Schalter |
+| ![](hmi-cardDevice1.png) ![](hmi-cardDevice1-plain.png) ![](hmi-cardDevice2.png) ![](hmi-cardDevice3.png) | HMI-Vorschauen eu des Werkzeugs `card_device.py` (Beispieldaten des Werkzeugs, Einheiten dort mit Leerzeichen) | nur für die Entwickler-Dokumente; `hmi-us-l-*.png` und `hmi-us-p-*.png` ebenso |
 
 ## Was Tim prüfen soll
 
-Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per Puppeteer geprüft, „✓ nur Admin“ = der Admin-Teil der Zeile geprüft, der Teil am Panel nicht; leer = nicht geprüft. Die Zeilen 30, 32, 38–43 sind an den „…“-Dialog vom 2026-11-24 angepasst (Pageitem-Konfiguration statt des kleinen Dialogs) und deshalb wieder ungeprüft; die Zeilen ab 52 gehören zum Zielstand (alle Modelle, Zusatz-Elemente) und lassen sich erst nach der Integration prüfen.
+Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per Puppeteer geprüft, „✓ nur Admin“ = der Admin-Teil der Zeile geprüft, der Teil am Panel nicht; leer = nicht geprüft. Die Zeilen 30, 32, 38–43 sind an den „…“-Dialog vom 2026-11-24 angepasst (Pageitem-Konfiguration statt des kleinen Dialogs) und deshalb wieder ungeprüft. Die Zeilen ab 52 betreffen die Web-Panel-Elemente und die fünf Modelle (seit 2026-11-24).
 
 | # | Prüfung | Erwartung | Im Browser geprüft (2026-11-23) |
 |---|---|---|---|
@@ -106,10 +115,10 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 9 | Auf **Detailseite** stellen und übernehmen | `device.devicePage` ist aus den Rohdaten verschwunden | |
 | 10 | Einen gespeicherten Slot-State im Objektbaum löschen, Dialog öffnen | Slot zeigt den State rot „nicht im Gerät gefunden“, nach Übernehmen weiter gespeichert | |
 | 11 | Adapter stoppen, Dialog öffnen, Übernehmen | gespeicherte Geräteseite bleibt unverändert | |
-| 12 | Long-Press am EU-Panel (neue TFT) und in jedem Web-Panel | Geräteseite erscheint mit den gewählten Slots | |
+| 12 | Long-Press am EU-, us-l- und us-p-Panel (neue TFT) und in jedem Web-Panel | Geräteseite erscheint mit den gewählten Slots | |
 | 13 | Dialog in hellem und dunklem Thema, schmales Fenster | Vorschaubilder und Slot-Zeilen lesbar, nichts abgeschnitten | |
 | 14 | Item mit einer Geräteseite Layout 1 von vor den Status-Icons (6 Slots) öffnen | Slots 1–6 unverändert, Slots 7–10 „Status-Icon“ leer; Übernehmen speichert 10 Slots | |
-| 15 | Layout 1: unter den Slots | Hinweis, dass die Info-Zeilen schmaler werden, sobald ein Status-Icon belegt ist | ✓ |
+| 15 | Layout 1: unter den Slots | Hinweis, dass die Info-Zeilen schmaler werden, sobald ein Status-Icon belegt ist (gilt für eu, us-l und web-l; auf us-p und web-p bleiben sie gleich breit) | ✓ |
 | 16 | Status-Slot 8 einen Wert geben | der „…“-Knopf der Zeile wird aktiv; die Vorschau von Layout 1 zeigt jetzt das 2×2-Raster und schmalere Info-Zeilen | |
 | 17 | Über „…“ ein eigenes Icon wählen, dann einen anderen Wert für denselben Slot | das Icon bleibt, „…“ ist grün; Wert auf „leer“ → Einstellungen sind weg, „…“ ausgegraut | ✓ |
 | 18 | Alle Status-Slots wieder leeren | Vorschau ohne Raster, Info-Zeilen wieder breit | |
@@ -146,11 +155,14 @@ Spalte **Im Browser geprüft (2026-11-23)**: ✓ = im Admin des Dev-Servers per 
 | 49 | Auf der Zielseite die Pfeile benutzen | sie führen, wie für die Zielseite eingerichtet (nicht automatisch zur Geräteseite); über das Item kommt man wieder auf die Geräteseite | |
 | 50 | Zielseite wählen, die dem Panel nicht zugeordnet ist (oder Seite löschen), am Panel antippen | nichts passiert; im Log **eine** Warnung „target page … is not assigned to panel …“, auch bei mehrfachem Tippen | |
 | 51 | Kanal-Slot mit einer Kanal-ID, die es nicht gibt, Adapter neu starten | im Log eine Warnung `Page '<Seite>', page item <n>: Device page slot … not found!` – einmal, auch wenn die Seite mehreren Panels zugeordnet ist | |
-| 52 | us-l-Panel bzw. Web-Panel mit Modell US-Querformat: Geräteseite aller drei Layouts öffnen | sieht aus wie am EU-Panel (Bilder `us-l-cardDevice*.png` gegen `eu-cardDevice*.png`) | |
-| 53 | us-p-Panel bzw. Web-Panel mit Modell US-Hochformat: alle drei Layouts | hochkant neu angeordnet; Layout 1: Haupt-Icon oben links, 2×2-Status-Icons daneben, Info-Zeilen volle Breite, Knöpfe 2×2, Statuszeile unten. Alle belegten Slots sichtbar und bedienbar | |
-| 54 | Web-Panel „Smartphone quer“ und „Smartphone hochkant“, Häkchen für Zusatz-Elemente **aus** | eigenes Layout auf voller Bühne (640×320 bzw. 320×640), dieselben Elemente wie am Hardware-Panel, keine Zusatz-Plätze | |
-| 55 | Admin: Häkchen für die Zusatz-Elemente setzen und wieder entfernen | gesetzt: unter „Slots“ erscheinen die Zusatz-Plätze (Layout 1 +2 Knöpfe, Layout 2 +1 Info-Zeile +2 Knöpfe, Layout 3 +2 Info-Zeilen +1 Schalter); entfernt: sie verschwinden. Vorgabe bei einer neuen Geräteseite: aus | |
-| 56 | Zusatz-Plätze belegen; dieselbe Seite einem Smartphone-Web-Panel **und** einem Hardware-Panel (oder dessen Browser-Bild) zuweisen | Smartphone-Web-Panel zeigt die Zusatz-Elemente und sie lassen sich bedienen; Hardware-Panel und sein Browser-Bild zeigen sie nie, alles andere unverändert | |
-| 57 | Langer Name und langer Wert in einem Slot, auf allen fünf Modellen ansehen | Der Text endet überall an derselben Stelle (gleiche Textlängen), ohne eigene „…“ | |
-| 58 | Abgleich Web ↔ HMI nach [BILDER.md](BILDER.md) | die fünf Web-Aufnahmen (Modell eu) decken sich mit Tims Aufnahmen – bis auf die dort genannten bekannten Unterschiede | |
-
+| 52 | Abschnitt „Slots“: Häkchen **Web-Panel-Elemente (web-l / web-p)** | Vorgabe aus, der Tooltip erklärt es; angehakt erscheinen darunter die zusätzlichen Slots des Layouts (Layout 1: 11–12 Knopf; Layout 2: 7 Info-Zeile, 8–9 Knopf; Layout 3: 9–10 Info-Zeile, 11 Schalter), alle leer | |
+| 53 | Zusätzlichen Slot belegen (State, Benutzerdefiniert, „…“), übernehmen, neu öffnen | verhält sich wie ein normaler Slot derselben Art; Rohdaten zeigen `webExtras: true` und die Einträge hinten in `slots` | |
+| 54 | Häkchen entfernen, übernehmen, neu öffnen; wieder anhaken | Slots weg, in den Rohdaten fehlt `webExtras`, die Einträge in `slots` bleiben; nach dem Anhaken sind sie wieder da | |
+| 55 | Layout wechseln mit belegten zusätzlichen Slots (1 → 2 → 3 → 1), einmal mit und einmal ohne Häkchen | sie bleiben zusätzliche Slots in ihrer Reihenfolge (der erste bleibt der erste); wechselt dabei die Art (Layout 1 Knopf, Layout 2/3 Info-Zeile), steht ein unpassender Wert rot „passt nicht zu diesem Slot“ da; beim Wechsel auf Layout 1 fällt der dritte weg – auch ohne Häkchen; aus einem Status-Icon wird kein zusätzlicher Slot und umgekehrt | |
+| 56 | Web-Panel web-l und web-p: Häkchen an / aus | an: die zusätzlichen Elemente erscheinen (wie `web-l-cardDevice*.png`, `web-p-cardDevice*.png`), Tipp/Long-Press/Popup wie bei den anderen; aus: Seite ohne sie und ohne Lücke (wie `…-plain.png`) | |
+| 57 | EU-/US-Panel und Web-Klon eines Hardware-Panels mit angehakten Web-Panel-Elementen | Seite unverändert, nichts Zusätzliches, Statuszeile wie vorher | |
+| 58 | us-l-Panel bzw. Web-Panel mit Modell US-Querformat: alle drei Layouts | Anordnung wie EU, Inhalt 15 px weiter rechts (wie `us-l-cardDevice*.png`) | |
+| 59 | us-p-Panel bzw. Web-Panel mit Modell US-Hochformat: alle drei Layouts | hochkant neu angeordnet (wie `us-p-cardDevice*.png`): Layout 1 Haupt-Icon oben links, 2×2-Status-Icons daneben, Info-Zeilen volle Breite, Knöpfe 2×2; Layout 2 Infos als Zeilen, Knopf über die volle Breite; Layout 3 Haupt-Icon mittig, Schalter als Zeilen. Statuszeile 262 px: ein langer Statustext wechselt früher als am EU-Panel | |
+| 60 | Name und Wert mit mehr als 31 Byte in einem Slot, auf allen fünf Modellen ansehen | überall bei 31 Byte abgeschnitten; davor endet der Text an der Feldgrenze des Modells (sichtbare Breite je Modell verschieden), ohne eigene „…“ | |
+| 61 | Im Web-Panel ein Element der Geräteseite und eine Grid-Kachel halten | kein Blinken (das zeigt nur die HMI); beim Loslassen wird der lange Druck trotzdem ausgelöst | |
+| 62 | Abgleich Web ↔ HMI gegen Tims Aufnahmen | Ergebnis in [BILDER.md](BILDER.md#abgleich-web--hmi): Rahmen, Balken und Schalter deckungsgleich, Icons und Texte auf 1–3 px gleich; kein Fehler der Geräteseite im Web-Panel | ✓ (2026-11-24, statisch gerendert) |
