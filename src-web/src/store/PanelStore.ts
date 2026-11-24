@@ -251,7 +251,7 @@ export class PanelStore {
     }
 
     private ctx(): ParseContext {
-        return { pageType: this.page.pageType, pageArgs: this.page.pageArgs };
+        return { pageType: this.page.pageType, pageArgs: this.page.pageArgs, model: this.global.model };
     }
 
     private enterPage(pageType: string, pageArgs: string[], keepCardPage = false): void {
