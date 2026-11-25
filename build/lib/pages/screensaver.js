@@ -738,6 +738,73 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
   }
   /**
+   * The indicator slots with pinned items (admin `pinned`, page item `pinnedSlot`): a pinned item stands on its
+   * slot on every window, hidden it leaves the slot empty (no filler takes it). The other items (shown ones, then
+   * fillers up to the free slots) fill the remaining slots in their order and skip every pinned slot - with more
+   * of them than free slots they page through the free slots (window `step % windows`, windows = ceil(items /
+   * free slots)). A numeric `enabled` (overwrite) wins on its slot of every window. A pin outside the slots
+   * counts as no pin.
+   *
+   * @param candidates shown, filler and hidden pinned items of the place, sorted by their order
+   * @param max slots of the place on this model
+   * @param overwrite payloads of the items with a numeric `enabled`, by slot
+   * @param overwriteItems their page items, by slot
+   * @param step paging step of the screensaver
+   * @returns payloads and page items by slot of the window to send, null without a pin or with an overwrite
+   *          outside the slots (the caller works as without pins)
+   */
+  static placePinnedIndicators(candidates, max, overwrite, overwriteItems, step = 0) {
+    const pins = /* @__PURE__ */ new Map();
+    for (const entry of candidates) {
+      const slot = entry.pinnedSlot;
+      if (slot != null && Number.isInteger(slot) && slot >= 0 && slot < max && !pins.has(slot)) {
+        pins.set(slot, entry);
+      }
+    }
+    if (pins.size === 0 || overwrite.length > max) {
+      return null;
+    }
+    const pinnedEntries = new Set(pins.values());
+    const rest = candidates.filter((e) => !pinnedEntries.has(e) && !e.hidden);
+    const free = max - pins.size;
+    let fillersLeft = Math.max(0, free - rest.filter((e) => !e.isFiller).length);
+    let sequence = [];
+    for (const entry of rest) {
+      if (!entry.isFiller) {
+        sequence.push(entry);
+      } else if (fillersLeft > 0) {
+        sequence.push(entry);
+        fillersLeft--;
+      }
+    }
+    if (free > 0 && sequence.length > free) {
+      const windows = Math.ceil(sequence.length / free);
+      const windowIdx = step % windows;
+      sequence = sequence.slice(free * windowIdx, free * (windowIdx + 1));
+    }
+    const payloads = [];
+    const items = [];
+    let next = 0;
+    for (let slot = 0; slot < max; slot++) {
+      const pin = pins.get(slot);
+      if (pin) {
+        const shown = !pin.hidden && !pin.isFiller;
+        payloads[slot] = shown ? pin.payload : "";
+        items[slot] = shown ? pin.item : void 0;
+      } else if (next < sequence.length) {
+        payloads[slot] = sequence[next].payload;
+        items[slot] = sequence[next].item;
+        next++;
+      } else {
+        payloads[slot] = "";
+        items[slot] = void 0;
+      }
+    }
+    Object.assign(payloads, overwrite);
+    Object.assign(items, overwriteItems);
+    return { payloads, items };
+  }
+  /**
    * Build the screensaver message for requested places (order-preserving, parallel).
    *
    * - Runs only for screensaver cards.
@@ -783,7 +850,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     const layout = this.mode;
     const results = await Promise.all(
       this.pageItems.map(async (pageItem, idx) => {
-        var _a2, _b, _c, _d;
+        var _a2, _b, _c, _d, _e;
         const place = (_a2 = pageItem == null ? void 0 : pageItem.config) == null ? void 0 : _a2.modeScr;
         if (!place) {
           return null;
@@ -810,16 +877,20 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
             return null;
           }
         }
+        const pinnedSlot = place === "indicator" ? (_d = pageItem.config) == null ? void 0 : _d.pinnedSlot : void 0;
         const enabledBool = await pageItem.isEnabled();
         if (enabledBool === false) {
-          if ((_d = pageItem.config) == null ? void 0 : _d.fillIfBelowMin) {
+          if ((_e = pageItem.config) == null ? void 0 : _e.fillIfBelowMin) {
             const payload2 = await pageItem.getPageItemPayload(true);
-            return { kind: "filler", place, idx, payload: payload2, item: pageItem };
+            return { kind: "filler", place, idx, payload: payload2, item: pageItem, pinnedSlot };
+          }
+          if (pinnedSlot != null) {
+            return { kind: "hidden", place, idx, item: pageItem, pinnedSlot };
           }
           return null;
         }
         const payload = await pageItem.getPageItemPayload();
-        return { kind: "append", place, idx, payload, item: pageItem };
+        return { kind: "append", place, idx, payload, item: pageItem, pinnedSlot };
       })
     );
     const combinedByPlace = {
@@ -843,12 +914,22 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         if (r.place === "indicator") {
           indicatorOverwrite[r.enabledIndex] = r.item;
         }
+      } else if (r.kind === "hidden") {
+        combinedByPlace[r.place].push({
+          idx: r.idx,
+          payload: "",
+          isFiller: false,
+          item: r.item,
+          pinnedSlot: r.pinnedSlot,
+          hidden: true
+        });
       } else {
         combinedByPlace[r.place].push({
           idx: r.idx,
           payload: r.payload,
           isFiller: r.kind === "filler",
-          item: r.item
+          item: r.item,
+          pinnedSlot: r.pinnedSlot
         });
       }
     }
@@ -859,7 +940,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         continue;
       }
       const maxForFill = (_a = Definition.ScreenSaverConst[layout][place].maxEntries[model]) != null ? _a : Definition.ScreenSaverConst[layout][place].maxEntries.eu;
-      const combined = combinedByPlace[place].sort((a, b) => a.idx - b.idx);
+      const candidates = combinedByPlace[place].sort((a, b) => a.idx - b.idx);
+      const combined = candidates.filter((e) => !e.hidden);
       const regularCount = combined.filter((e) => !e.isFiller).length;
       let fillersLeft = Math.max(0, maxForFill - regularCount);
       const slotItems = [];
@@ -878,6 +960,18 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       Object.assign(message.options[place], overwrite[place]);
       if (place === "indicator") {
         Object.assign(slotItems, indicatorOverwrite);
+        const pinned = _Screensaver.placePinnedIndicators(
+          candidates,
+          maxForFill,
+          overwrite.indicator,
+          indicatorOverwrite,
+          this.step
+        );
+        if (pinned) {
+          message.options.indicator = pinned.payloads;
+          slotItems.length = 0;
+          slotItems.push(...pinned.items);
+        }
       }
       let max = Definition.ScreenSaverConst[layout][place].maxEntries[model];
       if (max == null) {

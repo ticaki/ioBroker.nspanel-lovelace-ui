@@ -3042,6 +3042,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     mode={this.props.entry.mode}
                     index={editing?.index ?? 0}
                     count={editing ? this.placeCount(editing.area) : 0}
+                    slots={editing ? this.limit(editing.area) : 0}
                     inline={
                         !!editing &&
                         this.inlineSlot(

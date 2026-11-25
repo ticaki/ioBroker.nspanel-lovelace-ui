@@ -1547,6 +1547,12 @@ export namespace NSPanel {
          * navigates there when the panel can show it
          */
         devicePageName?: string;
+        /**
+         * screensaver indicator: the item keeps this slot (index in the admin list `indicator`, empty places
+         * included) - hidden it leaves the slot empty, the other items skip it (admin `pinned`, config-manager
+         * getScreensaverConfig, screensaver getData)
+         */
+        pinnedSlot?: number;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

@@ -795,6 +795,12 @@ export type ScreensaverItemConfig = {
      */
     fillIfBelowMin?: boolean;
     /**
+     * indicator area only, state and template items: the item keeps its place in the list (its index, empty
+     * places before it included). Hidden it leaves the place empty, the other items do not move up onto it
+     * (ScreensaverEntityPinned). Not set = the items fill the places from the first one on.
+     */
+    pinned?: boolean;
+    /**
      * font of the icon field (ScreensaverEntityIconTextSize), empty = font of the HMI field. Only the screensaver
      * `tiles` (HMI page screensaver5) reads it, in the area indicator ({@link screensaverItemHasIconFont}); state
      * and template items. A value stored on another area is ignored.
