@@ -452,6 +452,12 @@ declare namespace ScriptConfig {
          */
         id: string;
         name?: string;
+        /**
+         * Automatic headline while `name` is empty.
+         * - `"title"`: song title, without title service and device (default)
+         * - `"device"`: always the name of the active device
+         */
+        headlineMode?: 'title' | 'device';
         mediaDevice?: string; //???
         colorMediaIcon?: RGB;
         colorMediaArtist?: RGB;
@@ -859,7 +865,15 @@ declare namespace ScriptConfig {
          */
         ScreensaverEntityLongPressTrigger?: boolean | null;
     };
-    export type ScreenSaverElement = { type: ScreenSaverType } & (
+    export type ScreenSaverElement = {
+        type: ScreenSaverType;
+        /**
+         * indicator only, set by the admin (`pinned` of the item): the item keeps its place in the list
+         * `indicatorScreensaverEntity` (empty places included). Hidden it leaves the slot empty, the other
+         * items skip the slot.
+         */
+        ScreensaverEntityPinned?: boolean;
+    } & (
         | ({
               type: 'script';
               ScreensaverEntity: string;

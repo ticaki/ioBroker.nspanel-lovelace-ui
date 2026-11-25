@@ -89,6 +89,7 @@ export function screensaverItemToScript(
             setScreensaverIndicatorLongPress(element, item.longPress);
         }
         setScreensaverIconTextSize(element, item, area);
+        setScreensaverPinned(element, item, area);
         return element;
     }
     let iconOn = item.iconOn || null;
@@ -161,7 +162,26 @@ export function screensaverItemToScript(
         setScreensaverIndicatorLongPress(element, item.longPress);
     }
     setScreensaverIconTextSize(element, item, area);
+    setScreensaverPinned(element, item, area);
     return element;
+}
+
+/**
+ * The pin of an indicator as the field of the element - the config manager turns it into the slot of the item
+ * (its index in `indicatorScreensaverEntity`, empty places included)
+ *
+ * @param element script or template element, gets the field
+ * @param item stored item
+ * @param area area of the item
+ */
+function setScreensaverPinned(
+    element: ScriptConfig.ScreenSaverElement,
+    item: ScreensaverItemConfig,
+    area: ScreensaverScriptArea,
+): void {
+    if (area === 'indicator' && item.pinned === true) {
+        element.ScreensaverEntityPinned = true;
+    }
 }
 
 /** the field of a script or template element that holds the font of the icon field */

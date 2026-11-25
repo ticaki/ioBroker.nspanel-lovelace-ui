@@ -28,7 +28,8 @@ const scenarios = [
     require('./scenarios/06-screensaver-modes'),
     require('./scenarios/07-popup-notify3'),
     require('./scenarios/08-screensaver-notify'),
-    require('./scenarios/09-battery'),
+    require('./scenarios/09-screensaver-pinned'),
+    require('./scenarios/10-battery'),
 ];
 
 console.log(

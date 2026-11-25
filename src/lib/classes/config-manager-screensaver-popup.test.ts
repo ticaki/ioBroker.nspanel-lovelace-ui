@@ -7,7 +7,8 @@ import { expect } from 'chai';
 import { StatesControler } from '../controller/states-controller';
 import { ConfigManager } from './config-manager';
 import { screensaverItemToScript } from '../configuration/admin-screensaver-item';
-import { isScreensaverPopupChannelRole } from '../types/adminShareConfig';
+import { emptyScreensaverEntry, isScreensaverPopupChannelRole } from '../types/adminShareConfig';
+import { buildScreensaverScriptConfig } from '../configuration/admin-screensaver';
 
 type ObjectDB = Record<string, ioBroker.Object>;
 
@@ -242,5 +243,38 @@ describe('lib/configuration/admin-screensaver-item - long press popup', () => {
         for (const role of ['info', 'socket', 'button', 'gate', 'thermostat', '', undefined]) {
             expect(isScreensaverPopupChannelRole(role), String(role)).to.equal(false);
         }
+    });
+});
+
+describe('lib/classes/config-manager - pinned indicator (admin `pinned`)', () => {
+    it('admin list -> script -> page item: the slot is the index of the admin list, empty places included', async () => {
+        const entry = {
+            ...emptyScreensaverEntry('Pin', 'tiles'),
+            panels: ['NSPanel_1'],
+            indicator: [
+                undefined,
+                { state: `${INFO}.ACTUAL` },
+                { state: `${INFO}.ACTUAL`, pinned: true },
+                undefined,
+                { state: BLIND, template: 'text.window.isOpen', pinned: true },
+            ],
+        };
+        const config = buildScreensaverScriptConfig(entry, 'NSPanel_1');
+        const { configArray } = await manager().getScreensaverConfig(config);
+        const indicators = (configArray.pageItems ?? []).filter(i => i.modeScr === 'indicator');
+        expect(indicators).to.have.length(3);
+        expect(indicators.map(i => i.pinnedSlot)).to.deep.equal([undefined, 2, 4]);
+    });
+
+    it('an element of the left list never gets a slot', async () => {
+        const { configArray } = await manager().getScreensaverConfig({
+            leftScreensaverEntity: [
+                undefined,
+                script({ ScreensaverEntity: `${INFO}.ACTUAL`, ScreensaverEntityPinned: true }),
+            ],
+        } as unknown as ScriptConfig.Config);
+        const left = (configArray.pageItems ?? []).filter(i => i.modeScr === 'left');
+        expect(left).to.have.length(1);
+        expect(left[0].pinnedSlot).to.equal(undefined);
     });
 });

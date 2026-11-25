@@ -26,6 +26,25 @@ async function childNames(adapter: NspanelLovelaceUi, type: 'device' | 'channel'
 }
 
 /**
+ * Last id segments of the states directly below a folder (`<prefix>.<name>`).
+ *
+ * @param adapter Adapter instance.
+ * @param prefix Folder, e.g. `alexa2.0.Echo-Devices.G090XX.Music-Provider`.
+ * @returns The names, sorted and without repeats.
+ */
+async function childStateNames(adapter: NspanelLovelaceUi, prefix: string): Promise<string[]> {
+    const depth = prefix.split('.').length + 1;
+    const view = await adapter.getObjectViewAsync('system', 'state', {
+        startkey: `${prefix}.`,
+        endkey: `${prefix}.香`,
+    });
+    const names = (view?.rows ?? [])
+        .filter(row => row?.id && row.id.split('.').length === depth)
+        .map(row => row.id.split('.').pop() ?? '');
+    return [...new Set(names.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+}
+
+/**
  * Texts of the `common.states` of a state (the spotify lists keep their entries there).
  *
  * @param adapter Adapter instance.
@@ -125,13 +144,17 @@ async function squeezeboxPlaylists(adapter: NspanelLovelaceUi, inst: string): Pr
  * @param id Player id, already checked.
  * @returns Speakers, playlists and favorites; a list the backend cannot read stays empty.
  */
-async function mediaListOptions(adapter: NspanelLovelaceUi, id: string): Promise<Record<MediaListKind, string[]>> {
+export async function mediaListOptions(
+    adapter: NspanelLovelaceUi,
+    id: string,
+): Promise<Record<MediaListKind, string[]>> {
     const parts = id.split('.');
     const inst = parts.slice(0, 2).join('.');
     const options: Record<MediaListKind, string[]> = { speakerList: [], playList: [], favoriteList: [] };
     switch (mediaBackendOf(id)) {
         case 'alexa2':
             options.speakerList = await childNames(adapter, 'device', `${inst}.Echo-Devices`);
+            options.playList = await childStateNames(adapter, `${parts.slice(0, 4).join('.')}.Music-Provider`);
             break;
         case 'sonos': {
             options.speakerList = await childNames(adapter, 'channel', `${inst}.root`);

@@ -4603,12 +4603,16 @@ export class ConfigManager extends BaseClass {
             if (!items || items.length === 0) {
                 return [];
             }
-            const tasks = items.map(item => {
+            const tasks = items.map((item, index) => {
                 if (!item) {
                     return Promise.resolve<NSPanel.PageItemDataItemsOptions | null>(null);
                 }
                 return this.getEntityData(item, mode, config)
                     .then(async result => {
+                        if (mode === 'indicator' && item.ScreensaverEntityPinned === true) {
+                            // the index of the list (empty places included) is the slot - the filter below drops the gaps
+                            result.pinnedSlot = index;
+                        }
                         const popup = mode === 'indicator' ? await this.getScreensaverIndicatorPopup(item) : null;
                         if (popup) {
                             indicatorPopups.set(result, popup);

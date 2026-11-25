@@ -67,6 +67,22 @@ import type { AlexaTimer } from '../classes/alexa-timer';
 type TimerSource = { activeId: string; dataId: string; activeVal: unknown; dataVal: unknown };
 
 /**
+ * an item that wants a slot of a screensaver place (getData): shown (append), filler (hidden, fills free slots) or
+ * hidden pinned indicator (keeps its slot empty)
+ */
+export type ScreensaverSlotCandidate<T = PageItem> = {
+    /** order of the item */
+    idx: number;
+    payload: string;
+    isFiller: boolean;
+    item: T;
+    /** slot of a pinned indicator (page item `pinnedSlot`) */
+    pinnedSlot?: number;
+    /** hidden pinned indicator without filler */
+    hidden?: boolean;
+};
+
+/**
  * true for the config of a screensaver page, including cards of other adapter versions (screensaver4)
  *
  * @param config config of a page
@@ -853,6 +869,82 @@ export class Screensaver extends Page {
     }
 
     /**
+     * The indicator slots with pinned items (admin `pinned`, page item `pinnedSlot`): a pinned item stands on its
+     * slot on every window, hidden it leaves the slot empty (no filler takes it). The other items (shown ones, then
+     * fillers up to the free slots) fill the remaining slots in their order and skip every pinned slot - with more
+     * of them than free slots they page through the free slots (window `step % windows`, windows = ceil(items /
+     * free slots)). A numeric `enabled` (overwrite) wins on its slot of every window. A pin outside the slots
+     * counts as no pin.
+     *
+     * @param candidates shown, filler and hidden pinned items of the place, sorted by their order
+     * @param max slots of the place on this model
+     * @param overwrite payloads of the items with a numeric `enabled`, by slot
+     * @param overwriteItems their page items, by slot
+     * @param step paging step of the screensaver
+     * @returns payloads and page items by slot of the window to send, null without a pin or with an overwrite
+     *          outside the slots (the caller works as without pins)
+     */
+    static placePinnedIndicators<T>(
+        candidates: readonly ScreensaverSlotCandidate<T>[],
+        max: number,
+        overwrite: readonly string[],
+        overwriteItems: readonly (T | undefined)[],
+        step: number = 0,
+    ): { payloads: string[]; items: (T | undefined)[] } | null {
+        const pins = new Map<number, ScreensaverSlotCandidate<T>>();
+        for (const entry of candidates) {
+            const slot = entry.pinnedSlot;
+            if (slot != null && Number.isInteger(slot) && slot >= 0 && slot < max && !pins.has(slot)) {
+                pins.set(slot, entry);
+            }
+        }
+        if (pins.size === 0 || overwrite.length > max) {
+            return null;
+        }
+        const pinnedEntries = new Set(pins.values());
+        const rest = candidates.filter(e => !pinnedEntries.has(e) && !e.hidden);
+        const free = max - pins.size;
+        let fillersLeft = Math.max(0, free - rest.filter(e => !e.isFiller).length);
+        let sequence: ScreensaverSlotCandidate<T>[] = [];
+        for (const entry of rest) {
+            if (!entry.isFiller) {
+                sequence.push(entry);
+            } else if (fillersLeft > 0) {
+                sequence.push(entry);
+                fillersLeft--;
+            }
+        }
+        if (free > 0 && sequence.length > free) {
+            // paging: only the items that are not pinned move through the free slots
+            const windows = Math.ceil(sequence.length / free);
+            const windowIdx = step % windows;
+            sequence = sequence.slice(free * windowIdx, free * (windowIdx + 1));
+        }
+        const payloads: string[] = [];
+        const items: (T | undefined)[] = [];
+        let next = 0;
+        for (let slot = 0; slot < max; slot++) {
+            const pin = pins.get(slot);
+            if (pin) {
+                // a hidden pin (also one that would fill) keeps the slot empty
+                const shown = !pin.hidden && !pin.isFiller;
+                payloads[slot] = shown ? pin.payload : '';
+                items[slot] = shown ? pin.item : undefined;
+            } else if (next < sequence.length) {
+                payloads[slot] = sequence[next].payload;
+                items[slot] = sequence[next].item;
+                next++;
+            } else {
+                payloads[slot] = '';
+                items[slot] = undefined;
+            }
+        }
+        Object.assign(payloads, overwrite);
+        Object.assign(items, overwriteItems);
+        return { payloads, items };
+    }
+
+    /**
      * Build the screensaver message for requested places (order-preserving, parallel).
      *
      * - Runs only for screensaver cards.
@@ -905,6 +997,7 @@ export class Screensaver extends Page {
             idx: number;
             payload: string;
             item: PageItem;
+            pinnedSlot?: number;
         };
         type OverwriteResult = {
             kind: 'overwrite';
@@ -919,8 +1012,17 @@ export class Screensaver extends Page {
             idx: number;
             payload: string;
             item: PageItem;
+            pinnedSlot?: number;
         };
-        type Result = AppendResult | OverwriteResult | FillerResult | null;
+        /** a hidden pinned indicator - keeps its slot empty, nothing else */
+        type HiddenResult = {
+            kind: 'hidden';
+            place: NSPanel.ScreenSaverPlaces;
+            idx: number;
+            item: PageItem;
+            pinnedSlot: number;
+        };
+        type Result = AppendResult | OverwriteResult | FillerResult | HiddenResult | null;
 
         // Collect results in parallel, but tagged with original index
         const results: Result[] = await Promise.all(
@@ -956,27 +1058,30 @@ export class Screensaver extends Page {
                     }
                 }
 
+                // indicator pinned to its slot (admin) - checked against the slots in the build below
+                const pinnedSlot = place === 'indicator' ? pageItem.config?.pinnedSlot : undefined;
+
                 // Skip via boolean enabled=false
                 const enabledBool = await pageItem.isEnabled();
                 if (enabledBool === false) {
                     if (pageItem.config?.fillIfBelowMin) {
                         const payload = await pageItem.getPageItemPayload(true);
-                        return { kind: 'filler', place, idx, payload, item: pageItem };
+                        return { kind: 'filler', place, idx, payload, item: pageItem, pinnedSlot };
+                    }
+                    if (pinnedSlot != null) {
+                        return { kind: 'hidden', place, idx, item: pageItem, pinnedSlot };
                     }
                     return null;
                 }
 
                 // Default: append with original index
                 const payload = await pageItem.getPageItemPayload();
-                return { kind: 'append', place, idx, payload, item: pageItem };
+                return { kind: 'append', place, idx, payload, item: pageItem, pinnedSlot };
             }),
         );
 
         // Apply overwrites and collect appends/fillers grouped by place
-        const combinedByPlace: Record<
-            NSPanel.ScreenSaverPlaces,
-            Array<{ idx: number; payload: string; isFiller: boolean; item: PageItem }>
-        > = {
+        const combinedByPlace: Record<NSPanel.ScreenSaverPlaces, ScreensaverSlotCandidate[]> = {
             indicator: [],
             left: [],
             time: [],
@@ -999,12 +1104,22 @@ export class Screensaver extends Page {
                 if (r.place === 'indicator') {
                     indicatorOverwrite[r.enabledIndex] = r.item;
                 }
+            } else if (r.kind === 'hidden') {
+                combinedByPlace[r.place].push({
+                    idx: r.idx,
+                    payload: '',
+                    isFiller: false,
+                    item: r.item,
+                    pinnedSlot: r.pinnedSlot,
+                    hidden: true,
+                });
             } else {
                 combinedByPlace[r.place].push({
                     idx: r.idx,
                     payload: r.payload,
                     isFiller: r.kind === 'filler',
                     item: r.item,
+                    pinnedSlot: r.pinnedSlot,
                 });
             }
         }
@@ -1022,7 +1137,9 @@ export class Screensaver extends Page {
                 Definition.ScreenSaverConst[layout][place].maxEntries.eu;
 
             // Sort all candidates by original index
-            const combined = combinedByPlace[place].sort((a, b) => a.idx - b.idx);
+            const candidates = combinedByPlace[place].sort((a, b) => a.idx - b.idx);
+            // hidden pinned indicators only keep their slot empty - without the pins they do not exist
+            const combined = candidates.filter(e => !e.hidden);
             const regularCount = combined.filter(e => !e.isFiller).length;
             // How many fillers are needed to reach max
             let fillersLeft = Math.max(0, maxForFill - regularCount);
@@ -1046,6 +1163,19 @@ export class Screensaver extends Page {
             Object.assign(message.options[place], overwrite[place]);
             if (place === 'indicator') {
                 Object.assign(slotItems, indicatorOverwrite);
+                // pinned indicators keep their slot on every window, the others page through the free slots
+                const pinned = Screensaver.placePinnedIndicators(
+                    candidates,
+                    maxForFill,
+                    overwrite.indicator,
+                    indicatorOverwrite,
+                    this.step,
+                );
+                if (pinned) {
+                    message.options.indicator = pinned.payloads;
+                    slotItems.length = 0;
+                    slotItems.push(...pinned.items);
+                }
             }
 
             // Windowing/paging

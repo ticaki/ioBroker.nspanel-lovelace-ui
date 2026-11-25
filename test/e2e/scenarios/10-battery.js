@@ -6,14 +6,14 @@ const { press, toMainPage, lastItem, menuItemAt, protocolCheck } = require('../l
 const { step } = require('../lib/snapshot');
 
 /**
- * Scenario 9: channel of role `battery` as a row of the entities page. The icon follows the charge level (ACTUAL)
+ * Scenario 10: channel of role `battery` as a row of the entities page. The icon follows the charge level (ACTUAL)
  * in steps of ten, the power (POWER) decides the rest: negative = charging (icon with flash, green), positive =
  * discharging (red), exactly 0 = neither (neutral color of the theme). The value is the charge level in percent.
  *
  * @param {import('../lib/context').E2EContext} ctx shared context
  */
 module.exports = ctx => {
-    describe('09 Battery', () => {
+    describe('10 Battery', () => {
         const { IDS, HEADLINES, NAMES } = ctx.config;
         /** position of the battery row on the entities page */
         const ROW = 2;

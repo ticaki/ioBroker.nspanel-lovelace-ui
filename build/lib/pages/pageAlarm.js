@@ -28,7 +28,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageAlarm_exports = {};
 __export(pageAlarm_exports, {
-  PageAlarm: () => PageAlarm
+  PageAlarm: () => PageAlarm,
+  PinLock: () => PinLock
 });
 module.exports = __toCommonJS(pageAlarm_exports);
 var import_Page = require("../classes/Page");
@@ -55,6 +56,52 @@ const PageAlarmMessageDefault = {
   numpad: "disable",
   flashing: "disable"
 };
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+class PinLock {
+  /**
+   * @param timers - adapter timer functions
+   * @param onExpire - called after the lockout is lifted, to refresh the panels
+   */
+  constructor(timers, onExpire) {
+    this.timers = timers;
+    this.onExpire = onExpire;
+  }
+  /** failed attempts since the last correct PIN, not limited */
+  failCount = 0;
+  /** wait time of the running lockout in seconds, as shown on the panel */
+  lockSeconds = 0;
+  timeout = null;
+  /** @returns true while a lockout is running */
+  get locked() {
+    return !!this.timeout;
+  }
+  /**
+   * Count a failed PIN attempt and (re)start the lockout with 2^failCount seconds.
+   * The timer duration is capped to the largest value setTimeout accepts (2^31-1 ms),
+   * the counter itself is not limited.
+   */
+  fail() {
+    this.clear();
+    this.failCount++;
+    const delayMs = Math.min(2 ** this.failCount * 1e3, MAX_TIMEOUT_MS);
+    this.lockSeconds = Math.floor(delayMs / 1e3);
+    this.timeout = this.timers.setTimeout(() => {
+      this.timeout = null;
+      this.onExpire();
+    }, delayMs);
+  }
+  /** correct PIN: reset the counter */
+  reset() {
+    this.failCount = 0;
+  }
+  /** stop a running lockout timer (unload) */
+  clear() {
+    if (this.timeout) {
+      this.timers.clearTimeout(this.timeout);
+      this.timeout = null;
+    }
+  }
+}
 const alarmStates = ["disarmed", "armed", "arming", "pending", "triggered"];
 class PageAlarm extends import_Page.Page {
   status = "armed";
@@ -119,8 +166,8 @@ class PageAlarm extends import_Page.Page {
     this.delayUpdate();
   }
   pin = "0";
-  failCount = 0;
-  pinFailTimeout = null;
+  /** own PIN lockout of a page without shared status */
+  localPinLock;
   constructor(config, options) {
     var _a, _b;
     super(config, options);
@@ -237,10 +284,10 @@ class PageAlarm extends import_Page.Page {
     message.headline = (_a = data.headline && await data.headline.getTranslatedString()) != null ? _a : this.name;
     message.navigation = this.getNavigation();
     if (this.alarmType === "alarm") {
-      if (this.pinFailTimeout) {
+      if (this.pinLock.locked) {
         message.button1 = `${this.library.getTranslation("locked_for")}`;
         message.status1 = "";
-        message.button2 = ` ${2 ** this.failCount} s`;
+        message.button2 = ` ${this.pinLock.lockSeconds} s`;
         message.status2 = "";
         message.button3 = "";
         message.status3 = "";
@@ -304,10 +351,10 @@ class PageAlarm extends import_Page.Page {
         message.flashing = "enable";
       }
     } else if (this.alarmType === "unlock") {
-      if (this.pinFailTimeout) {
+      if (this.pinLock.locked) {
         message.button1 = `${this.library.getTranslation("locked_for")}`;
         message.status1 = "";
-        message.button2 = ` ${2 ** this.failCount} s`;
+        message.button2 = ` ${this.pinLock.lockSeconds} s`;
         message.status2 = "";
         message.button3 = "";
         message.status3 = "";
@@ -447,22 +494,25 @@ class PageAlarm extends import_Page.Page {
       if (this.status === "triggered") {
         return;
       }
-      if (this.pin && this.pin != value) {
+      const pinLock = this.pinLock;
+      if (this.pin && pinLock.locked) {
+        pinLock.fail();
         this.log.warn(
-          `Wrong pin entered. try ${++this.failCount}! Delay next attempt by ${2 ** this.failCount} seconds`
+          `PIN attempt during lockout rejected. try ${pinLock.failCount}! Delay next attempt by ${pinLock.lockSeconds} seconds`
         );
-        this.pinFailTimeout = this.adapter.setTimeout(
-          async () => {
-            this.pinFailTimeout = null;
-            void this.update();
-          },
-          2 ** this.failCount * 1e3
-        );
-        await this.update();
+        await this.updatePinLockPages();
         return;
       }
-      this.failCount = 0;
-      this.log.debug(`Alarm event ${button} value: ${value}`);
+      if (this.pin && this.pin != value) {
+        pinLock.fail();
+        this.log.warn(
+          `Wrong pin entered. try ${pinLock.failCount}! Delay next attempt by ${pinLock.lockSeconds} seconds`
+        );
+        await this.updatePinLockPages();
+        return;
+      }
+      pinLock.reset();
+      this.log.debug(`Alarm event ${button}`);
       switch (button) {
         case "A1":
         case "A2":
@@ -523,6 +573,32 @@ class PageAlarm extends import_Page.Page {
       }
     }
   }
+  /**
+   * PIN lockout of this page: shared by all panels for a page with shared status, otherwise its own.
+   *
+   * @returns the lockout state to use
+   */
+  get pinLock() {
+    if (this.isGlobal) {
+      return this.basePanel.controller.getGlobalPinLock(this.name);
+    }
+    if (!this.localPinLock) {
+      this.localPinLock = new PinLock(this.adapter, () => void this.update());
+    }
+    return this.localPinLock;
+  }
+  /**
+   * Show the changed lockout: on all panels for a page with shared status, otherwise this page.
+   *
+   * @returns Promise that resolves after the update
+   */
+  async updatePinLockPages() {
+    if (this.isGlobal) {
+      await this.basePanel.controller.updateGlobalAlarmPages(this.name);
+    } else {
+      await this.update();
+    }
+  }
   delayUpdate() {
     if (this.updatePanelTimeout) {
       this.adapter.clearTimeout(this.updatePanelTimeout);
@@ -540,19 +616,18 @@ class PageAlarm extends import_Page.Page {
     );
   }
   async delete() {
+    var _a;
     if (this.updatePanelTimeout) {
       this.adapter.clearTimeout(this.updatePanelTimeout);
       this.updatePanelTimeout = null;
     }
-    if (this.pinFailTimeout) {
-      this.adapter.clearTimeout(this.pinFailTimeout);
-      this.pinFailTimeout = null;
-    }
+    (_a = this.localPinLock) == null ? void 0 : _a.clear();
     await super.delete();
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageAlarm
+  PageAlarm,
+  PinLock
 });
 //# sourceMappingURL=pageAlarm.js.map

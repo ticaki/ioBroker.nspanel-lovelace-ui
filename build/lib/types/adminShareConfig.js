@@ -79,6 +79,7 @@ __export(adminShareConfig_exports, {
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
   emptyThermoEntry: () => emptyThermoEntry,
+  findAlexaPlaylistState: () => findAlexaPlaylistState,
   findChartEntryForScript: () => findChartEntryForScript,
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
@@ -97,6 +98,7 @@ __export(adminShareConfig_exports, {
   isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
   isMediaBackend: () => isMediaBackend,
+  isMediaHeadlineMode: () => isMediaHeadlineMode,
   isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
   isPChartRangeKey: () => isPChartRangeKey,
   isPageLinkEntry: () => isPageLinkEntry,
@@ -143,6 +145,7 @@ __export(adminShareConfig_exports, {
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
+  parseAlexaPlaylistEntry: () => parseAlexaPlaylistEntry,
   parseMediaPlayerDefinitions: () => parseMediaPlayerDefinitions,
   pchartDefaults: () => pchartDefaults,
   pchartRangeKeys: () => pchartRangeKeys,
@@ -1284,6 +1287,9 @@ function emptyThermoEntry(uniqueName) {
     alwaysOn: "none"
   };
 }
+function isMediaHeadlineMode(value) {
+  return value === "title" || value === "device";
+}
 const mediaBackends = ["alexa2", "sonos", "spotify-premium", "mpd", "squeezeboxrpc"];
 const mediaListKinds = ["speakerList", "playList", "favoriteList"];
 const mediaBackendFeatures = {
@@ -1331,6 +1337,19 @@ const mediaBackendFeatures = {
 function mediaBackendOf(id) {
   const name = (id != null ? id : "").trim().split(".")[0];
   return mediaBackends.includes(name) ? name : void 0;
+}
+function parseAlexaPlaylistEntry(entry) {
+  const sep = entry.indexOf(".");
+  if (sep < 0) {
+    return void 0;
+  }
+  const state = entry.slice(0, sep).trim();
+  const label = entry.slice(sep + 1).trim();
+  return state && label ? { state, label } : void 0;
+}
+function findAlexaPlaylistState(stateIds, token) {
+  var _a;
+  return (_a = stateIds.find((s) => s.split(".").pop() === token)) != null ? _a : stateIds.find((s) => s.includes(token));
 }
 const mediaPlayerObjectTypes = ["device", "channel", "folder", "state"];
 function isMediaPlayerObjectType(value) {
@@ -2326,6 +2345,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   emptyThermo2Circuit,
   emptyThermo2Entry,
   emptyThermoEntry,
+  findAlexaPlaylistState,
   findChartEntryForScript,
   findPowerEntryForScript,
   formatEntryNumber,
@@ -2344,6 +2364,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isLongPressCard,
   isMainPageEntry,
   isMediaBackend,
+  isMediaHeadlineMode,
   isNameOnlyPopupTitle,
   isPChartRangeKey,
   isPageLinkEntry,
@@ -2390,6 +2411,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
+  parseAlexaPlaylistEntry,
   parseMediaPlayerDefinitions,
   pchartDefaults,
   pchartRangeKeys,

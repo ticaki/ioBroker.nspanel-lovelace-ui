@@ -51,6 +51,10 @@ const IDS = {
     batteryPower: `${BASE}.battery.POWER`,
     /** switches the notification of the admin list (scenario 08) - not in STATES, so not in the snapshots */
     notifyAdmin: `${BASE}.notifyAdmin`,
+    /** shows the pinned indicator (scenario 09) - not in STATES, so not in the snapshots */
+    pinShown: `${BASE}.pinShown`,
+    /** shows the two indicators behind the pinned one (scenario 09) - not in STATES */
+    pinExtra: `${BASE}.pinExtra`,
 };
 
 /** display names - the tests find the items of a page by them */
@@ -119,6 +123,8 @@ const OBJECTS = {
     [IDS.batteryActual]: state('charge level', 'number', 'value.battery', false, { min: 0, max: 100, unit: '%' }),
     [IDS.batteryPower]: state('power', 'number', 'value.power', false, { unit: 'W' }),
     [IDS.notifyAdmin]: state('Notify admin', 'boolean', 'switch', true),
+    [IDS.pinShown]: state('Pin shown', 'boolean', 'switch', true),
+    [IDS.pinExtra]: state('Pin extra', 'boolean', 'switch', true),
 };
 
 /** start values of the test states */
@@ -144,7 +150,9 @@ const STATES = {
  */
 const EXTRA_STATES = {
     [IDS.notifyAdmin]: false,
-    // battery (scenario 09): half full, neither charging nor discharging
+    [IDS.pinShown]: false,
+    [IDS.pinExtra]: false,
+    // battery (scenario 10): half full, neither charging nor discharging
     [IDS.batteryActual]: 54,
     [IDS.batteryPower]: 0,
 };
@@ -230,6 +238,12 @@ const SCREENSAVER = {
     windowIcons: { on: 'window-open', off: 'window-closed' },
     /** colors of the window indicator */
     windowColors: { on: '#ff0000', off: '#00ff00' },
+    /**
+     * pinned indicator (scenario 09): index 3 of the admin list (index 2 is an empty place), behind it two items
+     * that are not pinned. All three are hidden at the start, so the other scenarios see the two indicators only.
+     */
+    pinSlot: 3,
+    pinIcons: { pinned: 'pin', extraA: 'alpha-a-box', extraB: 'alpha-b-box' },
 };
 
 /** `native.screensaverConfig`: one admin screensaver for both panels, all areas used */
@@ -264,6 +278,11 @@ const SCREENSAVER_CONFIG = [
                 colorOn: SCREENSAVER.windowColors.on,
                 colorOff: SCREENSAVER.windowColors.off,
             },
+            // an empty place, then the pinned item on index 3 (SCREENSAVER.pinSlot)
+            null,
+            { state: IDS.pinShown, iconOn: SCREENSAVER.pinIcons.pinned, enabled: IDS.pinShown, pinned: true },
+            { state: IDS.pinExtra, iconOn: SCREENSAVER.pinIcons.extraA, enabled: IDS.pinExtra },
+            { state: IDS.pinExtra, iconOn: SCREENSAVER.pinIcons.extraB, enabled: IDS.pinExtra },
         ],
         weatherEntity: '',
         rotationTime: 0,

@@ -17,6 +17,7 @@ import { getPageSqueezebox } from './tools/getSqueezebox';
 import { PageItem } from './pageItem';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { NSPanel } from '../types/NSPanel';
+import { mediaHeadline } from './media-headline';
 type MediaServiceName = 'alexa2' | 'spotify-premium' | 'mpd' | 'sonos' | 'squeezeboxrpc' | '';
 
 function isMediaServiceName(name: string | undefined): name is MediaServiceName {
@@ -388,42 +389,21 @@ export class PageMedia extends PageMenu {
             }
         }
 
-        // Headline: fallback to playerName if needed
+        // Headline: own text of the page, otherwise built from title or active device
         {
             const v = item.data.headline && (await item.data.headline.getString());
             let headline = v ?? '';
 
             if (!headline) {
-                let suffix = title;
-
-                if (!suffix && this.currentItem.ident) {
-                    const first = this.currentItem.ident.split('.')[0];
-                    switch (first) {
-                        case 'alexa2':
-                            suffix = 'Alexa';
-                            break;
-                        case 'spotify-premium':
-                            suffix = 'Spotify';
-                            break;
-                        case 'mpd':
-                            suffix = 'MPD';
-                            break;
-                        case 'sonos':
-                            suffix = 'Sonos';
-                            break;
-                        case 'squeezeboxrpc':
-                            suffix = 'Squeezebox';
-                            break;
-                        default:
-                            suffix = first;
-                            break;
-                    }
-                    if (!this.playerName && this.originalName) {
-                        suffix += `: ${this.originalName}`;
-                    }
-                }
-
-                headline = this.playerName ? `${this.playerName}: ${suffix}` : suffix;
+                const ident = item.ident ?? '';
+                headline = mediaHeadline({
+                    mode: this.config.headlineMode,
+                    title,
+                    ident,
+                    playerName: this.playerName,
+                    originalName: this.originalName,
+                    deviceName: index === 0 ? this.originalName : (this.playerNameList[ident] ?? ''),
+                });
             }
             message.headline = headline;
         }
@@ -933,6 +913,9 @@ export class PageMedia extends PageMenu {
         }
 
         gridItem.config.card = 'cardMedia';
+        if (page.media.headlineMode === 'device') {
+            gridItem.config.headlineMode = 'device';
+        }
 
         if (page.media.id.startsWith('spotify-premium.')) {
             return await getPageSpotify(configManager, page, gridItem, messages, justCheck);

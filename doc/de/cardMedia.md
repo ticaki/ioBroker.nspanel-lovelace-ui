@@ -101,6 +101,11 @@ Sobald eine ID eingetragen ist, fragt der Editor den Adapter. Der prüft die ID 
 
 **Überschrift** (Platzhalter *leer = Titel des Songs*) ist die Kopfzeile der Karte am Panel. Bleibt sie leer, baut der Adapter die Zeile selbst: aus dem Namen des Players und dem Titel des laufenden Songs, und wenn es keinen gibt, aus dem Namen des Dienstes (`Alexa`, `Sonos`, `Spotify`, `MPD`, `Squeezebox`).
 
+**Automatische Überschrift** legt fest, was der Adapter bei leerer **Überschrift** zeigt; ist **Überschrift** ausgefüllt, ist die Auswahl ausgegraut und ohne Wirkung:
+
+- **Titel / aktives Gerät** (Standard): wie oben beschrieben, Songtitel bzw. Dienst und Gerät.
+- **Aktives Gerät**: immer nur der Name des gerade aktiven Geräts, unabhängig vom Titel – zuerst der eingestellte Player, nach dem Umschalten über die Lautsprecherliste das gewählte Gerät. Bei Sonos und Squeezebox ist es das Gerät, das die Gruppe steuert (Coordinator bzw. SyncMaster). Hat das Gerät keinen Namen, steht dort der Name des Dienstes.
+
 ## 4. Farben
 
 <img alt="Dialog Farben mit Titel-Zeile, Interpret-Zeile und Ein/Aus-Knopf" src="../Pictures/cardMedia/media-04-farben.png" width="100%"/>
