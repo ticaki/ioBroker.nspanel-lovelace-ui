@@ -6,6 +6,7 @@ import {
     buildScrollingText,
     deepAssign,
     formatHMS,
+    formatInSelText,
     getIconEntryValue,
     getInternalDefaults,
     getPayload,
@@ -211,6 +212,29 @@ describe('lib/const/tools', () => {
         });
         it('returns empty string unchanged', () => {
             expect(insertLinebreak('', 5)).to.equal('');
+        });
+    });
+
+    describe('formatInSelText', () => {
+        it('returns error for null and undefined', () => {
+            expect(formatInSelText(null)).to.equal('error');
+            expect(formatInSelText(undefined)).to.equal('error');
+        });
+        it('returns an empty string for an empty value', () => {
+            expect(formatInSelText('')).to.equal('');
+        });
+        it('returns an empty string for an empty array or an array of empty strings', () => {
+            expect(formatInSelText([])).to.equal('');
+            expect(formatInSelText([''])).to.equal('');
+            expect(formatInSelText(['', ''])).to.equal('');
+        });
+        it('keeps a short text on the first line', () => {
+            expect(formatInSelText('Radio')).to.equal('Radio\r\n');
+        });
+        it('splits a longer text into two lines and truncates line 2', () => {
+            expect(formatInSelText('Hello World')).to.equal('Hello World\r\n');
+            expect(formatInSelText('My_Playlist_Number_one')).to.equal('My Playlist\r\nNumber one');
+            expect(formatInSelText('Short wordsandmoreword ending')).to.equal('Short\r\nwordsandm...');
         });
     });
 

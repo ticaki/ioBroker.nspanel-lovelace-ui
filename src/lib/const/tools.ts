@@ -1033,7 +1033,7 @@ export const setHuefromRGB = async (item: NSPanel.PageItemLightDataItems['data']
  * @param text {string | string[] | null | undefined} Eingabetext
  */
 export function formatInSelText(text: string | string[] | null | undefined): string {
-    if (!text) {
+    if (text === null || text === undefined) {
         return 'error';
     }
 
@@ -1041,6 +1041,11 @@ export function formatInSelText(text: string | string[] | null | undefined): str
     const words = Array.isArray(text)
         ? text
         : text.replaceAll('?', ' ').replaceAll('__', '_').replaceAll('_', ' ').split(/\s+/);
+
+    // Leerer Wert bzw. leerer Listeneintrag bleibt leer (sonst entstünde "\r\n" aus den leeren Wörtern)
+    if (words.every(word => word === '')) {
+        return '';
+    }
 
     const MAX_LINE = 12;
     const MAX_LINE2 = 12;
