@@ -13,6 +13,8 @@ Contents:
 - [Colors](#4-colors)
 - [Volume: range and presets](#5-volume-range-and-presets)
 - [Standard items of the player](#6-standard-items-of-the-player)
+  - [Order by drag and drop](#order-by-drag-and-drop)
+  - [Timer (Alexa only)](#timer-alexa-only)
 - [The three lists: speakers, playlists, favorites](#7-the-three-lists-speakers-playlists-favorites)
 - [Own page items](#8-own-page-items)
 - [Paging of the option bar](#9-paging-of-the-option-bar)
@@ -44,7 +46,7 @@ Below the preview sits the hint that sums up the way of working: *„Similar to 
 | **Arrows at the top left/right** | The navigation arrows of the panel, given by the panel. |
 | **Places of the bar** | Items with a **lock** are standard items of the player (*standard item of the player - click to change*). Items with a **blue border** are own page items. A place with **+** is free and creates a new page item. |
 | **Page x/y** with arrows | Appears as soon as the items do not fit into one bar. |
-| **Standard items of the player** | The chips below the preview: all items the chosen backend knows – including the switched off ones (struck through). A click opens the settings of the item. |
+| **Standard items of the player** | The chips below the preview: all items the chosen backend knows – including the switched off ones (struck through). A click opens the settings of the item, dragging changes their [order](#order-by-drag-and-drop). |
 | **Add page item** | New own page item, the same as clicking a free place. |
 | **Player** / **Colors** / **Volume** | The same three dialogs as buttons. |
 
@@ -135,7 +137,7 @@ An empty name field is marked red and blocks **Apply**. The values are rounded t
 
 <img alt="The chips of the standard items below the preview, a switched off one struck through" src="../Pictures/cardMedia/media-06-standardelemente.png" width="100%"/>
 
-Which items there are and in which order they go into the bar is decided by the player – not by the order in the editor:
+Which items there are is decided by the player. Without an own order they go into the bar in this order; it can be changed by [drag and drop](#order-by-drag-and-drop):
 
 | Backend | Standard items in the order of the adapter |
 |---|---|
@@ -144,6 +146,15 @@ Which items there are and in which order they go into the bar is decided by the 
 | **Spotify** | Offline indicator · Speakers · Playlists · Track list · Clock · Volume presets · Repeat |
 | **MPD** | Offline indicator · Repeat · Clock · Volume presets · Crossfade |
 | **Squeezebox (LMS)** | Offline indicator · Speakers · Favorites · Playlists · Clock · Volume presets · Track list · Repeat |
+
+### Order by drag and drop
+
+The chips below the preview can be **dragged** (*„Click to change, drag to move"*): dropping a chip on another one puts it at that place. The bar on the panel and the preview follow this order.
+
+- **Switched off** items can be moved as well – when they are switched on later they are already at the wanted place.
+- Next to the heading **Standard items of the player** the button **Default order** appears then; it restores the order of the adapter (table above).
+- The own page items stay **behind** the standard items.
+- In the script the field is `media.itemsOrder`, a list of the names as in `deactivateDefaultItems`, e.g. `['clock', 'speakerList']`. Unknown or repeated names are skipped, missing items follow in the order of the adapter.
 
 ### Settings of an item
 
@@ -175,7 +186,7 @@ The **Timer** is the only standard item that is **off by default**: click its ch
 - It always belongs to the Echo device the page **currently controls**: after a change through the **Speakers** list it shows and controls the timers of the new device. Timers running on the previous Echo keep running there.
 - An own device cannot be chosen – create a page item **Alexa timer** for that.
 - Requirement as for the page item: switch on the option **Automatically query activity on device interaction** in the alexa2 instance, see [Requirements](popupTimer#requirements).
-- It is the last standard item of the bar; when more items are visible than the bar has places (5 on the NSPanel), the bar pages.
+- Without an own order it is the last standard item of the bar; when more items are visible than the bar has places (5 on the NSPanel), the bar [pages](#9-paging-of-the-option-bar). By [drag and drop](#order-by-drag-and-drop) it can be moved to the front.
 
 > The **Offline indicator** takes no place in the preview: *„Only appears while the player is not reachable - it takes no place otherwise."* It can only be seen as a chip below the preview.
 

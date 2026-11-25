@@ -208,7 +208,7 @@ Was Liste und Popup darstellen können – für alle Arten gleich:
 
 ## 7. Alexa-Timer (alexa2)
 
-Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen – oder einen seiner **Wecker** (siehe [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts)). Beides kommt aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht. Der Bildschirmschoner kennt nur die Timer, keine Wecker; seine Quelle **Alexa-Timer (alexa2)** steht unter [Quelle: Alexa-Timer (alexa2)](screensaver#quelle-alexa-timer-alexa2).
+Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen – oder einen seiner **Wecker** (siehe [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts)). Beides kommt aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht. Der Bildschirmschoner kennt nur die Timer, keine Wecker; seine Quelle **Alexa-Timer (alexa2)** steht unter [Quelle: Alexa-Timer (alexa2)](screensaver#quelle-alexa-timer-alexa2). Auf einer Mediaplayer-Seite mit alexa2 gibt es dafür auch das Toolbar-Element **Timer**, das dem gerade gesteuerten Echo folgt, siehe [Mediaplayer – Timer (nur Alexa)](cardMedia#timer-nur-alexa).
 
 ### Schnellstart: Alexa-Timer als Pageitem
 

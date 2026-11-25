@@ -32,6 +32,7 @@ __export(getSonos_exports, {
 });
 module.exports = __toCommonJS(getSonos_exports);
 var import_Color = require("../../const/Color");
+var import_mediaToolbar = require("./mediaToolbar");
 var tools = __toESM(require("../../const/tools"));
 async function getPageSonos(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
@@ -280,8 +281,9 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
+  const toolbar = [];
   if (!((_i = page.media.deactivateDefaultItems) == null ? void 0 : _i.online)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "online", {
       role: "",
       type: "text",
       dpInit: "",
@@ -335,7 +337,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     arr2 = arr2.concat(list != null ? list : []);
     arr2 = [...new Set(arr2.filter(Boolean))];
     if (arr2.length > 1) {
-      gridItem.pageItems.push({
+      (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "speakerList", {
         role: "SonosSpeaker",
         type: "button",
         data: {
@@ -376,7 +378,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     }
   }
   if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.favoriteList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "favoriteList", {
       role: "2valuesIsValue",
       type: "input_sel",
       dpInit: "",
@@ -438,7 +440,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.playList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "playList", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -474,7 +476,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_s = page.media.deactivateDefaultItems) == null ? void 0 : _s.clock)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "clock", {
       template: "text.clock",
       dpInit: "",
       data: {
@@ -487,7 +489,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (page.media.volumePresets) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "volumePresets", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -532,7 +534,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (page.media.volumePresets) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "volumePresets", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -577,7 +579,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (((_F = page.media.deactivateDefaultItems) == null ? void 0 : _F.trackList) !== true) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "trackList", {
       role: "spotify-tracklist",
       type: "input_sel",
       dpInit: "",
@@ -642,7 +644,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     if (tempOff && tempOff.type === "const") {
       colorOff = tempOff.constVal;
     }
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "repeat", {
       role: "repeatValue",
       type: "button",
       dpInit: "",
@@ -722,7 +724,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_K = page.media.deactivateDefaultItems) == null ? void 0 : _K.crossfade)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "crossfade", {
       role: "",
       type: "button",
       dpInit: "",
@@ -756,6 +758,7 @@ async function getPageSonos(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
+  gridItem.pageItems.push(...(0, import_mediaToolbar.orderMediaToolbarItems)(toolbar, page.media.itemsOrder));
   return { gridItem, messages };
 }
 // Annotate the CommonJS export names for ESM import in node:

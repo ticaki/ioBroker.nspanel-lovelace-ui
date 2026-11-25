@@ -44,7 +44,7 @@ Two checkboxes at the head of the dialog decide which kind of element you get:
 
 #### Kind of item: Standard or Alexa timer
 
-On pages with page items the **Kind of item** stands at the very top. **Standard (channel, custom button, navigation)** is everything this section describes. **Alexa timer** turns the item into a timer that shows the timers of an Echo device – instead of the channel field there are **alexa2 instance** and **Echo device**, plus **Show** (**Timer** or **Alarm**, for an alarm also **Which alarm**), name, icons and colours. With **Is a navigation** ticked, **Alexa timer** is locked. Details under [timer popup](popupTimer#7-alexa-timer-alexa2).
+On pages with page items the **Kind of item** stands at the very top. **Standard (channel, custom button, navigation)** is everything this section describes. **Alexa timer** turns the item into a timer that shows the timers of an Echo device – instead of the channel field there are **alexa2 instance** and **Echo device**, plus **Show** (**Timer** or **Alarm**, for an alarm also **Which alarm**), name, icons and colours. With **Is a navigation** ticked, **Alexa timer** is locked. Details under [timer popup](popupTimer#7-alexa-timer-alexa2). On a media page with alexa2 there is also the toolbar item **Timer** for this, which follows the Echo the page currently controls, see [Media page – Timer (Alexa only)](cardMedia#timer-alexa-only).
 
 #### The target page
 

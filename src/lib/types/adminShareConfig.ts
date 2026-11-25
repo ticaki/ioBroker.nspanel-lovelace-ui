@@ -3076,6 +3076,65 @@ export type MediaToolbarItem =
     | 'crossfade'
     | 'timer';
 
+/** all standard items of the bar, see {@link MediaToolbarItem} */
+export const mediaToolbarItemNames: readonly MediaToolbarItem[] = [
+    'reminder',
+    'online',
+    'speakerList',
+    'favoriteList',
+    'playList',
+    'equalizer',
+    'clock',
+    'volumePresets',
+    'trackList',
+    'repeat',
+    'crossfade',
+    'timer',
+];
+
+/**
+ * @param value any value
+ * @returns true for the name of a standard item of the bar
+ */
+export function isMediaToolbarItem(value: unknown): value is MediaToolbarItem {
+    return typeof value === 'string' && mediaToolbarItemNames.some(item => item === value);
+}
+
+/**
+ * Order of the standard items of a backend: the known, not repeated entries of `order` first, then the missing items
+ * in their default order. Unknown and repeated entries are ignored, a missing or empty order is the default order.
+ *
+ * @param order stored order (`toolbarOrder` of the admin, `itemsOrder` of the script), may be anything
+ * @param items standard items of the backend in their default order
+ * @returns every item of `items` exactly once
+ */
+export function mediaToolbarOrder(order: unknown, items: readonly MediaToolbarItem[]): MediaToolbarItem[] {
+    const out: MediaToolbarItem[] = [];
+    if (Array.isArray(order)) {
+        for (const entry of order) {
+            if (isMediaToolbarItem(entry) && items.includes(entry) && !out.includes(entry)) {
+                out.push(entry);
+            }
+        }
+    }
+    return [...out, ...items.filter(item => !out.includes(item))];
+}
+
+/**
+ * The stored order of the standard items as it is kept: undefined when it is the default order of the backend.
+ *
+ * @param order stored order, may be anything
+ * @param items standard items of the backend in their default order
+ * @returns the complete order, undefined for the default order
+ */
+export function mediaToolbarOrderToStore(
+    order: unknown,
+    items: readonly MediaToolbarItem[],
+): MediaToolbarItem[] | undefined {
+    const sorted = mediaToolbarOrder(order, items);
+    return sorted.every((item, i) => item === items[i]) ? undefined : sorted;
+}
+
 /** standard items that are off until they are switched on (`activateDefaultItems` of the script) */
 export type MediaOptInToolbarItem = Extract<MediaToolbarItem, 'timer'>;
 export const mediaOptInToolbarItems: readonly MediaOptInToolbarItem[] = ['timer'];
@@ -3387,6 +3446,8 @@ export type MediaEntry = {
     colorMediaTitle?: string;
     /** settings of the standard items, missing item = adapter default */
     toolbar?: Partial<Record<MediaToolbarItem, MediaToolbarConfig>>;
+    /** order of the standard items in the bar (drag and drop in the editor), missing = order of the backend */
+    toolbarOrder?: MediaToolbarItem[];
     speakerList?: string[];
     playList?: string[];
     favoriteList?: string[];
@@ -3414,7 +3475,7 @@ export function emptyMediaEntry(uniqueName: string): MediaEntry {
 }
 
 /**
- * Standard items a media entry shows on the panel, in their order.
+ * Standard items a media entry shows on the panel, in their order (`toolbarOrder`, otherwise that of the backend).
  *
  * The online item is only shown by the adapter while the player is offline, all others as long as
  * they are not switched off (the opt-in items only when switched on); volumePresets needs at least one preset.
@@ -3424,7 +3485,7 @@ export function emptyMediaEntry(uniqueName: string): MediaEntry {
  * @returns The visible standard items.
  */
 export function mediaVisibleToolbarItems(entry: MediaEntry, backend: MediaBackend): MediaToolbarItem[] {
-    return mediaBackendFeatures[backend].items.filter(item =>
+    return mediaToolbarOrder(entry.toolbarOrder, mediaBackendFeatures[backend].items).filter(item =>
         item === 'volumePresets'
             ? (entry.volumePresets ?? []).length > 0
             : isMediaToolbarItemOn(item, entry.toolbar?.[item]),

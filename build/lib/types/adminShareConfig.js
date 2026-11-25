@@ -100,6 +100,7 @@ __export(adminShareConfig_exports, {
   isMediaBackend: () => isMediaBackend,
   isMediaHeadlineMode: () => isMediaHeadlineMode,
   isMediaOptInToolbarItem: () => isMediaOptInToolbarItem,
+  isMediaToolbarItem: () => isMediaToolbarItem,
   isMediaToolbarItemOn: () => isMediaToolbarItemOn,
   isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
   isPChartRangeKey: () => isPChartRangeKey,
@@ -125,6 +126,9 @@ __export(adminShareConfig_exports, {
   mediaPlayerDefinitionOf: () => mediaPlayerDefinitionOf,
   mediaPlayerDefinitions: () => mediaPlayerDefinitions,
   mediaPlayerIdOf: () => mediaPlayerIdOf,
+  mediaToolbarItemNames: () => mediaToolbarItemNames,
+  mediaToolbarOrder: () => mediaToolbarOrder,
+  mediaToolbarOrderToStore: () => mediaToolbarOrderToStore,
   mediaVisibleToolbarItems: () => mediaVisibleToolbarItems,
   mediaVolumeDefaults: () => mediaVolumeDefaults,
   menuCardGridColumns: () => menuCardGridColumns,
@@ -1294,6 +1298,38 @@ function isMediaHeadlineMode(value) {
   return value === "title" || value === "device";
 }
 const mediaBackends = ["alexa2", "sonos", "spotify-premium", "mpd", "squeezeboxrpc"];
+const mediaToolbarItemNames = [
+  "reminder",
+  "online",
+  "speakerList",
+  "favoriteList",
+  "playList",
+  "equalizer",
+  "clock",
+  "volumePresets",
+  "trackList",
+  "repeat",
+  "crossfade",
+  "timer"
+];
+function isMediaToolbarItem(value) {
+  return typeof value === "string" && mediaToolbarItemNames.some((item) => item === value);
+}
+function mediaToolbarOrder(order, items) {
+  const out = [];
+  if (Array.isArray(order)) {
+    for (const entry of order) {
+      if (isMediaToolbarItem(entry) && items.includes(entry) && !out.includes(entry)) {
+        out.push(entry);
+      }
+    }
+  }
+  return [...out, ...items.filter((item) => !out.includes(item))];
+}
+function mediaToolbarOrderToStore(order, items) {
+  const sorted = mediaToolbarOrder(order, items);
+  return sorted.every((item, i) => item === items[i]) ? void 0 : sorted;
+}
 const mediaOptInToolbarItems = ["timer"];
 function isMediaOptInToolbarItem(item) {
   return item === "timer";
@@ -1442,7 +1478,7 @@ function emptyMediaEntry(uniqueName) {
   };
 }
 function mediaVisibleToolbarItems(entry, backend) {
-  return mediaBackendFeatures[backend].items.filter(
+  return mediaToolbarOrder(entry.toolbarOrder, mediaBackendFeatures[backend].items).filter(
     (item) => {
       var _a, _b;
       return item === "volumePresets" ? ((_a = entry.volumePresets) != null ? _a : []).length > 0 : isMediaToolbarItemOn(item, (_b = entry.toolbar) == null ? void 0 : _b[item]);
@@ -2386,6 +2422,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isMediaBackend,
   isMediaHeadlineMode,
   isMediaOptInToolbarItem,
+  isMediaToolbarItem,
   isMediaToolbarItemOn,
   isNameOnlyPopupTitle,
   isPChartRangeKey,
@@ -2411,6 +2448,9 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   mediaPlayerDefinitionOf,
   mediaPlayerDefinitions,
   mediaPlayerIdOf,
+  mediaToolbarItemNames,
+  mediaToolbarOrder,
+  mediaToolbarOrderToStore,
   mediaVisibleToolbarItems,
   mediaVolumeDefaults,
   menuCardGridColumns,

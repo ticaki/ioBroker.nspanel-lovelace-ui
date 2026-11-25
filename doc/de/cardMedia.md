@@ -13,6 +13,8 @@ Inhalt:
 - [Farben](#4-farben)
 - [Lautstärke: Bereich und Voreinstellungen](#5-lautstärke-bereich-und-voreinstellungen)
 - [Standard-Elemente des Players](#6-standard-elemente-des-players)
+  - [Reihenfolge per Drag-and-drop](#reihenfolge-per-drag-and-drop)
+  - [Timer (nur Alexa)](#timer-nur-alexa)
 - [Die drei Listen: Lautsprecher, Playlisten, Favoriten](#7-die-drei-listen-lautsprecher-playlisten-favoriten)
 - [Eigene Seitenelemente](#8-eigene-seitenelemente)
 - [Blättern der Optionsleiste](#9-blättern-der-optionsleiste)
@@ -44,7 +46,7 @@ Unter der Vorschau steht der Hinweis, der die Arbeitsweise zusammenfasst: *„Ä
 | **Pfeile oben links/rechts** | Die Navigationspfeile des Panels, vom Panel vorgegeben. |
 | **Plätze der Leiste** | Elemente mit **Schloss** sind Standard-Elemente des Players (*Standard-Element des Players – klicken zum Ändern*). Elemente mit **blauem Rahmen** sind eigene Seitenelemente. Ein Platz mit **+** ist frei und legt ein neues Seitenelement an. |
 | **Seite x/y** mit Pfeilen | Erscheint, sobald die Elemente nicht auf eine Leiste passen. |
-| **Standard-Elemente des Players** | Die Marken unter der Vorschau: alle Elemente, die das gewählte Backend kennt – auch die abgeschalteten (durchgestrichen). Klick öffnet die Einstellungen des Elements. |
+| **Standard-Elemente des Players** | Die Marken unter der Vorschau: alle Elemente, die das gewählte Backend kennt – auch die abgeschalteten (durchgestrichen). Klick öffnet die Einstellungen des Elements, Ziehen ändert ihre [Reihenfolge](#reihenfolge-per-drag-and-drop). |
 | **Seitenelement hinzufügen** | Neues eigenes Seitenelement, gleichbedeutend mit dem Klick auf einen freien Platz. |
 | **Player** / **Farben** / **Lautstärke** | Dieselben drei Dialoge als Knöpfe. |
 
@@ -135,7 +137,7 @@ Ein leeres Namensfeld wird rot markiert und sperrt **Übernehmen**. Die Werte we
 
 <img alt="Die Marken der Standard-Elemente unter der Vorschau, ein abgeschaltetes durchgestrichen" src="../Pictures/cardMedia/media-06-standardelemente.png" width="100%"/>
 
-Welche Elemente es gibt und in welcher Reihenfolge sie in die Leiste kommen, bestimmt der Player – nicht die Reihenfolge im Editor:
+Welche Elemente es gibt, bestimmt der Player. Ohne eigene Reihenfolge kommen sie in dieser Reihenfolge in die Leiste; ändern lässt sie sich per [Drag-and-drop](#reihenfolge-per-drag-and-drop):
 
 | Backend | Standard-Elemente in der Reihenfolge des Adapters |
 |---|---|
@@ -144,6 +146,15 @@ Welche Elemente es gibt und in welcher Reihenfolge sie in die Leiste kommen, bes
 | **Spotify** | Offline-Anzeige · Lautsprecher · Playlisten · Titelliste · Uhr · Lautstärke-Voreinstellungen · Wiederholen |
 | **MPD** | Offline-Anzeige · Wiederholen · Uhr · Lautstärke-Voreinstellungen · Überblenden |
 | **Squeezebox (LMS)** | Offline-Anzeige · Lautsprecher · Favoriten · Playlisten · Uhr · Lautstärke-Voreinstellungen · Titelliste · Wiederholen |
+
+### Reihenfolge per Drag-and-drop
+
+Die Marken unter der Vorschau lassen sich **ziehen** (*„Klicken zum Ändern, ziehen zum Verschieben"*): eine Marke auf eine andere fallen lassen setzt sie an deren Platz. Die Leiste auf dem Panel und die Vorschau folgen dieser Reihenfolge.
+
+- Auch **abgeschaltete** Elemente lassen sich verschieben – schaltet man sie später ein, stehen sie gleich an der gewünschten Stelle.
+- Neben der Überschrift **Standard-Elemente des Players** erscheint dann **Standardreihenfolge**; der Knopf stellt die Reihenfolge des Adapters (Tabelle oben) wieder her.
+- Die eigenen Seitenelemente bleiben **hinter** den Standard-Elementen.
+- Im Skript heißt das Feld `media.itemsOrder`, eine Liste der Namen wie in `deactivateDefaultItems`, z. B. `['clock', 'speakerList']`. Unbekannte oder doppelte Namen werden übergangen, fehlende Elemente folgen in der Reihenfolge des Adapters.
 
 ### Einstellungen eines Elements
 
@@ -175,7 +186,7 @@ Der **Timer** ist als einziges Standard-Element **standardmäßig aus**: Marke a
 - Er gehört immer zum Echo-Gerät, das die Seite **gerade steuert**: nach einem Wechsel über die **Lautsprecher**-Liste zeigt und bedient er die Timer des neuen Geräts. Laufende Timer am vorherigen Echo laufen dort weiter.
 - Ein eigenes Gerät lässt sich nicht wählen – dafür ein Pageitem **Alexa-Timer** anlegen.
 - Voraussetzung wie beim Pageitem: in der alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** einschalten, siehe [Voraussetzungen](popupTimer#voraussetzungen).
-- Er steht als letztes Standard-Element in der Leiste; sind mehr Elemente sichtbar, als die Leiste Plätze hat (5 auf dem NSPanel), wird geblättert.
+- Ohne eigene Reihenfolge steht er als letztes Standard-Element in der Leiste; sind mehr Elemente sichtbar, als die Leiste Plätze hat (5 auf dem NSPanel), wird [geblättert](#9-blättern-der-optionsleiste). Per [Drag-and-drop](#reihenfolge-per-drag-and-drop) lässt er sich nach vorn holen.
 
 > Die **Offline-Anzeige** belegt in der Vorschau keinen Platz: *„Erscheint nur, solange der Player nicht erreichbar ist – sonst belegt es keinen Platz."* Nur als Marke unter der Vorschau ist sie zu sehen.
 

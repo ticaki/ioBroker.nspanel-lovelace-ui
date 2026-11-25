@@ -44,7 +44,7 @@ Zwei Haken am Kopf des Dialogs entscheiden, welche Art von Element entsteht:
 
 #### Art des Items: Standard oder Alexa-Timer
 
-Auf Seiten mit Pageitems steht ganz oben die **Art des Items**. **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** ist alles, was dieser Abschnitt beschreibt. **Alexa-Timer** macht aus dem Item einen Timer, der die Timer eines Echo-Geräts zeigt – statt des Kanalfelds stehen dann **alexa2-Instanz** und **Echo-Gerät** da, dazu **Anzeigen** (**Timer** oder **Wecker**, beim Wecker noch **Welcher Wecker**), Name, Symbole und Farben. Bei gesetztem **Ist eine Navigation** ist **Alexa-Timer** gesperrt. Einzelheiten unter [Timer-Popup](popupTimer#7-alexa-timer-alexa2).
+Auf Seiten mit Pageitems steht ganz oben die **Art des Items**. **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** ist alles, was dieser Abschnitt beschreibt. **Alexa-Timer** macht aus dem Item einen Timer, der die Timer eines Echo-Geräts zeigt – statt des Kanalfelds stehen dann **alexa2-Instanz** und **Echo-Gerät** da, dazu **Anzeigen** (**Timer** oder **Wecker**, beim Wecker noch **Welcher Wecker**), Name, Symbole und Farben. Bei gesetztem **Ist eine Navigation** ist **Alexa-Timer** gesperrt. Einzelheiten unter [Timer-Popup](popupTimer#7-alexa-timer-alexa2). Auf einer Mediaplayer-Seite mit alexa2 gibt es dafür auch das Toolbar-Element **Timer**, das dem gerade gesteuerten Echo folgt, siehe [Mediaplayer – Timer (nur Alexa)](cardMedia#timer-nur-alexa).
 
 #### Die Zielseite
 

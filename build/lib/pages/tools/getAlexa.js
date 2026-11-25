@@ -32,6 +32,7 @@ __export(getAlexa_exports, {
 });
 module.exports = __toCommonJS(getAlexa_exports);
 var import_Color = require("../../const/Color");
+var import_mediaToolbar = require("./mediaToolbar");
 var tools = __toESM(require("../../const/tools"));
 var import_page_item_defaults = require("../../const/page-item-defaults");
 async function getPageAlexa(configManager, page, gridItem, messages, justCheck = false) {
@@ -257,8 +258,9 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
+  const toolbar = [];
   if (((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.reminder) === false) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "reminder", {
       role: "text.list",
       type: "text",
       dpInit: "",
@@ -287,7 +289,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_g = page.media.deactivateDefaultItems) == null ? void 0 : _g.online)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "online", {
       role: "",
       type: "text",
       dpInit: "",
@@ -326,7 +328,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_j = page.media.deactivateDefaultItems) == null ? void 0 : _j.speakerList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "speakerList", {
       role: "alexa-speaker",
       type: "input_sel",
       data: {
@@ -386,7 +388,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.playList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "playList", {
       role: "alexa-playlist",
       type: "input_sel",
       dpInit: "",
@@ -415,7 +417,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.equalizer)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "equalizer", {
       role: "",
       type: "number",
       dpInit: "",
@@ -547,7 +549,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.clock)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "clock", {
       template: "text.clock",
       dpInit: "",
       data: {
@@ -560,7 +562,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (page.media.volumePresets) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "volumePresets", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -604,7 +606,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_y = page.media.deactivateDefaultItems) == null ? void 0 : _y.repeat)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "repeat", {
       role: "",
       type: "text",
       dpInit: "",
@@ -644,7 +646,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
   if (((_B = page.media.activateDefaultItems) == null ? void 0 : _B.timer) === true) {
     const parts = str.split(".");
     if (parts.length === 4 && parts[2] === "Echo-Devices" && parts[3]) {
-      gridItem.pageItems.push({
+      (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "timer", {
         role: "timer",
         type: "timer",
         dpInit: "",
@@ -675,6 +677,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
       adapter.log.warn(msg);
     }
   }
+  gridItem.pageItems.push(...(0, import_mediaToolbar.orderMediaToolbarItems)(toolbar, page.media.itemsOrder));
   return { gridItem, messages };
 }
 // Annotate the CommonJS export names for ESM import in node:

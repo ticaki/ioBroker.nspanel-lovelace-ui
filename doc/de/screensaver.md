@@ -485,7 +485,7 @@ Solange eines der beiden Felder leer ist, meldet der Dialog *Bitte alexa2-Instan
 - Ein per Sprache gestellter Timer erscheint etwa 10 Sekunden später am Panel – so lange braucht alexa2. Über ein Pageitem gestartet sind es etwa 6 Sekunden.
 - Ein klingelnder Timer steht als `0.0` in Rot da, bis er gestoppt ist – am Echo per Sprache oder über ein Pageitem.
 - Eine Pause gibt es nicht; das Infoicon `timer-pause` kommt bei dieser Quelle nicht vor.
-- Pageitems mit **Timer aus dem Screensaver verwenden** starten und stoppen den Timer über das Echo-Gerät, wie im [Timer-Popup](popupTimer#7-alexa-timer-alexa2) beschrieben. Ebenso geht ein Pageitem der Art **Alexa-Timer** mit demselben Gerät.
+- Pageitems mit **Timer aus dem Screensaver verwenden** starten und stoppen den Timer über das Echo-Gerät, wie im [Timer-Popup](popupTimer#7-alexa-timer-alexa2) beschrieben. Ebenso geht ein Pageitem der Art **Alexa-Timer** mit demselben Gerät. Das Toolbar-Element **Timer** einer [Mediaplayer-Seite](cardMedia#timer-nur-alexa) teilt sich den Timer, solange die Seite dasselbe Echo steuert.
 - Ist das Gerät nicht zu finden, zeigt das Panel die Uhrzeit und das Log warnt; weitere Fallstricke unter [Fallstricke beim Alexa-Timer](popupTimer#fallstricke-beim-alexa-timer).
 
 ![Das Web-Panel zeigt auf dem Bildschirmschoner die Restzeit 1.3 eines Alexa-Timers mit der Sanduhr als Infoicon](../Pictures/screensaverAdmin/admin-33-timer-alexa-restzeit.png)

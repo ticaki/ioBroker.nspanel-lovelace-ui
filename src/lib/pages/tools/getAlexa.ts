@@ -1,6 +1,7 @@
 import { Color } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
+import { addMediaToolbarItem, orderMediaToolbarItems, type MediaToolbarEntry } from './mediaToolbar';
 import * as tools from '../../const/tools';
 import { pageItemDefaults } from '../../const/page-item-defaults';
 
@@ -248,10 +249,12 @@ export async function getPageAlexa(
         pageItems: [],
     };
     gridItem.pageItems = gridItem.pageItems || [];
+    /** standard items of the bar, put in the order of itemsOrder at the end */
+    const toolbar: MediaToolbarEntry[] = [];
 
     //reminder
     if (page.media.deactivateDefaultItems?.reminder === false) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'reminder', {
             role: 'text.list',
             type: 'text',
             dpInit: '',
@@ -283,7 +286,7 @@ export async function getPageAlexa(
     }
     // online
     if (!page.media.deactivateDefaultItems?.online) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'online', {
             role: '',
             type: 'text',
             dpInit: '',
@@ -325,7 +328,7 @@ export async function getPageAlexa(
     }
     //speaker select
     if (!page.media.deactivateDefaultItems?.speakerList) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'speakerList', {
             role: 'alexa-speaker',
             type: 'input_sel',
 
@@ -387,7 +390,7 @@ export async function getPageAlexa(
     }
     //playlist select
     if (!page.media.deactivateDefaultItems?.playList) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'playList', {
             role: 'alexa-playlist',
             type: 'input_sel',
             dpInit: '',
@@ -418,7 +421,7 @@ export async function getPageAlexa(
     }
     //equalizer
     if (!page.media.deactivateDefaultItems?.equalizer) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'equalizer', {
             role: '',
             type: 'number',
             dpInit: '',
@@ -554,7 +557,7 @@ export async function getPageAlexa(
     }
     // time
     if (!page.media.deactivateDefaultItems?.clock) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'clock', {
             template: 'text.clock',
             dpInit: '',
             data: {
@@ -569,7 +572,7 @@ export async function getPageAlexa(
         });
     }
     if (page.media.volumePresets) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'volumePresets', {
             role: '',
             type: 'input_sel',
             dpInit: '',
@@ -616,7 +619,7 @@ export async function getPageAlexa(
     }
     // repeat
     if (!page.media.deactivateDefaultItems?.repeat) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'repeat', {
             role: '',
             type: 'text',
             dpInit: '',
@@ -659,7 +662,7 @@ export async function getPageAlexa(
     if (page.media.activateDefaultItems?.timer === true) {
         const parts = str.split('.');
         if (parts.length === 4 && parts[2] === 'Echo-Devices' && parts[3]) {
-            gridItem.pageItems.push({
+            addMediaToolbarItem(toolbar, 'timer', {
                 role: 'timer',
                 type: 'timer',
                 dpInit: '',
@@ -690,6 +693,8 @@ export async function getPageAlexa(
             adapter.log.warn(msg);
         }
     }
+
+    gridItem.pageItems.push(...orderMediaToolbarItems(toolbar, page.media.itemsOrder));
 
     return { gridItem, messages };
 }

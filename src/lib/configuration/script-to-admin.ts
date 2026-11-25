@@ -47,6 +47,10 @@ import {
     type IconColorElement,
     type MediaEntry,
     isMediaHeadlineMode,
+    isMediaToolbarItem,
+    mediaBackendFeatures,
+    mediaBackendOf,
+    mediaToolbarOrderToStore,
     type MediaToolbarConfig,
     type MediaToolbarItem,
     type MediaVolumePreset,
@@ -1251,21 +1255,8 @@ const mediaMappedKeys = [
     'itemsColorOff',
     'deactivateDefaultItems',
     'activateDefaultItems',
+    'itemsOrder',
 ] as const;
-const mediaToolbarItems: readonly MediaToolbarItem[] = [
-    'reminder',
-    'online',
-    'speakerList',
-    'favoriteList',
-    'playList',
-    'equalizer',
-    'clock',
-    'volumePresets',
-    'trackList',
-    'repeat',
-    'crossfade',
-    'timer',
-];
 
 /**
  * A list of names of a media page (`speakerList`, `playList`, `favoriteList`) in the admin form.
@@ -1401,10 +1392,10 @@ function convertMediaPage(
     }
     const toolbar: Partial<Record<MediaToolbarItem, MediaToolbarConfig>> = {};
     const toolbarOf = (item: string, where: string): MediaToolbarConfig => {
-        if (!mediaToolbarItems.includes(item as MediaToolbarItem)) {
+        if (!isMediaToolbarItem(item)) {
             throw new ConvertError(reason, `${where}.${item}: unknown standard item`);
         }
-        return (toolbar[item as MediaToolbarItem] ??= {});
+        return (toolbar[item] ??= {});
     };
     if (media.deactivateDefaultItems !== undefined && media.deactivateDefaultItems !== null) {
         const off = media.deactivateDefaultItems;
@@ -1460,6 +1451,18 @@ function convertMediaPage(
     }
     if (Object.keys(toolbar).length) {
         entry.toolbar = toolbar;
+    }
+    if (media.itemsOrder !== undefined && media.itemsOrder !== null) {
+        const order: unknown = media.itemsOrder;
+        if (!Array.isArray(order) || !order.every(name => typeof name === 'string')) {
+            throw new ConvertError(reason, 'media.itemsOrder: expected a list of item names');
+        }
+        // unknown and repeated names are ignored by the adapter as well - the admin keeps only the known ones
+        const backend = mediaBackendOf(entry.mediaId);
+        const toolbarOrder = backend ? mediaToolbarOrderToStore(order, mediaBackendFeatures[backend].items) : undefined;
+        if (toolbarOrder) {
+            entry.toolbarOrder = toolbarOrder;
+        }
     }
     return entry;
 }

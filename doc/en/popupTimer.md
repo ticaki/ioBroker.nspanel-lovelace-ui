@@ -208,7 +208,7 @@ What list and popup can show – the same for all kinds:
 
 ## 7. Alexa timer (alexa2)
 
-Instead of a channel, a timer item can show the timers of an **Echo device** – or one of its **alarms** (see [Alarms of an Echo device](#alarms-of-an-echo-device)). Both come from the **alexa2** adapter, which maps the Echo devices into ioBroker. No channel is needed. The screensaver knows the timers only, no alarms; its source **Alexa timer (alexa2)** is under [Source: Alexa timer (alexa2)](screensaver#source-alexa-timer-alexa2).
+Instead of a channel, a timer item can show the timers of an **Echo device** – or one of its **alarms** (see [Alarms of an Echo device](#alarms-of-an-echo-device)). Both come from the **alexa2** adapter, which maps the Echo devices into ioBroker. No channel is needed. The screensaver knows the timers only, no alarms; its source **Alexa timer (alexa2)** is under [Source: Alexa timer (alexa2)](screensaver#source-alexa-timer-alexa2). On a media page with alexa2 there is also the toolbar item **Timer** for this, which follows the Echo the page currently controls, see [Media page – Timer (Alexa only)](cardMedia#timer-alexa-only).
 
 ### Quick start: Alexa timer as a page item
 

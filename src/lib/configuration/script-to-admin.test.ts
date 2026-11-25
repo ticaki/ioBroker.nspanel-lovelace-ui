@@ -2724,6 +2724,35 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
         expect(convert({ activateDefaultItems: { timer: false } })).to.not.have.property('toolbar');
     });
 
+    it('takes over the order of the standard items of a cardMedia page', () => {
+        const convert = (itemsOrder: unknown): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { id: 'mpd.0', itemsOrder },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            return result.newPages[0] as ShareConfig.MediaEntry;
+        };
+        expect(convert(['clock', 'unknown', 'clock']).toolbarOrder).to.deep.equal([
+            'clock',
+            'online',
+            'repeat',
+            'volumePresets',
+            'crossfade',
+        ]);
+        expect(convert(['online', 'repeat'])).to.not.have.property('toolbarOrder');
+        expect(convert([])).to.not.have.property('toolbarOrder');
+    });
+
     it('skips a cardMedia page the admin cannot express', () => {
         const media = { id: 'squeezeboxrpc.0.Players.Familienzimmer' };
         const cases: [Record<string, unknown>, string][] = [
@@ -2765,6 +2794,8 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
                 { media: { ...media, itemsColorOff: { timer: Red } } },
                 'media.itemsColorOff.timer: not available in the admin',
             ],
+            [{ media: { ...media, itemsOrder: 'clock' } }, 'media.itemsOrder: expected a list of item names'],
+            [{ media: { ...media, itemsOrder: ['clock', 1] } }, 'media.itemsOrder: expected a list of item names'],
         ];
         for (const [extra, detail] of cases) {
             const result = plan(

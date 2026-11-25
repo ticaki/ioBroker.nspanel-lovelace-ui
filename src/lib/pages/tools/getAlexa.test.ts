@@ -100,3 +100,45 @@ describe('lib/pages/tools - getPageAlexa timer item', () => {
         expect(res.messages[0]).to.contain('timer item needs an Echo device');
     });
 });
+
+describe('lib/pages/tools - getPageAlexa itemsOrder', () => {
+    it('puts the standard items in the order of itemsOrder, the missing ones behind', async () => {
+        const { configManager } = createConfigManager(echos);
+        const kinds = async (extra: Partial<ScriptConfig.PageMediaItem>): Promise<unknown[]> => {
+            const res = await getPageAlexa(
+                configManager,
+                createPage('alexa2.1.Echo-Devices.G0KITCHEN', extra),
+                createGridItem(),
+                [],
+            );
+            return (res.gridItem.pageItems ?? []).map(i =>
+                'template' in i && i.template ? i.template : 'role' in i ? i.role || i.type : undefined,
+            );
+        };
+        expect(await kinds({})).to.deep.equal([
+            'text',
+            'alexa-speaker',
+            'alexa-playlist',
+            'number',
+            'text.clock',
+            'text',
+        ]);
+        expect(await kinds({ itemsOrder: ['clock', 'speakerList', 'clock', 'bogus'] })).to.deep.equal([
+            'text.clock',
+            'alexa-speaker',
+            'text',
+            'alexa-playlist',
+            'number',
+            'text',
+        ]);
+        expect(await kinds({ itemsOrder: ['timer', 'clock'], activateDefaultItems: { timer: true } })).to.deep.equal([
+            'timer',
+            'text.clock',
+            'text',
+            'alexa-speaker',
+            'alexa-playlist',
+            'number',
+            'text',
+        ]);
+    });
+});

@@ -9,6 +9,8 @@ import {
     toMediaPlayerDefinition,
     mediaBackendOf,
     mediaVisibleToolbarItems,
+    mediaToolbarOrder,
+    mediaToolbarOrderToStore,
     normalizeScrollFields,
     findAlexaPlaylistState,
     parseAlexaPlaylistEntry,
@@ -69,6 +71,18 @@ describe('lib/configuration - buildMediaScriptPage', () => {
         expect(on).to.not.have.property('itemsColorOff');
     });
 
+    it('writes the order of the editor as itemsOrder, the order of the backend is left out', () => {
+        const base: MediaEntry = { ...emptyMediaEntry('mpd'), mediaId: 'mpd.0' };
+        expect(buildMediaScriptPage(base).media).to.not.have.property('itemsOrder');
+        expect(
+            buildMediaScriptPage({ ...base, toolbarOrder: ['online', 'repeat', 'clock', 'volumePresets', 'crossfade'] })
+                .media,
+        ).to.not.have.property('itemsOrder');
+        expect(
+            buildMediaScriptPage({ ...base, toolbarOrder: ['clock', 'equalizer', 'clock'] }).media.itemsOrder,
+        ).to.deep.equal(['clock', 'online', 'repeat', 'volumePresets', 'crossfade']);
+    });
+
     it('cleans the lists and clamps the presets to the volume range', () => {
         const entry: MediaEntry = {
             ...emptyMediaEntry('box'),
@@ -125,6 +139,33 @@ describe('lib/types/adminShareConfig - media helpers', () => {
         expect(mediaVisibleToolbarItems(entry, 'mpd')).to.deep.equal(['online', 'clock', 'crossfade']);
         entry.volumePresets = [{ name: 'a', value: 1 }];
         expect(mediaVisibleToolbarItems(entry, 'mpd')).to.deep.equal(['online', 'clock', 'volumePresets', 'crossfade']);
+    });
+
+    it('sorts the standard items by the stored order, unknown and repeated entries ignored, missing ones behind', () => {
+        const items = ['online', 'repeat', 'clock', 'volumePresets', 'crossfade'] as const;
+        expect(mediaToolbarOrder(undefined, items)).to.deep.equal([...items]);
+        expect(mediaToolbarOrder([], items)).to.deep.equal([...items]);
+        expect(mediaToolbarOrder('clock', items)).to.deep.equal([...items]);
+        expect(mediaToolbarOrder(['crossfade', 'x', 'timer', 'crossfade', 7, 'clock'], items)).to.deep.equal([
+            'crossfade',
+            'clock',
+            'online',
+            'repeat',
+            'volumePresets',
+        ]);
+        expect(mediaToolbarOrderToStore(['online', 'repeat'], items)).to.equal(undefined);
+        expect(mediaToolbarOrderToStore(['repeat'], items)).to.deep.equal([
+            'repeat',
+            'online',
+            'clock',
+            'volumePresets',
+            'crossfade',
+        ]);
+    });
+
+    it('the preview follows the stored order', () => {
+        const entry: MediaEntry = { ...emptyMediaEntry('m'), mediaId: 'mpd.0', toolbarOrder: ['crossfade', 'clock'] };
+        expect(mediaVisibleToolbarItems(entry, 'mpd')).to.deep.equal(['crossfade', 'clock', 'online', 'repeat']);
     });
 
     it('shows the alexa2 timer item only when switched on', () => {

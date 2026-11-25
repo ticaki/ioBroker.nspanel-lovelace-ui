@@ -1466,7 +1466,8 @@ function mediaList(list: unknown): string[] | undefined {
  * Turns a media entry into the script form of the page (`media` of `ScriptConfig.PageMedia`).
  *
  * The standard items become `deactivateDefaultItems` / `activateDefaultItems` (opt-in items) / `itemsColorOn` /
- * `itemsColorOff`, colors the RGB objects of the script, the presets `name?value` strings clamped to the volume range.
+ * `itemsColorOff`, the order of the editor `itemsOrder` (left out for the order of the backend), colors the RGB
+ * objects of the script, the presets `name?value` strings clamped to the volume range.
  * Empty fields are left out so the backend takes its defaults. The own page items are not part of
  * the result - they are converted separately.
  *
@@ -1512,6 +1513,11 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
         .filter(p => p && thermo2Text(p.name) && typeof p.value === 'number' && Number.isFinite(p.value))
         .map(p => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
 
+    const backend = ShareConfig.mediaBackendOf(entry.mediaId);
+    const itemsOrder = backend
+        ? ShareConfig.mediaToolbarOrderToStore(entry.toolbarOrder, ShareConfig.mediaBackendFeatures[backend].items)
+        : undefined;
+
     const media: ScriptConfig.PageMediaItem = {
         id: thermo2Text(entry.mediaId) ?? '',
         name: thermo2Text(entry.name),
@@ -1529,6 +1535,7 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
         itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : undefined,
         itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : undefined,
         activateDefaultItems: Object.keys(activateDefaultItems).length ? activateDefaultItems : undefined,
+        itemsOrder,
     };
     for (const key of Object.keys(media) as (keyof ScriptConfig.PageMediaItem)[]) {
         if (media[key] === undefined) {

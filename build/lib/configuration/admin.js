@@ -1179,6 +1179,8 @@ function buildMediaScriptPage(entry) {
     }
   }
   const volumePresets = (Array.isArray(entry.volumePresets) ? entry.volumePresets : []).filter((p) => p && thermo2Text(p.name) && typeof p.value === "number" && Number.isFinite(p.value)).map((p) => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
+  const backend = ShareConfig.mediaBackendOf(entry.mediaId);
+  const itemsOrder = backend ? ShareConfig.mediaToolbarOrderToStore(entry.toolbarOrder, ShareConfig.mediaBackendFeatures[backend].items) : void 0;
   const media = {
     id: (_b = thermo2Text(entry.mediaId)) != null ? _b : "",
     name: thermo2Text(entry.name),
@@ -1195,7 +1197,8 @@ function buildMediaScriptPage(entry) {
     deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : void 0,
     itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : void 0,
     itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : void 0,
-    activateDefaultItems: Object.keys(activateDefaultItems).length ? activateDefaultItems : void 0
+    activateDefaultItems: Object.keys(activateDefaultItems).length ? activateDefaultItems : void 0,
+    itemsOrder
   };
   for (const key of Object.keys(media)) {
     if (media[key] === void 0) {

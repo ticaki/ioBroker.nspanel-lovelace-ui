@@ -22,6 +22,7 @@ __export(getMpd_exports, {
 });
 module.exports = __toCommonJS(getMpd_exports);
 var import_Color = require("../../const/Color");
+var import_mediaToolbar = require("./mediaToolbar");
 async function getPageMpd(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
   if (justCheck) {
@@ -200,8 +201,9 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
+  const toolbar = [];
   if (((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.online) !== true) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "online", {
       role: "",
       type: "text",
       dpInit: "",
@@ -240,7 +242,7 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
     });
   }
   if (((_h = page.media.deactivateDefaultItems) == null ? void 0 : _h.repeat) !== true) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "repeat", {
       role: "",
       type: "button",
       dpInit: "",
@@ -268,7 +270,7 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
     });
   }
   if (!((_k = page.media.deactivateDefaultItems) == null ? void 0 : _k.clock)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "clock", {
       template: "text.clock",
       dpInit: "",
       data: {
@@ -281,7 +283,7 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
     });
   }
   if (page.media.volumePresets) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "volumePresets", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -325,7 +327,7 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
     });
   }
   if (((_s = page.media.deactivateDefaultItems) == null ? void 0 : _s.crossfade) !== true) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "crossfade", {
       role: "",
       type: "number",
       dpInit: "",
@@ -364,6 +366,7 @@ async function getPageMpd(configManager, page, gridItem, messages, justCheck = f
       }
     });
   }
+  gridItem.pageItems.push(...(0, import_mediaToolbar.orderMediaToolbarItems)(toolbar, page.media.itemsOrder));
   return { gridItem, messages };
 }
 // Annotate the CommonJS export names for ESM import in node:
