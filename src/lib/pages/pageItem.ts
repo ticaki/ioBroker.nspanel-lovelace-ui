@@ -55,6 +55,25 @@ function isAlexaSpeaker(x: unknown): x is { id: string; name: string } {
     );
 }
 
+/**
+ * Returns the ident of the current media device of a media page (currentItem, otherwise items[0]).
+ *
+ * @param parent page to read from
+ * @returns the ident or undefined if the page has none
+ */
+function getMediaDeviceIdent(parent: unknown): string | undefined {
+    if (!parent || typeof parent !== 'object') {
+        return undefined;
+    }
+    const getIdent = (x: unknown): string | undefined =>
+        !!x && typeof x === 'object' && 'ident' in x && typeof x.ident === 'string' && x.ident ? x.ident : undefined;
+    const current = 'currentItem' in parent ? getIdent(parent.currentItem) : undefined;
+    if (current) {
+        return current;
+    }
+    return 'items' in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : undefined;
+}
+
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseTriggeredPage {
     defaultOnColor = Color.White;
@@ -308,13 +327,26 @@ export class PageItem extends BaseTriggeredPage {
             this.dataItems.type === 'input_sel' &&
             this.parent.card === 'cardMedia'
         ) {
-            const states = await this.adapter.getForeignStatesAsync(
-                `${(this.parent as PageMedia).currentItem ? (this.parent as PageMedia).currentItem!.ident : (this.parent as PageMedia).items[0].ident}.Music-Provider.*`,
-            );
+            const states = await this.getAlexaPlaylistStates();
             if (states) {
-                this.tempData = Object.keys(states);
+                this.tempData = states;
             }
         }
+    }
+
+    /**
+     * Reads the Music-Provider state ids of the currently selected Echo device
+     * (currentItem of the media page, otherwise its first item).
+     *
+     * @returns the state ids, undefined if there is no device or no states
+     */
+    private async getAlexaPlaylistStates(): Promise<string[] | undefined> {
+        const ident = getMediaDeviceIdent(this.parent);
+        if (!ident) {
+            return undefined;
+        }
+        const states = await this.adapter.getForeignStatesAsync(`${ident}.Music-Provider.*`);
+        return states ? Object.keys(states) : undefined;
     }
 
     async getPageItemPayload(skipEnabledCheck: boolean = false): Promise<string> {
@@ -3768,6 +3800,11 @@ export class PageItem extends BaseTriggeredPage {
             } else if (role === 'alexa-playlist') {
                 // Alexa Playlist
                 this.log.debug(`Get Alexa Playlist start`);
+                // the Echo device can change on the media page - always use its current Music-Provider states
+                const freshStates = await this.getAlexaPlaylistStates();
+                if (freshStates) {
+                    this.tempData = freshStates;
+                }
                 if (this.dataItems?.type === 'input_sel' && this.dataItems.data.valueList) {
                     const raw = await this.dataItems.data.valueList.getObject();
 
