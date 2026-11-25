@@ -2700,6 +2700,30 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
         });
     });
 
+    it('takes over the opt-in timer item of an alexa2 cardMedia page', () => {
+        const convert = (extra: Record<string, unknown>): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { id: 'alexa2.0.Echo-Devices.G123', ...extra },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            return result.newPages[0] as ShareConfig.MediaEntry;
+        };
+        expect(convert({ activateDefaultItems: { timer: true }, itemsColorOn: { timer: Red } }).toolbar).to.deep.equal({
+            timer: { enabled: true, colorOn: '#ff0000' },
+        });
+        expect(convert({ activateDefaultItems: { timer: false } })).to.not.have.property('toolbar');
+    });
+
     it('skips a cardMedia page the admin cannot express', () => {
         const media = { id: 'squeezeboxrpc.0.Players.Familienzimmer' };
         const cases: [Record<string, unknown>, string][] = [
@@ -2728,6 +2752,18 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
             [
                 { media: { ...media, itemsColorOff: { volumePresets: Red } } },
                 'media.itemsColorOff.volumePresets: not available in the admin',
+            ],
+            [
+                { media: { ...media, activateDefaultItems: { equalizer: true } } },
+                'media.activateDefaultItems.equalizer: not available in the admin',
+            ],
+            [
+                { media: { ...media, deactivateDefaultItems: { timer: true } } },
+                'media.deactivateDefaultItems.timer: not available in the admin',
+            ],
+            [
+                { media: { ...media, itemsColorOff: { timer: Red } } },
+                'media.itemsColorOff.timer: not available in the admin',
             ],
         ];
         for (const [extra, detail] of cases) {

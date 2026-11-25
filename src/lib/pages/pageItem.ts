@@ -74,6 +74,23 @@ function getMediaDeviceIdent(parent: unknown): string | undefined {
     return 'items' in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : undefined;
 }
 
+/** the part of `alexaTimer` of an item that names the Echo device */
+type AlexaTimerItemDevice = { instance: string; serial: string; followMedia?: boolean };
+
+/**
+ * Instance and serial of an Echo device of alexa2.
+ *
+ * @param ident device id `alexa2.<n>.Echo-Devices.<serial>`
+ * @returns undefined when the id has another form
+ */
+function echoDeviceOf(ident: string | undefined): { instance: string; serial: string } | undefined {
+    const parts = (ident ?? '').split('.');
+    if (parts.length !== 4 || parts[2] !== 'Echo-Devices' || !parts[0] || !parts[1] || !parts[3]) {
+        return undefined;
+    }
+    return { instance: `${parts[0]}.${parts[1]}`, serial: parts[3] };
+}
+
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
 export class PageItem extends BaseTriggeredPage {
     defaultOnColor = Color.White;
@@ -1656,12 +1673,8 @@ export class PageItem extends BaseTriggeredPage {
         if (!config) {
             return undefined;
         }
-        if (!this.alexaTimer) {
-            this.alexaTimer = this.controller.alexaTimers.get(config);
-            this.alexaTimer.addListener(this.onClockTimerChange);
-            await this.alexaTimer.ready;
-        }
-        const view = this.alexaTimer.getView();
+        const timer = await this.useAlexaTimer(config);
+        const view = timer.getView();
         const now = Date.now();
         const memory = new Map([['alexa', stepTimerItem(undefined, view).memory]]);
         const selection = selectTimer(memory, now);
@@ -1674,6 +1687,29 @@ export class PageItem extends BaseTriggeredPage {
         this.tempData.lastStatus = selection.status;
         this.parent.setTimerTick(this, access.ticking);
         return access;
+    }
+
+    /**
+     * The timer of the Echo device of this item ({@link alexaTimer}), changes of the device update this item from now on.
+     * With `followMedia` the device is the one the media page currently controls: after a change the listener moves
+     * from the timer of the old device to the one of the new device.
+     *
+     * @param config `alexaTimer` of the item
+     * @returns the timer, its states are read
+     */
+    private async useAlexaTimer(config: AlexaTimerItemDevice): Promise<AlexaTimer> {
+        const device = (config.followMedia && echoDeviceOf(getMediaDeviceIdent(this.parent))) || config;
+        if (this.alexaTimer && this.alexaTimer.deviceId !== `${device.instance}.Echo-Devices.${device.serial}`) {
+            this.alexaTimer.removeListener(this.onClockTimerChange);
+            this.alexaTimer = undefined;
+        }
+        if (!this.alexaTimer) {
+            this.alexaTimer = this.controller.alexaTimers.get(device);
+            this.alexaTimer.addListener(this.onClockTimerChange);
+        }
+        const timer = this.alexaTimer;
+        await timer.ready;
+        return timer;
     }
 
     /**
@@ -3374,6 +3410,11 @@ export class PageItem extends BaseTriggeredPage {
                     break;
                 }
                 if (this.tempData?.role === 'alexa-timer') {
+                    const config = this.dataItems?.type === 'timer' ? this.dataItems.alexaTimer : undefined;
+                    if (config?.followMedia) {
+                        // the Echo of the media page may have changed since the popup was drawn
+                        await this.useAlexaTimer(config);
+                    }
                     await this.alexaTimer?.stop();
                     break;
                 }

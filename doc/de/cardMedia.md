@@ -139,7 +139,7 @@ Welche Elemente es gibt und in welcher Reihenfolge sie in die Leiste kommen, bes
 
 | Backend | Standard-Elemente in der Reihenfolge des Adapters |
 |---|---|
-| **Alexa** | Erinnerungen · Offline-Anzeige · Lautsprecher · Playlisten · Equalizer · Uhr · Lautstärke-Voreinstellungen · Wiederholen |
+| **Alexa** | Erinnerungen · Offline-Anzeige · Lautsprecher · Playlisten · Equalizer · Uhr · Lautstärke-Voreinstellungen · Wiederholen · Timer |
 | **Sonos** | Offline-Anzeige · Lautsprecher · Favoriten · Playlisten · Uhr · Lautstärke-Voreinstellungen · Titelliste · Wiederholen · Überblenden |
 | **Spotify** | Offline-Anzeige · Lautsprecher · Playlisten · Titelliste · Uhr · Lautstärke-Voreinstellungen · Wiederholen |
 | **MPD** | Offline-Anzeige · Wiederholen · Uhr · Lautstärke-Voreinstellungen · Überblenden |
@@ -162,11 +162,20 @@ Welche Farbfelder erscheinen, hängt am Element und am Backend:
 |---|---|
 | **Offline-Anzeige**, **Lautsprecher**, **Wiederholen** | *Farbe an* und *Farbe aus* |
 | **Überblenden** | *Farbe an* und *Farbe aus* bei Sonos; bei MPD **keine** |
-| **Playlisten**, **Favoriten**, **Equalizer**, **Uhr**, **Lautstärke-Voreinstellungen** | nur *Farbe* |
+| **Playlisten**, **Favoriten**, **Equalizer**, **Uhr**, **Lautstärke-Voreinstellungen**, **Timer** | nur *Farbe* |
 | **Erinnerungen** | nur *Farbe aus* |
 | **Titelliste** | keine |
 
 Die Hilfstexte der Dialoge beschreiben, was ein Element tut, zum Beispiel *„Wählt den Lautsprecher bzw. die Raumgruppe, auf der der Player spielt."*, *„Springt zu einem Titel der aktuellen Warteschlange."*, *„Bässe, Mitten und Höhen des Echo-Geräts."* oder *„Erscheint, sobald mindestens eine Lautstärke-Voreinstellung angelegt ist."*
+
+### Timer (nur Alexa)
+
+Der **Timer** ist als einziges Standard-Element **standardmäßig aus**: Marke anklicken und **Auf dem Panel anzeigen** einschalten. Er öffnet beim Antippen das [Timer-Popup](popupTimer#7-alexa-timer-alexa2) wie ein Pageitem der Art **Alexa-Timer** – Restzeit des nächsten bzw. klingelnden Timers, Stoppen, neuen Timer stellen. Wecker zeigt er nicht.
+
+- Er gehört immer zum Echo-Gerät, das die Seite **gerade steuert**: nach einem Wechsel über die **Lautsprecher**-Liste zeigt und bedient er die Timer des neuen Geräts. Laufende Timer am vorherigen Echo laufen dort weiter.
+- Ein eigenes Gerät lässt sich nicht wählen – dafür ein Pageitem **Alexa-Timer** anlegen.
+- Voraussetzung wie beim Pageitem: in der alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** einschalten, siehe [Voraussetzungen](popupTimer#voraussetzungen).
+- Er steht als letztes Standard-Element in der Leiste; sind mehr Elemente sichtbar, als die Leiste Plätze hat (5 auf dem NSPanel), wird geblättert.
 
 > Die **Offline-Anzeige** belegt in der Vorschau keinen Platz: *„Erscheint nur, solange der Player nicht erreichbar ist – sonst belegt es keinen Platz."* Nur als Marke unter der Vorschau ist sie zu sehen.
 

@@ -58,6 +58,8 @@ import {
     ADAPTER_NAME,
     SENDTO_GET_MEDIA_PLAYER_COMMAND,
     isMainPageEntry,
+    isMediaOptInToolbarItem,
+    isMediaToolbarItemOn,
     mediaBackendFeatures,
     mediaBackendOf,
     mediaListKinds,
@@ -96,6 +98,7 @@ const TOOLBAR_ICONS: Record<MediaToolbarItem, string> = {
     trackList: 'animation-play-outline',
     repeat: 'repeat-variant',
     crossfade: 'shuffle',
+    timer: 'timer',
 };
 
 /** colors of the mock where the adapter takes the color theme of the panel */
@@ -130,6 +133,7 @@ const MEDIA_ITEM_DEFAULT_COLORS: Partial<
     volumePresets: { on: 'activated' },
     repeat: { on: 'activated', off: 'deactivated' },
     crossfade: { on: 'activated', off: 'deactivated' },
+    timer: { on: 'activated' },
 };
 
 /** what a place of the bar shows */
@@ -446,7 +450,8 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
         }
         const next: MediaToolbarConfig = { ...draft.toolbar?.[item], ...patch };
         const toolbar = { ...draft.toolbar };
-        if (next.enabled !== false && !next.colorOn && !next.colorOff) {
+        const switchAtDefault = isMediaOptInToolbarItem(item) ? next.enabled !== true : next.enabled !== false;
+        if (switchAtDefault && !next.colorOn && !next.colorOff) {
             delete toolbar[item];
         } else {
             toolbar[item] = next;
@@ -932,7 +937,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         sx={{ mb: 2, display: 'block' }}
                         control={
                             <Switch
-                                checked={config.enabled !== false}
+                                checked={isMediaToolbarItemOn(item, config)}
                                 onChange={(_e, checked) => this.setDraftToolbar(item, { enabled: checked })}
                             />
                         }
@@ -1637,7 +1642,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         const off =
                             item === 'volumePresets'
                                 ? (entry.volumePresets ?? []).length === 0
-                                : entry.toolbar?.[item]?.enabled === false;
+                                : !isMediaToolbarItemOn(item, entry.toolbar?.[item]);
                         const list = mediaListKinds.find(l => l === item);
                         const count = list ? (entry[list] ?? []).length : 0;
                         return (

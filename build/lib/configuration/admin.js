@@ -1156,12 +1156,17 @@ function buildMediaScriptPage(entry) {
   const deactivateDefaultItems = {};
   const itemsColorOn = {};
   const itemsColorOff = {};
+  const activateDefaultItems = {};
   for (const [key, config] of Object.entries((_a = entry.toolbar) != null ? _a : {})) {
     if (!config) {
       continue;
     }
     const item = key;
-    if (config.enabled === false && item !== "volumePresets") {
+    if (ShareConfig.isMediaOptInToolbarItem(item)) {
+      if (config.enabled === true) {
+        activateDefaultItems[item] = true;
+      }
+    } else if (config.enabled === false && item !== "volumePresets") {
       deactivateDefaultItems[item] = true;
     }
     const on = thermo2Rgb(config.colorOn);
@@ -1169,7 +1174,7 @@ function buildMediaScriptPage(entry) {
       itemsColorOn[item] = on;
     }
     const off = thermo2Rgb(config.colorOff);
-    if (off && item !== "volumePresets") {
+    if (off && item !== "volumePresets" && item !== "timer") {
       itemsColorOff[item] = off;
     }
   }
@@ -1189,7 +1194,8 @@ function buildMediaScriptPage(entry) {
     volumePresets: volumePresets.length ? volumePresets : void 0,
     deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : void 0,
     itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : void 0,
-    itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : void 0
+    itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : void 0,
+    activateDefaultItems: Object.keys(activateDefaultItems).length ? activateDefaultItems : void 0
   };
   for (const key of Object.keys(media)) {
     if (media[key] === void 0) {

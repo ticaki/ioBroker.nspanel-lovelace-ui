@@ -810,7 +810,8 @@ const mediaMappedKeys = [
   "maxValue",
   "itemsColorOn",
   "itemsColorOff",
-  "deactivateDefaultItems"
+  "deactivateDefaultItems",
+  "activateDefaultItems"
 ];
 const mediaToolbarItems = [
   "reminder",
@@ -823,7 +824,8 @@ const mediaToolbarItems = [
   "volumePresets",
   "trackList",
   "repeat",
-  "crossfade"
+  "crossfade",
+  "timer"
 ];
 function mediaNameList(value, where) {
   if (value === void 0 || value === null) {
@@ -947,10 +949,25 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
       if (value === void 0 || value === null || value === false) {
         continue;
       }
-      if (value !== true || item === "volumePresets") {
+      if (value !== true || item === "volumePresets" || item === "timer") {
         throw new ConvertError(reason, `media.deactivateDefaultItems.${item}: not available in the admin`);
       }
       toolbarOf(item, "media.deactivateDefaultItems").enabled = false;
+    }
+  }
+  if (media.activateDefaultItems !== void 0 && media.activateDefaultItems !== null) {
+    const on = media.activateDefaultItems;
+    if (!isDict(on)) {
+      throw new ConvertError(reason, "media.activateDefaultItems: expected an object");
+    }
+    for (const [item, value] of Object.entries(on)) {
+      if (value === void 0 || value === null || value === false) {
+        continue;
+      }
+      if (value !== true || item !== "timer") {
+        throw new ConvertError(reason, `media.activateDefaultItems.${item}: not available in the admin`);
+      }
+      toolbarOf(item, "media.activateDefaultItems").enabled = true;
     }
   }
   for (const [field, color] of [
@@ -969,7 +986,7 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
       if (hex === void 0) {
         continue;
       }
-      if (field === "itemsColorOff" && item === "volumePresets") {
+      if (field === "itemsColorOff" && (item === "volumePresets" || item === "timer")) {
         throw new ConvertError(reason, `media.${field}.${item}: not available in the admin`);
       }
       toolbarOf(item, `media.${field}`)[color] = hex;

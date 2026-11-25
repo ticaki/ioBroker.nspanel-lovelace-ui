@@ -2,6 +2,7 @@ import { Color } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
 import * as tools from '../../const/tools';
+import { pageItemDefaults } from '../../const/page-item-defaults';
 
 export async function getPageAlexa(
     configManager: ConfigManager,
@@ -653,6 +654,41 @@ export async function getPageAlexa(
                 },
             },
         });
+    }
+    // timer of the Echo device the page controls (opt-in)
+    if (page.media.activateDefaultItems?.timer === true) {
+        const parts = str.split('.');
+        if (parts.length === 4 && parts[2] === 'Echo-Devices' && parts[3]) {
+            gridItem.pageItems.push({
+                role: 'timer',
+                type: 'timer',
+                dpInit: '',
+                alexaTimer: { instance: parts.slice(0, 2).join('.'), serial: parts[3], followMedia: true },
+                data: {
+                    icon: {
+                        true: {
+                            value: { type: 'const', constVal: pageItemDefaults.timer.iconOn },
+                            color: await configManager.getIconColor(
+                                page.media.itemsColorOn?.timer,
+                                Color[pageItemDefaults.timer.colorOn],
+                            ),
+                        },
+                        false: {
+                            value: { type: 'const', constVal: pageItemDefaults.timer.iconOff },
+                            color: await configManager.getIconColor(undefined, Color[pageItemDefaults.timer.colorOff]),
+                        },
+                        scale: undefined,
+                        maxBri: undefined,
+                        minBri: undefined,
+                    },
+                    headline: { type: 'const', constVal: 'Timer' },
+                },
+            });
+        } else {
+            const msg = `${page.uniqueName}: timer item needs an Echo device as media id (alexa2.<n>.Echo-Devices.<serial>), got ${page.media.id}`;
+            messages.push(msg);
+            adapter.log.warn(msg);
+        }
     }
 
     return { gridItem, messages };

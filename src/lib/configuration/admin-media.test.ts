@@ -53,6 +53,22 @@ describe('lib/configuration - buildMediaScriptPage', () => {
         expect(media.itemsColorOff).to.deep.equal({ speakerList: { red: 0, green: 0, blue: 255 } });
     });
 
+    it('switches the alexa2 timer item on only with enabled: true (opt-in)', () => {
+        const base: MediaEntry = { ...emptyMediaEntry('alexa'), mediaId: 'alexa2.0.Echo-Devices.G123' };
+        expect(buildMediaScriptPage(base).media).to.not.have.property('activateDefaultItems');
+        const off = buildMediaScriptPage({ ...base, toolbar: { timer: { enabled: false } } }).media;
+        expect(off).to.not.have.property('activateDefaultItems');
+        expect(off).to.not.have.property('deactivateDefaultItems');
+        const on = buildMediaScriptPage({
+            ...base,
+            toolbar: { timer: { enabled: true, colorOn: '#ff0000', colorOff: '#0000ff' } },
+        }).media;
+        expect(on.activateDefaultItems).to.deep.equal({ timer: true });
+        expect(on).to.not.have.property('deactivateDefaultItems');
+        expect(on.itemsColorOn).to.deep.equal({ timer: { red: 255, green: 0, blue: 0 } });
+        expect(on).to.not.have.property('itemsColorOff');
+    });
+
     it('cleans the lists and clamps the presets to the volume range', () => {
         const entry: MediaEntry = {
             ...emptyMediaEntry('box'),
@@ -109,6 +125,16 @@ describe('lib/types/adminShareConfig - media helpers', () => {
         expect(mediaVisibleToolbarItems(entry, 'mpd')).to.deep.equal(['online', 'clock', 'crossfade']);
         entry.volumePresets = [{ name: 'a', value: 1 }];
         expect(mediaVisibleToolbarItems(entry, 'mpd')).to.deep.equal(['online', 'clock', 'volumePresets', 'crossfade']);
+    });
+
+    it('shows the alexa2 timer item only when switched on', () => {
+        const entry: MediaEntry = { ...emptyMediaEntry('m'), mediaId: 'alexa2.0.Echo-Devices.G123' };
+        expect(mediaVisibleToolbarItems(entry, 'alexa2')).to.not.include('timer');
+        entry.toolbar = { timer: { colorOn: '#ff0000' } };
+        expect(mediaVisibleToolbarItems(entry, 'alexa2')).to.not.include('timer');
+        entry.toolbar = { timer: { enabled: true } };
+        expect(mediaVisibleToolbarItems(entry, 'alexa2')).to.include('timer');
+        expect(mediaVisibleToolbarItems(entry, 'sonos')).to.not.include('timer');
     });
 });
 

@@ -512,6 +512,8 @@ declare namespace ScriptConfig {
             favoriteList?: RGB;
             clock?: RGB;
             volumePresets?: RGB;
+            /** alexa2 only, see activateDefaultItems */
+            timer?: RGB;
         };
         itemsColorOff?: {
             trackList?: RGB;
@@ -537,6 +539,14 @@ declare namespace ScriptConfig {
             clock?: boolean;
             favoriteList?: boolean;
             crossfade?: boolean;
+        };
+        /** standard items that are only added when switched on here */
+        activateDefaultItems?: {
+            /**
+             * alexa2: timer item (popupTimer) of the Echo device the page currently controls - follows a change
+             * through the speaker list
+             */
+            timer?: boolean;
         };
     };
 

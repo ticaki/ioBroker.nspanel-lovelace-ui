@@ -3073,7 +3073,31 @@ export type MediaToolbarItem =
     | 'volumePresets'
     | 'trackList'
     | 'repeat'
-    | 'crossfade';
+    | 'crossfade'
+    | 'timer';
+
+/** standard items that are off until they are switched on (`activateDefaultItems` of the script) */
+export type MediaOptInToolbarItem = Extract<MediaToolbarItem, 'timer'>;
+export const mediaOptInToolbarItems: readonly MediaOptInToolbarItem[] = ['timer'];
+
+/**
+ * @param item standard item of the bar
+ * @returns true for the items that are off until switched on ({@link mediaOptInToolbarItems})
+ */
+export function isMediaOptInToolbarItem(item: MediaToolbarItem): item is MediaOptInToolbarItem {
+    return item === 'timer';
+}
+
+/**
+ * Whether a standard item is switched on: the opt-in items only with `enabled: true`, all others unless `enabled: false`.
+ *
+ * @param item standard item of the bar
+ * @param config its settings, undefined = defaults
+ * @returns true when the adapter adds the item (volumePresets still needs a preset)
+ */
+export function isMediaToolbarItemOn(item: MediaToolbarItem, config: MediaToolbarConfig | undefined): boolean {
+    return isMediaOptInToolbarItem(item) ? config?.enabled === true : config?.enabled !== false;
+}
 
 /** standard items holding a list of names that is edited in the admin */
 export type MediaListKind = 'speakerList' | 'playList' | 'favoriteList';
@@ -3093,8 +3117,18 @@ export type MediaBackendFeatures = {
 
 export const mediaBackendFeatures: Record<MediaBackend, MediaBackendFeatures> = {
     alexa2: {
-        items: ['reminder', 'online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat'],
-        colorOn: ['online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat'],
+        items: [
+            'reminder',
+            'online',
+            'speakerList',
+            'playList',
+            'equalizer',
+            'clock',
+            'volumePresets',
+            'repeat',
+            'timer',
+        ],
+        colorOn: ['online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat', 'timer'],
         colorOff: ['reminder', 'online', 'speakerList', 'repeat'],
         titleColor: false,
     },
@@ -3303,7 +3337,10 @@ export function mediaPlayerIdOf(id: string): string {
 
 /** one standard item of the bar: switched off, or other colors than the adapter default (#rrggbb) */
 export type MediaToolbarConfig = {
-    /** false = item is not added (deactivateDefaultItems); volumePresets has no switch, it follows the preset list */
+    /**
+     * false = item is not added (deactivateDefaultItems); volumePresets has no switch, it follows the preset list.
+     * The opt-in items ({@link mediaOptInToolbarItems}) are only added with true (activateDefaultItems).
+     */
     enabled?: boolean;
     colorOn?: string;
     colorOff?: string;
@@ -3380,7 +3417,7 @@ export function emptyMediaEntry(uniqueName: string): MediaEntry {
  * Standard items a media entry shows on the panel, in their order.
  *
  * The online item is only shown by the adapter while the player is offline, all others as long as
- * they are not switched off; volumePresets needs at least one preset.
+ * they are not switched off (the opt-in items only when switched on); volumePresets needs at least one preset.
  *
  * @param entry Media entry.
  * @param backend Backend of the player.
@@ -3388,7 +3425,9 @@ export function emptyMediaEntry(uniqueName: string): MediaEntry {
  */
 export function mediaVisibleToolbarItems(entry: MediaEntry, backend: MediaBackend): MediaToolbarItem[] {
     return mediaBackendFeatures[backend].items.filter(item =>
-        item === 'volumePresets' ? (entry.volumePresets ?? []).length > 0 : entry.toolbar?.[item]?.enabled !== false,
+        item === 'volumePresets'
+            ? (entry.volumePresets ?? []).length > 0
+            : isMediaToolbarItemOn(item, entry.toolbar?.[item]),
     );
 }
 

@@ -139,7 +139,7 @@ Which items there are and in which order they go into the bar is decided by the 
 
 | Backend | Standard items in the order of the adapter |
 |---|---|
-| **Alexa** | Reminders · Offline indicator · Speakers · Playlists · Equalizer · Clock · Volume presets · Repeat |
+| **Alexa** | Reminders · Offline indicator · Speakers · Playlists · Equalizer · Clock · Volume presets · Repeat · Timer |
 | **Sonos** | Offline indicator · Speakers · Favorites · Playlists · Clock · Volume presets · Track list · Repeat · Crossfade |
 | **Spotify** | Offline indicator · Speakers · Playlists · Track list · Clock · Volume presets · Repeat |
 | **MPD** | Offline indicator · Repeat · Clock · Volume presets · Crossfade |
@@ -162,11 +162,20 @@ Which color fields appear depends on the item and on the backend:
 |---|---|
 | **Offline indicator**, **Speakers**, **Repeat** | *Color on* and *Color off* |
 | **Crossfade** | *Color on* and *Color off* with Sonos; with MPD **none** |
-| **Playlists**, **Favorites**, **Equalizer**, **Clock**, **Volume presets** | *Color* only |
+| **Playlists**, **Favorites**, **Equalizer**, **Clock**, **Volume presets**, **Timer** | *Color* only |
 | **Reminders** | *Color off* only |
 | **Track list** | none |
 
 The help texts of the dialogs describe what an item does, for example *„Selects the speaker or the room group the player plays on."*, *„Jumps to a title of the current queue."*, *„Bass, mid and treble of the Echo device."* or *„Appears as soon as at least one volume preset is set."*
+
+### Timer (Alexa only)
+
+The **Timer** is the only standard item that is **off by default**: click its chip and switch on **Show on the panel**. A tap opens the [timer popup](popupTimer#7-alexa-timer-alexa2) like a page item of kind **Alexa timer** – remaining time of the next or ringing timer, stop, set a new timer. It shows no alarms.
+
+- It always belongs to the Echo device the page **currently controls**: after a change through the **Speakers** list it shows and controls the timers of the new device. Timers running on the previous Echo keep running there.
+- An own device cannot be chosen – create a page item **Alexa timer** for that.
+- Requirement as for the page item: switch on the option **Automatically query activity on device interaction** in the alexa2 instance, see [Requirements](popupTimer#requirements).
+- It is the last standard item of the bar; when more items are visible than the bar has places (5 on the NSPanel), the bar pages.
 
 > The **Offline indicator** takes no place in the preview: *„Only appears while the player is not reachable - it takes no place otherwise."* It can only be seen as a chip below the preview.
 
