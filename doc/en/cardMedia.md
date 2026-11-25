@@ -183,6 +183,7 @@ The help texts of the dialogs describe what an item does, for example *„Select
 
 The **Timer** is the only standard item that is **off by default**: click its chip and switch on **Show on the panel**. A tap opens the [timer popup](popupTimer#7-alexa-timer-alexa2) like a page item of kind **Alexa timer** – remaining time of the next or ringing timer, stop, set a new timer. It shows no alarms.
 
+- **While a timer runs**, the **remaining time** replaces the icon, in the font of the clock – in the format of the screensaver timer: minutes with one decimal, always rounded up (`12.5`, `0.1`), from 1000 minutes on whole minutes (up to `9999`). Its colour is the colour of the item. Without a timer and while a timer rings it shows the icon. The bar is only sent again when the shown number changes (every 6 seconds, from 1000 minutes on every minute); a tap still opens the timer popup. It is the same display as the option [Value instead of icon](popupTimer#value-instead-of-icon) of a timer page item, switched on for good here.
 - It always belongs to the Echo device the page **currently controls**: after a change through the **Speakers** list it shows and controls the timers of the new device. Timers running on the previous Echo keep running there.
 - An own device cannot be chosen – create a page item **Alexa timer** for that.
 - Requirement as for the page item: switch on the option **Automatically query activity on device interaction** in the alexa2 instance, see [Requirements](popupTimer#requirements).

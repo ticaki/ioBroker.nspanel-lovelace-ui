@@ -28,7 +28,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageItem_exports = {};
 __export(pageItem_exports, {
-  PageItem: () => PageItem
+  PageItem: () => PageItem,
+  timerIconText: () => timerIconText
 });
 module.exports = __toCommonJS(pageItem_exports);
 var import_Color = require("../const/Color");
@@ -57,6 +58,11 @@ function getMediaDeviceIdent(parent) {
     return current;
   }
   return "items" in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : void 0;
+}
+const TIMER_ICON_TEXT_SIZE = 1;
+const TIMER_ICON_TIMEOUT = "timerIconText";
+function timerIconText(selection) {
+  return (selection == null ? void 0 : selection.status) === "running" ? (0, import_screensaver_timer.timerText)(selection.remainingMs) : void 0;
 }
 function echoDeviceOf(ident) {
   const parts = (ident != null ? ident : "").split(".");
@@ -697,6 +703,12 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             {
               message.iconColor = await tools.getIconEntryColor(item.icon, v, import_Color.Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, v, "gesture-tap-button");
+              if (entry.useValue) {
+                const text = await this.drawTimerIconText(item);
+                if (text !== void 0) {
+                  message.icon = `${text}\xAC${TIMER_ICON_TEXT_SIZE}`;
+                }
+              }
               message.optionalValue = this.library.getTranslation(
                 (_ia = await tools.getEntryTextOnOff(item.text, on)) != null ? _ia : opt
               );
@@ -1480,6 +1492,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     if (this.alexaTimer && this.alexaTimer.deviceId !== `${device.instance}.Echo-Devices.${device.serial}`) {
       this.alexaTimer.removeListener(this.onClockTimerChange);
       this.alexaTimer = void 0;
+      this.scheduleTimerIconRedraw(void 0);
     }
     if (!this.alexaTimer) {
       this.alexaTimer = this.controller.alexaTimers.get(device);
@@ -1488,6 +1501,67 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     const timer = this.alexaTimer;
     await timer.ready;
     return timer;
+  }
+  /**
+   * The remaining time a timer item with `useValue` shows instead of its icon, see {@link timerIconText}. The page
+   * is sent as a whole only, so it is not redrawn by the ticker of the page each second but once the shown text
+   * changes ({@link scheduleTimerIconRedraw}); an open popup keeps the ticker.
+   *
+   * @param item data of the item
+   * @returns the text, undefined = icon
+   */
+  async drawTimerIconText(item) {
+    var _a, _b, _c, _d;
+    let selection;
+    let timed = true;
+    switch ((_a = this.tempData) == null ? void 0 : _a.role) {
+      case "alexa-timer":
+      case "ss-timer": {
+        selection = (_b = await this.getSharedTimerAccess()) == null ? void 0 : _b.selection;
+        break;
+      }
+      case "timer": {
+        const endTs = Number(this.tempData.endTs) || 0;
+        selection = this.tempData.status === "run" && endTs > 0 ? { status: "running", remainingMs: endTs - Date.now() } : void 0;
+        break;
+      }
+      case "ex-timer": {
+        timed = false;
+        const seconds = (0, import_screensaver_timer.timerSecondsOf)(await this.getTimerActual(item), (_d = (_c = item.entity1) == null ? void 0 : _c.value) == null ? void 0 : _d.common.unit);
+        const status = item.setValue2 ? await item.setValue2.getNumber() : null;
+        selection = seconds > 0 && (typeof status !== "number" || status === 2) ? { status: "running", remainingMs: seconds * 1e3 } : void 0;
+        break;
+      }
+    }
+    const text = timerIconText(selection);
+    this.parent.setTimerTick(this, false);
+    this.scheduleTimerIconRedraw(
+      text !== void 0 && timed && selection ? (0, import_screensaver_timer.nextTextChangeMs)(Math.max(1, selection.remainingMs)) : void 0
+    );
+    return text;
+  }
+  /**
+   * Next redraw of the page for the remaining time a timer item shows instead of its icon; replaces the one waiting
+   * so far. The page draws the item again, which schedules the next one.
+   *
+   * @param waitMs ms until the shown text changes, undefined = no redraw (no running timer, popup open, device change)
+   */
+  scheduleTimerIconRedraw(waitMs) {
+    const waiting = this.timeouts[TIMER_ICON_TIMEOUT];
+    if (waiting) {
+      this.adapter.clearTimeout(waiting);
+      this.timeouts[TIMER_ICON_TIMEOUT] = void 0;
+    }
+    if (waitMs === void 0 || this.unload) {
+      return;
+    }
+    this.timeouts[TIMER_ICON_TIMEOUT] = this.adapter.setTimeout(() => {
+      this.timeouts[TIMER_ICON_TIMEOUT] = void 0;
+      if (this.unload || this.adapter.unload || this.lastPopupType || this.parent.sleep || !this.parent.getVisibility()) {
+        return;
+      }
+      void this.parent.onStateTriggerSuperDoNotOverride("timer", this).catch((err) => this.log.warn(`${this.name}: timer: ${String(err)}`));
+    }, waitMs + 1);
   }
   /**
    * The alarm of the Echo device of this item in the form of the alarm clock mode (`ex-alarm`); changes of the alarms
@@ -1702,6 +1776,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     this.visibility = true;
     this.lastPopupType = mode;
+    if (entry.type === "timer") {
+      this.scheduleTimerIconRedraw(void 0);
+    }
     switch (mode) {
       case "popupLightNew":
       case "popupLight": {
@@ -3610,6 +3687,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageItem
+  PageItem,
+  timerIconText
 });
 //# sourceMappingURL=pageItem.js.map

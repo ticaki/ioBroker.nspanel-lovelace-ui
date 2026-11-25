@@ -667,6 +667,8 @@ export async function getPageAlexa(
                 type: 'timer',
                 dpInit: '',
                 alexaTimer: { instance: parts.slice(0, 2).join('.'), serial: parts[3], followMedia: true },
+                // the remaining time replaces the icon, see PageItem.drawTimerIconText
+                useValue: true,
                 data: {
                     icon: {
                         true: {

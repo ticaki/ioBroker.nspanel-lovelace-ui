@@ -86,7 +86,7 @@ Diese Felder erscheinen nur dort, wo der Adapter sie auswertet:
 |---|---|---|
 | **Heizkreis** | nur auf der Thermostat-Seite | Ordnet das Pageitem einem Heizkreis zu, oder *alle Heizkreise* — dann erscheint es bei jedem. |
 | **Text-/Icongröße** | auf den drei Grid-Varianten, auf der Thermostat- und auf der Mediaplayer-Seite — **nicht** bei *Entities* und *Schedule* | Die Nextion-Schrift, mit der das Panel Symbol oder Wert dieses Elements zeichnet (siehe unten). |
-| **Wert statt Icon verwenden** | dieselben fünf Kartentypen, nicht beim benutzerdefinierten Knopf | Die Fläche zeigt den Wert als Text statt des Symbols. Der Adapter macht das nur, wenn der `ACTUAL`-Datenpunkt eine Zahl, eine Zeichenkette oder `mixed` ist; sonst bleibt es beim Symbol. |
+| **Wert statt Icon verwenden** | dieselben fünf Kartentypen, nicht beim benutzerdefinierten Knopf | Die Fläche zeigt den Wert als Text statt des Symbols. Der Adapter macht das nur, wenn der `ACTUAL`-Datenpunkt eine Zahl, eine Zeichenkette oder `mixed` ist; sonst bleibt es beim Symbol. Beim **Timer** (auch Alexa-Timer) steht stattdessen die Restzeit, solange ein Timer läuft, siehe [Timer-Popup – Wert statt Icon](popupTimer#wert-statt-icon). |
 | **Langer Druck** | **nur** auf den drei Grid-Varianten, und nur bei Navigation, benutzerdefiniertem Knopf oder `role=button` | Zweite Funktion derselben Fläche. |
 
 #### Langer Druck

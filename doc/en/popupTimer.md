@@ -206,6 +206,16 @@ What list and popup can show – the same for all kinds:
 - While a timer runs, the list is refreshed every 2 seconds, the open popup every second. That is on purpose – faster, the traffic to the panel piles up.
 - The popup stays open while the timer runs, and the panel does not dim, because every refresh resets its sleep counter. That is intended.
 
+### Value instead of icon
+
+On the grid pages (cardGrid, cardGrid2, cardGrid3) as well as on the thermostat and the media page the [page item configuration](PageConfig-Dialoge#further-fields-depending-on-the-card-type) offers the option **Use Value Instead of Icon** – for the timer for every kind: internal timer, timer from states and Alexa timer (not for the Alexa alarm).
+
+- **While a timer runs**, the **remaining time** replaces the icon – in the format of the screensaver timer: minutes with one decimal, always rounded up (`12.5`, `0.1`), from 1000 minutes on whole minutes (up to `9999`). It is drawn in font 1 like the clock, in the *on* colour of the item.
+- **No timer, paused, expired or ringing:** the icon as without the option.
+- The page is only sent again when the shown number changes (every 6 seconds, from 1000 minutes on every minute); a timer from states that counts outside redraws with every new value of `ACTUAL`. The open popup still counts every second.
+- Off by default; *Entities* and *Schedule* do not have the option – there the line shows the remaining time anyway.
+- The toolbar item **Timer** of the [media page](cardMedia#timer-alexa-only) always shows the remaining time like this.
+
 ## 7. Alexa timer (alexa2)
 
 Instead of a channel, a timer item can show the timers of an **Echo device** – or one of its **alarms** (see [Alarms of an Echo device](#alarms-of-an-echo-device)). Both come from the **alexa2** adapter, which maps the Echo devices into ioBroker. No channel is needed. The screensaver knows the timers only, no alarms; its source **Alexa timer (alexa2)** is under [Source: Alexa timer (alexa2)](screensaver#source-alexa-timer-alexa2). On a media page with alexa2 there is also the toolbar item **Timer** for this, which follows the Echo the page currently controls, see [Media page – Timer (Alexa only)](cardMedia#timer-alexa-only).

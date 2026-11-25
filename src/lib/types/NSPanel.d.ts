@@ -1134,6 +1134,11 @@ export namespace NSPanel {
         };
         /** id of the item, the screensaver finds it by this (clockTimer.itemId) */
         itemId?: string;
+        /**
+         * value instead of icon (`useValue` on grid cards, always for the timer of an alexa2 media page): while a
+         * timer runs the remaining time replaces the icon
+         */
+        useValue?: boolean;
         data: pages.ChangeTypeOfKeys<PageItemTimer, DataItemsOptions | undefined>;
     };
 
@@ -1150,6 +1155,8 @@ export namespace NSPanel {
             followMedia?: boolean;
         };
         itemId?: string;
+        /** see {@link PageItemTimerDataItemsOptions} */
+        useValue?: boolean;
         data: pages.ChangeTypeOfKeys<PageItemTimer, dataItem.Dataitem | undefined>;
     };
 

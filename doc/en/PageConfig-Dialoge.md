@@ -86,7 +86,7 @@ These fields only appear where the adapter evaluates them:
 |---|---|---|
 | **Heat circuit** | thermostat page only | Assigns the page item to one heat circuit, or *all heat circuits* — then it appears on every one. |
 | **Text Size** | on the three grid variants, on the thermostat and on the media player page — **not** on *Entities* and *Schedule* | The Nextion font the panel uses to draw the icon or the value of this item (see below). |
-| **Use Value Instead of Icon** | the same five card types, not for a custom button | The slot shows the value as text instead of the icon. The adapter only does that when the `ACTUAL` state is a number, a string or `mixed`; otherwise the icon stays. |
+| **Use Value Instead of Icon** | the same five card types, not for a custom button | The slot shows the value as text instead of the icon. The adapter only does that when the `ACTUAL` state is a number, a string or `mixed`; otherwise the icon stays. For the **timer** (also the Alexa timer) the remaining time is shown instead while a timer runs, see [timer popup – Value instead of icon](popupTimer#value-instead-of-icon). |
 | **Long press** | **only** on the three grid variants, and only for a navigation, a custom button or `role=button` | A second function on the same slot. |
 
 #### Long press

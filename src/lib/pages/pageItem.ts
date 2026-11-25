@@ -27,8 +27,11 @@ import {
     timerPopupButtons,
     timerPopupFields,
     timerSecondsOf,
+    timerText,
+    nextTextChangeMs,
     timerValueOf,
     type ClockTimerAccess,
+    type TimerSelection,
     type TimerCountdownView,
     type TimerPopupButtons,
 } from './screensaver-timer';
@@ -72,6 +75,24 @@ function getMediaDeviceIdent(parent: unknown): string | undefined {
         return current;
     }
     return 'items' in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : undefined;
+}
+
+/** font of the remaining time a timer item shows instead of its icon (`useValue`) - that of the clock (text.clock) */
+const TIMER_ICON_TEXT_SIZE = 1;
+/** key in {@link PageItem.timeouts}: next change of the remaining time a timer item shows instead of its icon */
+const TIMER_ICON_TIMEOUT = 'timerIconText';
+
+/**
+ * Text a timer item with `useValue` shows instead of its icon: the remaining time as on the screensaver
+ * ({@link timerText}) while a timer runs; no timer, a paused or an expired/ringing one keeps the icon.
+ *
+ * @param selection state and remaining time of the timer
+ * @returns the text, undefined = icon
+ */
+export function timerIconText(
+    selection: Pick<TimerSelection, 'status' | 'remainingMs'> | undefined,
+): string | undefined {
+    return selection?.status === 'running' ? timerText(selection.remainingMs) : undefined;
 }
 
 /** the part of `alexaTimer` of an item that names the Echo device */
@@ -898,6 +919,13 @@ export class PageItem extends BaseTriggeredPage {
                         {
                             message.iconColor = await tools.getIconEntryColor(item.icon, v, Color.White);
                             message.icon = await tools.getIconEntryValue(item.icon, v, 'gesture-tap-button');
+                            if (entry.useValue) {
+                                // value instead of icon: the remaining time replaces the icon, like the clock
+                                const text = await this.drawTimerIconText(item);
+                                if (text !== undefined) {
+                                    message.icon = `${text}¬${TIMER_ICON_TEXT_SIZE}`;
+                                }
+                            }
                             message.optionalValue = this.library.getTranslation(
                                 (await tools.getEntryTextOnOff(item.text, on)) ?? opt,
                             );
@@ -1702,6 +1730,7 @@ export class PageItem extends BaseTriggeredPage {
         if (this.alexaTimer && this.alexaTimer.deviceId !== `${device.instance}.Echo-Devices.${device.serial}`) {
             this.alexaTimer.removeListener(this.onClockTimerChange);
             this.alexaTimer = undefined;
+            this.scheduleTimerIconRedraw(undefined);
         }
         if (!this.alexaTimer) {
             this.alexaTimer = this.controller.alexaTimers.get(device);
@@ -1710,6 +1739,83 @@ export class PageItem extends BaseTriggeredPage {
         const timer = this.alexaTimer;
         await timer.ready;
         return timer;
+    }
+
+    /**
+     * The remaining time a timer item with `useValue` shows instead of its icon, see {@link timerIconText}. The page
+     * is sent as a whole only, so it is not redrawn by the ticker of the page each second but once the shown text
+     * changes ({@link scheduleTimerIconRedraw}); an open popup keeps the ticker.
+     *
+     * @param item data of the item
+     * @returns the text, undefined = icon
+     */
+    private async drawTimerIconText(item: NSPanel.PageItemTimerDataItems['data']): Promise<string | undefined> {
+        let selection: Pick<TimerSelection, 'status' | 'remainingMs'> | undefined;
+        let timed = true;
+        switch (this.tempData?.role) {
+            case 'alexa-timer':
+            case 'ss-timer': {
+                selection = (await this.getSharedTimerAccess())?.selection;
+                break;
+            }
+            case 'timer': {
+                const endTs = Number(this.tempData.endTs) || 0;
+                selection =
+                    this.tempData.status === 'run' && endTs > 0
+                        ? { status: 'running', remainingMs: endTs - Date.now() }
+                        : undefined;
+                break;
+            }
+            case 'ex-timer': {
+                // counted outside: every new value of ACTUAL draws the page anyway, STATUS 1 = paused, 0 = off
+                timed = false;
+                const seconds = timerSecondsOf(await this.getTimerActual(item), item.entity1?.value?.common.unit);
+                const status = item.setValue2 ? await item.setValue2.getNumber() : null;
+                selection =
+                    seconds > 0 && (typeof status !== 'number' || status === 2)
+                        ? { status: 'running', remainingMs: seconds * 1000 }
+                        : undefined;
+                break;
+            }
+        }
+        const text = timerIconText(selection);
+        this.parent.setTimerTick(this, false);
+        this.scheduleTimerIconRedraw(
+            text !== undefined && timed && selection ? nextTextChangeMs(Math.max(1, selection.remainingMs)) : undefined,
+        );
+        return text;
+    }
+
+    /**
+     * Next redraw of the page for the remaining time a timer item shows instead of its icon; replaces the one waiting
+     * so far. The page draws the item again, which schedules the next one.
+     *
+     * @param waitMs ms until the shown text changes, undefined = no redraw (no running timer, popup open, device change)
+     */
+    private scheduleTimerIconRedraw(waitMs: number | undefined): void {
+        const waiting = this.timeouts[TIMER_ICON_TIMEOUT];
+        if (waiting) {
+            this.adapter.clearTimeout(waiting);
+            this.timeouts[TIMER_ICON_TIMEOUT] = undefined;
+        }
+        if (waitMs === undefined || this.unload) {
+            return;
+        }
+        this.timeouts[TIMER_ICON_TIMEOUT] = this.adapter.setTimeout(() => {
+            this.timeouts[TIMER_ICON_TIMEOUT] = undefined;
+            if (
+                this.unload ||
+                this.adapter.unload ||
+                this.lastPopupType ||
+                this.parent.sleep ||
+                !this.parent.getVisibility()
+            ) {
+                return;
+            }
+            void this.parent
+                .onStateTriggerSuperDoNotOverride('timer', this)
+                .catch((err: unknown) => this.log.warn(`${this.name}: timer: ${String(err)}`));
+        }, waitMs + 1);
     }
 
     /**
@@ -1942,6 +2048,10 @@ export class PageItem extends BaseTriggeredPage {
         }
         this.visibility = true;
         this.lastPopupType = mode;
+        if (entry.type === 'timer') {
+            // the popup counts with the ticker of the page, the redraw of the remaining time in the icon waits for its end
+            this.scheduleTimerIconRedraw(undefined);
+        }
         switch (mode) {
             case 'popupLightNew':
             case 'popupLight': {
