@@ -3764,11 +3764,14 @@ class ConfigManager extends import_library.BaseClass {
       if (!items || items.length === 0) {
         return [];
       }
-      const tasks = items.map((item) => {
+      const tasks = items.map((item, index) => {
         if (!item) {
           return Promise.resolve(null);
         }
         return this.getEntityData(item, mode, config).then(async (result) => {
+          if (mode === "indicator" && item.ScreensaverEntityPinned === true) {
+            result.pinnedSlot = index;
+          }
           const popup = mode === "indicator" ? await this.getScreensaverIndicatorPopup(item) : null;
           if (popup) {
             indicatorPopups.set(result, popup);

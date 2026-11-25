@@ -81,6 +81,8 @@ export interface ScreensaverItemDialogProps {
     /** place within the area (0-based) and number of places */
     index: number;
     count: number;
+    /** slots of the area on the model of the panel (one window) - a pin works on the places below it only */
+    slots?: number;
     /** the place shows icon and text side by side */
     inline?: boolean;
     /** stored item, undefined = new */
@@ -623,6 +625,15 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         );
     }
 
+    /**
+     * a pin works on the places of the first window only (index below the slots of the model)
+     *
+     * @returns true when the place of the item can be pinned
+     */
+    private canPin(): boolean {
+        return this.props.slots === undefined || this.props.index < this.props.slots;
+    }
+
     private set<K extends keyof ScreensaverItemConfig>(field: K, value: ScreensaverItemConfig[K]): void {
         const draft = { ...this.state.draft };
         if (value === undefined || value === '') {
@@ -727,6 +738,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             }
             if (draft.iconTextSize !== undefined) {
                 kept.iconTextSize = draft.iconTextSize;
+            }
+            if (draft.pinned === true && this.props.area === 'indicator') {
+                kept.pinned = true;
             }
             return kept;
         }
@@ -1984,6 +1998,33 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                         </span>
                                     }
                                 />
+                            )}
+                            {area === 'indicator' && (
+                                <Box data-ss="pinned">
+                                    <FormControlLabel
+                                        sx={{ display: 'flex' }}
+                                        disabled={!this.canPin()}
+                                        control={
+                                            <Checkbox
+                                                checked={draft.pinned === true}
+                                                onChange={e => this.set('pinned', e.target.checked || undefined)}
+                                            />
+                                        }
+                                        label={this.getText('screensaver_item_pinned')}
+                                    />
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ display: 'block', ml: 4 }}
+                                    >
+                                        {this.canPin()
+                                            ? this.getText('screensaver_item_pinnedHint')
+                                            : this.getText('screensaver_item_pinnedOutside').replace(
+                                                  '%s',
+                                                  String(this.props.slots ?? 0),
+                                              )}
+                                    </Typography>
+                                </Box>
                             )}
                         </Box>
                     )}
