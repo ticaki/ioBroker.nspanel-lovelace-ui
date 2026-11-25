@@ -2718,6 +2718,7 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
             ],
             [{ media: { ...media, speakerList: [' a'] } }, 'media.speakerList: expected trimmed, non-empty names'],
             [{ media: { ...media, playList: ['a', ''] } }, 'media.playList: expected trimmed, non-empty names'],
+            [{ media: { ...media, headlineMode: 'x' } }, "media.headlineMode: expected 'title' or 'device'"],
             [{ media: { ...media, favoriteList: 'a' } }, 'media.favoriteList: expected a list of names'],
             [
                 { media: { ...media, volumePresets: [] } },
@@ -2738,6 +2739,28 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
                 { uniqueName: 'm', type: 'cardMedia', reason: 'fieldNotSupported', detail },
             ]);
         }
+    });
+
+    it('takes over the headline mode of a cardMedia page, the default stays out', () => {
+        const convert = (headlineMode: string): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { id: 'squeezeboxrpc.0.Players.Familienzimmer', headlineMode },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            return result.newPages[0] as ShareConfig.MediaEntry;
+        };
+        expect(convert('device').headlineMode).to.equal('device');
+        expect(convert('title')).to.not.have.property('headlineMode');
     });
 
     it('takes an empty name list of a cardMedia page as a missing field and deduplicates repeated names', () => {

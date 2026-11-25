@@ -78,6 +78,13 @@ describe('lib/configuration - buildMediaScriptPage', () => {
         expect(media.colorMediaTitle).to.deep.equal({ red: 16, green: 32, blue: 48 });
     });
 
+    it("passes the headline mode 'device' on and leaves the default out", () => {
+        const base = { ...emptyMediaEntry('m'), mediaId: 'mpd.0' };
+        expect(buildMediaScriptPage({ ...base, headlineMode: 'device' }).media.headlineMode).to.equal('device');
+        expect(buildMediaScriptPage({ ...base, headlineMode: 'title' }).media).to.not.have.property('headlineMode');
+        expect(buildMediaScriptPage(base).media).to.not.have.property('headlineMode');
+    });
+
     it('keeps a lower volume limit of 0', () => {
         const { media } = buildMediaScriptPage({ ...emptyMediaEntry('m'), mediaId: 'mpd.0', minValue: 0 });
         expect(media.minValue).to.equal(0);

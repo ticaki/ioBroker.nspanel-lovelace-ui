@@ -98,6 +98,7 @@ __export(adminShareConfig_exports, {
   isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
   isMediaBackend: () => isMediaBackend,
+  isMediaHeadlineMode: () => isMediaHeadlineMode,
   isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
   isPChartRangeKey: () => isPChartRangeKey,
   isPageLinkEntry: () => isPageLinkEntry,
@@ -1286,6 +1287,9 @@ function emptyThermoEntry(uniqueName) {
     alwaysOn: "none"
   };
 }
+function isMediaHeadlineMode(value) {
+  return value === "title" || value === "device";
+}
 const mediaBackends = ["alexa2", "sonos", "spotify-premium", "mpd", "squeezeboxrpc"];
 const mediaListKinds = ["speakerList", "playList", "favoriteList"];
 const mediaBackendFeatures = {
@@ -2337,6 +2341,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isLongPressCard,
   isMainPageEntry,
   isMediaBackend,
+  isMediaHeadlineMode,
   isNameOnlyPopupTitle,
   isPChartRangeKey,
   isPageLinkEntry,

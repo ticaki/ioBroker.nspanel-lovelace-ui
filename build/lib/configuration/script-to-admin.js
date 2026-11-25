@@ -798,6 +798,7 @@ function convertThermoPage(page, common, topic) {
 const mediaMappedKeys = [
   "id",
   "name",
+  "headlineMode",
   "colorMediaIcon",
   "colorMediaArtist",
   "colorMediaTitle",
@@ -865,6 +866,14 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
   const name = trimmedText(media.name, reason, "media.name");
   if (name !== void 0) {
     entry.name = name;
+  }
+  if (media.headlineMode !== void 0 && media.headlineMode !== null) {
+    if (!(0, import_adminShareConfig.isMediaHeadlineMode)(media.headlineMode)) {
+      throw new ConvertError(reason, `media.headlineMode: expected 'title' or 'device'`);
+    }
+    if (media.headlineMode === "device") {
+      entry.headlineMode = "device";
+    }
   }
   const minValue = num(media.minValue, reason, "media.minValue");
   const maxValue = num(media.maxValue, reason, "media.maxValue");

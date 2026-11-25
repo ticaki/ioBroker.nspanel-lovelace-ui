@@ -1510,6 +1510,7 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
     const media: ScriptConfig.PageMediaItem = {
         id: thermo2Text(entry.mediaId) ?? '',
         name: thermo2Text(entry.name),
+        headlineMode: entry.headlineMode === 'device' ? 'device' : undefined,
         minValue,
         maxValue,
         colorMediaIcon: thermo2Rgb(entry.colorMediaIcon),

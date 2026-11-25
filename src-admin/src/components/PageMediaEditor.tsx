@@ -20,6 +20,7 @@ import {
     DialogTitle,
     FormControlLabel,
     IconButton,
+    MenuItem,
     Slider,
     Switch,
     TextField,
@@ -622,6 +623,20 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         sx={{ mt: 2.5 }}
                     />
                 </Box>
+                <TextField
+                    select
+                    fullWidth
+                    variant="standard"
+                    label={this.getText('media_headlineMode')}
+                    value={draft.headlineMode ?? 'title'}
+                    disabled={!!draft.name?.trim()}
+                    onChange={e => this.setDraft({ headlineMode: e.target.value === 'device' ? 'device' : undefined })}
+                    sx={{ mb: 2 }}
+                    slotProps={{ inputLabel: { shrink: true } }}
+                >
+                    <MenuItem value="title">{this.getText('media_headlineModeTitle')}</MenuItem>
+                    <MenuItem value="device">{this.getText('media_headlineModeDevice')}</MenuItem>
+                </TextField>
             </>
         );
     }
