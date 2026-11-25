@@ -210,11 +210,11 @@ What list and popup can show – the same for all kinds:
 
 On the grid pages (cardGrid, cardGrid2, cardGrid3) as well as on the thermostat and the media page the [page item configuration](PageConfig-Dialoge#further-fields-depending-on-the-card-type) offers the option **Use Value Instead of Icon** – for the timer for every kind: internal timer, timer from states and Alexa timer (not for the Alexa alarm).
 
-- **While a timer runs**, the **remaining time** replaces the icon – in the format of the screensaver timer: minutes with one decimal, always rounded up (`12.5`, `0.1`), from 1000 minutes on whole minutes (up to `9999`). It is drawn in font 1 like the clock, in the *on* colour of the item.
+- **While a timer runs**, the **remaining time** replaces the icon – in the format of the screensaver timer: minutes with one decimal, always rounded up (`12.5`, `0.1`), from 1000 minutes on whole minutes (up to `9999`). It is drawn like the value of other items with *value instead of icon*: in the set **text/icon size**, without one in the font of the panel; its colour is the *on* colour of the item.
 - **No timer, paused, expired or ringing:** the icon as without the option.
 - The page is only sent again when the shown number changes (every 6 seconds, from 1000 minutes on every minute); a timer from states that counts outside redraws with every new value of `ACTUAL`. The open popup still counts every second.
 - Off by default; *Entities* and *Schedule* do not have the option – there the line shows the remaining time anyway.
-- The toolbar item **Timer** of the [media page](cardMedia#timer-alexa-only) always shows the remaining time like this.
+- The toolbar item **Timer** of the [media page](cardMedia#timer-alexa-only) always shows the remaining time like this, there in the font of the clock.
 
 ## 7. Alexa timer (alexa2)
 

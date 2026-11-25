@@ -59,7 +59,7 @@ function getMediaDeviceIdent(parent) {
   }
   return "items" in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : void 0;
 }
-const TIMER_ICON_TEXT_SIZE = 1;
+const MEDIA_TIMER_TEXT_SIZE = 1;
 const TIMER_ICON_TIMEOUT = "timerIconText";
 function timerIconText(selection) {
   return (selection == null ? void 0 : selection.status) === "running" ? (0, import_screensaver_timer.timerText)(selection.remainingMs) : void 0;
@@ -706,7 +706,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               if (entry.useValue) {
                 const text = await this.drawTimerIconText(item);
                 if (text !== void 0) {
-                  message.icon = `${text}\xAC${TIMER_ICON_TEXT_SIZE}`;
+                  message.icon = text + await this.timerIconTextSuffix(entry);
                 }
               }
               message.optionalValue = this.library.getTranslation(
@@ -1539,6 +1539,19 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       text !== void 0 && timed && selection ? (0, import_screensaver_timer.nextTextChangeMs)(Math.max(1, selection.remainingMs)) : void 0
     );
     return text;
+  }
+  /**
+   * The font of the remaining time in the icon field - decided only here. The toolbar item of a media page takes that
+   * of the clock; on the tiles the font of the item, as items with value instead of icon (textNotIcon) show their
+   * value: the text size of the admin, without one the font of the HMI.
+   *
+   * @param entry the timer item
+   * @returns `¬<font>`, or '' for the font of the HMI
+   */
+  async timerIconTextSuffix(entry) {
+    var _a, _b;
+    const size = ((_a = entry.alexaTimer) == null ? void 0 : _a.followMedia) ? MEDIA_TIMER_TEXT_SIZE : ((_b = entry.data.icon) == null ? void 0 : _b.textSize) ? await entry.data.icon.textSize.getNumber() : null;
+    return size != null ? `\xAC${size}` : "";
   }
   /**
    * Next redraw of the page for the remaining time a timer item shows instead of its icon; replaces the one waiting

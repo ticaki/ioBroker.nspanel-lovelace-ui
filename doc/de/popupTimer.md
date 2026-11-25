@@ -210,11 +210,11 @@ Was Liste und Popup darstellen können – für alle Arten gleich:
 
 Auf den Grid-Seiten (cardGrid, cardGrid2, cardGrid3) sowie auf der Thermostat- und der Mediaplayer-Seite bietet die [Pageitem-Konfiguration](PageConfig-Dialoge#weitere-felder-je-nach-kartentyp) die Option **Wert statt Icon verwenden** – beim Timer für alle Arten: interner Timer, Timer aus Datenpunkten und Alexa-Timer (nicht beim Alexa-Wecker).
 
-- **Läuft ein Timer**, steht statt des Symbols die **Restzeit** – im Format des Bildschirmschoner-Timers: Minuten mit einer Nachkommastelle, immer aufgerundet (`12.5`, `0.1`), ab 1000 Minuten ganze Minuten (bis `9999`). Gezeichnet wird sie in Schrift 1 wie die Uhr, in der Farbe *an* des Items.
+- **Läuft ein Timer**, steht statt des Symbols die **Restzeit** – im Format des Bildschirmschoner-Timers: Minuten mit einer Nachkommastelle, immer aufgerundet (`12.5`, `0.1`), ab 1000 Minuten ganze Minuten (bis `9999`). Gezeichnet wird sie wie der Wert anderer Items mit *Wert statt Icon*: in der eingestellten **Text-/Icongröße**, ohne Angabe in der Schrift des Panels; Farbe ist die Farbe *an* des Items.
 - **Kein Timer, pausiert, abgelaufen oder klingelnd:** das Symbol wie ohne die Option.
 - Die Seite wird nur neu gesendet, wenn sich die angezeigte Zahl ändert (alle 6 Sekunden, ab 1000 Minuten jede Minute); ein Timer aus Datenpunkten, der außerhalb zählt, zeichnet sich mit jedem neuen Wert von `ACTUAL` neu. Das offene Popup zählt weiter jede Sekunde.
 - Standardmäßig aus; auf *Entities* und *Schedule* gibt es die Option nicht – dort steht die Restzeit ohnehin in der Zeile.
-- Das Toolbar-Element **Timer** der [Mediaplayer-Seite](cardMedia#timer-nur-alexa) zeigt die Restzeit immer so.
+- Das Toolbar-Element **Timer** der [Mediaplayer-Seite](cardMedia#timer-nur-alexa) zeigt die Restzeit immer so, dort in der Schrift der Uhr.
 
 ## 7. Alexa-Timer (alexa2)
 

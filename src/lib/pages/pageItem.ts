@@ -77,8 +77,8 @@ function getMediaDeviceIdent(parent: unknown): string | undefined {
     return 'items' in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : undefined;
 }
 
-/** font of the remaining time a timer item shows instead of its icon (`useValue`) - that of the clock (text.clock) */
-const TIMER_ICON_TEXT_SIZE = 1;
+/** font of the remaining time in the toolbar item of an alexa2 media page - that of the clock (text.clock) */
+const MEDIA_TIMER_TEXT_SIZE = 1;
 /** key in {@link PageItem.timeouts}: next change of the remaining time a timer item shows instead of its icon */
 const TIMER_ICON_TIMEOUT = 'timerIconText';
 
@@ -923,7 +923,7 @@ export class PageItem extends BaseTriggeredPage {
                                 // value instead of icon: the remaining time replaces the icon, like the clock
                                 const text = await this.drawTimerIconText(item);
                                 if (text !== undefined) {
-                                    message.icon = `${text}¬${TIMER_ICON_TEXT_SIZE}`;
+                                    message.icon = text + (await this.timerIconTextSuffix(entry));
                                 }
                             }
                             message.optionalValue = this.library.getTranslation(
@@ -1784,6 +1784,23 @@ export class PageItem extends BaseTriggeredPage {
             text !== undefined && timed && selection ? nextTextChangeMs(Math.max(1, selection.remainingMs)) : undefined,
         );
         return text;
+    }
+
+    /**
+     * The font of the remaining time in the icon field - decided only here. The toolbar item of a media page takes that
+     * of the clock; on the tiles the font of the item, as items with value instead of icon (textNotIcon) show their
+     * value: the text size of the admin, without one the font of the HMI.
+     *
+     * @param entry the timer item
+     * @returns `¬<font>`, or '' for the font of the HMI
+     */
+    private async timerIconTextSuffix(entry: NSPanel.PageItemTimerDataItems): Promise<string> {
+        const size = entry.alexaTimer?.followMedia
+            ? MEDIA_TIMER_TEXT_SIZE
+            : entry.data.icon?.textSize
+              ? await entry.data.icon.textSize.getNumber()
+              : null;
+        return size != null ? `¬${size}` : '';
     }
 
     /**

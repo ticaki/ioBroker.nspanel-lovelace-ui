@@ -263,8 +263,17 @@ describe('lib/pages/pageItem - remaining time of the Alexa timer of a media page
         const f = makeItem(KITCHEN, false, { [KITCHEN]: { remainingMs: 90_000 } });
         expect(await icon(f)).to.not.contain('¬');
         const value = makeItem(KITCHEN, false, { [KITCHEN]: { remainingMs: 90_000 } }, true);
-        expect(await icon(value)).to.equal('1.5¬1');
+        expect(await icon(value)).to.equal('1.5');
         expect(value.pending()?.ms).to.equal(6001);
+    });
+
+    it('on the tiles the remaining time takes the text size of the item, the toolbar item that of the clock', async () => {
+        const sized = makeItem(KITCHEN, false, { [KITCHEN]: { remainingMs: 90_000 } }, true);
+        sized.item.dataItems.data = { icon: { textSize: { getNumber: async (): Promise<number> => 3 } } };
+        expect(await icon(sized)).to.equal('1.5¬3');
+        const media = makeItem(KITCHEN, true, { [KITCHEN]: { remainingMs: 90_000 } });
+        media.item.dataItems.data = { icon: { textSize: { getNumber: async (): Promise<number> => 3 } } };
+        expect(await icon(media)).to.equal('1.5¬1');
     });
 
     it('redraws the page only when the shown time changes, not with the ticker of the page', async () => {
@@ -357,24 +366,24 @@ describe('lib/pages/pageItem - value instead of icon for the other timer sources
     it('internal timer: the remaining time while it runs, redrawn when the text changes', async () => {
         const running = { role: 'timer', status: 'run', endTs: NOW + 90_000, value: 90 };
         const f = timerItem(true, running);
-        expect(await icon(f)).to.equal('1.5¬1');
+        expect(await icon(f)).to.equal('1.5');
         expect(f.pending()?.ms).to.equal(6001);
         expect(f.parent.ticking.has(f.item)).to.equal(false);
-        expect(await icon(timerItem(false, { ...running }))).to.not.contain('¬');
+        expect(await icon(timerItem(false, { ...running }))).to.equal('');
         const paused = timerItem(true, { role: 'timer', status: 'pause', value: 90 });
-        expect(await icon(paused)).to.not.contain('¬');
+        expect(await icon(paused)).to.equal('');
         expect(paused.pending()).to.equal(undefined);
-        expect(await icon(timerItem(true, { role: 'timer', status: 'expired', value: 0 }))).to.not.contain('¬');
+        expect(await icon(timerItem(true, { role: 'timer', status: 'expired', value: 0 }))).to.equal('');
     });
 
     it('channel timer counted outside: the remaining time while it runs, no own redraw', async () => {
         const f = timerItem(true, { role: 'ex-timer' }, exTimerData(90));
-        expect(await icon(f)).to.equal('1.5¬1');
+        expect(await icon(f)).to.equal('1.5');
         // every new value of ACTUAL draws the page
         expect(f.pending()).to.equal(undefined);
-        expect(await icon(timerItem(true, { role: 'ex-timer' }, exTimerData(90, 2)))).to.equal('1.5¬1');
-        expect(await icon(timerItem(true, { role: 'ex-timer' }, exTimerData(90, 1)))).to.not.contain('¬');
-        expect(await icon(timerItem(true, { role: 'ex-timer' }, exTimerData(0)))).to.not.contain('¬');
-        expect(await icon(timerItem(false, { role: 'ex-timer' }, exTimerData(90)))).to.not.contain('¬');
+        expect(await icon(timerItem(true, { role: 'ex-timer' }, exTimerData(90, 2)))).to.equal('1.5');
+        expect(await icon(timerItem(true, { role: 'ex-timer' }, exTimerData(90, 1)))).to.equal('');
+        expect(await icon(timerItem(true, { role: 'ex-timer' }, exTimerData(0)))).to.equal('');
+        expect(await icon(timerItem(false, { role: 'ex-timer' }, exTimerData(90)))).to.equal('');
     });
 });
