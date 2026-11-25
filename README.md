@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Selection popups: an empty value or list entry is no longer sent as "error"
 - (ticaki) panel setup, berry/TFT install, restart and reset of tasmota: the log shows the cause of network errors (e.g. `ECONNREFUSED`, `EHOSTUNREACH`) instead of only "fetch failed"
 - (ticaki) panel setup: clear hint in the admin if the panel does not answer (Tasmota HTTP API off since 15.4.0.2, enable with SetOption128 1)
 - (ticaki) dependencies updated

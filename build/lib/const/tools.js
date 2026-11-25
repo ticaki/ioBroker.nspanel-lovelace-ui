@@ -830,10 +830,13 @@ const setHuefromRGB = async (item, c) => {
   await item.hue.setState(hue);
 };
 function formatInSelText(text) {
-  if (!text) {
+  if (text === null || text === void 0) {
     return "error";
   }
   const words = Array.isArray(text) ? text : text.replaceAll("?", " ").replaceAll("__", "_").replaceAll("_", " ").split(/\s+/);
+  if (words.every((word) => word === "")) {
+    return "";
+  }
   const MAX_LINE = 12;
   const MAX_LINE2 = 12;
   const TRUNCATE = 9;
