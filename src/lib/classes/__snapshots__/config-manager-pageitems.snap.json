@@ -6291,6 +6291,3174 @@
       "id": "alias.0.full.airCondition"
     }
   },
+  "role battery | item entities confirm invalid": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "confirm": {},
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item entities const options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 10,
+            "g": 20,
+            "b": 30
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 40,
+            "g": 50,
+            "b": 60
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "lightbulb"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "lightbulb-outline"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "On"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "Off"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 3
+          }
+        }
+      },
+      "filter": 2
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "name": "Kitchen",
+      "icon": "lightbulb",
+      "icon2": "lightbulb-outline",
+      "icon3": "alarm",
+      "onColor": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      },
+      "offColor": {
+        "red": 40,
+        "green": 50,
+        "blue": 60
+      },
+      "colorScale": {
+        "val_min": 0,
+        "val_max": 100,
+        "val_best": 50
+      },
+      "unit": "kW",
+      "fontSize": 3,
+      "prefixName": "pre ",
+      "suffixName": " suf",
+      "prefixValue": "<",
+      "suffixValue": ">",
+      "buttonText": "On",
+      "buttonTextOff": "Off",
+      "secondRow": "second row",
+      "minValue": 1,
+      "maxValue": 99,
+      "stepValue": 2,
+      "minValueBrightness": 5,
+      "maxValueBrightness": 95,
+      "minValueColorTemp": 2000,
+      "maxValueColorTemp": 6500,
+      "minValueLevel": 3,
+      "maxValueLevel": 97,
+      "minValueTilt": 4,
+      "maxValueTilt": 96,
+      "colormode": "xy",
+      "modeList": [
+        "one",
+        "two",
+        "three"
+      ],
+      "confirm": "Sure?",
+      "filter": 2,
+      "targetPage": "otherPage",
+      "targetPageLongPress": "longPage",
+      "longPress": "alias.0.helper.switch",
+      "useValueConditions": "cond",
+      "interpolateColor": true,
+      "useColor": true,
+      "asControl": true,
+      "inSel_Alias": "alias.0.not.existing.sel",
+      "shutterIcons": [
+        {
+          "id": "alias.0.helper.switch",
+          "icon": "fan",
+          "icon2": "fan-off",
+          "iconOnColor": {
+            "red": 1,
+            "green": 2,
+            "blue": 3
+          }
+        },
+        {
+          "id": "alias.0.not.existing",
+          "icon": "window-open"
+        },
+        {
+          "id": "alias.0.helper.number",
+          "icon": "lock",
+          "iconOffColor": {
+            "red": 4,
+            "green": 5,
+            "blue": 6
+          }
+        }
+      ],
+      "sliderItems": [
+        {
+          "heading": "S1",
+          "id": "alias.0.helper.number",
+          "minValue": 1,
+          "maxValue": 10,
+          "stepValue": 1,
+          "zeroValue": true
+        },
+        {
+          "heading": "S2",
+          "id": "alias.0.helper.readonly",
+          "icon1": "fan",
+          "icon2": "fan-off"
+        },
+        {
+          "heading": "S3"
+        }
+      ],
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item entities enabled true": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.ext.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.ext.battery.BUTTONTEXT"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.ext.battery.BUTTONTEXTOFF"
+            }
+          }
+        },
+        "enabled": {
+          "type": "triggered",
+          "dp": "alias.0.ext.battery.ENABLED"
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "enabled": true,
+      "id": "alias.0.ext.battery"
+    }
+  },
+  "role battery | item entities ext const options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.ext.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 10,
+            "g": 20,
+            "b": 30
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 40,
+            "g": 50,
+            "b": 60
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "lightbulb"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "lightbulb-outline"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "On"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "Off"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 3
+          }
+        },
+        "enabled": {
+          "type": "triggered",
+          "dp": "alias.0.ext.battery.ENABLED"
+        }
+      },
+      "filter": 2
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "name": "Kitchen",
+      "icon": "lightbulb",
+      "icon2": "lightbulb-outline",
+      "icon3": "alarm",
+      "onColor": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      },
+      "offColor": {
+        "red": 40,
+        "green": 50,
+        "blue": 60
+      },
+      "colorScale": {
+        "val_min": 0,
+        "val_max": 100,
+        "val_best": 50
+      },
+      "unit": "kW",
+      "fontSize": 3,
+      "prefixName": "pre ",
+      "suffixName": " suf",
+      "prefixValue": "<",
+      "suffixValue": ">",
+      "buttonText": "On",
+      "buttonTextOff": "Off",
+      "secondRow": "second row",
+      "minValue": 1,
+      "maxValue": 99,
+      "stepValue": 2,
+      "minValueBrightness": 5,
+      "maxValueBrightness": 95,
+      "minValueColorTemp": 2000,
+      "maxValueColorTemp": 6500,
+      "minValueLevel": 3,
+      "maxValueLevel": 97,
+      "minValueTilt": 4,
+      "maxValueTilt": 96,
+      "colormode": "xy",
+      "modeList": [
+        "one",
+        "two",
+        "three"
+      ],
+      "confirm": "Sure?",
+      "filter": 2,
+      "targetPage": "otherPage",
+      "targetPageLongPress": "longPage",
+      "longPress": "alias.0.helper.switch",
+      "useValueConditions": "cond",
+      "interpolateColor": true,
+      "useColor": true,
+      "asControl": true,
+      "inSel_Alias": "alias.0.not.existing.sel",
+      "shutterIcons": [
+        {
+          "id": "alias.0.helper.switch",
+          "icon": "fan",
+          "icon2": "fan-off",
+          "iconOnColor": {
+            "red": 1,
+            "green": 2,
+            "blue": 3
+          }
+        },
+        {
+          "id": "alias.0.not.existing",
+          "icon": "window-open"
+        },
+        {
+          "id": "alias.0.helper.number",
+          "icon": "lock",
+          "iconOffColor": {
+            "red": 4,
+            "green": 5,
+            "blue": 6
+          }
+        }
+      ],
+      "sliderItems": [
+        {
+          "heading": "S1",
+          "id": "alias.0.helper.number",
+          "minValue": 1,
+          "maxValue": 10,
+          "stepValue": 1,
+          "zeroValue": true
+        },
+        {
+          "heading": "S2",
+          "id": "alias.0.helper.readonly",
+          "icon1": "fan",
+          "icon2": "fan-off"
+        },
+        {
+          "heading": "S3"
+        }
+      ],
+      "id": "alias.0.ext.battery"
+    }
+  },
+  "role battery | item entities full": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item entities min": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.min.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "min battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "min battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.min.battery"
+    }
+  },
+  "role battery | item entities min const options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.min.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 10,
+            "g": 20,
+            "b": 30
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 40,
+            "g": 50,
+            "b": 60
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "lightbulb"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "lightbulb-outline"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "On"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "Off"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 3
+          }
+        }
+      },
+      "filter": 2
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "name": "Kitchen",
+      "icon": "lightbulb",
+      "icon2": "lightbulb-outline",
+      "icon3": "alarm",
+      "onColor": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      },
+      "offColor": {
+        "red": 40,
+        "green": 50,
+        "blue": 60
+      },
+      "colorScale": {
+        "val_min": 0,
+        "val_max": 100,
+        "val_best": 50
+      },
+      "unit": "kW",
+      "fontSize": 3,
+      "prefixName": "pre ",
+      "suffixName": " suf",
+      "prefixValue": "<",
+      "suffixValue": ">",
+      "buttonText": "On",
+      "buttonTextOff": "Off",
+      "secondRow": "second row",
+      "minValue": 1,
+      "maxValue": 99,
+      "stepValue": 2,
+      "minValueBrightness": 5,
+      "maxValueBrightness": 95,
+      "minValueColorTemp": 2000,
+      "maxValueColorTemp": 6500,
+      "minValueLevel": 3,
+      "maxValueLevel": 97,
+      "minValueTilt": 4,
+      "maxValueTilt": 96,
+      "colormode": "xy",
+      "modeList": [
+        "one",
+        "two",
+        "three"
+      ],
+      "confirm": "Sure?",
+      "filter": 2,
+      "targetPage": "otherPage",
+      "targetPageLongPress": "longPage",
+      "longPress": "alias.0.helper.switch",
+      "useValueConditions": "cond",
+      "interpolateColor": true,
+      "useColor": true,
+      "asControl": true,
+      "inSel_Alias": "alias.0.not.existing.sel",
+      "shutterIcons": [
+        {
+          "id": "alias.0.helper.switch",
+          "icon": "fan",
+          "icon2": "fan-off",
+          "iconOnColor": {
+            "red": 1,
+            "green": 2,
+            "blue": 3
+          }
+        },
+        {
+          "id": "alias.0.not.existing",
+          "icon": "window-open"
+        },
+        {
+          "id": "alias.0.helper.number",
+          "icon": "lock",
+          "iconOffColor": {
+            "red": 4,
+            "green": 5,
+            "blue": 6
+          }
+        }
+      ],
+      "sliderItems": [
+        {
+          "heading": "S1",
+          "id": "alias.0.helper.number",
+          "minValue": 1,
+          "maxValue": 10,
+          "stepValue": 1,
+          "zeroValue": true
+        },
+        {
+          "heading": "S2",
+          "id": "alias.0.helper.readonly",
+          "icon1": "fan",
+          "icon2": "fan-off"
+        },
+        {
+          "heading": "S3"
+        }
+      ],
+      "id": "alias.0.min.battery"
+    }
+  },
+  "role battery | item entities min state options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.min.battery",
+      "color": {
+        "true": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        },
+        "false": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        },
+        "false": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 0
+          }
+        },
+        "enabled": {
+          "type": "const",
+          "constVal": false
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "name": "alias.0.helper.text",
+      "icon": "alias.0.helper.icon",
+      "icon2": "alias.0.helper.icon",
+      "onColor": "alias.0.helper.color",
+      "offColor": "alias.0.helper.color",
+      "prefixName": "alias.0.helper.text",
+      "suffixName": "alias.0.helper.text",
+      "prefixValue": "alias.0.helper.text",
+      "suffixValue": "alias.0.helper.text",
+      "buttonText": "alias.0.helper.text",
+      "buttonTextOff": "alias.0.helper.text",
+      "useValueConditions": "alias.0.helper.text",
+      "inSel_Alias": "alias.0.helper.states",
+      "confirm": {
+        "text": "Really?",
+        "icon": "alert",
+        "color": {
+          "r": 1,
+          "g": 2,
+          "b": 3
+        }
+      },
+      "fontSize": 0,
+      "targetPage": "otherPage",
+      "enabled": false,
+      "id": "alias.0.min.battery"
+    }
+  },
+  "role battery | item entities onColor only": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 1,
+            "g": 2,
+            "b": 3
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "onColor": {
+        "red": 1,
+        "green": 2,
+        "blue": 3
+      },
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item entities role socket": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "role": "socket",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item entities shutterClosedIsZero": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item entities state options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        },
+        "false": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        },
+        "false": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 0
+          }
+        },
+        "enabled": {
+          "type": "const",
+          "constVal": false
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "name": "alias.0.helper.text",
+      "icon": "alias.0.helper.icon",
+      "icon2": "alias.0.helper.icon",
+      "onColor": "alias.0.helper.color",
+      "offColor": "alias.0.helper.color",
+      "prefixName": "alias.0.helper.text",
+      "suffixName": "alias.0.helper.text",
+      "prefixValue": "alias.0.helper.text",
+      "suffixValue": "alias.0.helper.text",
+      "buttonText": "alias.0.helper.text",
+      "buttonTextOff": "alias.0.helper.text",
+      "useValueConditions": "alias.0.helper.text",
+      "inSel_Alias": "alias.0.helper.states",
+      "confirm": {
+        "text": "Really?",
+        "icon": "alert",
+        "color": {
+          "r": 1,
+          "g": 2,
+          "b": 3
+        }
+      },
+      "fontSize": 0,
+      "targetPage": "otherPage",
+      "enabled": false,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item grid asControl": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "asControl": true,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item grid const options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 10,
+            "g": 20,
+            "b": 30
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 40,
+            "g": 50,
+            "b": 60
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "lightbulb"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "lightbulb-outline"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "On"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "Off"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 3
+          }
+        }
+      },
+      "filter": 2
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "name": "Kitchen",
+      "icon": "lightbulb",
+      "icon2": "lightbulb-outline",
+      "icon3": "alarm",
+      "onColor": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      },
+      "offColor": {
+        "red": 40,
+        "green": 50,
+        "blue": 60
+      },
+      "colorScale": {
+        "val_min": 0,
+        "val_max": 100,
+        "val_best": 50
+      },
+      "unit": "kW",
+      "fontSize": 3,
+      "prefixName": "pre ",
+      "suffixName": " suf",
+      "prefixValue": "<",
+      "suffixValue": ">",
+      "buttonText": "On",
+      "buttonTextOff": "Off",
+      "secondRow": "second row",
+      "minValue": 1,
+      "maxValue": 99,
+      "stepValue": 2,
+      "minValueBrightness": 5,
+      "maxValueBrightness": 95,
+      "minValueColorTemp": 2000,
+      "maxValueColorTemp": 6500,
+      "minValueLevel": 3,
+      "maxValueLevel": 97,
+      "minValueTilt": 4,
+      "maxValueTilt": 96,
+      "colormode": "xy",
+      "modeList": [
+        "one",
+        "two",
+        "three"
+      ],
+      "confirm": "Sure?",
+      "filter": 2,
+      "targetPage": "otherPage",
+      "targetPageLongPress": "longPage",
+      "longPress": "alias.0.helper.switch",
+      "useValueConditions": "cond",
+      "interpolateColor": true,
+      "useColor": true,
+      "asControl": true,
+      "inSel_Alias": "alias.0.not.existing.sel",
+      "shutterIcons": [
+        {
+          "id": "alias.0.helper.switch",
+          "icon": "fan",
+          "icon2": "fan-off",
+          "iconOnColor": {
+            "red": 1,
+            "green": 2,
+            "blue": 3
+          }
+        },
+        {
+          "id": "alias.0.not.existing",
+          "icon": "window-open"
+        },
+        {
+          "id": "alias.0.helper.number",
+          "icon": "lock",
+          "iconOffColor": {
+            "red": 4,
+            "green": 5,
+            "blue": 6
+          }
+        }
+      ],
+      "sliderItems": [
+        {
+          "heading": "S1",
+          "id": "alias.0.helper.number",
+          "minValue": 1,
+          "maxValue": 10,
+          "stepValue": 1,
+          "zeroValue": true
+        },
+        {
+          "heading": "S2",
+          "id": "alias.0.helper.readonly",
+          "icon1": "fan",
+          "icon2": "fan-off"
+        },
+        {
+          "heading": "S3"
+        }
+      ],
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item grid empty channel": {
+    "error": "Missing datapoints! check log for details",
+    "logs": [
+      [
+        "warn",
+        "[StatesDB] Dont finds states for alias.0.empty.battery. dpinit is string"
+      ],
+      [
+        "error",
+        "[config-manager] Required: ACTUAL: alias.0.empty.battery, channel role: battery - missing - searching for type: \"number\", role: \"value.battery\""
+      ],
+      [
+        "warn",
+        "[StatesDB] Dont finds states for alias.0.empty.battery. dpinit is string"
+      ]
+    ],
+    "itemAfter": {
+      "id": "alias.0.empty.battery"
+    }
+  },
+  "role battery | item grid ext": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.ext.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.ext.battery.BUTTONTEXT"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.ext.battery.BUTTONTEXTOFF"
+            }
+          }
+        },
+        "enabled": {
+          "type": "triggered",
+          "dp": "alias.0.ext.battery.ENABLED"
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.ext.battery"
+    }
+  },
+  "role battery | item grid full": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item grid icon only": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "home"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "home"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "icon": "home",
+      "id": "alias.0.full.battery",
+      "icon2": "home"
+    }
+  },
+  "role battery | item grid min": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.min.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "min battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "min battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.min.battery"
+    }
+  },
+  "role battery | item grid state options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        },
+        "false": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        },
+        "false": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 0
+          }
+        },
+        "enabled": {
+          "type": "const",
+          "constVal": false
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "name": "alias.0.helper.text",
+      "icon": "alias.0.helper.icon",
+      "icon2": "alias.0.helper.icon",
+      "onColor": "alias.0.helper.color",
+      "offColor": "alias.0.helper.color",
+      "prefixName": "alias.0.helper.text",
+      "suffixName": "alias.0.helper.text",
+      "prefixValue": "alias.0.helper.text",
+      "suffixValue": "alias.0.helper.text",
+      "buttonText": "alias.0.helper.text",
+      "buttonTextOff": "alias.0.helper.text",
+      "useValueConditions": "alias.0.helper.text",
+      "inSel_Alias": "alias.0.helper.states",
+      "confirm": {
+        "text": "Really?",
+        "icon": "alert",
+        "color": {
+          "r": 1,
+          "g": 2,
+          "b": 3
+        }
+      },
+      "fontSize": 0,
+      "targetPage": "otherPage",
+      "enabled": false,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item grid useValue": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "useValue": true,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item grid2 full": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | item schedule full": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "type": "text",
+      "dpInit": "alias.0.full.battery",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi entities const options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 10,
+            "g": 20,
+            "b": 30
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 40,
+            "g": 50,
+            "b": 60
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "lightbulb"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "lightbulb-outline"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 3
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "On"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "Off"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        },
+        "setNaviLongPress": {
+          "type": "const",
+          "constVal": "longPage"
+        }
+      },
+      "filter": 2
+    },
+    "logs": [],
+    "itemAfter": {
+      "name": "Kitchen",
+      "icon": "lightbulb",
+      "icon2": "lightbulb-outline",
+      "icon3": "alarm",
+      "onColor": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      },
+      "offColor": {
+        "red": 40,
+        "green": 50,
+        "blue": 60
+      },
+      "colorScale": {
+        "val_min": 0,
+        "val_max": 100,
+        "val_best": 50
+      },
+      "unit": "kW",
+      "fontSize": 3,
+      "prefixName": "pre ",
+      "suffixName": " suf",
+      "prefixValue": "<",
+      "suffixValue": ">",
+      "buttonText": "On",
+      "buttonTextOff": "Off",
+      "secondRow": "second row",
+      "minValue": 1,
+      "maxValue": 99,
+      "stepValue": 2,
+      "minValueBrightness": 5,
+      "maxValueBrightness": 95,
+      "minValueColorTemp": 2000,
+      "maxValueColorTemp": 6500,
+      "minValueLevel": 3,
+      "maxValueLevel": 97,
+      "minValueTilt": 4,
+      "maxValueTilt": 96,
+      "colormode": "xy",
+      "modeList": [
+        "one",
+        "two",
+        "three"
+      ],
+      "confirm": "Sure?",
+      "filter": 2,
+      "targetPage": "naviTarget",
+      "targetPageLongPress": "longPage",
+      "useValueConditions": "cond",
+      "interpolateColor": true,
+      "useColor": true,
+      "asControl": true,
+      "inSel_Alias": "alias.0.not.existing.sel",
+      "shutterIcons": [
+        {
+          "id": "alias.0.helper.switch",
+          "icon": "fan",
+          "icon2": "fan-off",
+          "iconOnColor": {
+            "red": 1,
+            "green": 2,
+            "blue": 3
+          }
+        },
+        {
+          "id": "alias.0.not.existing",
+          "icon": "window-open"
+        },
+        {
+          "id": "alias.0.helper.number",
+          "icon": "lock",
+          "iconOffColor": {
+            "red": 4,
+            "green": 5,
+            "blue": 6
+          }
+        }
+      ],
+      "sliderItems": [
+        {
+          "heading": "S1",
+          "id": "alias.0.helper.number",
+          "minValue": 1,
+          "maxValue": 10,
+          "stepValue": 1,
+          "zeroValue": true
+        },
+        {
+          "heading": "S2",
+          "id": "alias.0.helper.readonly",
+          "icon1": "fan",
+          "icon2": "fan-off"
+        },
+        {
+          "heading": "S3"
+        }
+      ],
+      "navigate": true,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi entities ext const options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.ext.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 10,
+            "g": 20,
+            "b": 30
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 40,
+            "g": 50,
+            "b": 60
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "lightbulb"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "lightbulb-outline"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 3
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "On"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "Off"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        },
+        "setNaviLongPress": {
+          "type": "const",
+          "constVal": "longPage"
+        },
+        "enabled": {
+          "type": "triggered",
+          "dp": "alias.0.ext.battery.ENABLED"
+        }
+      },
+      "filter": 2
+    },
+    "logs": [],
+    "itemAfter": {
+      "name": "Kitchen",
+      "icon": "lightbulb",
+      "icon2": "lightbulb-outline",
+      "icon3": "alarm",
+      "onColor": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      },
+      "offColor": {
+        "red": 40,
+        "green": 50,
+        "blue": 60
+      },
+      "colorScale": {
+        "val_min": 0,
+        "val_max": 100,
+        "val_best": 50
+      },
+      "unit": "kW",
+      "fontSize": 3,
+      "prefixName": "pre ",
+      "suffixName": " suf",
+      "prefixValue": "<",
+      "suffixValue": ">",
+      "buttonText": "On",
+      "buttonTextOff": "Off",
+      "secondRow": "second row",
+      "minValue": 1,
+      "maxValue": 99,
+      "stepValue": 2,
+      "minValueBrightness": 5,
+      "maxValueBrightness": 95,
+      "minValueColorTemp": 2000,
+      "maxValueColorTemp": 6500,
+      "minValueLevel": 3,
+      "maxValueLevel": 97,
+      "minValueTilt": 4,
+      "maxValueTilt": 96,
+      "colormode": "xy",
+      "modeList": [
+        "one",
+        "two",
+        "three"
+      ],
+      "confirm": "Sure?",
+      "filter": 2,
+      "targetPage": "naviTarget",
+      "targetPageLongPress": "longPage",
+      "useValueConditions": "cond",
+      "interpolateColor": true,
+      "useColor": true,
+      "asControl": true,
+      "inSel_Alias": "alias.0.not.existing.sel",
+      "shutterIcons": [
+        {
+          "id": "alias.0.helper.switch",
+          "icon": "fan",
+          "icon2": "fan-off",
+          "iconOnColor": {
+            "red": 1,
+            "green": 2,
+            "blue": 3
+          }
+        },
+        {
+          "id": "alias.0.not.existing",
+          "icon": "window-open"
+        },
+        {
+          "id": "alias.0.helper.number",
+          "icon": "lock",
+          "iconOffColor": {
+            "red": 4,
+            "green": 5,
+            "blue": 6
+          }
+        }
+      ],
+      "sliderItems": [
+        {
+          "heading": "S1",
+          "id": "alias.0.helper.number",
+          "minValue": 1,
+          "maxValue": 10,
+          "stepValue": 1,
+          "zeroValue": true
+        },
+        {
+          "heading": "S2",
+          "id": "alias.0.helper.readonly",
+          "icon1": "fan",
+          "icon2": "fan-off"
+        },
+        {
+          "heading": "S3"
+        }
+      ],
+      "navigate": true,
+      "id": "alias.0.ext.battery"
+    }
+  },
+  "role battery | navi entities full": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi entities role socket": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "role": "socket",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi entities shutterClosedIsZero": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi entities state options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        },
+        "false": {
+          "type": "state",
+          "dp": "alias.0.helper.color"
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        },
+        "false": {
+          "type": "triggered",
+          "dp": "alias.0.helper.icon"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 0
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "triggered",
+            "dp": "alias.0.helper.text"
+          },
+          "false": {
+            "type": "triggered",
+            "dp": "alias.0.helper.text"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        },
+        "enabled": {
+          "type": "const",
+          "constVal": false
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "name": "alias.0.helper.text",
+      "icon": "alias.0.helper.icon",
+      "icon2": "alias.0.helper.icon",
+      "onColor": "alias.0.helper.color",
+      "offColor": "alias.0.helper.color",
+      "prefixName": "alias.0.helper.text",
+      "suffixName": "alias.0.helper.text",
+      "prefixValue": "alias.0.helper.text",
+      "suffixValue": "alias.0.helper.text",
+      "buttonText": "alias.0.helper.text",
+      "buttonTextOff": "alias.0.helper.text",
+      "useValueConditions": "alias.0.helper.text",
+      "inSel_Alias": "alias.0.helper.states",
+      "confirm": {
+        "text": "Really?",
+        "icon": "alert",
+        "color": {
+          "r": 1,
+          "g": 2,
+          "b": 3
+        }
+      },
+      "fontSize": 0,
+      "targetPage": "naviTarget",
+      "enabled": false,
+      "navigate": true,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi grid both longPress options": {
+    "error": "You can only use targetPageLongPress or longPress in the same item!",
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "longPress": "x",
+      "targetPageLongPress": "y",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi grid const options": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 10,
+            "g": 20,
+            "b": 30
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 40,
+            "g": 50,
+            "b": 60
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "lightbulb"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "lightbulb-outline"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
+          },
+          "textSize": {
+            "type": "const",
+            "constVal": 3
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "On"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "Off"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        },
+        "setNaviLongPress": {
+          "type": "const",
+          "constVal": "longPage"
+        }
+      },
+      "filter": 2
+    },
+    "logs": [],
+    "itemAfter": {
+      "name": "Kitchen",
+      "icon": "lightbulb",
+      "icon2": "lightbulb-outline",
+      "icon3": "alarm",
+      "onColor": {
+        "red": 10,
+        "green": 20,
+        "blue": 30
+      },
+      "offColor": {
+        "red": 40,
+        "green": 50,
+        "blue": 60
+      },
+      "colorScale": {
+        "val_min": 0,
+        "val_max": 100,
+        "val_best": 50
+      },
+      "unit": "kW",
+      "fontSize": 3,
+      "prefixName": "pre ",
+      "suffixName": " suf",
+      "prefixValue": "<",
+      "suffixValue": ">",
+      "buttonText": "On",
+      "buttonTextOff": "Off",
+      "secondRow": "second row",
+      "minValue": 1,
+      "maxValue": 99,
+      "stepValue": 2,
+      "minValueBrightness": 5,
+      "maxValueBrightness": 95,
+      "minValueColorTemp": 2000,
+      "maxValueColorTemp": 6500,
+      "minValueLevel": 3,
+      "maxValueLevel": 97,
+      "minValueTilt": 4,
+      "maxValueTilt": 96,
+      "colormode": "xy",
+      "modeList": [
+        "one",
+        "two",
+        "three"
+      ],
+      "confirm": "Sure?",
+      "filter": 2,
+      "targetPage": "naviTarget",
+      "targetPageLongPress": "longPage",
+      "useValueConditions": "cond",
+      "interpolateColor": true,
+      "useColor": true,
+      "asControl": true,
+      "inSel_Alias": "alias.0.not.existing.sel",
+      "shutterIcons": [
+        {
+          "id": "alias.0.helper.switch",
+          "icon": "fan",
+          "icon2": "fan-off",
+          "iconOnColor": {
+            "red": 1,
+            "green": 2,
+            "blue": 3
+          }
+        },
+        {
+          "id": "alias.0.not.existing",
+          "icon": "window-open"
+        },
+        {
+          "id": "alias.0.helper.number",
+          "icon": "lock",
+          "iconOffColor": {
+            "red": 4,
+            "green": 5,
+            "blue": 6
+          }
+        }
+      ],
+      "sliderItems": [
+        {
+          "heading": "S1",
+          "id": "alias.0.helper.number",
+          "minValue": 1,
+          "maxValue": 10,
+          "stepValue": 1,
+          "zeroValue": true
+        },
+        {
+          "heading": "S2",
+          "id": "alias.0.helper.readonly",
+          "icon1": "fan",
+          "icon2": "fan-off"
+        },
+        {
+          "heading": "S3"
+        }
+      ],
+      "navigate": true,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi grid ext": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.ext.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "ext battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "ext battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "triggered",
+            "dp": "alias.0.ext.battery.BUTTONTEXT"
+          },
+          "false": {
+            "type": "triggered",
+            "dp": "alias.0.ext.battery.BUTTONTEXTOFF"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        },
+        "enabled": {
+          "type": "triggered",
+          "dp": "alias.0.ext.battery.ENABLED"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "id": "alias.0.ext.battery"
+    }
+  },
+  "role battery | navi grid full": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi grid icon only": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {
+        "true": {
+          "type": "const",
+          "constVal": "home"
+        },
+        "false": {
+          "type": "const",
+          "constVal": "home"
+        }
+      },
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "icon": "home",
+      "id": "alias.0.full.battery",
+      "icon2": "home"
+    }
+  },
+  "role battery | navi grid longPress": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        },
+        "longPress": {
+          "type": "state",
+          "dp": "alias.0.helper.switch"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "longPress": "alias.0.helper.switch",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi grid min": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.min.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "min battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "min battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "id": "alias.0.min.battery"
+    }
+  },
+  "role battery | navi grid targetPageLongPress": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        },
+        "setNaviLongPress": {
+          "type": "const",
+          "constVal": "longPage"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "targetPageLongPress": "longPage",
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi grid useValue": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "useValue": true,
+      "id": "alias.0.full.battery"
+    }
+  },
+  "role battery | navi via getPageItemConfig": {
+    "itemConfig": {
+      "template": "text.battery.channel",
+      "dpInit": "alias.0.full.battery",
+      "type": "button",
+      "color": {
+        "true": {
+          "type": "const",
+          "constVal": {
+            "r": 0,
+            "g": 255,
+            "b": 0
+          }
+        },
+        "false": {
+          "type": "const",
+          "constVal": {
+            "r": 255,
+            "g": 0,
+            "b": 0
+          }
+        }
+      },
+      "icon": {},
+      "data": {
+        "text": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          },
+          "false": {
+            "value": {
+              "type": "const",
+              "constVal": "full battery (de)"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          },
+          "false": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "setNavi": {
+          "type": "const",
+          "constVal": "naviTarget"
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "navigate": true,
+      "targetPage": "naviTarget",
+      "id": "alias.0.full.battery"
+    }
+  },
   "role blind | item entities confirm invalid": {
     "itemConfig": {
       "type": "shutter",

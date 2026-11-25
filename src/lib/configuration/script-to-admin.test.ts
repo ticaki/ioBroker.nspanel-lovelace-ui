@@ -136,6 +136,7 @@ const channels: Record<ScriptConfig.channelRoles | 'none', string[]> = {
     thermostat: ['alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1'],
     media: ['alias.0.Tests.media'],
     airCondition: [],
+    battery: [],
     ct: [],
     door: [],
     gate: [],

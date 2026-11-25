@@ -5,6 +5,48 @@ import type { NSPanel } from '../types/NSPanel';
 import type { TemplateItems } from '../types/types';
 
 /**
+ * Read script of an icon that follows the charge level of a battery in percent (Dataitem `read`, `val` = the value):
+ * rounded to tens - below 5 `battery-outline`, 5 to below 15 `battery-10` ... 85 to below 95 `battery-90`, from 95
+ * (and without a number) `battery`.
+ */
+export const BATTERY_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-' + v + '0';
+    case 10:
+    default:
+        return 'battery';}`;
+
+/** like {@link BATTERY_ICON_READ} while the battery is charging: `battery-charging-outline`, `-10` ... `-90`, `battery-charging` */
+export const BATTERY_CHARGING_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-charging-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-charging-' + v + '0';
+    case 10:
+    default:
+        return 'battery-charging';}`;
+
+/**
  * Brightsky delivers ready-to-use MDI names in `icon_special`.
  * Unknown names fall back to `alert-circle-outline`.
  */
@@ -542,6 +584,84 @@ export const textTemplates: TemplateItems = {
                     dp: '',
                     regexp: /\.State\.Power$/,
                     read: 'return val < 0',
+                },
+            },
+        },
+    },
+    'text.battery.channel': {
+        /**
+         * battery of the alias channel `battery` (home battery / storage), found below the channel by role
+         * entity1 and entity2: charge level in percent (ACTUAL)
+         * entity3: power (POWER, optional) - negative = charging, positive = discharging, 0 = neither
+         * role battery.power: icon.true while charging, else icon.false; color of icon.true while charging,
+         * of icon.false while discharging, of icon.unstable when neither (power 0, no value, no state)
+         */
+        role: 'battery.power',
+        adapter: '',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                        read: BATTERY_CHARGING_ICON_READ,
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.Green,
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                        read: BATTERY_ICON_READ,
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.Red,
+                    },
+                },
+                unstable: {
+                    color: {
+                        type: 'const',
+                        constVal: Color.neutral,
+                    },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Battery' },
+                false: undefined,
+            },
+            entity2: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '',
+                },
+                unit: { type: 'const', constVal: '%' },
+            },
+            entity3: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.power',
+                    dp: '',
                 },
             },
         },

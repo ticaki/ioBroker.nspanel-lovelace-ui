@@ -45,6 +45,10 @@ const IDS = {
     humidity: `${BASE}.humidity`,
     power: `${BASE}.power`,
     window: `${BASE}.window`,
+    /** channel of role battery: charge level and power (negative = charging) */
+    battery: `${BASE}.battery`,
+    batteryActual: `${BASE}.battery.ACTUAL`,
+    batteryPower: `${BASE}.battery.POWER`,
     /** switches the notification of the admin list (scenario 08) - not in STATES, so not in the snapshots */
     notifyAdmin: `${BASE}.notifyAdmin`,
     /** shows the pinned indicator (scenario 09) - not in STATES, so not in the snapshots */
@@ -59,6 +63,7 @@ const NAMES = {
     socket2: 'E2E Socket 2',
     light: 'E2E Light',
     blind: 'E2E Blind',
+    battery: 'E2E Battery',
     toSub: 'E2E To Sub',
 };
 
@@ -114,6 +119,9 @@ const OBJECTS = {
     [IDS.humidity]: state('Humidity', 'number', 'value.humidity', false, { unit: '%' }),
     [IDS.power]: state('Power', 'number', 'value.power', false, { unit: 'W' }),
     [IDS.window]: state('Window', 'boolean', 'sensor.window', false),
+    [IDS.battery]: channel(NAMES.battery, 'battery'),
+    [IDS.batteryActual]: state('charge level', 'number', 'value.battery', false, { min: 0, max: 100, unit: '%' }),
+    [IDS.batteryPower]: state('power', 'number', 'value.power', false, { unit: 'W' }),
     [IDS.notifyAdmin]: state('Notify admin', 'boolean', 'switch', true),
     [IDS.pinShown]: state('Pin shown', 'boolean', 'switch', true),
     [IDS.pinExtra]: state('Pin extra', 'boolean', 'switch', true),
@@ -144,6 +152,9 @@ const EXTRA_STATES = {
     [IDS.notifyAdmin]: false,
     [IDS.pinShown]: false,
     [IDS.pinExtra]: false,
+    // battery (scenario 10): half full, neither charging nor discharging
+    [IDS.batteryActual]: 54,
+    [IDS.batteryPower]: 0,
 };
 
 /** notification of the admin list (`native.screensaverNotify`), switched on by IDS.notifyAdmin (scenario 08) */
@@ -199,7 +210,7 @@ const PAGE_CONFIG = [
         card: 'cardEntities',
         uniqueName: 'e2e_entities',
         headline: HEADLINES.entities,
-        pageItems: [item(IDS.socket, NAMES.socket), item(IDS.blind, NAMES.blind)],
+        pageItems: [item(IDS.socket, NAMES.socket), item(IDS.blind, NAMES.blind), item(IDS.battery, NAMES.battery)],
         navigationAssignment: assign({ prev: 'main' }),
     },
     {

@@ -1,6 +1,11 @@
 import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
-import { isScreensaverBlindPosition, pageItemDefaults, SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
+import {
+    isScreensaverBlindPosition,
+    pageItemDefaults,
+    pageNaviItemDefaults,
+    SHUTTER_POSITION_ICON,
+} from '../const/page-item-defaults';
 import { mainPageName } from '../const/default-pages';
 import { normalizeCycleValues } from '../const/screensaver-cycle';
 import {
@@ -2062,6 +2067,29 @@ export class ConfigManager extends BaseClass {
                         false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
                     },
                     data: {
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
+            case 'battery': {
+                // icon by charge level, flash and color by power: all in the template; onColor = charging,
+                // offColor = discharging, the color for neither stays the neutral one of the template
+                itemConfig = {
+                    template: 'text.battery.channel',
+                    dpInit: item.id,
+                    type: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor, Color[pageNaviItemDefaults.battery.colorOn]),
+                        false: await this.getIconColor(item.offColor, Color[pageNaviItemDefaults.battery.colorOff]),
+                    },
+                    icon: {
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
+                    },
+                    data: {
+                        text: text,
+                        text1: text1,
                         setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
                     },
                 };
@@ -4211,6 +4239,27 @@ export class ConfigManager extends BaseClass {
                                         ),
                                     },
                                 },
+                            },
+                        };
+                        break;
+                    }
+                    case 'battery': {
+                        // icon by charge level, flash and color by power: all in the template; onColor = charging,
+                        // offColor = discharging, the color for neither stays the neutral one of the template
+                        itemConfig = {
+                            template: 'text.battery.channel',
+                            type: 'text',
+                            dpInit: item.id,
+                            color: {
+                                true: await this.getIconColor(item.onColor, Color[pageItemDefaults.battery.colorOn]),
+                                false: await this.getIconColor(item.offColor, Color[pageItemDefaults.battery.colorOff]),
+                            },
+                            icon: {
+                                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                                false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
+                            },
+                            data: {
+                                text: text,
                             },
                         };
                         break;

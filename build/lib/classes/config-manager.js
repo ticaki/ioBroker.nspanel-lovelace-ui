@@ -1781,6 +1781,27 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
+      case "battery": {
+        itemConfig = {
+          template: "text.battery.channel",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageNaviItemDefaults.battery.colorOn]),
+            false: await this.getIconColor(item.offColor, import_Color.Color[import_page_item_defaults.pageNaviItemDefaults.battery.colorOff])
+          },
+          icon: {
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
+          },
+          data: {
+            text,
+            text1,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "info": {
         let adapterRole = "";
         let commonUnit = "";
@@ -3479,6 +3500,25 @@ class ConfigManager extends import_library.BaseClass {
                     )
                   }
                 }
+              }
+            };
+            break;
+          }
+          case "battery": {
+            itemConfig = {
+              template: "text.battery.channel",
+              type: "text",
+              dpInit: item.id,
+              color: {
+                true: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.battery.colorOn]),
+                false: await this.getIconColor(item.offColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.battery.colorOff])
+              },
+              icon: {
+                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+                false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
+              },
+              data: {
+                text
               }
             };
             break;

@@ -234,6 +234,7 @@ const ALL_ROLES = [
     'Steuerung.Eieruhr',
     'Info.Status',
     'Fahrplan.Bus_Abfahrt1',
+    'Energie.Akku',
 ];
 
 /**

@@ -166,6 +166,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Admin: screensaver indicators can be pinned to their slot - a hidden pinned item leaves its slot empty and the other indicators do not move up onto it
 - (ticaki) Admin: playlist suggestions and format check for alexa2 media pages
 - (ticaki) Admin: media page headline can show only the active device
+- (ticaki) new alias channel `battery` (home battery / storage) with the states `ACTUAL` (charge level in %) and optional `POWER` (negative = charging, positive = discharging): the icon follows the charge level in steps of ten, with a flash while charging; green while charging, red while discharging, neutral color when neither. Usable as page item (also as navigation item) and on the screensaver with the new template `text.battery.channel`
 
 ### 2.6.0 (2026-11-22)
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)

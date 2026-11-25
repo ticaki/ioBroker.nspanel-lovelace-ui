@@ -18,12 +18,48 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var text_exports = {};
 __export(text_exports, {
+  BATTERY_CHARGING_ICON_READ: () => BATTERY_CHARGING_ICON_READ,
+  BATTERY_ICON_READ: () => BATTERY_ICON_READ,
   textTemplates: () => textTemplates
 });
 module.exports = __toCommonJS(text_exports);
 var import_Color = require("../const/Color");
 var import_definition = require("../const/definition");
 var import_adminShareConfig = require("../types/adminShareConfig");
+const BATTERY_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-' + v + '0';
+    case 10:
+    default:
+        return 'battery';}`;
+const BATTERY_CHARGING_ICON_READ = `const v = Math.round(val / 10)
+switch (v) {
+    case 0:
+        return 'battery-charging-outline';
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+        return 'battery-charging-' + v + '0';
+    case 10:
+    default:
+        return 'battery-charging';}`;
 const brightskyIconRead = `
     switch (val) {
         case 'weather-cloudy':
@@ -526,6 +562,83 @@ const textTemplates = {
           dp: "",
           regexp: /\.State\.Power$/,
           read: "return val < 0"
+        }
+      }
+    }
+  },
+  "text.battery.channel": {
+    /**
+     * battery of the alias channel `battery` (home battery / storage), found below the channel by role
+     * entity1 and entity2: charge level in percent (ACTUAL)
+     * entity3: power (POWER, optional) - negative = charging, positive = discharging, 0 = neither
+     * role battery.power: icon.true while charging, else icon.false; color of icon.true while charging,
+     * of icon.false while discharging, of icon.unstable when neither (power 0, no value, no state)
+     */
+    role: "battery.power",
+    adapter: "",
+    type: "text",
+    data: {
+      icon: {
+        true: {
+          value: {
+            type: "triggered",
+            mode: "auto",
+            role: "value.battery",
+            dp: "",
+            read: BATTERY_CHARGING_ICON_READ
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.Green
+          }
+        },
+        false: {
+          value: {
+            type: "triggered",
+            mode: "auto",
+            role: "value.battery",
+            dp: "",
+            read: BATTERY_ICON_READ
+          },
+          color: {
+            type: "const",
+            constVal: import_Color.Color.Red
+          }
+        },
+        unstable: {
+          color: {
+            type: "const",
+            constVal: import_Color.Color.neutral
+          }
+        }
+      },
+      entity1: {
+        value: {
+          type: "state",
+          mode: "auto",
+          role: "value.battery",
+          dp: ""
+        }
+      },
+      text: {
+        true: { type: "const", constVal: "Battery" },
+        false: void 0
+      },
+      entity2: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.battery",
+          dp: ""
+        },
+        unit: { type: "const", constVal: "%" }
+      },
+      entity3: {
+        value: {
+          type: "triggered",
+          mode: "auto",
+          role: "value.power",
+          dp: ""
         }
       }
     }
@@ -4205,6 +4318,8 @@ const textTemplates = {
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  BATTERY_CHARGING_ICON_READ,
+  BATTERY_ICON_READ,
   textTemplates
 });
 //# sourceMappingURL=text.js.map

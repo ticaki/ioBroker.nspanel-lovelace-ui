@@ -60,6 +60,7 @@ export const pageitemsTopics = {
     },
     // one section per channel role in the alias table (the heading is the role itself, in both languages)
     'pageitems.role.airCondition': { page: 'ALIAS', de: 'airCondition', en: 'airCondition' },
+    'pageitems.role.battery': { page: 'ALIAS', de: 'battery', en: 'battery' },
     'pageitems.role.blind': { page: 'ALIAS', de: 'blind', en: 'blind' },
     'pageitems.role.button': { page: 'ALIAS', de: 'button', en: 'button' },
     'pageitems.role.ct': { page: 'ALIAS', de: 'ct', en: 'ct' },
@@ -101,6 +102,7 @@ export type PageitemsTopicKey = keyof typeof pageitemsTopics;
  */
 export const pageitemsRoleTopics = {
     airCondition: ['pageitems.role.airCondition'],
+    battery: ['pageitems.role.battery'],
     blind: ['pageitems.role.blind'],
     button: ['pageitems.role.button'],
     ct: ['pageitems.role.ct'],

@@ -28,7 +28,7 @@ Instanz-Einstellungen → Reiter **Entwickler** → Knopf **Testdatenpunkte anle
 
 <img alt="Reiter Entwickler mit dem Knopf und der Meldung" src="../Pictures/testumgebung/01-entwickler-knopf.png" width="100%"/>
 
-Der Adapter legt die Objekte unter `0_userdata.0.NSPanelTest` und `alias.0.NSPanelTest` an und setzt Startwerte. Beim heutigen Stand der mitgelieferten Daten sind das **550 Objekte** (Ordner, Werte und Aliase zusammen); die Zahl wächst, wenn die Testdaten erweitert werden.
+Der Adapter legt die Objekte unter `0_userdata.0.NSPanelTest` und `alias.0.NSPanelTest` an und setzt Startwerte. Beim heutigen Stand der mitgelieferten Daten sind das **557 Objekte** (Ordner, Werte und Aliase zusammen); die Zahl wächst, wenn die Testdaten erweitert werden.
 
 Die Meldung darunter nennt **drei** Zahlen: angelegt, schon vorhanden, fehlgeschlagen.
 
@@ -89,7 +89,7 @@ Aufgerufen wird es im Browser unter `http://<ioBroker>:8090/<topic>` — Port 80
 | 4 | Rollläden & Tore | `cardEntities` | 4 | 4 | 5 | 4 | 8 |
 | 5 | Sensoren | `cardEntities` | 4 | 4 | 5 | 4 | 8 |
 | 6 | Steuerung | `cardEntities` | 4 | 4 | 5 | 4 | 8 |
-| 7 | Alle Rollen | `cardEntities` | 28 | 28 | 28 | 28 | 28 |
+| 7 | Alle Rollen | `cardEntities` | 29 | 29 | 29 | 29 | 29 |
 | 8 | Abfahrten | `cardSchedule` | 6 | 6 | 6 | 6 | 11 |
 | 9 | Wohnzimmer | `cardThermo` | – | – | – | – | – |
 | 10 | Klimaanlage | `cardThermo` | – | – | – | – | – |
@@ -111,7 +111,7 @@ Aufgerufen wird es im Browser unter `http://<ioBroker>:8090/<topic>` — Port 80
 
 Ein paar Eigenheiten, die beim Durchklicken auffallen und **so gewollt** sind:
 
-- **Alle Rollen** trägt bewusst 28 Einträge und damit mehr, als auf eine Seite passt — so hat der Blätterpfeil etwas zu tun. Es sind 28 der 30 Kanalrollen; die beiden fehlenden stehen unter [Grenzen](#7-grenzen).
+- **Alle Rollen** trägt bewusst 29 Einträge und damit mehr, als auf eine Seite passt — so hat der Blätterpfeil etwas zu tun. Es sind 29 der 31 Kanalrollen; die beiden fehlenden stehen unter [Grenzen](#7-grenzen).
 - **Details** ist eine Unterseite und nur über den letzten Platz auf *Haus* erreichbar; der Rückweg führt wieder dorthin. Ab dem hochkanten US-Modell wiederholen sich dort Einträge, weil nur vier Info-Kanäle vorhanden sind und die Seite zyklisch aufgefüllt wird.
 - **Die Medienseite trägt keinen Titel** — `cardMedia` zeigt stattdessen den Namen des Players.
 - **Heizkreise** zeigt bei neun Plätzen **sechs wählbare Kreise** aus fünf Einträgen: vier Heizkreise und eine Klimaanlage, die als Heiz- *und* Kühlkreis zählt. Einer der Kreise ist bewusst nicht über einen Alias, sondern über Einzel-Datenpunkte angebunden.
