@@ -47,6 +47,17 @@ const panelsWarnedAboutClockTimer = /* @__PURE__ */ new WeakSet();
 function isAlexaSpeaker(x) {
   return !!x && typeof x === "object" && "id" in x && typeof x.id === "string" && "name" in x && typeof x.name === "string";
 }
+function getMediaDeviceIdent(parent) {
+  if (!parent || typeof parent !== "object") {
+    return void 0;
+  }
+  const getIdent = (x) => !!x && typeof x === "object" && "ident" in x && typeof x.ident === "string" && x.ident ? x.ident : void 0;
+  const current = "currentItem" in parent ? getIdent(parent.currentItem) : void 0;
+  if (current) {
+    return current;
+  }
+  return "items" in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : void 0;
+}
 class PageItem extends import_baseClassPage.BaseTriggeredPage {
   defaultOnColor = import_Color.Color.White;
   defaultOffColor = import_Color.Color.Blue;
@@ -249,13 +260,25 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         this.log.debug(`Alexa devices found: ${this.tempData.length} frosm ${devices.rows.length}`);
       }
     } else if (this.config.role === "alexa-playlist" && this.dataItems && this.dataItems.type === "input_sel" && this.parent.card === "cardMedia") {
-      const states = await this.adapter.getForeignStatesAsync(
-        `${this.parent.currentItem ? this.parent.currentItem.ident : this.parent.items[0].ident}.Music-Provider.*`
-      );
+      const states = await this.getAlexaPlaylistStates();
       if (states) {
-        this.tempData = Object.keys(states);
+        this.tempData = states;
       }
     }
+  }
+  /**
+   * Reads the Music-Provider state ids of the currently selected Echo device
+   * (currentItem of the media page, otherwise its first item).
+   *
+   * @returns the state ids, undefined if there is no device or no states
+   */
+  async getAlexaPlaylistStates() {
+    const ident = getMediaDeviceIdent(this.parent);
+    if (!ident) {
+      return void 0;
+    }
+    const states = await this.adapter.getForeignStatesAsync(`${ident}.Music-Provider.*`);
+    return states ? Object.keys(states) : void 0;
   }
   async getPageItemPayload(skipEnabledCheck = false) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka;
@@ -3305,6 +3328,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
       } else if (role === "alexa-playlist") {
         this.log.debug(`Get Alexa Playlist start`);
+        const freshStates = await this.getAlexaPlaylistStates();
+        if (freshStates) {
+          this.tempData = freshStates;
+        }
         if (((_c = this.dataItems) == null ? void 0 : _c.type) === "input_sel" && this.dataItems.data.valueList) {
           const raw = await this.dataItems.data.valueList.getObject();
           if (!Array.isArray(raw) || !raw.every((v) => typeof v === "string")) {
