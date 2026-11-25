@@ -164,6 +164,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) dependencies updated
 - (ticaki) alarm/unlock page: the PIN lockout is now enforced in the adapter – every attempt during the lockout is rejected and extends the wait – a page with shared status shares the lockout across all panels
 - (ticaki) Admin: screensaver indicators can be pinned to their slot - a hidden pinned item leaves its slot empty and the other indicators do not move up onto it
+- (ticaki) Admin: playlist suggestions and format check for alexa2 media pages
 
 ### 2.6.0 (2026-11-22)
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)

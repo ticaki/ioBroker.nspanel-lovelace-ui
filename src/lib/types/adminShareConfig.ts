@@ -3133,6 +3133,34 @@ export function mediaBackendOf(id: string | undefined): MediaBackend | undefined
 }
 
 /**
+ * Splits an alexa2 playlist entry `<State>.<label>` (e.g. `Amazon-Music-Playlist.Rock`) at the first dot.
+ *
+ * @param entry Entry of the playlist list.
+ * @returns State token and label, both trimmed; undefined when one of them is empty or there is no dot.
+ */
+export function parseAlexaPlaylistEntry(entry: string): { state: string; label: string } | undefined {
+    const sep = entry.indexOf('.');
+    if (sep < 0) {
+        return undefined;
+    }
+    const state = entry.slice(0, sep).trim();
+    const label = entry.slice(sep + 1).trim();
+    return state && label ? { state, label } : undefined;
+}
+
+/**
+ * Finds the `Music-Provider` state of an alexa2 playlist entry: first the state whose last id segment
+ * equals the token, only then any state that contains it.
+ *
+ * @param stateIds State ids below `<echo>.Music-Provider`.
+ * @param token State token of the entry, e.g. `Amazon-Music-Playlist`.
+ * @returns The matching state id, undefined when none matches.
+ */
+export function findAlexaPlaylistState(stateIds: readonly string[], token: string): string | undefined {
+    return stateIds.find(s => s.split('.').pop() === token) ?? stateIds.find(s => s.includes(token));
+}
+
+/**
  * How the admin finds the players of a backend (templates/media-players.json):
  * - `node`: every object `<adapter>.<instance>.<folder>.<name>` of type `objectType` is a player
  * - `instance`: the instance itself is the player, the id is `<adapter>.<instance>`

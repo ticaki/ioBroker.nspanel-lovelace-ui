@@ -10,9 +10,13 @@ import {
     mediaBackendOf,
     mediaVisibleToolbarItems,
     normalizeScrollFields,
+    findAlexaPlaylistState,
+    parseAlexaPlaylistEntry,
     type MediaEntry,
 } from '../types/adminShareConfig';
 import { buildMediaScriptPage } from './admin';
+import { mediaListOptions } from './admin-media';
+import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import mediaPlayersJson from '../../../templates/media-players.json';
 
 describe('lib/configuration - buildMediaScriptPage', () => {
@@ -187,5 +191,66 @@ describe('lib/types - isSelectableMediaPlayer / mediaPlayerIdOf', () => {
         expect(mediaPlayerIdOf('spotify-premium.0.player.playbackInfo')).to.equal('spotify-premium.0');
         expect(mediaPlayerIdOf('mpd.1.state')).to.equal('mpd.1');
         expect(mediaPlayerIdOf('sonos.0.root.192_168_1_20')).to.equal('sonos.0.root.192_168_1_20');
+    });
+});
+
+describe('lib/configuration - mediaListOptions (alexa2)', () => {
+    const echo = 'alexa2.0.Echo-Devices.G090XX';
+    const objects: Record<string, ioBroker.ObjectType> = {
+        'alexa2.0.Echo-Devices.G090XX': 'device',
+        'alexa2.0.Echo-Devices.G0KITCHEN': 'device',
+        'alexa2.0.Echo-Devices.G090XX.Music-Provider.TuneIn-Station': 'state',
+        'alexa2.0.Echo-Devices.G090XX.Music-Provider.Amazon-Music-Playlist': 'state',
+        'alexa2.0.Echo-Devices.G090XX.Music-Provider.Amazon-Music': 'state',
+        'alexa2.0.Echo-Devices.G090XX.Music-Provider.Deep.Nested': 'state',
+        'alexa2.0.Echo-Devices.G0KITCHEN.Music-Provider.Other-Provider': 'state',
+        'alexa2.0.Echo-Devices.G090XX.Player.volume': 'state',
+    };
+    const adapter = {
+        language: 'en',
+        getObjectViewAsync: async (
+            _design: string,
+            search: string,
+            params: { startkey: string; endkey: string },
+        ): Promise<{ rows: { id: string; value: { common: { name: string } } }[] }> => ({
+            rows: Object.keys(objects)
+                .filter(id => objects[id] === search && id >= params.startkey && id <= params.endkey)
+                .map(id => ({ id, value: { common: { name: id.split('.').pop() ?? '' } } })),
+        }),
+    } as unknown as NspanelLovelaceUi;
+
+    it('offers the states directly below Music-Provider of the echo as playlists', async () => {
+        const options = await mediaListOptions(adapter, echo);
+        expect(options.playList).to.deep.equal(['Amazon-Music', 'Amazon-Music-Playlist', 'TuneIn-Station']);
+        expect(options.speakerList).to.deep.equal(['G090XX', 'G0KITCHEN']);
+        expect(options.favoriteList).to.deep.equal([]);
+    });
+});
+
+describe('lib/types/adminShareConfig - alexa2 playlist entries', () => {
+    it('splits an entry at the first dot and rejects empty parts', () => {
+        expect(parseAlexaPlaylistEntry('Amazon-Music-Playlist.Rock')).to.deep.equal({
+            state: 'Amazon-Music-Playlist',
+            label: 'Rock',
+        });
+        expect(parseAlexaPlaylistEntry(' TuneIn-Station . Radio 1.2 ')).to.deep.equal({
+            state: 'TuneIn-Station',
+            label: 'Radio 1.2',
+        });
+        expect(parseAlexaPlaylistEntry('Rock')).to.equal(undefined);
+        expect(parseAlexaPlaylistEntry('.Rock')).to.equal(undefined);
+        expect(parseAlexaPlaylistEntry('Amazon-Music-Playlist.')).to.equal(undefined);
+        expect(parseAlexaPlaylistEntry(' . ')).to.equal(undefined);
+    });
+
+    it('prefers the state whose last segment equals the token', () => {
+        const ids = [
+            'alexa2.0.Echo-Devices.G090XX.Music-Provider.Amazon-Music-Playlist',
+            'alexa2.0.Echo-Devices.G090XX.Music-Provider.Amazon-Music',
+        ];
+        expect(findAlexaPlaylistState(ids, 'Amazon-Music')).to.equal(ids[1]);
+        expect(findAlexaPlaylistState(ids, 'Amazon-Music-Playlist')).to.equal(ids[0]);
+        expect(findAlexaPlaylistState(ids, 'Playlist')).to.equal(ids[0]);
+        expect(findAlexaPlaylistState(ids, 'TuneIn')).to.equal(undefined);
     });
 });
