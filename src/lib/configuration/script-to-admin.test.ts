@@ -2864,6 +2864,28 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
         expect(convert('title')).to.not.have.property('headlineMode');
     });
 
+    it('takes over speakerMoveMusic false of an alexa2 cardMedia page, the default stays out', () => {
+        const convert = (speakerMoveMusic: boolean): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { id: 'alexa2.0.Echo-Devices.G000AAA', speakerMoveMusic },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            return result.newPages[0] as ShareConfig.MediaEntry;
+        };
+        expect(convert(false).speakerMoveMusic).to.equal(false);
+        expect(convert(true)).to.not.have.property('speakerMoveMusic');
+    });
+
     it('takes an empty name list of a cardMedia page as a missing field and deduplicates repeated names', () => {
         const media = { id: 'squeezeboxrpc.0.Players.Familienzimmer' };
         const convert = (extra: Record<string, unknown>): ShareConfig.MediaEntry => {

@@ -1145,6 +1145,8 @@
     "media_selectPlayerReadError": "Die Objekte dieser Adapter konnten nicht gelesen werden: %s",
     "media_selectPlayerSearch": "Suchen",
     "media_selectPlayerTitle": "Player auswählen",
+    "media_speakerMoveMusic": "Musik beim Wechsel des Lautsprechers mitnehmen",
+    "media_speakerMoveMusicHint": "Läuft Musik, wandert sie beim Wechsel des Echos auf den neuen Echo. Aus: nur das Panel wechselt auf den neuen Echo, die Musik spielt weiter, wo sie ist.",
     "media_standardItems": "Standard-Elemente des Players",
     "media_stdSlotHint": "Standard-Element des Players – klicken zum Ändern",
     "media_volumeHint": "Bereich des Schiebereglers auf dem Panel, umgerechnet auf die Skala des Players.",

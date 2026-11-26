@@ -15,6 +15,7 @@ Contents:
 - [Standard items of the player](#6-standard-items-of-the-player)
   - [Order by drag and drop](#order-by-drag-and-drop)
   - [Timer (Alexa only)](#timer-alexa-only)
+  - [Switching the speaker: move the music (Alexa only)](#switching-the-speaker-move-the-music-alexa-only)
 - [The three lists: speakers, playlists, favorites](#7-the-three-lists-speakers-playlists-favorites)
 - [Own page items](#8-own-page-items)
 - [Paging of the option bar](#9-paging-of-the-option-bar)
@@ -189,6 +190,19 @@ The **Timer** is the only standard item that is **off by default**: click its ch
 - Requirement as for the page item: switch on the option **Automatically query activity on device interaction** in the alexa2 instance, see [Requirements](popupTimer#requirements).
 - Without an own order it is the last standard item of the bar; when more items are visible than the bar has places (5 on the NSPanel), the bar [pages](#9-paging-of-the-option-bar). By [drag and drop](#order-by-drag-and-drop) it can be moved to the front.
 
+### Switching the speaker: move the music (Alexa only)
+
+Choosing another Echo in the **Speakers** list makes the page control that device. If the previous Echo is playing, the adapter additionally sends it the voice command *„Schiebe Musik auf <name>"* – the playing music then moves to the new Echo.
+
+| Field | Effect |
+|---|---|
+| **Move the music when switching the speaker** | In the dialog of the item *Speakers*, Alexa only. **On by default** (previous behaviour). Off: only the panel switches to the new Echo, the music keeps playing where it is. |
+
+Its help text: *„While music plays, switching the Echo moves it to the new Echo. Off: only the panel switches to the new Echo, the music keeps playing where it is."*
+
+- In the script the field is `media.speakerMoveMusic`; only `false` switches the move off, if it is missing it stays on.
+- If the item *Speakers* is switched off, the option is hidden as well.
+
 > The **Offline indicator** takes no place in the preview: *„Only appears while the player is not reachable - it takes no place otherwise."* It can only be seen as a chip below the preview.
 
 ## 7. The three lists: speakers, playlists, favorites
@@ -278,3 +292,4 @@ At the bottom **Save** or **Save and close**. The instance restarts afterwards a
 - **The preview counts one place more than the panel.** The editor always keeps one free place for creating items. With exactly five items the preview therefore shows two pages (and with the setting *Arrow* a paging arrow already), while the panel fits all five onto one bar.
 - **The pageitem dialog opens in the grid variant.** That is why **Use Value Instead of Icon** and the text/icon size are offered there – and both do take effect here: the adapter counts the media player page among the grid cards. Only the **long press** stays reserved for the three grid variants.
 - **The volume presets disappear with their last entry.** The item has no switch; it appears exactly when at least one preset is set.
+- **Moving the music only works on German Echos.** When [switching the speaker](#switching-the-speaker-move-the-music-alexa-only) the adapter always sends the German voice command *„Schiebe Musik auf <name>"*. An Echo with another language does not understand it – the music then stays on the old device even with the option on, there is no message.

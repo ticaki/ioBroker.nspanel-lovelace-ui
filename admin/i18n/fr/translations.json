@@ -1145,6 +1145,8 @@
     "media_selectPlayerReadError": "Les objets de ces adaptateurs n'ont pas pu être lus : %s",
     "media_selectPlayerSearch": "Rechercher",
     "media_selectPlayerTitle": "Choisir le lecteur",
+    "media_speakerMoveMusic": "Emporter la musique lors du changement d'enceinte",
+    "media_speakerMoveMusicHint": "Si de la musique est en cours, elle passe au nouvel Echo lors du changement. Désactivé : seul le panneau passe au nouvel Echo, la musique continue là où elle est.",
     "media_standardItems": "Éléments standard du lecteur",
     "media_stdSlotHint": "élément standard du lecteur – cliquer pour modifier",
     "media_volumeHint": "Plage du curseur sur le panneau, convertie à l'échelle du lecteur.",

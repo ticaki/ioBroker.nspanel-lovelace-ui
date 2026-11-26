@@ -169,6 +169,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) device with details: an alias channel of a device page slot that is missing or does not fit is named in the log at adapter start (once, with page and item)
 - (ticaki) cardGrid, cardGrid2, cardGrid3 and device pages: reaching the long press of a cell (0.5 s) lets its background blink green/grey until the finger is lifted (needs a new TFT, eu)
 - (ticaki) cardEntities, cardGrid, cardGrid2, cardGrid3, cardSchedule, cardThermo2, cardMedia: closing a popup no longer jumps back to the first items, the page stays where it was scrolled to
+- (ticaki) Media page (alexa2): option to not move the playing music to the new Echo when switching the speaker
 - (ticaki) Media page (alexa2): optional toolbar item "Timer" for the Alexa timers of the currently selected Echo device - while a timer runs it shows the remaining time (as on the screensaver) instead of the icon
 - (ticaki) Media page: the order of the toolbar items can be changed by drag and drop in the admin
 - (ticaki) Timer page item: option "value instead of icon" shows the remaining time while a timer runs

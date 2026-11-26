@@ -1145,6 +1145,8 @@
     "media_selectPlayerReadError": "The objects of these adapters could not be read: %s",
     "media_selectPlayerSearch": "Search",
     "media_selectPlayerTitle": "Select player",
+    "media_speakerMoveMusic": "Move the music when switching the speaker",
+    "media_speakerMoveMusicHint": "While music plays, switching the Echo moves it to the new Echo. Off: only the panel switches to the new Echo, the music keeps playing where it is.",
     "media_standardItems": "Standard items of the player",
     "media_stdSlotHint": "standard item of the player - click to change",
     "media_volumeHint": "Range of the slider on the panel, mapped onto the scale of the player.",

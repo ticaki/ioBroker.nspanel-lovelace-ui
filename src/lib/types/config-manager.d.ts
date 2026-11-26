@@ -464,6 +464,11 @@ declare namespace ScriptConfig {
         colorMediaTitle?: RGB;
         speakerList?: string[];
         /**
+         * Only alexa2. Default true: when the Echo is switched in the speaker list while music plays, the music is
+         * moved to the new Echo. false = the playing music is not moved, only the panel switches to the new Echo.
+         */
+        speakerMoveMusic?: boolean;
+        /**
          * Optional list of predefined volume presets.
          * Each entry must be a string formatted as "name?value",
          * e.g. ["quiet?5", "loud?95"].

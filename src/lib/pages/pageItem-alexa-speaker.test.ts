@@ -22,9 +22,15 @@ const DEVICES = [
  * @param opts.current index of the currently selected device
  * @param opts.playing player is playing
  * @param opts.devices devices in tempData
+ * @param opts.moveMusic option `moveMusic` of the item, undefined = default
  * @returns the item, its entry and what was switched
  */
-function makeItem(opts: { current: number; playing?: boolean; devices?: unknown[] }): SpeakerFixture {
+function makeItem(opts: {
+    current: number;
+    playing?: boolean;
+    devices?: unknown[];
+    moveMusic?: boolean;
+}): SpeakerFixture {
     const noop = (): void => undefined;
     const switched: { id: string; name: string }[] = [];
     const commands: { id: string; val: unknown }[] = [];
@@ -41,6 +47,7 @@ function makeItem(opts: { current: number; playing?: boolean; devices?: unknown[
     const entry = {
         type: 'input_sel',
         role: 'alexa-speaker',
+        moveMusic: opts.moveMusic,
         data: {
             entityInSel: {
                 value: { options: { dp: `${DEVICES[0].id}.Info.name` } },
@@ -82,6 +89,20 @@ describe('lib/pages/pageItem - alexa speaker popup', () => {
         expect(commands).to.deep.equal([
             { id: `${DEVICES[0].id}.Commands.textCommand`, val: 'Schiebe Musik auf Living room' },
         ]);
+        expect(switched).to.deep.equal([DEVICES[1]]);
+    });
+    it('with moveMusic true the music is moved to the chosen Echo', async () => {
+        const { item, entry, switched, commands } = makeItem({ current: 0, playing: true, moveMusic: true });
+        await item.setListCommand(entry, '1');
+        expect(commands).to.deep.equal([
+            { id: `${DEVICES[0].id}.Commands.textCommand`, val: 'Schiebe Musik auf Living room' },
+        ]);
+        expect(switched).to.deep.equal([DEVICES[1]]);
+    });
+    it('with moveMusic false only the player of the panel is switched', async () => {
+        const { item, entry, switched, commands } = makeItem({ current: 0, playing: true, moveMusic: false });
+        expect(await item.setListCommand(entry, '1')).to.equal(true);
+        expect(commands).to.deep.equal([]);
         expect(switched).to.deep.equal([DEVICES[1]]);
     });
     it('an entry without an id does not switch the player', async () => {

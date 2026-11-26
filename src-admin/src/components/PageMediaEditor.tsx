@@ -12,6 +12,7 @@ import {
     Alert,
     Box,
     Button,
+    Checkbox,
     Chip,
     CircularProgress,
     Dialog,
@@ -966,6 +967,27 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         this.defaultColor(MEDIA_ITEM_DEFAULT_COLORS[item]?.off),
                         v => this.setDraftToolbar(item, { colorOff: v }),
                     )}
+                {item === 'speakerList' && backend === 'alexa2' && config.enabled !== false && (
+                    <Tooltip title={this.getText('media_speakerMoveMusicHint')}>
+                        <FormControlLabel
+                            sx={{ display: 'block' }}
+                            control={
+                                <Checkbox
+                                    checked={draft.speakerMoveMusic !== false}
+                                    onChange={(_e, checked) =>
+                                        this.setDraft({ speakerMoveMusic: checked ? undefined : false })
+                                    }
+                                />
+                            }
+                            label={
+                                <>
+                                    {this.getText('media_speakerMoveMusic')}
+                                    <DocHelp topic="pages2.mediaSpeakerMoveMusic" />
+                                </>
+                            }
+                        />
+                    </Tooltip>
+                )}
                 {list && config.enabled !== false && this.renderListEditor(draft, list)}
             </>
         );

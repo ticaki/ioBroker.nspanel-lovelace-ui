@@ -331,6 +331,8 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "speakerList", {
       role: "alexa-speaker",
       type: "input_sel",
+      // false: switching the Echo does not move the playing music
+      moveMusic: page.media.speakerMoveMusic !== false,
       data: {
         color: {
           true: {

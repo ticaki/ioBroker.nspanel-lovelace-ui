@@ -137,6 +137,11 @@ export const pages2Topics = {
         de: 'Einstellungen eines Elements',
         en: 'Settings of an item',
     },
+    'pages2.mediaSpeakerMoveMusic': {
+        page: 'cardMedia',
+        de: 'Lautsprecher wechseln: Musik mitnehmen (nur Alexa)',
+        en: 'Switching the speaker: move the music (Alexa only)',
+    },
     'pages2.mediaLists': {
         page: 'cardMedia',
         de: '7. Die drei Listen: Lautsprecher, Playlisten, Favoriten',
