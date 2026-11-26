@@ -803,6 +803,7 @@ const mediaMappedKeys = [
   "colorMediaArtist",
   "colorMediaTitle",
   "speakerList",
+  "speakerMoveMusic",
   "volumePresets",
   "favoriteList",
   "playList",
@@ -889,6 +890,9 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
     if (list !== void 0) {
       entry[key] = list;
     }
+  }
+  if (bool(media.speakerMoveMusic, reason, "media.speakerMoveMusic") === false && (0, import_adminShareConfig.mediaBackendOf)(mediaId) === "alexa2") {
+    entry.speakerMoveMusic = false;
   }
   if (media.volumePresets !== void 0 && media.volumePresets !== null) {
     const presets = media.volumePresets;

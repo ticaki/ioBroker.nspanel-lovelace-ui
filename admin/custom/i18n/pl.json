@@ -1026,6 +1026,8 @@
     "media_selectPlayerReadError": "Nie udało się odczytać obiektów tych adapterów: %s",
     "media_selectPlayerSearch": "Szukaj",
     "media_selectPlayerTitle": "Wybierz odtwarzacz",
+    "media_speakerMoveMusic": "Przenieś muzykę przy zmianie głośnika",
+    "media_speakerMoveMusicHint": "Jeśli gra muzyka, przy zmianie Echo przechodzi na nowe Echo. Wyłączone: tylko panel przełącza się na nowe Echo, muzyka gra dalej tam, gdzie jest.",
     "media_standardItems": "Standardowe elementy odtwarzacza",
     "media_stdSlotHint": "standardowy element odtwarzacza – kliknij, aby zmienić",
     "media_volumeHint": "Zakres suwaka na panelu, przeliczony na skalę odtwarzacza.",

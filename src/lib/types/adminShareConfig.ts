@@ -3449,6 +3449,11 @@ export type MediaEntry = {
     /** order of the standard items in the bar (drag and drop in the editor), missing = order of the backend */
     toolbarOrder?: MediaToolbarItem[];
     speakerList?: string[];
+    /**
+     * alexa2 only: move the playing music to the new Echo when the speaker is switched. Missing = true (default),
+     * false = only the panel switches to the new Echo
+     */
+    speakerMoveMusic?: boolean;
     playList?: string[];
     favoriteList?: string[];
     volumePresets?: MediaVolumePreset[];

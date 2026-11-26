@@ -1246,6 +1246,7 @@ const mediaMappedKeys = [
     'colorMediaArtist',
     'colorMediaTitle',
     'speakerList',
+    'speakerMoveMusic',
     'volumePresets',
     'favoriteList',
     'playList',
@@ -1360,6 +1361,13 @@ function convertMediaPage(
         if (list !== undefined) {
             entry[key] = list;
         }
+    }
+    // only alexa2 knows the option, on the other backends it has no effect
+    if (
+        bool(media.speakerMoveMusic, reason, 'media.speakerMoveMusic') === false &&
+        mediaBackendOf(mediaId) === 'alexa2'
+    ) {
+        entry.speakerMoveMusic = false;
     }
     if (media.volumePresets !== undefined && media.volumePresets !== null) {
         const presets = media.volumePresets;

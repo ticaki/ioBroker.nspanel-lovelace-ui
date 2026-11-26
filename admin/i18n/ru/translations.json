@@ -1026,6 +1026,8 @@
     "media_selectPlayerReadError": "Не удалось прочитать объекты этих адаптеров: %s",
     "media_selectPlayerSearch": "Поиск",
     "media_selectPlayerTitle": "Выбрать плеер",
+    "media_speakerMoveMusic": "Переносить музыку при смене динамика",
+    "media_speakerMoveMusicHint": "Если играет музыка, при смене Echo она переходит на новый Echo. Выкл.: панель только переключается на новый Echo, музыка продолжает играть там, где играла.",
     "media_standardItems": "Стандартные элементы плеера",
     "media_stdSlotHint": "стандартный элемент плеера – щёлкните, чтобы изменить",
     "media_volumeHint": "Диапазон ползунка на панели, пересчитанный на шкалу плеера.",

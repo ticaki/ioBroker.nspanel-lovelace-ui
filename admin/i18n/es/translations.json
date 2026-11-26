@@ -1026,6 +1026,8 @@
     "media_selectPlayerReadError": "No se pudieron leer los objetos de estos adaptadores: %s",
     "media_selectPlayerSearch": "Buscar",
     "media_selectPlayerTitle": "Seleccionar reproductor",
+    "media_speakerMoveMusic": "Llevar la música al cambiar de altavoz",
+    "media_speakerMoveMusicHint": "Si suena música, al cambiar de Echo pasa al nuevo Echo. Desactivado: solo el panel cambia al nuevo Echo, la música sigue sonando donde está.",
     "media_standardItems": "Elementos estándar del reproductor",
     "media_stdSlotHint": "elemento estándar del reproductor: haz clic para cambiarlo",
     "media_volumeHint": "Rango del control deslizante del panel, convertido a la escala del reproductor.",
