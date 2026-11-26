@@ -979,7 +979,12 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                                     }
                                 />
                             }
-                            label={this.getText('media_speakerMoveMusic')}
+                            label={
+                                <>
+                                    {this.getText('media_speakerMoveMusic')}
+                                    <DocHelp topic="pages2.mediaSpeakerMoveMusic" />
+                                </>
+                            }
                         />
                     </Tooltip>
                 )}
