@@ -79,6 +79,7 @@ __export(adminShareConfig_exports, {
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
   emptyThermoEntry: () => emptyThermoEntry,
+  findAlexaPlaylistState: () => findAlexaPlaylistState,
   findChartEntryForScript: () => findChartEntryForScript,
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
@@ -97,6 +98,10 @@ __export(adminShareConfig_exports, {
   isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
   isMediaBackend: () => isMediaBackend,
+  isMediaHeadlineMode: () => isMediaHeadlineMode,
+  isMediaOptInToolbarItem: () => isMediaOptInToolbarItem,
+  isMediaToolbarItem: () => isMediaToolbarItem,
+  isMediaToolbarItemOn: () => isMediaToolbarItemOn,
   isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
   isPChartRangeKey: () => isPChartRangeKey,
   isPageLinkEntry: () => isPageLinkEntry,
@@ -117,9 +122,13 @@ __export(adminShareConfig_exports, {
   mediaBackendOf: () => mediaBackendOf,
   mediaBackends: () => mediaBackends,
   mediaListKinds: () => mediaListKinds,
+  mediaOptInToolbarItems: () => mediaOptInToolbarItems,
   mediaPlayerDefinitionOf: () => mediaPlayerDefinitionOf,
   mediaPlayerDefinitions: () => mediaPlayerDefinitions,
   mediaPlayerIdOf: () => mediaPlayerIdOf,
+  mediaToolbarItemNames: () => mediaToolbarItemNames,
+  mediaToolbarOrder: () => mediaToolbarOrder,
+  mediaToolbarOrderToStore: () => mediaToolbarOrderToStore,
   mediaVisibleToolbarItems: () => mediaVisibleToolbarItems,
   mediaVolumeDefaults: () => mediaVolumeDefaults,
   menuCardGridColumns: () => menuCardGridColumns,
@@ -143,6 +152,7 @@ __export(adminShareConfig_exports, {
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
+  parseAlexaPlaylistEntry: () => parseAlexaPlaylistEntry,
   parseMediaPlayerDefinitions: () => parseMediaPlayerDefinitions,
   pchartDefaults: () => pchartDefaults,
   pchartRangeKeys: () => pchartRangeKeys,
@@ -1284,12 +1294,64 @@ function emptyThermoEntry(uniqueName) {
     alwaysOn: "none"
   };
 }
+function isMediaHeadlineMode(value) {
+  return value === "title" || value === "device";
+}
 const mediaBackends = ["alexa2", "sonos", "spotify-premium", "mpd", "squeezeboxrpc"];
+const mediaToolbarItemNames = [
+  "reminder",
+  "online",
+  "speakerList",
+  "favoriteList",
+  "playList",
+  "equalizer",
+  "clock",
+  "volumePresets",
+  "trackList",
+  "repeat",
+  "crossfade",
+  "timer"
+];
+function isMediaToolbarItem(value) {
+  return typeof value === "string" && mediaToolbarItemNames.some((item) => item === value);
+}
+function mediaToolbarOrder(order, items) {
+  const out = [];
+  if (Array.isArray(order)) {
+    for (const entry of order) {
+      if (isMediaToolbarItem(entry) && items.includes(entry) && !out.includes(entry)) {
+        out.push(entry);
+      }
+    }
+  }
+  return [...out, ...items.filter((item) => !out.includes(item))];
+}
+function mediaToolbarOrderToStore(order, items) {
+  const sorted = mediaToolbarOrder(order, items);
+  return sorted.every((item, i) => item === items[i]) ? void 0 : sorted;
+}
+const mediaOptInToolbarItems = ["timer"];
+function isMediaOptInToolbarItem(item) {
+  return item === "timer";
+}
+function isMediaToolbarItemOn(item, config) {
+  return isMediaOptInToolbarItem(item) ? (config == null ? void 0 : config.enabled) === true : (config == null ? void 0 : config.enabled) !== false;
+}
 const mediaListKinds = ["speakerList", "playList", "favoriteList"];
 const mediaBackendFeatures = {
   alexa2: {
-    items: ["reminder", "online", "speakerList", "playList", "equalizer", "clock", "volumePresets", "repeat"],
-    colorOn: ["online", "speakerList", "playList", "equalizer", "clock", "volumePresets", "repeat"],
+    items: [
+      "reminder",
+      "online",
+      "speakerList",
+      "playList",
+      "equalizer",
+      "clock",
+      "volumePresets",
+      "repeat",
+      "timer"
+    ],
+    colorOn: ["online", "speakerList", "playList", "equalizer", "clock", "volumePresets", "repeat", "timer"],
     colorOff: ["reminder", "online", "speakerList", "repeat"],
     titleColor: false
   },
@@ -1331,6 +1393,19 @@ const mediaBackendFeatures = {
 function mediaBackendOf(id) {
   const name = (id != null ? id : "").trim().split(".")[0];
   return mediaBackends.includes(name) ? name : void 0;
+}
+function parseAlexaPlaylistEntry(entry) {
+  const sep = entry.indexOf(".");
+  if (sep < 0) {
+    return void 0;
+  }
+  const state = entry.slice(0, sep).trim();
+  const label = entry.slice(sep + 1).trim();
+  return state && label ? { state, label } : void 0;
+}
+function findAlexaPlaylistState(stateIds, token) {
+  var _a;
+  return (_a = stateIds.find((s) => s.split(".").pop() === token)) != null ? _a : stateIds.find((s) => s.includes(token));
 }
 const mediaPlayerObjectTypes = ["device", "channel", "folder", "state"];
 function isMediaPlayerObjectType(value) {
@@ -1403,10 +1478,10 @@ function emptyMediaEntry(uniqueName) {
   };
 }
 function mediaVisibleToolbarItems(entry, backend) {
-  return mediaBackendFeatures[backend].items.filter(
+  return mediaToolbarOrder(entry.toolbarOrder, mediaBackendFeatures[backend].items).filter(
     (item) => {
-      var _a, _b, _c;
-      return item === "volumePresets" ? ((_a = entry.volumePresets) != null ? _a : []).length > 0 : ((_c = (_b = entry.toolbar) == null ? void 0 : _b[item]) == null ? void 0 : _c.enabled) !== false;
+      var _a, _b;
+      return item === "volumePresets" ? ((_a = entry.volumePresets) != null ? _a : []).length > 0 : isMediaToolbarItemOn(item, (_b = entry.toolbar) == null ? void 0 : _b[item]);
     }
   );
 }
@@ -1590,6 +1665,29 @@ const requiredScriptDataPoints = {
         writeable: false,
         trigger: true,
         description: ""
+      }
+    }
+  },
+  battery: {
+    updatedVersion: true,
+    name: "battery",
+    description: "Hausakku / Speicher: Symbol nach Ladestand, Farbe nach Laden / Entladen",
+    data: {
+      ACTUAL: {
+        role: "value.battery",
+        type: "number",
+        required: true,
+        writeable: false,
+        trigger: true,
+        description: "Ladestand in %"
+      },
+      POWER: {
+        role: "value.power",
+        type: "number",
+        required: false,
+        writeable: false,
+        trigger: true,
+        description: "Lade-/Entladeleistung: negativ = laden, positiv = entladen, 0 = weder noch. Liefert das Ger\xE4t es andersherum, im Alias umdrehen."
       }
     }
   },
@@ -2303,6 +2401,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   emptyThermo2Circuit,
   emptyThermo2Entry,
   emptyThermoEntry,
+  findAlexaPlaylistState,
   findChartEntryForScript,
   findPowerEntryForScript,
   formatEntryNumber,
@@ -2321,6 +2420,10 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isLongPressCard,
   isMainPageEntry,
   isMediaBackend,
+  isMediaHeadlineMode,
+  isMediaOptInToolbarItem,
+  isMediaToolbarItem,
+  isMediaToolbarItemOn,
   isNameOnlyPopupTitle,
   isPChartRangeKey,
   isPageLinkEntry,
@@ -2341,9 +2444,13 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   mediaBackendOf,
   mediaBackends,
   mediaListKinds,
+  mediaOptInToolbarItems,
   mediaPlayerDefinitionOf,
   mediaPlayerDefinitions,
   mediaPlayerIdOf,
+  mediaToolbarItemNames,
+  mediaToolbarOrder,
+  mediaToolbarOrderToStore,
   mediaVisibleToolbarItems,
   mediaVolumeDefaults,
   menuCardGridColumns,
@@ -2367,6 +2474,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
+  parseAlexaPlaylistEntry,
   parseMediaPlayerDefinitions,
   pchartDefaults,
   pchartRangeKeys,

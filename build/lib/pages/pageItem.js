@@ -28,7 +28,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageItem_exports = {};
 __export(pageItem_exports, {
-  PageItem: () => PageItem
+  PageItem: () => PageItem,
+  timerIconText: () => timerIconText
 });
 module.exports = __toCommonJS(pageItem_exports);
 var import_Color = require("../const/Color");
@@ -40,6 +41,7 @@ var import_screensaver_cycle = require("../const/screensaver-cycle");
 var import_data_item = require("../controller/data-item");
 var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_deviceDetails = require("../types/deviceDetails");
 var import_device_details = require("./device-details");
 var import_device_page = require("./device-page");
@@ -48,6 +50,30 @@ var import_alexa_alarm = require("../classes/alexa-alarm");
 const panelsWarnedAboutClockTimer = /* @__PURE__ */ new WeakSet();
 function isAlexaSpeaker(x) {
   return !!x && typeof x === "object" && "id" in x && typeof x.id === "string" && "name" in x && typeof x.name === "string";
+}
+function getMediaDeviceIdent(parent) {
+  if (!parent || typeof parent !== "object") {
+    return void 0;
+  }
+  const getIdent = (x) => !!x && typeof x === "object" && "ident" in x && typeof x.ident === "string" && x.ident ? x.ident : void 0;
+  const current = "currentItem" in parent ? getIdent(parent.currentItem) : void 0;
+  if (current) {
+    return current;
+  }
+  return "items" in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : void 0;
+}
+const MEDIA_TIMER_TEXT_SIZE = 1;
+const TILE_SMALL_FROM_MINUTES = 100;
+const TIMER_ICON_TIMEOUT = "timerIconText";
+function timerIconText(selection) {
+  return (selection == null ? void 0 : selection.status) === "running" ? (0, import_screensaver_timer.timerText)(selection.remainingMs) : void 0;
+}
+function echoDeviceOf(ident) {
+  const parts = (ident != null ? ident : "").split(".");
+  if (parts.length !== 4 || parts[2] !== "Echo-Devices" || !parts[0] || !parts[1] || !parts[3]) {
+    return void 0;
+  }
+  return { instance: `${parts[0]}.${parts[1]}`, serial: parts[3] };
 }
 class PageItem extends import_baseClassPage.BaseTriggeredPage {
   defaultOnColor = import_Color.Color.White;
@@ -251,16 +277,28 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         this.log.debug(`Alexa devices found: ${this.tempData.length} frosm ${devices.rows.length}`);
       }
     } else if (this.config.role === "alexa-playlist" && this.dataItems && this.dataItems.type === "input_sel" && this.parent.card === "cardMedia") {
-      const states = await this.adapter.getForeignStatesAsync(
-        `${this.parent.currentItem ? this.parent.currentItem.ident : this.parent.items[0].ident}.Music-Provider.*`
-      );
+      const states = await this.getAlexaPlaylistStates();
       if (states) {
-        this.tempData = Object.keys(states);
+        this.tempData = states;
       }
     }
   }
+  /**
+   * Reads the Music-Provider state ids of the currently selected Echo device
+   * (currentItem of the media page, otherwise its first item).
+   *
+   * @returns the state ids, undefined if there is no device or no states
+   */
+  async getAlexaPlaylistStates() {
+    const ident = getMediaDeviceIdent(this.parent);
+    if (!ident) {
+      return void 0;
+    }
+    const states = await this.adapter.getForeignStatesAsync(`${ident}.Music-Provider.*`);
+    return states ? Object.keys(states) : void 0;
+  }
   async getPageItemPayload(skipEnabledCheck = false) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -548,27 +586,39 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 message.icon = (_O = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _O : "";
                 break;
               }
+              case "battery.power": {
+                const power = await tools.getValueEntryNumber(item.entity3);
+                message.icon = (_P = await tools.getIconEntryValue(
+                  item.icon,
+                  power !== null && power < 0,
+                  "",
+                  "",
+                  false
+                )) != null ? _P : "";
+                message.iconColor = await tools.getBatteryPowerColor(item.icon, power);
+                break;
+              }
               case "combined": {
-                message.icon = (_P = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _P : "";
-                message.icon += (_Q = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _Q : "";
+                message.icon = (_Q = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _Q : "";
+                message.icon += (_R = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _R : "";
                 break;
               }
               default: {
-                const positionIcon = typeof showIcon === "number" && await ((_T = (_S = (_R = item.icon) == null ? void 0 : _R.true) == null ? void 0 : _S.value) == null ? void 0 : _T.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
-                message.icon = (_V = await tools.getIconEntryValue(
+                const positionIcon = typeof showIcon === "number" && await ((_U = (_T = (_S = item.icon) == null ? void 0 : _S.true) == null ? void 0 : _T.value) == null ? void 0 : _U.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
+                message.icon = (_W = await tools.getIconEntryValue(
                   item.icon,
                   positionIcon ? showIcon : !!showIcon,
                   "",
                   null,
-                  (_U = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _U : false
-                )) != null ? _V : "";
+                  (_V = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _V : false
+                )) != null ? _W : "";
               }
             }
             const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
-            message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
+            (_X = message.iconColor) != null ? _X : message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                const newValue = (_W = await entry.data.confirm.getObject()) != null ? _W : await entry.data.confirm.getString();
+                const newValue = (_Y = await entry.data.confirm.getObject()) != null ? _Y : await entry.data.confirm.getString();
                 if (newValue) {
                   const text = typeof newValue === "object" ? newValue.text : newValue;
                   if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
@@ -606,7 +656,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.intNameEntity + additionalId,
               message.icon,
               message.iconColor,
-              (_X = message.displayName) != null ? _X : "",
+              (_Z = message.displayName) != null ? _Z : "",
               message.optionalValue
             );
           }
@@ -615,17 +665,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          let value = (_Y = await tools.getValueEntryNumber(item.entityInSel)) != null ? _Y : await tools.getValueEntryBoolean(item.entityInSel);
+          let value = (__ = await tools.getValueEntryNumber(item.entityInSel)) != null ? __ : await tools.getValueEntryBoolean(item.entityInSel);
           if (entry.role === "alexa-speaker") {
             value = this.parent.currentItem === this.parent.items[0];
           }
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_Z = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _Z : import_Color.Color.HMIOn;
+          message.iconColor = (_$ = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _$ : import_Color.Color.HMIOn;
           message.displayName = this.library.getTranslation(
-            (_$ = (__ = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? __ : message.displayName) != null ? _$ : ""
+            (_ba = (_aa = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? _aa : message.displayName) != null ? _ba : ""
           );
           message.optionalValue = this.library.getTranslation(
-            (_aa = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _aa : "PRESS"
+            (_ca = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _ca : "PRESS"
           );
           return tools.getItemMesssage(message);
           break;
@@ -635,12 +685,12 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (entry.type === "fan") {
               const item = entry.data;
               message.type = "fan";
-              const value = (_ba = await tools.getValueEntryBoolean(item.entity1)) != null ? _ba : null;
+              const value = (_da = await tools.getValueEntryBoolean(item.entity1)) != null ? _da : null;
               message.displayName = this.library.getTranslation(
-                (_da = (_ca = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ca : message.displayName) != null ? _da : ""
+                (_fa = (_ea = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ea : message.displayName) != null ? _fa : ""
               );
-              message.icon = (_ea = await tools.getIconEntryValue(item.icon, value, "")) != null ? _ea : "";
-              message.iconColor = (_fa = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _fa : "";
+              message.icon = (_ga = await tools.getIconEntryValue(item.icon, value, "")) != null ? _ga : "";
+              message.iconColor = (_ha = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ha : "";
               return tools.getPayloadRemoveTilde(
                 message.type,
                 message.intNameEntity,
@@ -663,16 +713,22 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             const item = entry.data;
             message.type = "timer";
             const { opt, on } = await this.getTimerListValue(item);
-            const s = ((_ga = this.tempData) == null ? void 0 : _ga.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
+            const s = ((_ia = this.tempData) == null ? void 0 : _ia.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
             const v = typeof s === "number" ? s > 1 : on;
             {
               message.iconColor = await tools.getIconEntryColor(item.icon, v, import_Color.Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, v, "gesture-tap-button");
+              if (entry.useValue) {
+                const text = await this.drawTimerIconText(item);
+                if (text !== void 0) {
+                  message.icon = text + await this.timerIconTextSuffix(entry, text);
+                }
+              }
               message.optionalValue = this.library.getTranslation(
-                (_ha = await tools.getEntryTextOnOff(item.text, on)) != null ? _ha : opt
+                (_ja = await tools.getEntryTextOnOff(item.text, on)) != null ? _ja : opt
               );
               message.displayName = this.library.getTranslation(
-                (_ja = (_ia = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ia : message.displayName) != null ? _ja : ""
+                (_la = (_ka = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ka : message.displayName) != null ? _la : ""
               );
               return tools.getPayloadRemoveTilde(
                 message.type,
@@ -1423,12 +1479,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     if (!config) {
       return void 0;
     }
-    if (!this.alexaTimer) {
-      this.alexaTimer = this.controller.alexaTimers.get(config);
-      this.alexaTimer.addListener(this.onClockTimerChange);
-      await this.alexaTimer.ready;
-    }
-    const view = this.alexaTimer.getView();
+    const timer = await this.useAlexaTimer(config);
+    const view = timer.getView();
     const now = Date.now();
     const memory = /* @__PURE__ */ new Map([["alexa", (0, import_screensaver_timer.stepTimerItem)(void 0, view).memory]]);
     const selection = (0, import_screensaver_timer.selectTimer)(memory, now);
@@ -1441,6 +1493,106 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     this.tempData.lastStatus = selection.status;
     this.parent.setTimerTick(this, access.ticking);
     return access;
+  }
+  /**
+   * The timer of the Echo device of this item ({@link alexaTimer}), changes of the device update this item from now on.
+   * With `followMedia` the device is the one the media page currently controls: after a change the listener moves
+   * from the timer of the old device to the one of the new device.
+   *
+   * @param config `alexaTimer` of the item
+   * @returns the timer, its states are read
+   */
+  async useAlexaTimer(config) {
+    const device = config.followMedia && echoDeviceOf(getMediaDeviceIdent(this.parent)) || config;
+    if (this.alexaTimer && this.alexaTimer.deviceId !== `${device.instance}.Echo-Devices.${device.serial}`) {
+      this.alexaTimer.removeListener(this.onClockTimerChange);
+      this.alexaTimer = void 0;
+      this.scheduleTimerIconRedraw(void 0);
+    }
+    if (!this.alexaTimer) {
+      this.alexaTimer = this.controller.alexaTimers.get(device);
+      this.alexaTimer.addListener(this.onClockTimerChange);
+    }
+    const timer = this.alexaTimer;
+    await timer.ready;
+    return timer;
+  }
+  /**
+   * The remaining time a timer item with `useValue` shows instead of its icon, see {@link timerIconText}. The page
+   * is sent as a whole only, so it is not redrawn by the ticker of the page each second but once the shown text
+   * changes ({@link scheduleTimerIconRedraw}); an open popup keeps the ticker.
+   *
+   * @param item data of the item
+   * @returns the text, undefined = icon
+   */
+  async drawTimerIconText(item) {
+    var _a, _b, _c, _d;
+    let selection;
+    let timed = true;
+    switch ((_a = this.tempData) == null ? void 0 : _a.role) {
+      case "alexa-timer":
+      case "ss-timer": {
+        selection = (_b = await this.getSharedTimerAccess()) == null ? void 0 : _b.selection;
+        break;
+      }
+      case "timer": {
+        const endTs = Number(this.tempData.endTs) || 0;
+        selection = this.tempData.status === "run" && endTs > 0 ? { status: "running", remainingMs: endTs - Date.now() } : void 0;
+        break;
+      }
+      case "ex-timer": {
+        timed = false;
+        const seconds = (0, import_screensaver_timer.timerSecondsOf)(await this.getTimerActual(item), (_d = (_c = item.entity1) == null ? void 0 : _c.value) == null ? void 0 : _d.common.unit);
+        const status = item.setValue2 ? await item.setValue2.getNumber() : null;
+        selection = seconds > 0 && (typeof status !== "number" || status === 2) ? { status: "running", remainingMs: seconds * 1e3 } : void 0;
+        break;
+      }
+    }
+    const text = timerIconText(selection);
+    this.parent.setTimerTick(this, false);
+    this.scheduleTimerIconRedraw(
+      text !== void 0 && timed && selection ? (0, import_screensaver_timer.nextTextChangeMs)(Math.max(1, selection.remainingMs)) : void 0
+    );
+    return text;
+  }
+  /**
+   * The font of the remaining time in the icon field - decided only here. The toolbar item of a media page takes that
+   * of the clock. On the tiles the font of the item, as items with value instead of icon (textNotIcon) show their
+   * value (the text size of the admin, without one the font of the HMI) - but from `100.0` on (5 characters, also
+   * `1000` and more) the tile is too narrow for it, then the font of the clock as well.
+   *
+   * @param entry the timer item
+   * @param text the shown remaining time ({@link timerIconText})
+   * @returns `¬<font>`, or '' for the font of the HMI
+   */
+  async timerIconTextSuffix(entry, text) {
+    var _a, _b;
+    const small = ((_a = entry.alexaTimer) == null ? void 0 : _a.followMedia) || Number(text) >= TILE_SMALL_FROM_MINUTES;
+    const size = small ? MEDIA_TIMER_TEXT_SIZE : ((_b = entry.data.icon) == null ? void 0 : _b.textSize) ? await entry.data.icon.textSize.getNumber() : null;
+    return size != null ? `\xAC${size}` : "";
+  }
+  /**
+   * Next redraw of the page for the remaining time a timer item shows instead of its icon; replaces the one waiting
+   * so far. The page draws the item again, which schedules the next one.
+   *
+   * @param waitMs ms until the shown text changes, undefined = no redraw (no running timer, popup open, device change)
+   */
+  scheduleTimerIconRedraw(waitMs) {
+    const waiting = this.timeouts[TIMER_ICON_TIMEOUT];
+    if (waiting) {
+      this.adapter.clearTimeout(waiting);
+      this.timeouts[TIMER_ICON_TIMEOUT] = void 0;
+    }
+    if (waitMs === void 0 || this.unload) {
+      return;
+    }
+    this.timeouts[TIMER_ICON_TIMEOUT] = this.adapter.setTimeout(() => {
+      this.timeouts[TIMER_ICON_TIMEOUT] = void 0;
+      if (this.unload || this.adapter.unload || this.lastPopupType || this.parent.sleep || !this.parent.getVisibility()) {
+        return;
+      }
+      void this.parent.onStateTriggerSuperDoNotOverride("timer", this).catch((err) => this.log.warn(`${this.name}: timer: ${String(err)}`));
+    }, waitMs + 1);
   }
   /**
    * The alarm of the Echo device of this item in the form of the alarm clock mode (`ex-alarm`); changes of the alarms
@@ -1655,6 +1807,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     this.visibility = true;
     this.lastPopupType = mode;
+    if (entry.type === "timer") {
+      this.scheduleTimerIconRedraw(void 0);
+    }
     switch (mode) {
       case "popupLightNew":
       case "popupLight": {
@@ -2416,7 +2571,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return true;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -3119,21 +3274,25 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           break;
         }
         if (((_V = this.tempData) == null ? void 0 : _V.role) === "alexa-timer") {
-          await ((_W = this.alexaTimer) == null ? void 0 : _W.stop());
+          const config = ((_W = this.dataItems) == null ? void 0 : _W.type) === "timer" ? this.dataItems.alexaTimer : void 0;
+          if (config == null ? void 0 : config.followMedia) {
+            await this.useAlexaTimer(config);
+          }
+          await ((_X = this.alexaTimer) == null ? void 0 : _X.stop());
           break;
         }
-        if (((_X = this.tempData) == null ? void 0 : _X.role) === "alexa-alarm") {
+        if (((_Y = this.tempData) == null ? void 0 : _Y.role) === "alexa-alarm") {
           break;
         }
-        const data = ((_Y = this.dataItems) == null ? void 0 : _Y.type) === "timer" ? this.dataItems.data : void 0;
-        const reported = ((_Z = this.tempData) == null ? void 0 : _Z.status) === "expired";
-        if (((__ = this.tempData) == null ? void 0 : __.role) !== "timer") {
-          await ((_$ = data == null ? void 0 : data.setValue2) == null ? void 0 : _$.setState(0));
+        const data = ((_Z = this.dataItems) == null ? void 0 : _Z.type) === "timer" ? this.dataItems.data : void 0;
+        const reported = ((__ = this.tempData) == null ? void 0 : __.status) === "expired";
+        if (((_$ = this.tempData) == null ? void 0 : _$.role) !== "timer") {
+          await ((_aa = data == null ? void 0 : data.setValue2) == null ? void 0 : _aa.setState(0));
         }
-        switch ((_aa = this.tempData) == null ? void 0 : _aa.role) {
+        switch ((_ba = this.tempData) == null ? void 0 : _ba.role) {
           case "ex-timer": {
-            const set = (_ba = data == null ? void 0 : data.entity1) == null ? void 0 : _ba.set;
-            const actual = (_ca = data == null ? void 0 : data.entity1) == null ? void 0 : _ca.value;
+            const set = (_ca = data == null ? void 0 : data.entity1) == null ? void 0 : _ca.set;
+            const actual = (_da = data == null ? void 0 : data.entity1) == null ? void 0 : _da.value;
             if (set == null ? void 0 : set.writeable) {
               await set.setState(0);
             }
@@ -3150,9 +3309,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         }
         if (action === "timer-finish" && !reported) {
-          await ((_da = data == null ? void 0 : data.setValue1) == null ? void 0 : _da.setStateTrue());
+          await ((_ea = data == null ? void 0 : data.setValue1) == null ? void 0 : _ea.setStateTrue());
         }
-        if (((_ea = this.tempData) == null ? void 0 : _ea.role) === "timer") {
+        if (((_fa = this.tempData) == null ? void 0 : _fa.role) === "timer") {
           await this.onInternalTimerChanged();
         } else {
           this.notifyClockSource();
@@ -3160,17 +3319,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         break;
       }
       case "timer-pause": {
-        if (((_fa = this.tempData) == null ? void 0 : _fa.role) === "ss-timer" || ((_ga = this.tempData) == null ? void 0 : _ga.role) === "alexa-timer") {
+        if (((_ga = this.tempData) == null ? void 0 : _ga.role) === "ss-timer" || ((_ha = this.tempData) == null ? void 0 : _ha.role) === "alexa-timer") {
           break;
         }
-        if (((_ha = this.tempData) == null ? void 0 : _ha.role) === "alexa-alarm") {
+        if (((_ia = this.tempData) == null ? void 0 : _ia.role) === "alexa-alarm") {
           const view = await this.getAlexaAlarmView();
           if (view.entry && view.status === 2 && view.canStatus) {
-            await ((_ia = this.alexaAlarms) == null ? void 0 : _ia.setEnabled(view.entry.id, false));
+            await ((_ja = this.alexaAlarms) == null ? void 0 : _ja.setEnabled(view.entry.id, false));
           }
           break;
         }
-        if (((_ja = this.tempData) == null ? void 0 : _ja.role) === "timer") {
+        if (((_ka = this.tempData) == null ? void 0 : _ka.role) === "timer") {
           this.clearInternalEnd();
           this.tempData.value = this.internalSeconds();
           this.tempData.status = "pause";
@@ -3249,7 +3408,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
         const speaker = Array.isArray(this.tempData) ? this.tempData[v2] : void 0;
-        if (((_a = this.parent.currentItem) == null ? void 0 : _a.ident) && await this.parent.isPlaying()) {
+        const moveMusic = entry.type !== "input_sel" || entry.moveMusic !== false;
+        if (moveMusic && ((_a = this.parent.currentItem) == null ? void 0 : _a.ident) && await this.parent.isPlaying()) {
           await this.adapter.setForeignStateAsync(
             `${this.parent.currentItem.ident}.Commands.textCommand`,
             `Schiebe Musik auf ${sList.list[v2]}`
@@ -3475,6 +3635,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
       } else if (role === "alexa-playlist") {
         this.log.debug(`Get Alexa Playlist start`);
+        const freshStates = await this.getAlexaPlaylistStates();
+        if (freshStates) {
+          this.tempData = freshStates;
+        }
         if (((_c = this.dataItems) == null ? void 0 : _c.type) === "input_sel" && this.dataItems.data.valueList) {
           const raw = await this.dataItems.data.valueList.getObject();
           if (!Array.isArray(raw) || !raw.every((v) => typeof v === "string")) {
@@ -3491,7 +3655,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               }
               const stateToken = entry.slice(0, sep).trim();
               const label = entry.slice(sep + 1).trim();
-              const matchedState = source.find((s) => s.includes(stateToken));
+              const matchedState = (0, import_adminShareConfig.findAlexaPlaylistState)(source, stateToken);
               if (!matchedState) {
                 this.log.warn(
                   `Alexa playlist: no matching state for token "${stateToken}" source "${source.join(", ")}".`
@@ -3724,6 +3888,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageItem
+  PageItem,
+  timerIconText
 });
 //# sourceMappingURL=pageItem.js.map
