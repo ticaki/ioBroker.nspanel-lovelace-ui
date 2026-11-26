@@ -79,6 +79,8 @@ function getMediaDeviceIdent(parent: unknown): string | undefined {
 
 /** font of the remaining time in the toolbar item of an alexa2 media page - that of the clock (text.clock) */
 const MEDIA_TIMER_TEXT_SIZE = 1;
+/** shown remaining time (minutes) from which a tile takes the font of the clock: `100.0` has 5 characters */
+const TILE_SMALL_FROM_MINUTES = 100;
 /** key in {@link PageItem.timeouts}: next change of the remaining time a timer item shows instead of its icon */
 const TIMER_ICON_TIMEOUT = 'timerIconText';
 
@@ -923,7 +925,7 @@ export class PageItem extends BaseTriggeredPage {
                                 // value instead of icon: the remaining time replaces the icon, like the clock
                                 const text = await this.drawTimerIconText(item);
                                 if (text !== undefined) {
-                                    message.icon = text + (await this.timerIconTextSuffix(entry));
+                                    message.icon = text + (await this.timerIconTextSuffix(entry, text));
                                 }
                             }
                             message.optionalValue = this.library.getTranslation(
@@ -1788,14 +1790,17 @@ export class PageItem extends BaseTriggeredPage {
 
     /**
      * The font of the remaining time in the icon field - decided only here. The toolbar item of a media page takes that
-     * of the clock; on the tiles the font of the item, as items with value instead of icon (textNotIcon) show their
-     * value: the text size of the admin, without one the font of the HMI.
+     * of the clock. On the tiles the font of the item, as items with value instead of icon (textNotIcon) show their
+     * value (the text size of the admin, without one the font of the HMI) - but from `100.0` on (5 characters, also
+     * `1000` and more) the tile is too narrow for it, then the font of the clock as well.
      *
      * @param entry the timer item
+     * @param text the shown remaining time ({@link timerIconText})
      * @returns `¬<font>`, or '' for the font of the HMI
      */
-    private async timerIconTextSuffix(entry: NSPanel.PageItemTimerDataItems): Promise<string> {
-        const size = entry.alexaTimer?.followMedia
+    private async timerIconTextSuffix(entry: NSPanel.PageItemTimerDataItems, text: string): Promise<string> {
+        const small = entry.alexaTimer?.followMedia || Number(text) >= TILE_SMALL_FROM_MINUTES;
+        const size = small
             ? MEDIA_TIMER_TEXT_SIZE
             : entry.data.icon?.textSize
               ? await entry.data.icon.textSize.getNumber()

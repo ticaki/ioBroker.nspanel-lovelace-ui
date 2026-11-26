@@ -363,6 +363,23 @@ describe('lib/pages/pageItem - value instead of icon for the other timer sources
         return { entity1: { value }, setValue2 };
     }
 
+    it('tiles: the font of the item below 100 minutes, from the shown 100.0 on the font of the clock', async () => {
+        const at = async (remainingMs: number, textSize?: number): Promise<string> => {
+            const data =
+                textSize === undefined
+                    ? {}
+                    : { icon: { textSize: { getNumber: async (): Promise<number> => textSize } } };
+            return icon(timerItem(true, { role: 'timer', status: 'run', endTs: NOW + remainingMs, value: 1 }, data));
+        };
+        const MIN = 60_000;
+        expect(await at(99.9 * MIN)).to.equal('99.9');
+        expect(await at(99.9 * MIN + 1)).to.equal('100.0¬1');
+        expect(await at(150 * MIN)).to.equal('150.0¬1');
+        expect(await at(1000 * MIN)).to.equal('1000¬1');
+        expect(await at(99.9 * MIN, 3)).to.equal('99.9¬3');
+        expect(await at(150 * MIN, 3)).to.equal('150.0¬1');
+    });
+
     it('internal timer: the remaining time while it runs, redrawn when the text changes', async () => {
         const running = { role: 'timer', status: 'run', endTs: NOW + 90_000, value: 90 };
         const f = timerItem(true, running);
