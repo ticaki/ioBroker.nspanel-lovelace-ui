@@ -266,6 +266,16 @@ class NsPanelTsImportDialog extends React.Component<NsPanelTsImportDialogProps, 
                                 <ListItemButton
                                     key={s.id}
                                     selected={s.id === selected}
+                                    sx={{
+                                        // light selection with a marker instead of a solid color: both lines stay readable
+                                        '&.Mui-selected, &.Mui-selected:hover': {
+                                            // the admin theme paints the selection as gradient (background-image)
+                                            background: (theme): string => theme.palette.action.selected,
+                                            color: 'text.primary',
+                                            boxShadow: (theme): string => `inset 4px 0 0 ${theme.palette.primary.main}`,
+                                        },
+                                        '&.Mui-selected .MuiListItemText-secondary': { color: 'text.secondary' },
+                                    }}
                                     disabled={!s.supported || running}
                                     onClick={(): void => this.select(s)}
                                 >

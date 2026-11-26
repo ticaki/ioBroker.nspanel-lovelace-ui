@@ -565,6 +565,7 @@ const PAGE_COPY = new Set([
     'alwaysOnDisplay',
 ]);
 const PAGE_NAV = ['parent', 'prev', 'next', 'home'] as const;
+const PAGE_NAV_KEYS: ReadonlySet<string> = new Set(PAGE_NAV);
 
 const MEDIA_COPY = new Set([
     'name',
@@ -1049,7 +1050,7 @@ class Converter {
                 continue;
             }
             const c: string[] = [];
-            if ((PAGE_NAV as readonly string[]).includes(k)) {
+            if (PAGE_NAV_KEYS.has(k)) {
                 const before = this.todos.length;
                 const name = this.pageRef(v, uniqueName, k, c);
                 if (original) {

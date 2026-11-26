@@ -398,6 +398,7 @@ const PAGE_COPY = /* @__PURE__ */ new Set([
   "alwaysOnDisplay"
 ]);
 const PAGE_NAV = ["parent", "prev", "next", "home"];
+const PAGE_NAV_KEYS = new Set(PAGE_NAV);
 const MEDIA_COPY = /* @__PURE__ */ new Set([
   "name",
   "colorMediaIcon",
@@ -848,7 +849,7 @@ class Converter {
         continue;
       }
       const c = [];
-      if (PAGE_NAV.includes(k)) {
+      if (PAGE_NAV_KEYS.has(k)) {
         const before = this.todos.length;
         const name = this.pageRef(v, uniqueName, k, c);
         if (original) {
