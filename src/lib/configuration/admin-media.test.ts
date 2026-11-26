@@ -115,6 +115,17 @@ describe('lib/configuration - buildMediaScriptPage', () => {
         expect(buildMediaScriptPage(base).media).to.not.have.property('headlineMode');
     });
 
+    it('writes speakerMoveMusic only as an explicit false of alexa2', () => {
+        const alexa = { ...emptyMediaEntry('m'), mediaId: 'alexa2.0.Echo-Devices.G000AAA' };
+        expect(buildMediaScriptPage({ ...alexa, speakerMoveMusic: false }).media.speakerMoveMusic).to.equal(false);
+        expect(buildMediaScriptPage({ ...alexa, speakerMoveMusic: true }).media).to.not.have.property(
+            'speakerMoveMusic',
+        );
+        expect(buildMediaScriptPage(alexa).media).to.not.have.property('speakerMoveMusic');
+        const mpd = { ...emptyMediaEntry('m'), mediaId: 'mpd.0', speakerMoveMusic: false };
+        expect(buildMediaScriptPage(mpd).media).to.not.have.property('speakerMoveMusic');
+    });
+
     it('keeps a lower volume limit of 0', () => {
         const { media } = buildMediaScriptPage({ ...emptyMediaEntry('m'), mediaId: 'mpd.0', minValue: 0 });
         expect(media.minValue).to.equal(0);

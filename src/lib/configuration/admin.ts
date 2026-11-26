@@ -1528,6 +1528,8 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
         colorMediaArtist: thermo2Rgb(entry.colorMediaArtist),
         colorMediaTitle: thermo2Rgb(entry.colorMediaTitle),
         speakerList: mediaList(entry.speakerList),
+        // only an explicit false is written, missing = default (move the music)
+        speakerMoveMusic: backend === 'alexa2' && entry.speakerMoveMusic === false ? false : undefined,
         playList: mediaList(entry.playList),
         favoriteList: mediaList(entry.favoriteList),
         volumePresets: volumePresets.length ? volumePresets : undefined,

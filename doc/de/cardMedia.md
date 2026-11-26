@@ -15,6 +15,7 @@ Inhalt:
 - [Standard-Elemente des Players](#6-standard-elemente-des-players)
   - [Reihenfolge per Drag-and-drop](#reihenfolge-per-drag-and-drop)
   - [Timer (nur Alexa)](#timer-nur-alexa)
+  - [Lautsprecher wechseln: Musik mitnehmen (nur Alexa)](#lautsprecher-wechseln-musik-mitnehmen-nur-alexa)
 - [Die drei Listen: Lautsprecher, Playlisten, Favoriten](#7-die-drei-listen-lautsprecher-playlisten-favoriten)
 - [Eigene Seitenelemente](#8-eigene-seitenelemente)
 - [Blättern der Optionsleiste](#9-blättern-der-optionsleiste)
@@ -189,6 +190,19 @@ Der **Timer** ist als einziges Standard-Element **standardmäßig aus**: Marke a
 - Voraussetzung wie beim Pageitem: in der alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** einschalten, siehe [Voraussetzungen](popupTimer#voraussetzungen).
 - Ohne eigene Reihenfolge steht er als letztes Standard-Element in der Leiste; sind mehr Elemente sichtbar, als die Leiste Plätze hat (5 auf dem NSPanel), wird [geblättert](#9-blättern-der-optionsleiste). Per [Drag-and-drop](#reihenfolge-per-drag-and-drop) lässt er sich nach vorn holen.
 
+### Lautsprecher wechseln: Musik mitnehmen (nur Alexa)
+
+Wählt man in der **Lautsprecher**-Liste einen anderen Echo, steuert die Seite danach dieses Gerät. Spielt der bisherige Echo gerade, schickt der Adapter ihm zusätzlich den Sprachbefehl *„Schiebe Musik auf <Name>"* – die laufende Musik wandert dann auf den neuen Echo.
+
+| Feld | Wirkung |
+|---|---|
+| **Musik beim Wechsel des Lautsprechers mitnehmen** | Im Dialog des Elements *Lautsprecher*, nur bei Alexa. **Standardmäßig an** (bisheriges Verhalten). Aus: nur das Panel wechselt auf den neuen Echo, die Musik spielt weiter, wo sie ist. |
+
+Der Hilfstext dazu: *„Läuft Musik, wandert sie beim Wechsel des Echos auf den neuen Echo. Aus: nur das Panel wechselt auf den neuen Echo, die Musik spielt weiter, wo sie ist."*
+
+- Im Skript heißt das Feld `media.speakerMoveMusic`; nur `false` schaltet das Mitnehmen ab, fehlt es, bleibt es an.
+- Ist das Element *Lautsprecher* ausgeschaltet, ist auch die Option ausgeblendet.
+
 > Die **Offline-Anzeige** belegt in der Vorschau keinen Platz: *„Erscheint nur, solange der Player nicht erreichbar ist – sonst belegt es keinen Platz."* Nur als Marke unter der Vorschau ist sie zu sehen.
 
 ## 7. Die drei Listen: Lautsprecher, Playlisten, Favoriten
@@ -278,3 +292,4 @@ Unten **Speichern** bzw. **Speichern und schließen**. Die Instanz startet danac
 - **Die Vorschau zählt einen Platz mehr als das Panel.** Der Editor hält immer einen freien Platz zum Anlegen offen. Bei genau fünf Elementen zeigt die Vorschau deshalb zwei Seiten (und in der Einstellung *Pfeil* schon einen Blätterpfeil), während das Panel alle fünf auf einer Leiste unterbringt.
 - **Der Pageitem-Dialog öffnet in der Grid-Variante.** Darum stehen dort **Wert statt Icon verwenden** und die Text-/Icongröße – und beide wirken hier auch: der Adapter zählt die Mediaplayer-Seite zu den Grid-Karten. Nur der **lange Druck** bleibt den drei Grid-Varianten vorbehalten.
 - **Die Lautstärke-Voreinstellungen verschwinden mit ihrem letzten Eintrag.** Das Element hat keinen Schalter; es erscheint genau dann, wenn mindestens eine Voreinstellung angelegt ist.
+- **Musik mitnehmen klappt nur auf deutschen Echos.** Der Adapter schickt beim [Wechsel des Lautsprechers](#lautsprecher-wechseln-musik-mitnehmen-nur-alexa) immer den deutschen Sprachbefehl *„Schiebe Musik auf <Name>"*. Ein Echo mit anderer Sprache versteht ihn nicht – die Musik bleibt dann auch bei eingeschalteter Option auf dem alten Gerät, eine Meldung gibt es nicht.

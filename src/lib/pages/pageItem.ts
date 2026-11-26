@@ -3711,7 +3711,13 @@ export class PageItem extends BaseTriggeredPage {
                 const v = parseInt(value);
                 // sList.list is built 1:1 from tempData, so the selected position is the tempData index
                 const speaker: unknown = Array.isArray(this.tempData) ? this.tempData[v] : undefined;
-                if ((this.parent as PageMedia).currentItem?.ident && (await (this.parent as PageMedia).isPlaying())) {
+                // the option only switches the move off with an explicit false
+                const moveMusic = entry.type !== 'input_sel' || entry.moveMusic !== false;
+                if (
+                    moveMusic &&
+                    (this.parent as PageMedia).currentItem?.ident &&
+                    (await (this.parent as PageMedia).isPlaying())
+                ) {
                     await this.adapter.setForeignStateAsync(
                         `${(this.parent as PageMedia).currentItem!.ident}.Commands.textCommand`,
                         `Schiebe Musik auf ${sList.list[v]}`,

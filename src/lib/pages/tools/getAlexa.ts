@@ -331,6 +331,8 @@ export async function getPageAlexa(
         addMediaToolbarItem(toolbar, 'speakerList', {
             role: 'alexa-speaker',
             type: 'input_sel',
+            // false: switching the Echo does not move the playing music
+            moveMusic: page.media.speakerMoveMusic !== false,
 
             data: {
                 color: {

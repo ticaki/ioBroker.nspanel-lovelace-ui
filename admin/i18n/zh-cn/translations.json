@@ -1026,6 +1026,8 @@
     "media_selectPlayerReadError": "无法读取这些适配器的对象：%s",
     "media_selectPlayerSearch": "搜索",
     "media_selectPlayerTitle": "选择播放器",
+    "media_speakerMoveMusic": "切换扬声器时转移音乐",
+    "media_speakerMoveMusicHint": "正在播放音乐时，切换 Echo 会把音乐转到新的 Echo。关闭：只有面板切换到新的 Echo，音乐继续在原处播放。",
     "media_standardItems": "播放器标准项目",
     "media_stdSlotHint": "播放器标准项目 – 点击更改",
     "media_volumeHint": "面板上滑块的范围，会换算为播放器的刻度。",

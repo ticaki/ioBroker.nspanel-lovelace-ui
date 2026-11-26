@@ -1026,6 +1026,8 @@
     "media_selectPlayerReadError": "De objecten van deze adapters konden niet worden gelezen: %s",
     "media_selectPlayerSearch": "Zoeken",
     "media_selectPlayerTitle": "Speler kiezen",
+    "media_speakerMoveMusic": "Muziek meenemen bij het wisselen van luidspreker",
+    "media_speakerMoveMusicHint": "Speelt er muziek, dan gaat die bij het wisselen van Echo mee naar de nieuwe Echo. Uit: alleen het paneel wisselt naar de nieuwe Echo, de muziek speelt verder waar ze is.",
     "media_standardItems": "Standaarditems van de speler",
     "media_stdSlotHint": "standaarditem van de speler – klik om te wijzigen",
     "media_volumeHint": "Bereik van de schuifregelaar op het paneel, omgerekend naar de schaal van de speler.",

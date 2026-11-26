@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Media page (alexa2): option to not move the playing music to the new Echo when switching the speaker
 - (ticaki) Media page (alexa2): optional toolbar item "Timer" for the Alexa timers of the currently selected Echo device - while a timer runs it shows the remaining time (as on the screensaver) instead of the icon
 - (ticaki) Media page: the order of the toolbar items can be changed by drag and drop in the admin
 - (ticaki) Timer page item: option "value instead of icon" shows the remaining time while a timer runs

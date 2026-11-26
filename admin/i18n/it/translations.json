@@ -1026,6 +1026,8 @@
     "media_selectPlayerReadError": "Non è stato possibile leggere gli oggetti di questi adattatori: %s",
     "media_selectPlayerSearch": "Cerca",
     "media_selectPlayerTitle": "Seleziona player",
+    "media_speakerMoveMusic": "Portare la musica al cambio dell'altoparlante",
+    "media_speakerMoveMusicHint": "Se la musica è in riproduzione, al cambio di Echo passa al nuovo Echo. Disattivato: solo il pannello passa al nuovo Echo, la musica continua dove si trova.",
     "media_standardItems": "Elementi standard del player",
     "media_stdSlotHint": "elemento standard del player – clic per modificare",
     "media_volumeHint": "Intervallo del cursore sul pannello, convertito nella scala del player.",

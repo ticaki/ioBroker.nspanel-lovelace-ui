@@ -1340,11 +1340,18 @@ export namespace NSPanel {
 
     type PageItemInputSelDataItemsOptions = {
         type: 'input_sel';
+        /**
+         * only the speaker list (`alexa-speaker`) of an alexa2 media page: false = when the Echo is switched the
+         * playing music is not moved to the new Echo, only the panel switches the player. Default true.
+         */
+        moveMusic?: boolean;
         data: pages.ChangeTypeOfKeys<PageItemInputSel, DataItemsOptions | undefined>;
     };
 
     type PageItemInputSelDataItems = {
         type: 'input_sel';
+        /** see {@link PageItemInputSelDataItemsOptions} */
+        moveMusic?: boolean;
         data: pages.ChangeTypeOfKeys<PageItemInputSel, dataItem.Dataitem | undefined>;
     };
 

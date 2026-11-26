@@ -3225,7 +3225,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       } else if (entry.role === "alexa-speaker" && sList.list !== void 0 && sList.list[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.set) {
         const v2 = parseInt(value);
         const speaker = Array.isArray(this.tempData) ? this.tempData[v2] : void 0;
-        if (((_a = this.parent.currentItem) == null ? void 0 : _a.ident) && await this.parent.isPlaying()) {
+        const moveMusic = entry.type !== "input_sel" || entry.moveMusic !== false;
+        if (moveMusic && ((_a = this.parent.currentItem) == null ? void 0 : _a.ident) && await this.parent.isPlaying()) {
           await this.adapter.setForeignStateAsync(
             `${this.parent.currentItem.ident}.Commands.textCommand`,
             `Schiebe Musik auf ${sList.list[v2]}`
