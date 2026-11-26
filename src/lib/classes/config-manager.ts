@@ -2566,9 +2566,13 @@ export class ConfigManager extends BaseClass {
      * (src/lib/classes/alexa-timer.ts, for an alarm src/lib/classes/alexa-alarm.ts).
      *
      * @param item the script item with `alexaTimer`
+     * @param page page of the item: `useValue` only on grid cards
      * @returns the item
      */
-    private async getAlexaTimerItemConfig(item: ScriptConfig.PageBaseItem): Promise<NSPanel.PageItemDataItemsOptions> {
+    private async getAlexaTimerItemConfig(
+        item: ScriptConfig.PageBaseItem,
+        page: ScriptConfig.PageType,
+    ): Promise<NSPanel.PageItemDataItemsOptions> {
         const alexa = item.alexaTimer;
         if (!isAlexaTimerConfig(alexa) || !isAlexaTimerComplete(alexa)) {
             throw new Error(
@@ -2586,6 +2590,8 @@ export class ConfigManager extends BaseClass {
             dpInit: '',
             alexaTimer: copyAlexaTimerConfig(alexa),
             itemId: item.itemId,
+            // value instead of icon like valueDisplayRole: only on grid cards
+            useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : undefined,
             data: {
                 icon: {
                     true: {
@@ -2632,7 +2638,7 @@ export class ConfigManager extends BaseClass {
             return { itemConfig, messages };
         }
         if ('alexaTimer' in item && item.alexaTimer !== undefined) {
-            return { itemConfig: await this.getAlexaTimerItemConfig(item), messages };
+            return { itemConfig: await this.getAlexaTimerItemConfig(item, page), messages };
         }
         if ('id' in item && item.id) {
             if (['delete', 'empty'].includes(item.id)) {
@@ -4296,6 +4302,8 @@ export class ConfigManager extends BaseClass {
                             dpInit: '',
                             useScreensaverTimer: item.useScreensaverTimer === true ? true : undefined,
                             itemId: item.itemId,
+                            // value instead of icon like valueDisplayRole: only on grid cards
+                            useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : undefined,
 
                             data: {
                                 icon: {

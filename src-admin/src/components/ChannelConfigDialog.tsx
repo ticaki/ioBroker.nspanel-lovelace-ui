@@ -857,8 +857,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             falseIcon,
             falseColor,
             itemId,
+            useValue: this.isAlexaUseValueVisible(alexaTimer) && this.state.useValue ? true : undefined,
             alexaTimer: copyAlexaTimerConfig(alexaTimer),
         };
+    }
+
+    /**
+     * value instead of icon for the kind "Alexa timer": like for the channels only on grid cards, and only for the
+     * timers - an alarm has no remaining time
+     *
+     * @param alexaTimer the Echo device
+     */
+    private isAlexaUseValueVisible(alexaTimer: AlexaTimerConfig): boolean {
+        return this.state.isGridCard && alexaTimer.show !== 'alarm';
     }
 
     /** the dialog offers the kind "Alexa timer": pages with timer items, or an item that is one already */
@@ -964,6 +975,25 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         sx={{ ml: 0, flexShrink: 0 }}
                     />
                 </Box>
+                {this.isAlexaUseValueVisible(alexaTimer) && (
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={this.state.useValue}
+                                    onChange={this.handleUseValueChange}
+                                />
+                            }
+                            label={
+                                <Typography variant="body1">{I18n.t('channelConfigDialog_useValueLabel')}</Typography>
+                            }
+                        />
+                        <DocHelp
+                            topic="pageitems.cardFields"
+                            sx={{ ml: -1.5 }}
+                        />
+                    </Box>
+                )}
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                     {this.renderBranchColumn('true')}
                     {this.renderBranchColumn('false')}

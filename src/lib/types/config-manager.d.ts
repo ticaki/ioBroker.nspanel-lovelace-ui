@@ -512,6 +512,8 @@ declare namespace ScriptConfig {
             favoriteList?: RGB;
             clock?: RGB;
             volumePresets?: RGB;
+            /** alexa2 only, see activateDefaultItems */
+            timer?: RGB;
         };
         itemsColorOff?: {
             trackList?: RGB;
@@ -537,6 +539,20 @@ declare namespace ScriptConfig {
             clock?: boolean;
             favoriteList?: boolean;
             crossfade?: boolean;
+        };
+        /**
+         * order of the standard items in the bar, names as in deactivateDefaultItems / activateDefaultItems
+         * (e.g. ['clock', 'speakerList']); unknown and repeated names are ignored, missing items follow in the
+         * order of the backend. Own page items stay behind the standard items.
+         */
+        itemsOrder?: string[];
+        /** standard items that are only added when switched on here */
+        activateDefaultItems?: {
+            /**
+             * alexa2: timer item (popupTimer) of the Echo device the page currently controls - follows a change
+             * through the speaker list
+             */
+            timer?: boolean;
         };
     };
 
