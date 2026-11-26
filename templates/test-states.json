@@ -467,6 +467,15 @@
             "states": { "ACTUAL": { "val": 42, "unit": "min" }, "USERICON": "washing-machine" }
         },
         {
+            "id": "Energie.Akku",
+            "role": "battery",
+            "name": "Akku",
+            "states": {
+                "ACTUAL": { "val": 78, "unit": "%", "min": 0, "max": 100 },
+                "POWER": { "val": -850, "unit": "W" }
+            }
+        },
+        {
             "id": "Fahrplan.Bus_Abfahrt1",
             "role": "timeTable",
             "name": "Bus 1",

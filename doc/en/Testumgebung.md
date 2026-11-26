@@ -28,7 +28,7 @@ Instance settings → tab **Developer** → button **Create test states**.
 
 <img alt="Developer tab with the button and the message" src="../Pictures/testumgebung/01-entwickler-knopf.png" width="100%"/>
 
-The adapter creates the objects below `0_userdata.0.NSPanelTest` and `alias.0.NSPanelTest` and sets initial values. With the currently shipped data that is **550 objects** (folders, values and aliases together); the number grows whenever the test data is extended.
+The adapter creates the objects below `0_userdata.0.NSPanelTest` and `alias.0.NSPanelTest` and sets initial values. With the currently shipped data that is **557 objects** (folders, values and aliases together); the number grows whenever the test data is extended.
 
 The message below the button gives **three** numbers: created, already existing, failed.
 
@@ -89,7 +89,7 @@ By the way, **all five shipped files were exported from web panels** — includi
 | 4 | Blinds & gates | `cardEntities` | 4 | 4 | 5 | 4 | 8 |
 | 5 | Sensors | `cardEntities` | 4 | 4 | 5 | 4 | 8 |
 | 6 | Controls | `cardEntities` | 4 | 4 | 5 | 4 | 8 |
-| 7 | All roles | `cardEntities` | 28 | 28 | 28 | 28 | 28 |
+| 7 | All roles | `cardEntities` | 29 | 29 | 29 | 29 | 29 |
 | 8 | Departures | `cardSchedule` | 6 | 6 | 6 | 6 | 11 |
 | 9 | Living room | `cardThermo` | – | – | – | – | – |
 | 10 | Air conditioning | `cardThermo` | – | – | – | – | – |
@@ -111,7 +111,7 @@ By the way, **all five shipped files were exported from web panels** — includi
 
 A few peculiarities that stand out while clicking through, all of them **intentional**:
 
-- **All roles** deliberately carries 28 entries, more than fit on one page, so the paging arrow has something to do. These are 28 of the 30 channel roles; the two missing ones are listed under [Limits](#7-limits).
+- **All roles** deliberately carries 29 entries, more than fit on one page, so the paging arrow has something to do. These are 29 of the 31 channel roles; the two missing ones are listed under [Limits](#7-limits).
 - **Details** is a sub-page, reachable only through the last slot on *House*; the way back leads there again. From the US portrait model on, entries repeat, because there are only four info channels and the page is filled cyclically.
 - **The media page has no title** — `cardMedia` shows the player's name instead.
 - **Heating circuits** offers **six selectable circuits** from five entries on nine slots: four heating circuits and an air conditioner that counts as a heating *and* a cooling circuit. One circuit is deliberately wired through individual states instead of an alias.

@@ -206,9 +206,19 @@ Was Liste und Popup darstellen können – für alle Arten gleich:
 - Bei laufendem Timer wird die Liste alle 2 Sekunden aufgefrischt, das offene Popup jede Sekunde. Das ist Absicht – schneller staut sich der Verkehr zum Panel.
 - Das Popup bleibt bei laufendem Timer offen, und das Panel dunkelt nicht ab, weil jede Auffrischung seinen Schlaf-Zähler zurücksetzt. Das ist gewollt.
 
+### Wert statt Icon
+
+Auf den Grid-Seiten (cardGrid, cardGrid2, cardGrid3) sowie auf der Thermostat- und der Mediaplayer-Seite bietet die [Pageitem-Konfiguration](PageConfig-Dialoge#weitere-felder-je-nach-kartentyp) die Option **Wert statt Icon verwenden** – beim Timer für alle Arten: interner Timer, Timer aus Datenpunkten und Alexa-Timer (nicht beim Alexa-Wecker).
+
+- **Läuft ein Timer**, steht statt des Symbols die **Restzeit** – im Format des Bildschirmschoner-Timers: Minuten mit einer Nachkommastelle, immer aufgerundet (`12.5`, `0.1`), ab 1000 Minuten ganze Minuten (bis `9999`). Gezeichnet wird sie wie der Wert anderer Items mit *Wert statt Icon*: in der eingestellten **Text-/Icongröße**, ohne Angabe in der Schrift des Panels. Ab `100.0` (fünf Zeichen, ebenso ab `1000`) ist die Kachel dafür zu schmal – dann steht die Restzeit in der kleinen Schrift der Uhr. Farbe ist die Farbe *an* des Items.
+- **Kein Timer, pausiert, abgelaufen oder klingelnd:** das Symbol wie ohne die Option.
+- Die Seite wird nur neu gesendet, wenn sich die angezeigte Zahl ändert (alle 6 Sekunden, ab 1000 Minuten jede Minute); ein Timer aus Datenpunkten, der außerhalb zählt, zeichnet sich mit jedem neuen Wert von `ACTUAL` neu. Das offene Popup zählt weiter jede Sekunde.
+- Standardmäßig aus; auf *Entities* und *Schedule* gibt es die Option nicht – dort steht die Restzeit ohnehin in der Zeile.
+- Das Toolbar-Element **Timer** der [Mediaplayer-Seite](cardMedia#timer-nur-alexa) zeigt die Restzeit immer so, dort in der Schrift der Uhr.
+
 ## 7. Alexa-Timer (alexa2)
 
-Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen – oder einen seiner **Wecker** (siehe [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts)). Beides kommt aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht. Der Bildschirmschoner kennt nur die Timer, keine Wecker; seine Quelle **Alexa-Timer (alexa2)** steht unter [Quelle: Alexa-Timer (alexa2)](screensaver#quelle-alexa-timer-alexa2).
+Ein Timer-Item kann statt eines Kanals die Timer eines **Echo-Geräts** zeigen – oder einen seiner **Wecker** (siehe [Wecker eines Echo-Geräts](#wecker-eines-echo-geräts)). Beides kommt aus dem Adapter **alexa2**, der die Echo-Geräte in ioBroker abbildet. Ein Kanal wird nicht gebraucht. Der Bildschirmschoner kennt nur die Timer, keine Wecker; seine Quelle **Alexa-Timer (alexa2)** steht unter [Quelle: Alexa-Timer (alexa2)](screensaver#quelle-alexa-timer-alexa2). Auf einer Mediaplayer-Seite mit alexa2 gibt es dafür auch das Toolbar-Element **Timer**, das dem gerade gesteuerten Echo folgt, siehe [Mediaplayer – Timer (nur Alexa)](cardMedia#timer-nur-alexa).
 
 ### Schnellstart: Alexa-Timer als Pageitem
 

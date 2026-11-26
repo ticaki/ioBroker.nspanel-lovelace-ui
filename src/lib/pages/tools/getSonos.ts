@@ -1,6 +1,7 @@
 import { Color, type RGB } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
+import { addMediaToolbarItem, orderMediaToolbarItems, type MediaToolbarEntry } from './mediaToolbar';
 import * as tools from '../../const/tools';
 
 export async function getPageSonos(
@@ -276,10 +277,12 @@ export async function getPageSonos(
         pageItems: [],
     };
     gridItem.pageItems = gridItem.pageItems || [];
+    /** standard items of the bar, put in the order of itemsOrder at the end */
+    const toolbar: MediaToolbarEntry[] = [];
 
     // online
     if (!page.media.deactivateDefaultItems?.online) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'online', {
             role: '',
             type: 'text',
             dpInit: '',
@@ -339,7 +342,7 @@ export async function getPageSonos(
         arr = arr.concat(list ?? []);
         arr = [...new Set(arr.filter(Boolean))];
         if (arr.length > 1) {
-            gridItem.pageItems.push({
+            addMediaToolbarItem(toolbar, 'speakerList', {
                 role: 'SonosSpeaker',
                 type: 'button',
 
@@ -382,7 +385,7 @@ export async function getPageSonos(
     }
     //favorite select
     if (!page.media.deactivateDefaultItems?.favoriteList) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'favoriteList', {
             role: '2valuesIsValue',
             type: 'input_sel',
             dpInit: '',
@@ -447,7 +450,7 @@ export async function getPageSonos(
     }
     //playlist select
     if (!page.media.deactivateDefaultItems?.playList) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'playList', {
             role: '',
             type: 'input_sel',
             dpInit: '',
@@ -491,7 +494,7 @@ export async function getPageSonos(
     }
     // time
     if (!page.media.deactivateDefaultItems?.clock) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'clock', {
             template: 'text.clock',
             dpInit: '',
             data: {
@@ -506,7 +509,7 @@ export async function getPageSonos(
         });
     }
     if (page.media.volumePresets) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'volumePresets', {
             role: '',
             type: 'input_sel',
             dpInit: '',
@@ -554,7 +557,7 @@ export async function getPageSonos(
     }
     // volume presets group
     if (page.media.volumePresets) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'volumePresets', {
             role: '',
             type: 'input_sel',
             dpInit: '',
@@ -603,7 +606,7 @@ export async function getPageSonos(
 
     //tracklist
     if (page.media.deactivateDefaultItems?.trackList !== true) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'trackList', {
             role: 'spotify-tracklist',
             type: 'input_sel',
             dpInit: '',
@@ -672,7 +675,7 @@ export async function getPageSonos(
             colorOff = tempOff.constVal as RGB;
         }
 
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'repeat', {
             role: 'repeatValue',
             type: 'button',
             dpInit: '',
@@ -754,7 +757,7 @@ export async function getPageSonos(
     }
     // crossfade
     if (!page.media.deactivateDefaultItems?.crossfade) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'crossfade', {
             role: '',
             type: 'button',
             dpInit: '',
@@ -789,6 +792,8 @@ export async function getPageSonos(
             },
         });
     }
+
+    gridItem.pageItems.push(...orderMediaToolbarItems(toolbar, page.media.itemsOrder));
 
     return { gridItem, messages };
 }

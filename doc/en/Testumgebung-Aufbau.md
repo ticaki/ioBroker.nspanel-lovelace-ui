@@ -16,10 +16,10 @@ The single source is **`templates/test-states.json`**. The file ships with the a
 
 | Size | Today |
 |---|---|
-| Channels | 52 |
-| States inside those channels | 191 |
+| Channels | 53 |
+| States inside those channels | 193 |
 | Single states without an alias | 25 |
-| Distinct channel roles | 30 |
+| Distinct channel roles | 31 |
 
 Structure of the file:
 
@@ -60,16 +60,16 @@ Both placeholders are only evaluated **when an object is created**. Pressing the
 
 ## 3. What is created
 
-The 52 channels and 25 single states turn into **550 objects**:
+The 53 channels and 25 single states turn into **557 objects**:
 
 | Part | Count |
 |---|---|
-| Folders below `0_userdata.0.NSPanelTest` (incl. root) | 76 |
-| States below `0_userdata.0.NSPanelTest` | 216 |
-| Folders below `alias.0.NSPanelTest` (incl. root) | 15 |
-| Alias channels | 52 |
-| Alias states | 191 |
-| **Total** | **550** |
+| Folders below `0_userdata.0.NSPanelTest` (incl. root) | 77 |
+| States below `0_userdata.0.NSPanelTest` | 218 |
+| Folders below `alias.0.NSPanelTest` (incl. root) | 16 |
+| Alias channels | 53 |
+| Alias states | 193 |
+| **Total** | **557** |
 
 Objects are created in an order that puts every parent before its children. The initial value is written to the value state below `userdata` only, never to the alias — and only when the object is new.
 
@@ -81,7 +81,7 @@ The claim "every channel role of the adapter is covered" is not a good intention
 2. **every** channel role of the adapter is covered by at least one channel,
 3. every alias state has a target that is created in the same run — no alias points into the void.
 
-Right now 30 roles in the test data face 30 roles in the adapter, with no remainder on either side. When a role is added to the adapter, the test fails until the test data follows.
+Right now 31 roles in the test data face 31 roles in the adapter, with no remainder on either side. When a role is added to the adapter, the test fails until the test data follows.
 
 Running it:
 

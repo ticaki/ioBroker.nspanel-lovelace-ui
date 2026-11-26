@@ -943,6 +943,17 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             expect(config.data.icon.false.value).to.deep.equal({ type: 'const', constVal: 'alarm-off' });
         });
 
+        it('useValue (value instead of icon) is only passed on for grid cards', async () => {
+            const config = async (page: (typeof PAGES)['grid']): Promise<any> =>
+                (await run('item', { id: '', alexaTimer, useValue: true }, page)).itemConfig;
+            expect((await config(PAGES.grid)).useValue).to.equal(true);
+            expect((await config(PAGES.grid2)).useValue).to.equal(true);
+            expect((await config(PAGES.entities)).useValue).to.equal(undefined);
+            expect(((await run('item', { id: '', alexaTimer }, PAGES.grid)).itemConfig as any).useValue).to.equal(
+                undefined,
+            );
+        });
+
         it('a fixed alarm without a pick: an error', async () => {
             const result = await run(
                 'item',
@@ -969,6 +980,14 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             expect(result.error).to.equal(undefined);
             return (result.itemConfig as { data: { headline: unknown } }).data.headline;
         };
+
+        it('useValue (value instead of icon) is only passed on for grid cards', async () => {
+            const config = async (item: Record<string, unknown>, page: (typeof PAGES)['grid']): Promise<any> =>
+                (await run('item', item, page)).itemConfig;
+            expect((await config({ id, useValue: true }, PAGES.grid)).useValue).to.equal(true);
+            expect((await config({ id, useValue: true }, PAGES.entities)).useValue).to.equal(undefined);
+            expect((await config({ id }, PAGES.grid)).useValue).to.equal(undefined);
+        });
 
         it('script: the name of the item, else the name of the channel', async () => {
             expect(await headline({ id, name: 'Küche' })).to.deep.equal({ type: 'const', constVal: 'Küche' });

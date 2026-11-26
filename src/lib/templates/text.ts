@@ -524,6 +524,84 @@ ${BATTERY_ICON_READ}`,
             },
         },
     },
+    'text.battery.channel': {
+        /**
+         * battery of the alias channel `battery` (home battery / storage), found below the channel by role
+         * entity1 and entity2: charge level in percent (ACTUAL)
+         * entity3: power (POWER, optional) - negative = charging, positive = discharging, 0 = neither
+         * role battery.power: icon.true while charging, else icon.false; color of icon.true while charging,
+         * of icon.false while discharging, of icon.unstable when neither (power 0, no value, no state)
+         */
+        role: 'battery.power',
+        adapter: '',
+        type: 'text',
+
+        data: {
+            icon: {
+                true: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                        read: BATTERY_CHARGING_ICON_READ,
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.Green,
+                    },
+                },
+                false: {
+                    value: {
+                        type: 'triggered',
+                        mode: 'auto',
+                        role: 'value.battery',
+                        dp: '',
+                        read: BATTERY_ICON_READ,
+                    },
+                    color: {
+                        type: 'const',
+                        constVal: Color.Red,
+                    },
+                },
+                unstable: {
+                    color: {
+                        type: 'const',
+                        constVal: Color.neutral,
+                    },
+                },
+            },
+            entity1: {
+                value: {
+                    type: 'state',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '',
+                },
+            },
+            text: {
+                true: { type: 'const', constVal: 'Battery' },
+                false: undefined,
+            },
+            entity2: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.battery',
+                    dp: '',
+                },
+                unit: { type: 'const', constVal: '%' },
+            },
+            entity3: {
+                value: {
+                    type: 'triggered',
+                    mode: 'auto',
+                    role: 'value.power',
+                    dp: '',
+                },
+            },
+        },
+    },
     'text.battery.low': {
         role: 'text',
         adapter: '',

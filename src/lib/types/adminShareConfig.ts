@@ -3056,6 +3056,19 @@ export function emptyThermoEntry(uniqueName: string): ThermoEntry {
 // ---------------------------------------------------------------------------------------------
 
 /** adapters cardMedia works with - the first segment of the player id */
+/** automatic headline of the media page: 'title' = song title or service and device (default), 'device' = active device */
+export type MediaHeadlineMode = 'title' | 'device';
+
+/**
+ * Whether a value is a {@link MediaHeadlineMode}.
+ *
+ * @param value Value to check.
+ * @returns true for 'title' and 'device'.
+ */
+export function isMediaHeadlineMode(value: unknown): value is MediaHeadlineMode {
+    return value === 'title' || value === 'device';
+}
+
 export const mediaBackends = ['alexa2', 'sonos', 'spotify-premium', 'mpd', 'squeezeboxrpc'] as const;
 export type MediaBackend = (typeof mediaBackends)[number];
 
@@ -3071,7 +3084,90 @@ export type MediaToolbarItem =
     | 'volumePresets'
     | 'trackList'
     | 'repeat'
-    | 'crossfade';
+    | 'crossfade'
+    | 'timer';
+
+/** all standard items of the bar, see {@link MediaToolbarItem} */
+export const mediaToolbarItemNames: readonly MediaToolbarItem[] = [
+    'reminder',
+    'online',
+    'speakerList',
+    'favoriteList',
+    'playList',
+    'equalizer',
+    'clock',
+    'volumePresets',
+    'trackList',
+    'repeat',
+    'crossfade',
+    'timer',
+];
+
+/**
+ * @param value any value
+ * @returns true for the name of a standard item of the bar
+ */
+export function isMediaToolbarItem(value: unknown): value is MediaToolbarItem {
+    return typeof value === 'string' && mediaToolbarItemNames.some(item => item === value);
+}
+
+/**
+ * Order of the standard items of a backend: the known, not repeated entries of `order` first, then the missing items
+ * in their default order. Unknown and repeated entries are ignored, a missing or empty order is the default order.
+ *
+ * @param order stored order (`toolbarOrder` of the admin, `itemsOrder` of the script), may be anything
+ * @param items standard items of the backend in their default order
+ * @returns every item of `items` exactly once
+ */
+export function mediaToolbarOrder(order: unknown, items: readonly MediaToolbarItem[]): MediaToolbarItem[] {
+    const out: MediaToolbarItem[] = [];
+    if (Array.isArray(order)) {
+        for (const entry of order) {
+            if (isMediaToolbarItem(entry) && items.includes(entry) && !out.includes(entry)) {
+                out.push(entry);
+            }
+        }
+    }
+    return [...out, ...items.filter(item => !out.includes(item))];
+}
+
+/**
+ * The stored order of the standard items as it is kept: undefined when it is the default order of the backend.
+ *
+ * @param order stored order, may be anything
+ * @param items standard items of the backend in their default order
+ * @returns the complete order, undefined for the default order
+ */
+export function mediaToolbarOrderToStore(
+    order: unknown,
+    items: readonly MediaToolbarItem[],
+): MediaToolbarItem[] | undefined {
+    const sorted = mediaToolbarOrder(order, items);
+    return sorted.every((item, i) => item === items[i]) ? undefined : sorted;
+}
+
+/** standard items that are off until they are switched on (`activateDefaultItems` of the script) */
+export type MediaOptInToolbarItem = Extract<MediaToolbarItem, 'timer'>;
+export const mediaOptInToolbarItems: readonly MediaOptInToolbarItem[] = ['timer'];
+
+/**
+ * @param item standard item of the bar
+ * @returns true for the items that are off until switched on ({@link mediaOptInToolbarItems})
+ */
+export function isMediaOptInToolbarItem(item: MediaToolbarItem): item is MediaOptInToolbarItem {
+    return item === 'timer';
+}
+
+/**
+ * Whether a standard item is switched on: the opt-in items only with `enabled: true`, all others unless `enabled: false`.
+ *
+ * @param item standard item of the bar
+ * @param config its settings, undefined = defaults
+ * @returns true when the adapter adds the item (volumePresets still needs a preset)
+ */
+export function isMediaToolbarItemOn(item: MediaToolbarItem, config: MediaToolbarConfig | undefined): boolean {
+    return isMediaOptInToolbarItem(item) ? config?.enabled === true : config?.enabled !== false;
+}
 
 /** standard items holding a list of names that is edited in the admin */
 export type MediaListKind = 'speakerList' | 'playList' | 'favoriteList';
@@ -3091,8 +3187,18 @@ export type MediaBackendFeatures = {
 
 export const mediaBackendFeatures: Record<MediaBackend, MediaBackendFeatures> = {
     alexa2: {
-        items: ['reminder', 'online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat'],
-        colorOn: ['online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat'],
+        items: [
+            'reminder',
+            'online',
+            'speakerList',
+            'playList',
+            'equalizer',
+            'clock',
+            'volumePresets',
+            'repeat',
+            'timer',
+        ],
+        colorOn: ['online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat', 'timer'],
         colorOff: ['reminder', 'online', 'speakerList', 'repeat'],
         titleColor: false,
     },
@@ -3141,6 +3247,34 @@ export const mediaBackendFeatures: Record<MediaBackend, MediaBackendFeatures> = 
 export function mediaBackendOf(id: string | undefined): MediaBackend | undefined {
     const name = (id ?? '').trim().split('.')[0];
     return (mediaBackends as readonly string[]).includes(name) ? (name as MediaBackend) : undefined;
+}
+
+/**
+ * Splits an alexa2 playlist entry `<State>.<label>` (e.g. `Amazon-Music-Playlist.Rock`) at the first dot.
+ *
+ * @param entry Entry of the playlist list.
+ * @returns State token and label, both trimmed; undefined when one of them is empty or there is no dot.
+ */
+export function parseAlexaPlaylistEntry(entry: string): { state: string; label: string } | undefined {
+    const sep = entry.indexOf('.');
+    if (sep < 0) {
+        return undefined;
+    }
+    const state = entry.slice(0, sep).trim();
+    const label = entry.slice(sep + 1).trim();
+    return state && label ? { state, label } : undefined;
+}
+
+/**
+ * Finds the `Music-Provider` state of an alexa2 playlist entry: first the state whose last id segment
+ * equals the token, only then any state that contains it.
+ *
+ * @param stateIds State ids below `<echo>.Music-Provider`.
+ * @param token State token of the entry, e.g. `Amazon-Music-Playlist`.
+ * @returns The matching state id, undefined when none matches.
+ */
+export function findAlexaPlaylistState(stateIds: readonly string[], token: string): string | undefined {
+    return stateIds.find(s => s.split('.').pop() === token) ?? stateIds.find(s => s.includes(token));
 }
 
 /**
@@ -3273,7 +3407,10 @@ export function mediaPlayerIdOf(id: string): string {
 
 /** one standard item of the bar: switched off, or other colors than the adapter default (#rrggbb) */
 export type MediaToolbarConfig = {
-    /** false = item is not added (deactivateDefaultItems); volumePresets has no switch, it follows the preset list */
+    /**
+     * false = item is not added (deactivateDefaultItems); volumePresets has no switch, it follows the preset list.
+     * The opt-in items ({@link mediaOptInToolbarItems}) are only added with true (activateDefaultItems).
+     */
     enabled?: boolean;
     colorOn?: string;
     colorOff?: string;
@@ -3308,6 +3445,8 @@ export type MediaEntry = {
     mediaId: string;
     /** name of the player, empty = read from the adapter */
     name?: string;
+    /** automatic headline while `name` is empty: song title (default) or only the active device */
+    headlineMode?: MediaHeadlineMode;
     /** volume range of the panel slider */
     minValue?: number;
     maxValue?: number;
@@ -3318,6 +3457,8 @@ export type MediaEntry = {
     colorMediaTitle?: string;
     /** settings of the standard items, missing item = adapter default */
     toolbar?: Partial<Record<MediaToolbarItem, MediaToolbarConfig>>;
+    /** order of the standard items in the bar (drag and drop in the editor), missing = order of the backend */
+    toolbarOrder?: MediaToolbarItem[];
     speakerList?: string[];
     playList?: string[];
     favoriteList?: string[];
@@ -3345,18 +3486,20 @@ export function emptyMediaEntry(uniqueName: string): MediaEntry {
 }
 
 /**
- * Standard items a media entry shows on the panel, in their order.
+ * Standard items a media entry shows on the panel, in their order (`toolbarOrder`, otherwise that of the backend).
  *
  * The online item is only shown by the adapter while the player is offline, all others as long as
- * they are not switched off; volumePresets needs at least one preset.
+ * they are not switched off (the opt-in items only when switched on); volumePresets needs at least one preset.
  *
  * @param entry Media entry.
  * @param backend Backend of the player.
  * @returns The visible standard items.
  */
 export function mediaVisibleToolbarItems(entry: MediaEntry, backend: MediaBackend): MediaToolbarItem[] {
-    return mediaBackendFeatures[backend].items.filter(item =>
-        item === 'volumePresets' ? (entry.volumePresets ?? []).length > 0 : entry.toolbar?.[item]?.enabled !== false,
+    return mediaToolbarOrder(entry.toolbarOrder, mediaBackendFeatures[backend].items).filter(item =>
+        item === 'volumePresets'
+            ? (entry.volumePresets ?? []).length > 0
+            : isMediaToolbarItemOn(item, entry.toolbar?.[item]),
     );
 }
 
@@ -3669,6 +3812,30 @@ export const requiredScriptDataPoints = {
                 writeable: false,
                 trigger: true,
                 description: '',
+            },
+        },
+    },
+    battery: {
+        updatedVersion: true,
+        name: 'battery',
+        description: 'Hausakku / Speicher: Symbol nach Ladestand, Farbe nach Laden / Entladen',
+        data: {
+            ACTUAL: {
+                role: 'value.battery',
+                type: 'number',
+                required: true,
+                writeable: false,
+                trigger: true,
+                description: 'Ladestand in %',
+            },
+            POWER: {
+                role: 'value.power',
+                type: 'number',
+                required: false,
+                writeable: false,
+                trigger: true,
+                description:
+                    'Lade-/Entladeleistung: negativ = laden, positiv = entladen, 0 = weder noch. Liefert das Gerät es andersherum, im Alias umdrehen.',
             },
         },
     },

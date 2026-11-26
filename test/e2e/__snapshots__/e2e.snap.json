@@ -195,7 +195,7 @@
   },
   "02 Navigation › NSPanel › next → entities page": {
     "nspanel": {
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~",
       "pageType": "pageType~cardEntities",
       "timeout": "timeout~15"
     },
@@ -305,7 +305,7 @@
   "02 Navigation › Web panel › next → entities page": {
     "nspanel": {},
     "web": {
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~",
       "pageType": "pageType~cardEntities",
       "timeout": "timeout~15"
     },
@@ -372,7 +372,7 @@
   },
   "03 Switching › NSPanel, entities page › state false from outside → row shows off": {
     "nspanel": {
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~"
     },
     "web": {
       "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
@@ -395,7 +395,7 @@
   },
   "03 Switching › NSPanel, entities page › tap → state true, row shows on": {
     "nspanel": {
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E424}~65222~E2E Socket~1~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E424}~65222~E2E Socket~1~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~"
     },
     "web": {
       "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E424}~65222~E2E Socket~1~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
@@ -506,7 +506,7 @@
   },
   "03 Switching › Web panel, grid page › state false from outside → item shows off": {
     "nspanel": {
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~"
     },
     "web": {
       "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
@@ -529,7 +529,7 @@
   },
   "03 Switching › Web panel, grid page › tap → state true, item shows on": {
     "nspanel": {
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E424}~65222~E2E Socket~1~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E424}~65222~E2E Socket~1~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~"
     },
     "web": {
       "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E424}~65222~E2E Socket~1~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
@@ -950,7 +950,7 @@
   "05 Screensaver ⇄ page › automatic return with a short timeout › page → screensaver by the display timeout, without any further action": {
     "nspanel": {
       "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~",
       "pageType": "pageType~screensaver~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
       "timeout": "timeout~2",
@@ -976,7 +976,7 @@
   "05 Screensaver ⇄ page › display timeout on the entities page → screensaver with its content": {
     "nspanel": {
       "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
-      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E07D}~35921~E2E Battery~54%~~~~~~",
       "pageType": "pageType~screensaver~~6371?65535?65363?54938",
       "statusUpdate": "statusUpdate~~~~~~",
       "timeout": "timeout~15",
@@ -2374,6 +2374,254 @@
     "nspanel": {},
     "web": {
       "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~3?11~{U+EB07}~65222~Pin extra~1~~3?10~{U+E402}~65222~Pin shown~1~~3?12~{U+EB08}~65222~Pin extra~1~0"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › NSPanel › charge level 0 while discharging → empty icon, still red": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E08D}~63488~E2E Battery~0%~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › NSPanel › charge level rises → next icon step and new value, still charging": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E083}~2016~E2E Battery~100%~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › NSPanel › negative power → charging: icon with flash, green": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E89C}~2016~E2E Battery~54%~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › NSPanel › positive power → discharging: icon without flash, red": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E078}~63488~E2E Battery~100%~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › NSPanel › power 0 → icon of the charge level without flash, neutral color, value in percent": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › NSPanel › power back to 0 → neutral color again": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E08D}~35921~E2E Battery~0%~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › Web panel › charge level 0 while discharging → empty icon, still red": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E08D}~63488~E2E Battery~0%~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › Web panel › charge level rises → next icon step and new value, still charging": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E083}~2016~E2E Battery~100%~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › Web panel › negative power → charging: icon with flash, green": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E89C}~2016~E2E Battery~54%~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › Web panel › positive power → discharging: icon without flash, red": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E078}~63488~E2E Battery~100%~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › Web panel › power 0 → icon of the charge level without flash, neutral color, value in percent": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "10 Battery › Web panel › power back to 0 → neutral color again": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~text~1?2~{U+E08D}~35921~E2E Battery~0%~~~~~~"
     },
     "states": {
       "0_userdata.0.e2e.blind.ACTUAL": 50,

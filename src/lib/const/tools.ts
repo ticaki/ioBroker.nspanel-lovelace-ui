@@ -449,6 +449,24 @@ export async function getIconEntryColor(
     return String(Color.rgb_dec565(def));
 }
 
+/**
+ * Icon color of a battery by its power (role `battery.power`): negative power charges - color of `icon.true`,
+ * positive power discharges - color of `icon.false`, anything else (exactly 0, no value, no state) is neither -
+ * color of `icon.unstable`. No threshold around 0.
+ *
+ * @param i icon of the page item
+ * @param power power of the battery, null without a value
+ * @returns the color as decimal RGB565 string; without a configured color the neutral color of the theme
+ */
+export async function getBatteryPowerColor(
+    i: ChangeTypeOfKeys<NSPanel.IconEntryType, Dataitem | undefined> | undefined,
+    power: number | null,
+): Promise<string> {
+    const entry = power !== null && power < 0 ? i?.true : power !== null && power > 0 ? i?.false : i?.unstable;
+    const color = entry?.color && (await entry.color.getRGBDec());
+    return color || String(Color.rgb_dec565(Color.isRGB(Color.neutral) ? Color.neutral : Color.HMIOn));
+}
+
 export function getRGBFromValue(val: any, role?: string): RGB | undefined {
     if (val != null) {
         if (typeof val === 'string') {
@@ -1015,7 +1033,7 @@ export const setHuefromRGB = async (item: NSPanel.PageItemLightDataItems['data']
  * @param text {string | string[] | null | undefined} Eingabetext
  */
 export function formatInSelText(text: string | string[] | null | undefined): string {
-    if (!text) {
+    if (text === null || text === undefined) {
         return 'error';
     }
 
@@ -1023,6 +1041,11 @@ export function formatInSelText(text: string | string[] | null | undefined): str
     const words = Array.isArray(text)
         ? text
         : text.replaceAll('?', ' ').replaceAll('__', '_').replaceAll('_', ' ').split(/\s+/);
+
+    // Leerer Wert bzw. leerer Listeneintrag bleibt leer (sonst entstünde "\r\n" aus den leeren Wörtern)
+    if (words.every(word => word === '')) {
+        return '';
+    }
 
     const MAX_LINE = 12;
     const MAX_LINE2 = 12;

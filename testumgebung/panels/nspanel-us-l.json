@@ -715,6 +715,16 @@
                   "dateFormat": ""
                 },
                 "name": "Bus 1"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Energie.Akku",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Akku"
               }
             ],
             "scrollPresentation": "arrow"

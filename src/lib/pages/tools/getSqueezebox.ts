@@ -1,6 +1,7 @@
 import { Color, type RGB } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
+import { addMediaToolbarItem, orderMediaToolbarItems, type MediaToolbarEntry } from './mediaToolbar';
 import * as tools from '../../const/tools';
 
 /**
@@ -276,10 +277,12 @@ export async function getPageSqueezebox(
         pageItems: [],
     };
     gridItem.pageItems = gridItem.pageItems || [];
+    /** standard items of the bar, put in the order of itemsOrder at the end */
+    const toolbar: MediaToolbarEntry[] = [];
 
     // online
     if (!page.media.deactivateDefaultItems?.online) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'online', {
             role: '',
             type: 'text',
             dpInit: '',
@@ -327,7 +330,7 @@ export async function getPageSqueezebox(
             .map(v => tools.getStringFromStringOrTranslated(adapter, v.value.common.name))
             .filter(n => !list || list.length === 0 || list.includes(n));
         if (names.length > 1) {
-            gridItem.pageItems.push({
+            addMediaToolbarItem(toolbar, 'speakerList', {
                 role: 'SqueezeboxSpeaker',
                 type: 'button',
 
@@ -369,7 +372,7 @@ export async function getPageSqueezebox(
 
     // favorite select - list is read from squeezeboxrpc.X.Favorites.* at runtime
     if (!page.media.deactivateDefaultItems?.favoriteList) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'favoriteList', {
             role: 'squeezebox-favorites',
             type: 'input_sel',
             dpInit: '',
@@ -409,7 +412,7 @@ export async function getPageSqueezebox(
 
     // playlist select - saved playlists are requested from the LMS via sendTo at runtime
     if (!page.media.deactivateDefaultItems?.playList) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'playList', {
             role: 'squeezebox-playlist',
             type: 'input_sel',
             dpInit: '',
@@ -451,7 +454,7 @@ export async function getPageSqueezebox(
 
     // time
     if (!page.media.deactivateDefaultItems?.clock) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'clock', {
             template: 'text.clock',
             dpInit: '',
             data: {
@@ -467,7 +470,7 @@ export async function getPageSqueezebox(
     }
 
     if (page.media.volumePresets) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'volumePresets', {
             role: '',
             type: 'input_sel',
             dpInit: '',
@@ -515,7 +518,7 @@ export async function getPageSqueezebox(
 
     // tracklist - current queue as JSON array, PlaylistCurrentIndex is a 0-based string
     if (page.media.deactivateDefaultItems?.trackList !== true) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'trackList', {
             role: 'spotify-tracklist',
             type: 'input_sel',
             dpInit: '',
@@ -594,7 +597,7 @@ export async function getPageSqueezebox(
             colorOff = tempOff.constVal;
         }
 
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'repeat', {
             role: 'repeatValue',
             type: 'button',
             dpInit: '',
@@ -669,6 +672,8 @@ export async function getPageSqueezebox(
             },
         });
     }
+
+    gridItem.pageItems.push(...orderMediaToolbarItems(toolbar, page.media.itemsOrder));
 
     return { gridItem, messages };
 }

@@ -920,6 +920,82 @@
     "ts": 1752493142701,
     "ack": true
   },
+  "alias.0.Battery": {
+    "_id": "alias.0.Battery",
+    "common": {
+      "name": {
+        "de": "Battery"
+      },
+      "role": "battery",
+      "icon": ""
+    },
+    "native": {},
+    "type": "channel",
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1795564800000,
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    }
+  },
+  "alias.0.Battery.ACTUAL": {
+    "_id": "alias.0.Battery.ACTUAL",
+    "common": {
+      "name": "ACTUAL",
+      "role": "value.battery",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Battery.Actual"
+      },
+      "unit": "%",
+      "min": 0,
+      "max": 100
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1795564800000,
+    "val": 78,
+    "ack": false
+  },
+  "alias.0.Battery.POWER": {
+    "_id": "alias.0.Battery.POWER",
+    "common": {
+      "name": "POWER",
+      "role": "value.power",
+      "type": "number",
+      "read": true,
+      "write": false,
+      "alias": {
+        "id": "0_userdata.0.Battery.Power"
+      },
+      "unit": "W"
+    },
+    "native": {},
+    "type": "state",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1795564800000,
+    "val": -850,
+    "ack": false
+  },
   "alias.0.Blind": {
     "_id": "alias.0.Blind",
     "common": {

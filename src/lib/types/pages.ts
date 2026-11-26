@@ -1,7 +1,7 @@
 import type { RGB } from '../const/Color';
 import type * as dataItem from '../controller/data-item';
 import { type PageItem } from '../pages/pageItem';
-import type { AdminCardTypes, ScreensaverClockTimer } from './adminShareConfig';
+import type { AdminCardTypes, MediaHeadlineMode, ScreensaverClockTimer } from './adminShareConfig';
 import type { NSPanel } from './NSPanel';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker' | 'SqueezeboxSpeaker';
@@ -164,6 +164,8 @@ export type DeviceRole =
     | '4values'
     | 'arrow'
     | 'battery'
+    /** battery whose power (entity3) decides: negative = charging (icon true), color charging / discharging / neither */
+    | 'battery.power'
     | 'blind'
     | 'button'
     | 'buttonSensor'
@@ -583,6 +585,8 @@ export type cardThermoDataItems = {
 export type cardMediaDataItemOptions = {
     card: Extract<cardGridTypes, 'cardMedia'>;
     ident?: string;
+    /** automatic headline while the page has no own one, missing = 'title' */
+    headlineMode?: MediaHeadlineMode;
     logo?: NSPanel.PageItemDataItemsOptions | undefined;
     data: ChangeTypeOfKeys<PageMediaBaseConfig, NSPanel.DataItemsOptions | undefined>;
 } & PageMenuBaseConfig;

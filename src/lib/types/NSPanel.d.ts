@@ -85,6 +85,7 @@ export namespace NSPanel {
         | 'shutter.basic'
         | 'shutter.basic.onlyV'
         | 'text.battery.bydhvs'
+        | 'text.battery.channel'
         | 'text.accuweather.bot2values'
         | 'text.accuweather.sunriseset'
         | 'button.esphome.powerplug'
@@ -1120,10 +1121,25 @@ export namespace NSPanel {
         type: 'timer';
         /** the item uses the timer of the screensaver of its panel (clockTimer) instead of its own states */
         useScreensaverTimer?: boolean;
-        /** the item shows and sets the timer of this Echo device (src/lib/classes/alexa-timer.ts), no own states */
-        alexaTimer?: { instance: string; serial: string; show?: 'timer' | 'alarm'; alarmId?: string };
+        /**
+         * the item shows and sets the timer of this Echo device (src/lib/classes/alexa-timer.ts), no own states.
+         * `followMedia`: toolbar item of an alexa2 media page - the device is the one the page currently controls
+         * (currentItem), instance/serial are only the start value
+         */
+        alexaTimer?: {
+            instance: string;
+            serial: string;
+            show?: 'timer' | 'alarm';
+            alarmId?: string;
+            followMedia?: boolean;
+        };
         /** id of the item, the screensaver finds it by this (clockTimer.itemId) */
         itemId?: string;
+        /**
+         * value instead of icon (`useValue` on grid cards, always for the timer of an alexa2 media page): while a
+         * timer runs the remaining time replaces the icon
+         */
+        useValue?: boolean;
         data: pages.ChangeTypeOfKeys<PageItemTimer, DataItemsOptions | undefined>;
     };
 
@@ -1132,8 +1148,16 @@ export namespace NSPanel {
         /** see {@link PageItemTimerDataItemsOptions} */
         useScreensaverTimer?: boolean;
         /** see {@link PageItemTimerDataItemsOptions} */
-        alexaTimer?: { instance: string; serial: string; show?: 'timer' | 'alarm'; alarmId?: string };
+        alexaTimer?: {
+            instance: string;
+            serial: string;
+            show?: 'timer' | 'alarm';
+            alarmId?: string;
+            followMedia?: boolean;
+        };
         itemId?: string;
+        /** see {@link PageItemTimerDataItemsOptions} */
+        useValue?: boolean;
         data: pages.ChangeTypeOfKeys<PageItemTimer, dataItem.Dataitem | undefined>;
     };
 

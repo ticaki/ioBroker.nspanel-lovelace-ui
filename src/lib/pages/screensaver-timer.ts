@@ -253,7 +253,7 @@ export function timerText(remainingMs: number): string {
  * @param remainingMs remaining time, above 0
  * @returns ms to wait
  */
-function nextTextChangeMs(remainingMs: number): number {
+export function nextTextChangeMs(remainingMs: number): number {
     if (remainingMs <= TENTHS_UNTIL) {
         return remainingMs % TENTH_MINUTE || TENTH_MINUTE;
     }

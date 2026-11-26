@@ -140,6 +140,7 @@ const channels: Record<ScriptConfig.channelRoles | 'none', string[]> = {
     thermostat: ['alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1'],
     media: ['alias.0.Tests.media'],
     airCondition: [],
+    battery: [],
     ct: [],
     door: [],
     gate: [],
@@ -2732,6 +2733,59 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
         });
     });
 
+    it('takes over the opt-in timer item of an alexa2 cardMedia page', () => {
+        const convert = (extra: Record<string, unknown>): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { id: 'alexa2.0.Echo-Devices.G123', ...extra },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            return result.newPages[0] as ShareConfig.MediaEntry;
+        };
+        expect(convert({ activateDefaultItems: { timer: true }, itemsColorOn: { timer: Red } }).toolbar).to.deep.equal({
+            timer: { enabled: true, colorOn: '#ff0000' },
+        });
+        expect(convert({ activateDefaultItems: { timer: false } })).to.not.have.property('toolbar');
+    });
+
+    it('takes over the order of the standard items of a cardMedia page', () => {
+        const convert = (itemsOrder: unknown): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { id: 'mpd.0', itemsOrder },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            return result.newPages[0] as ShareConfig.MediaEntry;
+        };
+        expect(convert(['clock', 'unknown', 'clock']).toolbarOrder).to.deep.equal([
+            'clock',
+            'online',
+            'repeat',
+            'volumePresets',
+            'crossfade',
+        ]);
+        expect(convert(['online', 'repeat'])).to.not.have.property('toolbarOrder');
+        expect(convert([])).to.not.have.property('toolbarOrder');
+    });
+
     it('skips a cardMedia page the admin cannot express', () => {
         const media = { id: 'squeezeboxrpc.0.Players.Familienzimmer' };
         const cases: [Record<string, unknown>, string][] = [
@@ -2751,6 +2805,7 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
             ],
             [{ media: { ...media, speakerList: [' a'] } }, 'media.speakerList: expected trimmed, non-empty names'],
             [{ media: { ...media, playList: ['a', ''] } }, 'media.playList: expected trimmed, non-empty names'],
+            [{ media: { ...media, headlineMode: 'x' } }, "media.headlineMode: expected 'title' or 'device'"],
             [{ media: { ...media, favoriteList: 'a' } }, 'media.favoriteList: expected a list of names'],
             [
                 { media: { ...media, volumePresets: [] } },
@@ -2760,6 +2815,20 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
                 { media: { ...media, itemsColorOff: { volumePresets: Red } } },
                 'media.itemsColorOff.volumePresets: not available in the admin',
             ],
+            [
+                { media: { ...media, activateDefaultItems: { equalizer: true } } },
+                'media.activateDefaultItems.equalizer: not available in the admin',
+            ],
+            [
+                { media: { ...media, deactivateDefaultItems: { timer: true } } },
+                'media.deactivateDefaultItems.timer: not available in the admin',
+            ],
+            [
+                { media: { ...media, itemsColorOff: { timer: Red } } },
+                'media.itemsColorOff.timer: not available in the admin',
+            ],
+            [{ media: { ...media, itemsOrder: 'clock' } }, 'media.itemsOrder: expected a list of item names'],
+            [{ media: { ...media, itemsOrder: ['clock', 1] } }, 'media.itemsOrder: expected a list of item names'],
         ];
         for (const [extra, detail] of cases) {
             const result = plan(
@@ -2771,6 +2840,28 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and car
                 { uniqueName: 'm', type: 'cardMedia', reason: 'fieldNotSupported', detail },
             ]);
         }
+    });
+
+    it('takes over the headline mode of a cardMedia page, the default stays out', () => {
+        const convert = (headlineMode: string): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { id: 'squeezeboxrpc.0.Players.Familienzimmer', headlineMode },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            return result.newPages[0] as ShareConfig.MediaEntry;
+        };
+        expect(convert('device').headlineMode).to.equal('device');
+        expect(convert('title')).to.not.have.property('headlineMode');
     });
 
     it('takes an empty name list of a cardMedia page as a missing field and deduplicates repeated names', () => {

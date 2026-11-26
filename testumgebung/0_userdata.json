@@ -993,6 +993,74 @@
     "ts": 1752493011922,
     "ack": true
   },
+  "0_userdata.0.Battery": {
+    "common": {
+      "name": "Battery",
+      "desc": "Manuell erzeugt",
+      "role": "battery",
+      "icon": ""
+    },
+    "type": "channel",
+    "_id": "0_userdata.0.Battery",
+    "acl": {
+      "object": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1795564800000
+  },
+  "0_userdata.0.Battery.Actual": {
+    "common": {
+      "name": "Actual",
+      "desc": "Manuell erzeugt",
+      "role": "value.battery",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Battery.Actual",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1795564800000,
+    "val": 78,
+    "ack": false
+  },
+  "0_userdata.0.Battery.Power": {
+    "common": {
+      "name": "Power",
+      "desc": "Manuell erzeugt",
+      "role": "value.power",
+      "type": "number",
+      "read": true,
+      "write": true,
+      "def": 0
+    },
+    "type": "state",
+    "native": {},
+    "_id": "0_userdata.0.Battery.Power",
+    "acl": {
+      "object": 1636,
+      "state": 1636,
+      "owner": "system.user.admin",
+      "ownerGroup": "system.group.administrator"
+    },
+    "from": "system.adapter.admin.0",
+    "user": "system.user.admin",
+    "ts": 1795564800000,
+    "val": -850,
+    "ack": false
+  },
   "0_userdata.0.Blind": {
     "common": {
       "name": "Rollo1",

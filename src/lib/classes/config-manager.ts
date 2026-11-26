@@ -1,6 +1,11 @@
 import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
-import { isScreensaverBlindPosition, pageItemDefaults, SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
+import {
+    isScreensaverBlindPosition,
+    pageItemDefaults,
+    pageNaviItemDefaults,
+    SHUTTER_POSITION_ICON,
+} from '../const/page-item-defaults';
 import { mainPageName } from '../const/default-pages';
 import { normalizeCycleValues } from '../const/screensaver-cycle';
 import {
@@ -2067,6 +2072,29 @@ export class ConfigManager extends BaseClass {
                 };
                 break;
             }
+            case 'battery': {
+                // icon by charge level, flash and color by power: all in the template; onColor = charging,
+                // offColor = discharging, the color for neither stays the neutral one of the template
+                itemConfig = {
+                    template: 'text.battery.channel',
+                    dpInit: item.id,
+                    type: 'button',
+                    color: {
+                        true: await this.getIconColor(item.onColor, Color[pageNaviItemDefaults.battery.colorOn]),
+                        false: await this.getIconColor(item.offColor, Color[pageNaviItemDefaults.battery.colorOff]),
+                    },
+                    icon: {
+                        true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                        false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
+                    },
+                    data: {
+                        text: text,
+                        text1: text1,
+                        setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : undefined,
+                    },
+                };
+                break;
+            }
             case 'info': {
                 let adapterRole: pages.DeviceRole = '';
                 let commonUnit = '';
@@ -2538,9 +2566,13 @@ export class ConfigManager extends BaseClass {
      * (src/lib/classes/alexa-timer.ts, for an alarm src/lib/classes/alexa-alarm.ts).
      *
      * @param item the script item with `alexaTimer`
+     * @param page page of the item: `useValue` only on grid cards
      * @returns the item
      */
-    private async getAlexaTimerItemConfig(item: ScriptConfig.PageBaseItem): Promise<NSPanel.PageItemDataItemsOptions> {
+    private async getAlexaTimerItemConfig(
+        item: ScriptConfig.PageBaseItem,
+        page: ScriptConfig.PageType,
+    ): Promise<NSPanel.PageItemDataItemsOptions> {
         const alexa = item.alexaTimer;
         if (!isAlexaTimerConfig(alexa) || !isAlexaTimerComplete(alexa)) {
             throw new Error(
@@ -2558,6 +2590,8 @@ export class ConfigManager extends BaseClass {
             dpInit: '',
             alexaTimer: copyAlexaTimerConfig(alexa),
             itemId: item.itemId,
+            // value instead of icon like valueDisplayRole: only on grid cards
+            useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : undefined,
             data: {
                 icon: {
                     true: {
@@ -2604,7 +2638,7 @@ export class ConfigManager extends BaseClass {
             return { itemConfig, messages };
         }
         if ('alexaTimer' in item && item.alexaTimer !== undefined) {
-            return { itemConfig: await this.getAlexaTimerItemConfig(item), messages };
+            return { itemConfig: await this.getAlexaTimerItemConfig(item, page), messages };
         }
         if ('id' in item && item.id) {
             if (['delete', 'empty'].includes(item.id)) {
@@ -4215,6 +4249,27 @@ export class ConfigManager extends BaseClass {
                         };
                         break;
                     }
+                    case 'battery': {
+                        // icon by charge level, flash and color by power: all in the template; onColor = charging,
+                        // offColor = discharging, the color for neither stays the neutral one of the template
+                        itemConfig = {
+                            template: 'text.battery.channel',
+                            type: 'text',
+                            dpInit: item.id,
+                            color: {
+                                true: await this.getIconColor(item.onColor, Color[pageItemDefaults.battery.colorOn]),
+                                false: await this.getIconColor(item.offColor, Color[pageItemDefaults.battery.colorOff]),
+                            },
+                            icon: {
+                                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : undefined,
+                                false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : undefined,
+                            },
+                            data: {
+                                text: text,
+                            },
+                        };
+                        break;
+                    }
                     case 'level.timer': {
                         let isAlarm = false;
                         if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
@@ -4247,6 +4302,8 @@ export class ConfigManager extends BaseClass {
                             dpInit: '',
                             useScreensaverTimer: item.useScreensaverTimer === true ? true : undefined,
                             itemId: item.itemId,
+                            // value instead of icon like valueDisplayRole: only on grid cards
+                            useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : undefined,
 
                             data: {
                                 icon: {

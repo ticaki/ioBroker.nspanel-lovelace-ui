@@ -1781,6 +1781,27 @@ class ConfigManager extends import_library.BaseClass {
         };
         break;
       }
+      case "battery": {
+        itemConfig = {
+          template: "text.battery.channel",
+          dpInit: item.id,
+          type: "button",
+          color: {
+            true: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageNaviItemDefaults.battery.colorOn]),
+            false: await this.getIconColor(item.offColor, import_Color.Color[import_page_item_defaults.pageNaviItemDefaults.battery.colorOff])
+          },
+          icon: {
+            true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+            false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
+          },
+          data: {
+            text,
+            text1,
+            setNavi: item.targetPage ? await this.getFieldAsDataItemConfig(item.targetPage) : void 0
+          }
+        };
+        break;
+      }
       case "info": {
         let adapterRole = "";
         let commonUnit = "";
@@ -2190,9 +2211,10 @@ class ConfigManager extends import_library.BaseClass {
    * (src/lib/classes/alexa-timer.ts, for an alarm src/lib/classes/alexa-alarm.ts).
    *
    * @param item the script item with `alexaTimer`
+   * @param page page of the item: `useValue` only on grid cards
    * @returns the item
    */
-  async getAlexaTimerItemConfig(item) {
+  async getAlexaTimerItemConfig(item, page) {
     const alexa = item.alexaTimer;
     if (!(0, import_adminShareConfig.isAlexaTimerConfig)(alexa) || !(0, import_adminShareConfig.isAlexaTimerComplete)(alexa)) {
       throw new Error(
@@ -2208,6 +2230,8 @@ class ConfigManager extends import_library.BaseClass {
       dpInit: "",
       alexaTimer: (0, import_adminShareConfig.copyAlexaTimerConfig)(alexa),
       itemId: item.itemId,
+      // value instead of icon like valueDisplayRole: only on grid cards
+      useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : void 0,
       data: {
         icon: {
           true: {
@@ -2244,7 +2268,7 @@ class ConfigManager extends import_library.BaseClass {
       return { itemConfig, messages };
     }
     if ("alexaTimer" in item && item.alexaTimer !== void 0) {
-      return { itemConfig: await this.getAlexaTimerItemConfig(item), messages };
+      return { itemConfig: await this.getAlexaTimerItemConfig(item, page), messages };
     }
     if ("id" in item && item.id) {
       if (["delete", "empty"].includes(item.id)) {
@@ -3483,6 +3507,25 @@ class ConfigManager extends import_library.BaseClass {
             };
             break;
           }
+          case "battery": {
+            itemConfig = {
+              template: "text.battery.channel",
+              type: "text",
+              dpInit: item.id,
+              color: {
+                true: await this.getIconColor(item.onColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.battery.colorOn]),
+                false: await this.getIconColor(item.offColor, import_Color.Color[import_page_item_defaults.pageItemDefaults.battery.colorOff])
+              },
+              icon: {
+                true: item.icon ? await this.getFieldAsDataItemConfig(item.icon, true) : void 0,
+                false: item.icon2 ? await this.getFieldAsDataItemConfig(item.icon2, true) : void 0
+              },
+              data: {
+                text
+              }
+            };
+            break;
+          }
           case "level.timer": {
             let isAlarm = false;
             if (foundedStates[role].ACTUAL && foundedStates[role].ACTUAL.dp) {
@@ -3500,6 +3543,8 @@ class ConfigManager extends import_library.BaseClass {
               dpInit: "",
               useScreensaverTimer: item.useScreensaverTimer === true ? true : void 0,
               itemId: item.itemId,
+              // value instead of icon like valueDisplayRole: only on grid cards
+              useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : void 0,
               data: {
                 icon: {
                   true: {

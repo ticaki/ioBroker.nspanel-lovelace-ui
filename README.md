@@ -169,11 +169,19 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) device with details: an alias channel of a device page slot that is missing or does not fit is named in the log at adapter start (once, with page and item)
 - (ticaki) cardGrid, cardGrid2, cardGrid3 and device pages: reaching the long press of a cell (0.5 s) lets its background blink green/grey until the finger is lifted (needs a new TFT, eu)
 - (ticaki) cardEntities, cardGrid, cardGrid2, cardGrid3, cardSchedule, cardThermo2, cardMedia: closing a popup no longer jumps back to the first items, the page stays where it was scrolled to
+- (ticaki) Media page (alexa2): optional toolbar item "Timer" for the Alexa timers of the currently selected Echo device - while a timer runs it shows the remaining time (as on the screensaver) instead of the icon
+- (ticaki) Media page: the order of the toolbar items can be changed by drag and drop in the admin
+- (ticaki) Timer page item: option "value instead of icon" shows the remaining time while a timer runs
+- (ticaki) Selection popups: an empty value or list entry is no longer sent as "error"
 - (ticaki) panel setup, berry/TFT install, restart and reset of tasmota: the log shows the cause of network errors (e.g. `ECONNREFUSED`, `EHOSTUNREACH`) instead of only "fetch failed"
 - (ticaki) panel setup: clear hint in the admin if the panel does not answer (Tasmota HTTP API off since 15.4.0.2, enable with SetOption128 1)
 - (ticaki) dependencies updated
 - (ticaki) alarm/unlock page: the PIN lockout is now enforced in the adapter – every attempt during the lockout is rejected and extends the wait – a page with shared status shares the lockout across all panels
 - (ticaki) Admin: screensaver indicators can be pinned to their slot - a hidden pinned item leaves its slot empty and the other indicators do not move up onto it
+- (ticaki) Admin: playlist suggestions and format check for alexa2 media pages
+- (ticaki) Admin: media page headline can show only the active device
+- (ticaki) new alias channel `battery` (home battery / storage) with the states `ACTUAL` (charge level in %) and optional `POWER` (negative = charging, positive = discharging): the icon follows the charge level in steps of ten, with a flash while charging; green while charging, red while discharging, neutral color when neither. Usable as page item (also as navigation item) and on the screensaver with the new template `text.battery.channel`
+- (ticaki) Media page (alexa2): the playlist selection now goes to the currently selected Echo device
 
 ### 2.6.0 (2026-11-22)
 - (ticaki) web panel: cardPower moves the flow dots in the same direction as the NSPanel (positive speed = left / up, i.e. away from the house on the left / upper items)

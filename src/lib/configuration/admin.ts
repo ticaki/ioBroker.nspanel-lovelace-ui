@@ -1514,8 +1514,9 @@ function mediaList(list: unknown): string[] | undefined {
 /**
  * Turns a media entry into the script form of the page (`media` of `ScriptConfig.PageMedia`).
  *
- * The standard items become `deactivateDefaultItems` / `itemsColorOn` / `itemsColorOff`, colors
- * the RGB objects of the script, the presets `name?value` strings clamped to the volume range.
+ * The standard items become `deactivateDefaultItems` / `activateDefaultItems` (opt-in items) / `itemsColorOn` /
+ * `itemsColorOff`, the order of the editor `itemsOrder` (left out for the order of the backend), colors the RGB
+ * objects of the script, the presets `name?value` strings clamped to the volume range.
  * Empty fields are left out so the backend takes its defaults. The own page items are not part of
  * the result - they are converted separately.
  *
@@ -1534,12 +1535,17 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
     const deactivateDefaultItems: NonNullable<ScriptConfig.PageMediaItem['deactivateDefaultItems']> = {};
     const itemsColorOn: NonNullable<ScriptConfig.PageMediaItem['itemsColorOn']> = {};
     const itemsColorOff: NonNullable<ScriptConfig.PageMediaItem['itemsColorOff']> = {};
+    const activateDefaultItems: NonNullable<ScriptConfig.PageMediaItem['activateDefaultItems']> = {};
     for (const [key, config] of Object.entries(entry.toolbar ?? {})) {
         if (!config) {
             continue;
         }
         const item = key as ShareConfig.MediaToolbarItem;
-        if (config.enabled === false && item !== 'volumePresets') {
+        if (ShareConfig.isMediaOptInToolbarItem(item)) {
+            if (config.enabled === true) {
+                activateDefaultItems[item] = true;
+            }
+        } else if (config.enabled === false && item !== 'volumePresets') {
             deactivateDefaultItems[item] = true;
         }
         const on = thermo2Rgb(config.colorOn);
@@ -1547,7 +1553,7 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
             itemsColorOn[item] = on;
         }
         const off = thermo2Rgb(config.colorOff);
-        if (off && item !== 'volumePresets') {
+        if (off && item !== 'volumePresets' && item !== 'timer') {
             itemsColorOff[item] = off;
         }
     }
@@ -1556,9 +1562,15 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
         .filter(p => p && thermo2Text(p.name) && typeof p.value === 'number' && Number.isFinite(p.value))
         .map(p => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
 
+    const backend = ShareConfig.mediaBackendOf(entry.mediaId);
+    const itemsOrder = backend
+        ? ShareConfig.mediaToolbarOrderToStore(entry.toolbarOrder, ShareConfig.mediaBackendFeatures[backend].items)
+        : undefined;
+
     const media: ScriptConfig.PageMediaItem = {
         id: thermo2Text(entry.mediaId) ?? '',
         name: thermo2Text(entry.name),
+        headlineMode: entry.headlineMode === 'device' ? 'device' : undefined,
         minValue,
         maxValue,
         colorMediaIcon: thermo2Rgb(entry.colorMediaIcon),
@@ -1571,6 +1583,8 @@ export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfi
         deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : undefined,
         itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : undefined,
         itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : undefined,
+        activateDefaultItems: Object.keys(activateDefaultItems).length ? activateDefaultItems : undefined,
+        itemsOrder,
     };
     for (const key of Object.keys(media) as (keyof ScriptConfig.PageMediaItem)[]) {
         if (media[key] === undefined) {

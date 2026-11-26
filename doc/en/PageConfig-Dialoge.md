@@ -44,7 +44,7 @@ Two checkboxes at the head of the dialog decide which kind of element you get:
 
 #### Kind of item: Standard or Alexa timer
 
-On pages with page items the **Kind of item** stands at the very top. **Standard (channel, custom button, navigation)** is everything this section describes. **Alexa timer** turns the item into a timer that shows the timers of an Echo device – instead of the channel field there are **alexa2 instance** and **Echo device**, plus **Show** (**Timer** or **Alarm**, for an alarm also **Which alarm**), name, icons and colours. With **Is a navigation** ticked, **Alexa timer** is locked. Details under [timer popup](popupTimer#7-alexa-timer-alexa2).
+On pages with page items the **Kind of item** stands at the very top. **Standard (channel, custom button, navigation)** is everything this section describes. **Alexa timer** turns the item into a timer that shows the timers of an Echo device – instead of the channel field there are **alexa2 instance** and **Echo device**, plus **Show** (**Timer** or **Alarm**, for an alarm also **Which alarm**), name, icons and colours. With **Is a navigation** ticked, **Alexa timer** is locked. Details under [timer popup](popupTimer#7-alexa-timer-alexa2). On a media page with alexa2 there is also the toolbar item **Timer** for this, which follows the Echo the page currently controls, see [Media page – Timer (Alexa only)](cardMedia#timer-alexa-only).
 
 On grid and entities pages there is a third kind, **Device with details**: the item shows any device from the object tree, a long press opens a detail page with its values or a device page of its own. Details under [Device with details and device page](deviceDetails).
 
@@ -58,7 +58,7 @@ At the end of the list stands the entry **Screensaver**: the slot then shows the
 
 ![The red error mark next to the channel field with its tooltip](../Pictures/pageConfigDialoge/dialoge-02-fehlerzeichen.png)
 
-The field is called **ioBroker Channel**, for a custom button **ioBroker State** instead. The picker behind "…" is filtered by the **role**, not by the card type: it offers the 30 channel roles the adapter knows states for, and everything below such a channel. Picking a state is **shortened to its channel**. The complete role table is under [Alias Table](ALIAS).
+The field is called **ioBroker Channel**, for a custom button **ioBroker State** instead. The picker behind "…" is filtered by the **role**, not by the card type: it offers the 31 channel roles the adapter knows states for, and everything below such a channel. Picking a state is **shortened to its channel**. The complete role table is under [Alias Table](ALIAS).
 
 While and after you type, the admin checks the channel and shows the result **to the left of the field**:
 
@@ -88,7 +88,7 @@ These fields only appear where the adapter evaluates them:
 |---|---|---|
 | **Heat circuit** | thermostat page only | Assigns the page item to one heat circuit, or *all heat circuits* — then it appears on every one. |
 | **Text Size** | on the three grid variants, on the thermostat and on the media player page — **not** on *Entities* and *Schedule* | The Nextion font the panel uses to draw the icon or the value of this item (see below). |
-| **Use Value Instead of Icon** | the same five card types, not for a custom button | The slot shows the value as text instead of the icon. The adapter only does that when the `ACTUAL` state is a number, a string or `mixed`; otherwise the icon stays. |
+| **Use Value Instead of Icon** | the same five card types, not for a custom button | The slot shows the value as text instead of the icon. The adapter only does that when the `ACTUAL` state is a number, a string or `mixed`; otherwise the icon stays. For the **timer** (also the Alexa timer) the remaining time is shown instead while a timer runs, see [timer popup – Value instead of icon](popupTimer#value-instead-of-icon). |
 | **Long press** | **only** on the three grid variants, and only for a navigation, a custom button or `role=button` | A second function on the same slot. |
 
 #### Long press
@@ -147,7 +147,7 @@ That way a page you never styled still looks coherent: every gap is filled by th
 
 Both turn **green** as soon as something is configured behind them. So the colour of the button tells you whether it is worth looking inside.
 
-**Which button is there is decided by the role.** **Color Settings** only exists for roles whose page item carries a numeric value: `blind`, `thermostat`, `airCondition`, `temperature`, `value.temperature`, `humidity`, `value.humidity`, `info`, `volume`, `select`, `slider`, `warning`, `level.timer` and `level.mode.fan`. For the purely switching roles (`socket`, `light`, `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue`, `button`, `gate`, `motion`, `door`, `window`, `lock`, `media`) it is missing — a colour gradient across a value range makes no sense there. For the light roles the **mode list** remains, for `socket`, `button` and the sensor roles the row stays empty altogether. Only for `select` are **both** buttons there. With a custom button and in raw data mode both disappear. **Color Settings** also only appears once the check of the channel ID is through — when the dialog opens and after an ID was typed the button is gone for a moment, with an emptied field or a channel that does not exist it stays away.
+**Which button is there is decided by the role.** **Color Settings** only exists for roles whose page item carries a numeric value: `blind`, `thermostat`, `airCondition`, `temperature`, `value.temperature`, `humidity`, `value.humidity`, `info`, `volume`, `select`, `slider`, `warning`, `level.timer` and `level.mode.fan`. For the purely switching roles (`socket`, `light`, `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue`, `button`, `gate`, `motion`, `door`, `window`, `lock`, `media`) it is missing — a colour gradient across a value range makes no sense there. For `battery` it is missing as well: there the colour follows the power – the **Color** of the column *Condition is true* applies while charging, that of the column *Condition is false* while discharging; when the battery neither charges nor discharges, it stays the neutral colour of the [colour theme](colorTheme). For the light roles the **mode list** remains, for `socket`, `button` and the sensor roles the row stays empty altogether. Only for `select` are **both** buttons there. With a custom button and in raw data mode both disappear. **Color Settings** also only appears once the check of the channel ID is through — when the dialog opens and after an ID was typed the button is gone for a moment, with an emptied field or a channel that does not exist it stays away.
 
 At the bottom right there are **Cancel** and **Apply**. During the check the right button reads *Checking…*, with problems detected **Details…** (orange) — see [section 8](#8-the-check-when-applying).
 
