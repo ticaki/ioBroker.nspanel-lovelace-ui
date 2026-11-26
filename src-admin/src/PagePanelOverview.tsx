@@ -59,6 +59,8 @@ import {
 import { migratePanelTopic } from '../../src/lib/types/panelTopicMigration';
 import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
 import PanelImportDialog, { type PanelImportNativeValues } from './components/PanelImportDialog';
+import NsPanelTsImportDialog from './components/NsPanelTsImportDialog';
+import TransformIcon from '@mui/icons-material/Transform';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
 import { DocButton, DocHelp, DocTooltip } from './components/DocHelp';
@@ -213,6 +215,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private buttonDialogRef = React.createRef<PanelButtonDialog>();
     /** dialog that imports a panel configuration file into one panel */
     private importDialogRef = React.createRef<PanelImportDialog>();
+    private nsPanelTsDialogRef = React.createRef<NsPanelTsImportDialog>();
     private pagesRetryTimeout?: NodeJS.Timeout;
     private blinkTimeout?: NodeJS.Timeout;
     private instance = this.props.oContext.instance ?? '0';
@@ -1810,6 +1813,19 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                             <FileUploadIcon />
                                         </IconButton>
                                     </DocTooltip>
+                                    {/* old NSPanelTs script → configuration script; hidden for "panel uses no script" */}
+                                    {isWebPanel || panel.noScript === true ? null : (
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={(): void => this.nsPanelTsDialogRef.current?.openFor(panel)}
+                                            disabled={!panel.name || !alive}
+                                            aria-label={this.getText('nspanelTsImport_button')}
+                                            title={this.getText('nspanelTsImport_button')}
+                                        >
+                                            <TransformIcon />
+                                        </IconButton>
+                                    )}
                                     <IconButton
                                         size="small"
                                         color="primary"
@@ -1964,6 +1980,12 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     instance={this.instance}
                     data={this.props.data}
                     onApplyNative={this.applyImportNative}
+                />
+                <NsPanelTsImportDialog
+                    ref={this.nsPanelTsDialogRef}
+                    socket={this.props.oContext.socket}
+                    adapterName={this.adapterName}
+                    instance={this.instance}
                 />
                 <PanelExportSecretsDialog
                     open={!!this.state.exportSecrets}

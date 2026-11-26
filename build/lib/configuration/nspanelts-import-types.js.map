@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/configuration/nspanelts-import-types.ts"],
+  "sourcesContent": ["/**\n * Types of the NSPanelTs import shared by the adapter and the admin dialog (no imports, so the admin bundle\n * does not pull in adapter code).\n */\n\n/** why a script cannot be converted */\nexport type NsPanelTsUnsupportedReason = 'noVersion' | 'version' | 'noConfig';\n\n/** an old script as the admin dialog lists it (answer of `nspanelTsList`: `{ scripts }`) */\nexport type NsPanelTsScriptInfo = {\n    id: string;\n    name: string;\n    enabled: boolean;\n    version?: string;\n    topic?: string;\n    supported: boolean;\n    reason?: NsPanelTsUnsupportedReason;\n};\n\n/** message of `nspanelTsConvert` */\nexport type NsPanelTsConvertRequest = {\n    /** id of the old script */\n    scriptId: string;\n    /** name of the target panel (`native.panels[i].name`) */\n    panelName: string;\n    /** value written as `panelTopic` into the new script */\n    topic: string;\n};\n\n/** answer of `nspanelTsConvert` */\nexport type NsPanelTsConvertAnswer =\n    | { error: string; /** translation key for the admin */ errorKey?: string }\n    | {\n          scriptId: string;\n          pages: string[];\n          todoPages: string[];\n          todos: number;\n          discarded: string[];\n          warnings: string[];\n      };\n"],
+  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
+  "names": []
+}

@@ -69,6 +69,7 @@ import {
 import { applyAdminButtons } from './lib/configuration/panel-buttons';
 import { checkScriptConfigTopics, findPanelEntry, isNoScriptPanel } from './lib/configuration/no-script';
 import { buildPageDump } from './lib/configuration/page-dump';
+import { NsPanelTsImport, isNsPanelTsConvertRequest } from './lib/configuration/nspanelts-import-runner';
 import {
     SENDTO_PAGE_DUMP_COMMAND,
     SENDTO_PAGE_DUMP_LIST_COMMAND,
@@ -2515,6 +2516,27 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'nspanelTsList':
+                case 'nspanelTsConvert': {
+                    let answer: unknown;
+                    try {
+                        const importer = this.nsPanelTsImport();
+                        if (obj.command === 'nspanelTsList') {
+                            answer = { scripts: await importer.list() };
+                        } else if (isNsPanelTsConvertRequest(obj.message)) {
+                            answer = await importer.convert(obj.message);
+                        } else {
+                            answer = { error: 'invalid message' };
+                        }
+                    } catch (e: unknown) {
+                        this.log.error(`${obj.command}: ${formatErrorForLog(e)}`);
+                        answer = { error: String(e) };
+                    }
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, answer, obj.callback);
+                    }
+                    break;
+                }
                 case 'getIcons': {
                     const icons = Array.from(Icons.iconMap, ([name]) => name).map(a => {
                         return { label: a, value: a };
@@ -3560,6 +3582,24 @@ class NspanelLovelaceUi extends utils.Adapter {
         } catch (e: unknown) {
             this.log.error(`Error while moving the script configuration from ${oldTopic} to ${newTopic}: ${String(e)}`);
         }
+    }
+
+    /**
+     * The NSPanelTs import (old standalone script → configuration script of this instance).
+     *
+     * @returns the importer
+     */
+    private nsPanelTsImport(): NsPanelTsImport {
+        return new NsPanelTsImport({
+            adapter: this,
+            folder: this.configurationScriptFolder(),
+            scriptIdFor: name => this.configurationScriptId(name),
+            template: fs.readFileSync(path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'), 'utf8'),
+            endToken: SCRIPT_END_STOP_TOKEN,
+            panelNames: (this.config.panels ?? [])
+                .filter(p => p && p.kind !== 'web' && typeof p.name === 'string' && p.name)
+                .map(p => p.name),
+        });
     }
 
     async createConfigurationScript(panelName: string, panelTopic: string): Promise<any> {

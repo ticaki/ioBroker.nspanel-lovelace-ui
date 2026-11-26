@@ -22,6 +22,7 @@ __export(script_source_exports, {
   backupName: () => backupName,
   clearButtonsInScript: () => clearButtonsInScript,
   clearScreensaverInScript: () => clearScreensaverInScript,
+  locateConfigObject: () => locateConfigObject,
   planScriptBackup: () => planScriptBackup,
   removePagesFromScript: () => removePagesFromScript,
   scanScriptConfig: () => scanScriptConfig
@@ -657,6 +658,11 @@ function scanScriptConfig(source) {
   };
   return { found: true, pages: entries("pages"), subPages: entries("subPages") };
 }
+function locateConfigObject(source) {
+  const s = scanSource(source);
+  const cfg = findConfigObject(s);
+  return cfg ? { open: cfg.open, close: cfg.close, blank: s.blank } : void 0;
+}
 function removePagesFromScript(source, uniqueNames, today) {
   const notes = [];
   const removed = [];
@@ -837,6 +843,7 @@ function backupName(scriptName, n) {
   backupName,
   clearButtonsInScript,
   clearScreensaverInScript,
+  locateConfigObject,
   planScriptBackup,
   removePagesFromScript,
   scanScriptConfig

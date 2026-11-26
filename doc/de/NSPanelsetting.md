@@ -19,6 +19,7 @@ Inhalt:
 - [Relais entkoppeln](#7-relais-entkoppeln)
 - [Die Funktionsarten](#8-die-funktionsarten)
 - [Farbe der Knöpfe in der Kachel](#9-farbe-der-knöpfe-in-der-kachel)
+- [Altes NSPanelTs-Skript umwandeln](#10-altes-nspanelts-skript-umwandeln)
 - [Fallstricke](#fallstricke)
 
 ## 1. Wann der Tab erscheint
@@ -62,6 +63,7 @@ Im Kopf der Kachel stehen der Panelname, bei einem Web-Panel das Kennzeichen **W
 | **↓ (Panel-Konfiguration exportieren)** | Schreibt die Konfiguration dieses Panels als JSON-Datei — Seiten, Screensaver, Hardware-Tasten und Panel-Einstellungen. Nur aktiv, wenn das Panel eine ID und ein Topic hat. Siehe [Panel-Konfiguration exportieren und importieren](panelConfigTransfer). |
 | **↑ (Panel-Konfiguration importieren)** | Liest so eine Datei wieder ein. Vor der Übernahme zeigt der Admin eine Übersicht mit jeder einzelnen Seite, dem Importmodus und den Konflikten. Siehe [Panel-Konfiguration exportieren und importieren](panelConfigTransfer). |
 | **Stift** | Bei einem NSPanel: kopiert IP, Name, Topic und Modell nach oben ins Formular, der Rahmen blinkt kurz. **Die Änderung passiert erst**, wenn anschließend *NSPanelkonfiguration aktualisieren* läuft. Bei einem Web-Panel öffnet der Stift dessen Dialog — das geht auch bei stehender Instanz. |
+| **⇄ (Altes NSPanelTs-Skript umwandeln)** | Nur beim NSPanel und bei laufender Instanz; bei gesetztem Haken *Panel benutzt kein Skript* ist der Knopf ausgeblendet. Wandelt die Konfiguration des alten, eigenständigen Skripts *NSPanelTs.ts* in ein neues, deaktiviertes Konfigurationsskript für dieses Panel um. Siehe [Altes NSPanelTs-Skript umwandeln](#10-altes-nspanelts-skript-umwandeln). |
 | **Papierkorb** | Fragt nach und entfernt den Eintrag danach **aus der Paneltabelle**. Nur bei laufender Instanz. Das Gerät behält seine Tasmota-Einstellungen; soll es wirklich leer sein, hilft der Werksreset in den [Tasmota-Tools](tasmotatools). |
 
 Darunter als reine Anzeige die **MAC-Adresse** (beim Web-Panel die automatisch erzeugte **ID** `web_…`), die **IP** (nur NSPanel), das **MQTT-Topic** und das **Hardwaremodell**. Dann folgen der Haken *Panel benutzt kein Skript*, die beiden Knöpfe **HW-Button links** und **HW-Button rechts** und — nur beim NSPanel — **Tasmota-Konsole öffnen**, das die Konsole der Tasmota-Weboberfläche in einem neuen Tab öffnet.
@@ -157,6 +159,61 @@ woran man ist. Jede Farbe hat einen eigenen Tooltip, der den Zustand ausspricht:
 | **Grau** | Nichts konfiguriert und der Taster schaltet sein Relais — der Werkszustand. |
 
 Lässt sich die Entkopplung nicht lesen — etwa bei stehender Instanz —, gilt sie als entkoppelt; der Knopf ist dann grün. Dieselbe Regel benutzt der Dialog, wenn er entscheidet, ob er die Aktion anbietet.
+
+## 10. Altes NSPanelTs-Skript umwandeln
+
+Wer sein Panel bisher mit dem alten, eigenständigen Skript **NSPanelTs.ts** aus dem javascript-Adapter betrieben hat (Projekt joBr99 / Armilar), muss seine Seiten nicht neu eintippen. Der Knopf **⇄** in der Panelkachel macht aus der Konfiguration dieses Skripts ein **neues Konfigurationsskript des Adapters** für das Panel der Kachel.
+
+> Gemeint ist **nicht** das Konfigurationsskript, das zum Adapter gehört (der Ordner `script.js.nspanel-lovelace-ui_0`), sondern das alte Skript mit der Kopfzeile *„TypeScript v… zur Steuerung des SONOFF NSPanel mit dem ioBroker“*.
+
+**Voraussetzungen**
+
+- Das alte Skript hat **Version 4.4 oder neuer** (bis 5.1.1.x). Die Version steht im Skript in der Zeile `const scriptVersion: string = 'v…';`. Ältere Versionen und unbekannte neuere Versionen lehnt der Dialog mit Grund ab.
+- Umgewandelt wird nur der **Konfigurationsteil** des Skripts (alles bis zum Ende von `export const config`). Wer weiter unten im Skript etwas geändert hat, findet diese Änderung im Ergebnis nicht wieder.
+- Das Panel ist im Adapter eingerichtet und die Instanz läuft.
+- Der Haken **Panel benutzt kein Skript** ist in der Kachel **nicht** gesetzt – sonst ist der Knopf ausgeblendet (sofort beim Anhaken, auch vor dem Speichern).
+
+**Ablauf**
+
+1. In der Kachel des Panels auf **⇄** klicken. Zuerst erscheint ein **Warnhinweis**, der erklärt, worum es geht. **Abbrechen** schließt, **Weiter** geht zur Auswahl.
+
+   ![Warnhinweis vor der Umwandlung](../Pictures/Migration/nspanelts-01-warnung.png)
+
+2. Der Dialog listet alle alten NSPanelTs-Skripte mit Name, Version, Zustand (läuft/gestoppt), erkanntem Topic und ob es sich umwandeln lässt. Ein Skript anklicken.
+3. Darunter steht das Feld **Topic**, vorbelegt mit dem MQTT-Topic aus dem alten Skript (aus `NSPanelReceiveTopic`, z. B. `mqtt.0.SmartHome.NSPanel_1.tele.RESULT` → `SmartHome/NSPanel_1`), und darunter das Topic des Panels im Adapter. Das Feld lässt sich ändern; sein Wert wird als `panelTopic` ins neue Skript geschrieben. **Weichen beide ab**, zeigt der Dialog einen Hinweis: Das Skript wirkt nur, wenn sein `panelTopic` zum Topic des Panels passt. Mit **Topic des Panels übernehmen** steht das Topic des Panels im Feld. Das Topic des Panels selbst ändert der Dialog nicht – das geht im Einrichtungsformular oben. Ließ sich kein Topic lesen, ist das Feld leer und muss ausgefüllt werden.
+
+   ![Skriptauswahl mit Topic-Feld und Hinweis auf abweichendes Topic](../Pictures/Migration/nspanelts-02-auswahl.png)
+
+4. **Umwandeln**. Der Dialog zeigt danach die ID des neuen Skripts, die Zahl der übernommenen Seiten, die Zahl der **TODOs**, die Seiten, die nur als TODO festgehalten sind, und die verworfenen Service-Seiten.
+
+   ![Ergebnis der Umwandlung](../Pictures/Migration/nspanelts-03-ergebnis.png)
+
+5. Im javascript-Adapter das neue Skript öffnen (Ordner `nspanel-lovelace-ui_0`, Name = Panelname, gibt es den schon: `<Panel>_NSPanelTs`) und durchsehen.
+6. **Das alte Skript stoppen**, dann das neue aktivieren. Beide gleichzeitig laufen zu lassen führt zu doppelten Meldungen ans Panel.
+7. Wer die Seiten im Admin pflegen möchte, nimmt danach wie gewohnt [Skript in Admin übernehmen](Migration).
+
+Der Dialog aktiviert und stoppt **nichts**, und das alte Skript bleibt unverändert. Ein vorhandenes Skript wird nie überschrieben.
+
+**Was übernommen wird**
+
+- Alle Seiten der Typen *cardEntities*, *cardSchedule*, *cardGrid*, *cardGrid2*, *cardGrid3*, *cardThermo* und *cardMedia* (Alexa, Sonos, Squeezebox, MPD, Spotify) mit ihren Einträgen, Farben und Navigation. Die Seiten bekommen den Variablennamen aus dem alten Skript als `uniqueName`; die erste Hauptseite heißt im Adapter `main`.
+- Seiten, die das alte Skript nur über einen Verweis erreichte (nicht in `pages`/`subPages` eingetragen), kommen zu den Unterseiten – mit einem TODO zum Prüfen.
+- Screensaver (links, unten, Indikatoren, MR-Icons), die Farben, die Hardware-Taster im Modus *page* und *toggle*, das Wetter aus `weatherAdapterInstance`.
+- Beim Mediaplayer baut der Dialog die Geräte-ID aus Instanz und `mediaDevice`; der vom alten Skript angelegte Alias wird nicht mehr gebraucht.
+
+**Was TODO bedeutet**
+
+Was sich nicht 1:1 übertragen lässt, rät der Dialog nicht, sondern schreibt es als Kommentar `// TODO: …` mit dem Originalwert an die passende Stelle ins neue Skript. Im Skript nach „TODO“ suchen und jede Stelle selbst entscheiden. Typische Fälle:
+
+- Felder ohne Gegenstück im Adapter (z. B. `hideEntity2`, `shutterZeroIsClosed`, `playerMediaIcon`, `setThermoDestTemp2`).
+- `colorScale`: Das alte Skript hatte eine eigene Farbpalette, der Adapter rechnet zwischen `onColor` und `offColor` – die Farben prüfen.
+- Verweise auf Datenpunkte, die das alte Skript selbst angelegt hat (`0_userdata.0.NSPanel.…`, Aliase unter `alias.0.NSPanel.<n>.Config`, `.Sensor` …) – der Adapter aktualisiert sie nicht.
+- Ganze Seiten, die das Konfigurationsskript des Adapters nicht kennt: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, *cardThermo2* und Mediaplayer ohne Unterstützung (Volumio, Bose). Sie stehen als auskommentierter Block mit dem Original im Skript; im Admin unter demselben Namen anlegen.
+- Hardware-Taster im Modus *set*.
+
+**Was verworfen wird**
+
+Die **Service-Seiten** des alten Skripts (`NSPanel_Service`, `NSPanel_Infos`, `Unlock_Service` usw.) – der Adapter hat ein eigenes Service-Menü. Verweise anderer Seiten auf sie fallen weg (mit TODO).
 
 ## Fallstricke
 

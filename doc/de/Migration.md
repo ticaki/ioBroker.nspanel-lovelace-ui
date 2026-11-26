@@ -12,6 +12,7 @@ Inhalt:
 - [Fehlerfälle](#7-fehlerfälle)
 - [Die alten Tabs „Page Power" und „Page Chart"](#8-die-alten-tabs-page-power-und-page-chart)
 - [„Panel benutzt kein Skript"](#9-panel-benutzt-kein-skript)
+- [Vom alten NSPanelTs-Skript](#10-vom-alten-nspanelts-skript)
 - [Fallstricke](#fallstricke)
 
 ## 1. Voraussetzungen
@@ -189,6 +190,10 @@ Der Haken sitzt in der Panel-Kachel unter `NSPanelsetting`, unter dem Modell:
 **Wann man ihn setzt:** **nach** der Übernahme. Die Reihenfolge ist also: Skript übernehmen → Admin neu laden → prüfen, dass Seiten, Screensaver und Buttons stimmen → Skript im JavaScript-Adapter deaktivieren → Haken setzen → **speichern**. Der Haken ist eine normale Einstellung der Instanz-Konfiguration; er wirkt erst mit dem Speichern, und das Speichern startet den Adapter neu.
 
 Alte Skripte senden das vollständige Kommando-Topic (`<topic>.cmnd.CustomSend`). Der Adapter schneidet den Zusatz ab, bevor er das Panel sucht — der Haken greift also auch für solche Skripte.
+
+## 10. Vom alten NSPanelTs-Skript
+
+Wer noch das alte, eigenständige Skript **NSPanelTs.ts** (javascript-Adapter, ab Version 4.4) benutzt, lässt es zuerst in ein Konfigurationsskript des Adapters umwandeln: Knopf **⇄** in der Panelkachel im Tab Nspanel-Einstellungen, beschrieben unter [Altes NSPanelTs-Skript umwandeln](NSPanelsetting#10-altes-nspanelts-skript-umwandeln). Das alte Skript stoppen, das neue durchsehen und aktivieren – danach geht es hier mit [Skript in Admin übernehmen](#2-der-knopf-skript-in-admin-übernehmen) weiter.
 
 ## Fallstricke
 
