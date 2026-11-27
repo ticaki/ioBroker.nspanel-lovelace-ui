@@ -8,7 +8,10 @@ import { SCRIPT_END_STOP_TOKEN } from '../tools/panel-setup';
 import { NsPanelTsImport, type NsPanelTsImportAdapter } from './nspanelts-import-runner';
 
 const root = path.join(__dirname, '../../..');
-const fixture = fs.readFileSync(path.join(root, 'test/fixtures/scripts/NSPanelTs-v5.1.1.fixture.ts.txt'), 'utf8');
+// a Windows checkout has CRLF - normalized, so the manipulations of the fixture in the tests work everywhere
+const fixture = fs
+    .readFileSync(path.join(root, 'test/fixtures/scripts/NSPanelTs-v5.1.1.fixture.ts.txt'), 'utf8')
+    .replace(/\r\n/g, '\n');
 const template = fs.readFileSync(path.join(root, 'script/example_sendTo_script_iobroker.ts'), 'utf8');
 const folder = 'script.js.nspanel-lovelace-ui_0';
 

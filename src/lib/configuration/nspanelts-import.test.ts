@@ -30,7 +30,10 @@ import {
 import { planScriptToAdmin } from './script-to-admin';
 
 const root = path.join(__dirname, '../../..');
-const fixture = fs.readFileSync(path.join(root, 'test/fixtures/scripts/NSPanelTs-v5.1.1.fixture.ts.txt'), 'utf8');
+// a Windows checkout has CRLF - normalized, so the manipulations of the fixture in the tests work everywhere
+const fixture = fs
+    .readFileSync(path.join(root, 'test/fixtures/scripts/NSPanelTs-v5.1.1.fixture.ts.txt'), 'utf8')
+    .replace(/\r\n/g, '\n');
 const template = fs.readFileSync(path.join(root, 'script/example_sendTo_script_iobroker.ts'), 'utf8');
 
 function withVersion(source: string, version: string): string {
@@ -507,6 +510,17 @@ describe('lib/configuration/nspanelts-import', () => {
             });
             expect(r.todos.some(t => /colorScale|IconColor/.test(t.text))).to.equal(false);
             expect(r.notes.some(t => t.text.startsWith('colorScale as hue scale'))).to.equal(true);
+        });
+    });
+
+    describe('line endings', () => {
+        it('converts the fixture with CRLF line endings the same way', () => {
+            const lf = convert();
+            const crlf = convert(fixture.replace(/\n/g, '\r\n'));
+            expect(crlf.errors).to.deep.equal([]);
+            expect(crlf.pages).to.deep.equal(lf.pages);
+            expect(crlf.todoPages).to.deep.equal(lf.todoPages);
+            expect(crlf.todos.length).to.equal(lf.todos.length);
         });
     });
 
