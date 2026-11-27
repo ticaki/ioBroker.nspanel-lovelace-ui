@@ -16,7 +16,10 @@ import {
     notify3Text,
     popupNotify3Buttons,
     popupNotify3Message,
+    POPUP_NOTIFY3_BASE_ICON_COUNT,
     POPUP_NOTIFY3_ICONS,
+    POPUP_NOTIFY3_MIN_VERSION,
+    POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION,
     supportsPopupNotify3,
     usePopupNotify3,
     type Notify3Target,
@@ -26,6 +29,25 @@ import type { NSpanelModel } from '../types/types';
 
 const noop = (): void => undefined;
 const EU: Notify3Target = { model: 'eu', isVirtual: false, allowWebExtensions: false, displayVersion: '6.2.0' };
+
+/**
+ * a version just below `version` (6.2.0 -> 6.1.99, 6.3.1 -> 6.3.0)
+ *
+ * @param version the version
+ */
+function versionBelow(version: string): string {
+    const parts = version.split('.').map(Number);
+    for (let i = parts.length - 1; i >= 0; i--) {
+        if (parts[i] > 0) {
+            parts[i]--;
+            for (let j = i + 1; j < parts.length; j++) {
+                parts[j] = 99;
+            }
+            break;
+        }
+    }
+    return parts.join('.');
+}
 
 function entry(over: Partial<pages.PagePopupDataDetails> = {}): pages.PagePopupDataDetails {
     return { id: 'n1', priority: 50, type: 'information', headline: 'H', text: 'Unwetter', buttonRight: '', ...over };
@@ -158,6 +180,49 @@ describe('lib/pages/popupNotify3', () => {
             expect(
                 notify3Icon(entry({ largeIcon: true, icon: 'lightbulb' }), { ...EU, allowWebExtensions: true }).icon,
             ).to.equal('information-outline');
+        });
+
+        it('the icons after the first POPUP_NOTIFY3_BASE_ICON_COUNT need POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION', () => {
+            const oldIcon = 'alert';
+            const newIcon = 'garage-variant';
+            expect(POPUP_NOTIFY3_BASE_ICON_COUNT).to.equal(55);
+            expect(POPUP_NOTIFY3_ICONS.indexOf(oldIcon)).to.be.below(POPUP_NOTIFY3_BASE_ICON_COUNT);
+            expect(POPUP_NOTIFY3_ICONS.indexOf(newIcon)).to.equal(POPUP_NOTIFY3_BASE_ICON_COUNT);
+            // an icon of the first TFT with the page works from POPUP_NOTIFY3_MIN_VERSION on
+            const first: Notify3Target = { ...EU, displayVersion: POPUP_NOTIFY3_MIN_VERSION };
+            expect(notify3Icon(entry({ largeIcon: true, icon: oldIcon }), first)).to.deep.equal({ icon: oldIcon });
+            expect(notify3Icon(entry({ largeIcon: true, icon: 'cancel' }), first)).to.deep.equal({ icon: 'cancel' });
+            // a newer icon below POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION: fallback with the warning
+            const below: Notify3Target = { ...EU, displayVersion: versionBelow(POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION) };
+            expect(notify3Icon(entry({ largeIcon: true, icon: newIcon }), below)).to.deep.equal({
+                icon: 'information-outline',
+                warning: `popupNotify3: icon '${newIcon}' not available for the large notification - showing information-outline`,
+            });
+            expect(notify3Icon(entry({ largeIcon: true, icon: oldIcon }), below)).to.deep.equal({ icon: oldIcon });
+            expect(
+                notify3Icon(entry({ largeIcon: true, icon: newIcon }), { ...EU, displayVersion: '' }).icon,
+                'unknown version',
+            ).to.equal('information-outline');
+            // from POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION on every icon of the list
+            for (const displayVersion of [POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION, '99.0.0']) {
+                const target: Notify3Target = { ...EU, displayVersion };
+                for (const icon of POPUP_NOTIFY3_ICONS) {
+                    expect(
+                        notify3Icon(entry({ largeIcon: true, icon: icon as any }), target),
+                        `${icon} ${displayVersion}`,
+                    ).to.deep.equal({ icon });
+                }
+            }
+            // a web panel has no TFT (reports 1.0.0) and draws the whole list, with or without web extensions
+            for (const allowWebExtensions of [false, true]) {
+                const web: Notify3Target = {
+                    model: 'web-l',
+                    isVirtual: true,
+                    allowWebExtensions,
+                    displayVersion: '1.0.0',
+                };
+                expect(notify3Icon(entry({ largeIcon: true, icon: newIcon }), web)).to.deep.equal({ icon: newIcon });
+            }
         });
 
         it('every icon of the list is a MDI icon', () => {

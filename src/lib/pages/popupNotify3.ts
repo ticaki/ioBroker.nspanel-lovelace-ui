@@ -36,7 +36,22 @@ export const POPUP_NOTIFY3_MODELS: ReadonlySet<NSpanelModel> = new Set<NSpanelMo
  * HMI/tools/popup_notify3.py).
  */
 export const POPUP_NOTIFY3_ICONS: readonly string[] = popupNotify3IconsJson;
-const ICON_SET: ReadonlySet<string> = new Set(POPUP_NOTIFY3_ICONS);
+
+/**
+ * Number of icons at the start of POPUP_NOTIFY3_ICONS that the TFT POPUP_NOTIFY3_MIN_VERSION has in font 9. The
+ * icons after them came later and are only in the font from POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION on.
+ */
+export const POPUP_NOTIFY3_BASE_ICON_COUNT = 55;
+
+/**
+ * First TFT version whose font 9 has every icon of POPUP_NOTIFY3_ICONS (also the ones from index
+ * POPUP_NOTIFY3_BASE_ICON_COUNT on).
+ * TODO: raise at the release together with CARD_DEVICE_MIN_TFT (device-page.ts) - the test HMI still says 6.2.0.
+ */
+export const POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION = '6.2.0';
+
+const BASE_ICON_SET: ReadonlySet<string> = new Set(POPUP_NOTIFY3_ICONS.slice(0, POPUP_NOTIFY3_BASE_ICON_COUNT));
+const MORE_ICON_SET: ReadonlySet<string> = new Set(POPUP_NOTIFY3_ICONS.slice(POPUP_NOTIFY3_BASE_ICON_COUNT));
 
 /** font of the button icons (Noto Sans Bold 80 with the icons) */
 const BUTTON_FONT = 4;
@@ -134,16 +149,38 @@ function drawsAllIcons(target: Notify3Target): boolean {
 }
 
 /**
+ * Whether the big icon font of the display has the icon: the first POPUP_NOTIFY3_BASE_ICON_COUNT icons of
+ * POPUP_NOTIFY3_ICONS always, the later ones on a hardware panel only from POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION on.
+ * A web panel has no TFT (it reports 1.0.0) and draws the whole list.
+ *
+ * @param icon name of the icon
+ * @param target the display
+ */
+function fontHasIcon(icon: string, target: Notify3Target): boolean {
+    if (BASE_ICON_SET.has(icon)) {
+        return true;
+    }
+    if (!MORE_ICON_SET.has(icon)) {
+        return false;
+    }
+    return (
+        target.isVirtual ||
+        (!!target.displayVersion &&
+            isVersionGreaterOrEqual(target.displayVersion, POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION))
+    );
+}
+
+/**
  * The big icon of an entry: its `icon` if the display can draw it - only the icons of POPUP_NOTIFY3_ICONS like the
- * hardware panel, every MDI icon on a web panel with web extensions allowed -, otherwise NOTIFY3_FALLBACK_ICON with
- * a warning.
+ * hardware panel (the later ones only from POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION on, see fontHasIcon), every MDI
+ * icon on a web panel with web extensions allowed -, otherwise NOTIFY3_FALLBACK_ICON with a warning.
  *
  * @param details the entry
  * @param target the display
  */
 export function notify3Icon(details: PagePopupDataDetails, target: Notify3Target): { icon: string; warning?: string } {
     const icon = typeof details.icon === 'string' ? details.icon.trim() : '';
-    if (icon && isKnownIcon(icon) && (drawsAllIcons(target) || ICON_SET.has(icon))) {
+    if (icon && isKnownIcon(icon) && (drawsAllIcons(target) || fontHasIcon(icon, target))) {
         return { icon };
     }
     return {
