@@ -32,9 +32,11 @@ __export(getAlexa_exports, {
 });
 module.exports = __toCommonJS(getAlexa_exports);
 var import_Color = require("../../const/Color");
+var import_mediaToolbar = require("./mediaToolbar");
 var tools = __toESM(require("../../const/tools"));
+var import_page_item_defaults = require("../../const/page-item-defaults");
 async function getPageAlexa(configManager, page, gridItem, messages, justCheck = false) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C;
   const adapter = configManager.adapter;
   const arr = page.media.id.split(".").slice(0, 3);
   const viewStr = arr.join(".");
@@ -256,8 +258,9 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
+  const toolbar = [];
   if (((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.reminder) === false) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "reminder", {
       role: "text.list",
       type: "text",
       dpInit: "",
@@ -286,7 +289,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_g = page.media.deactivateDefaultItems) == null ? void 0 : _g.online)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "online", {
       role: "",
       type: "text",
       dpInit: "",
@@ -325,9 +328,11 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_j = page.media.deactivateDefaultItems) == null ? void 0 : _j.speakerList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "speakerList", {
       role: "alexa-speaker",
       type: "input_sel",
+      // false: switching the Echo does not move the playing music
+      moveMusic: page.media.speakerMoveMusic !== false,
       data: {
         color: {
           true: {
@@ -385,7 +390,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.playList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "playList", {
       role: "alexa-playlist",
       type: "input_sel",
       dpInit: "",
@@ -414,7 +419,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.equalizer)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "equalizer", {
       role: "",
       type: "number",
       dpInit: "",
@@ -546,7 +551,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.clock)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "clock", {
       template: "text.clock",
       dpInit: "",
       data: {
@@ -559,7 +564,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (page.media.volumePresets) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "volumePresets", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -603,7 +608,7 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
     });
   }
   if (!((_y = page.media.deactivateDefaultItems) == null ? void 0 : _y.repeat)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "repeat", {
       role: "",
       type: "text",
       dpInit: "",
@@ -640,6 +645,43 @@ async function getPageAlexa(configManager, page, gridItem, messages, justCheck =
       }
     });
   }
+  if (((_B = page.media.activateDefaultItems) == null ? void 0 : _B.timer) === true) {
+    const parts = str.split(".");
+    if (parts.length === 4 && parts[2] === "Echo-Devices" && parts[3]) {
+      (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "timer", {
+        role: "timer",
+        type: "timer",
+        dpInit: "",
+        alexaTimer: { instance: parts.slice(0, 2).join("."), serial: parts[3], followMedia: true },
+        // the remaining time replaces the icon, see PageItem.drawTimerIconText
+        useValue: true,
+        data: {
+          icon: {
+            true: {
+              value: { type: "const", constVal: import_page_item_defaults.pageItemDefaults.timer.iconOn },
+              color: await configManager.getIconColor(
+                (_C = page.media.itemsColorOn) == null ? void 0 : _C.timer,
+                import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOn]
+              )
+            },
+            false: {
+              value: { type: "const", constVal: import_page_item_defaults.pageItemDefaults.timer.iconOff },
+              color: await configManager.getIconColor(void 0, import_Color.Color[import_page_item_defaults.pageItemDefaults.timer.colorOff])
+            },
+            scale: void 0,
+            maxBri: void 0,
+            minBri: void 0
+          },
+          headline: { type: "const", constVal: "Timer" }
+        }
+      });
+    } else {
+      const msg = `${page.uniqueName}: timer item needs an Echo device as media id (alexa2.<n>.Echo-Devices.<serial>), got ${page.media.id}`;
+      messages.push(msg);
+      adapter.log.warn(msg);
+    }
+  }
+  gridItem.pageItems.push(...(0, import_mediaToolbar.orderMediaToolbarItems)(toolbar, page.media.itemsOrder));
   return { gridItem, messages };
 }
 // Annotate the CommonJS export names for ESM import in node:

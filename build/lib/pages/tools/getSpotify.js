@@ -22,6 +22,7 @@ __export(getSpotify_exports, {
 });
 module.exports = __toCommonJS(getSpotify_exports);
 var import_Color = require("../../const/Color");
+var import_mediaToolbar = require("./mediaToolbar");
 async function getPageSpotify(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
   if (justCheck) {
@@ -218,8 +219,11 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
+  const toolbar = [];
   if (((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.online) !== true) {
-    gridItem.pageItems.push(
+    (0, import_mediaToolbar.addMediaToolbarItem)(
+      toolbar,
+      "online",
       // online
       {
         role: "",
@@ -261,7 +265,7 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     );
   }
   if (((_h = page.media.deactivateDefaultItems) == null ? void 0 : _h.speakerList) !== true) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "speakerList", {
       role: "spotify-speaker",
       type: "input_sel",
       data: {
@@ -317,7 +321,9 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     });
   }
   if (((_k = page.media.deactivateDefaultItems) == null ? void 0 : _k.playList) !== true) {
-    gridItem.pageItems.push(
+    (0, import_mediaToolbar.addMediaToolbarItem)(
+      toolbar,
+      "playList",
       //playlist select
       {
         role: "spotify-playlist",
@@ -357,7 +363,7 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     );
   }
   if (((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.trackList) !== true) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "trackList", {
       role: "spotify-tracklist",
       type: "input_sel",
       dpInit: "",
@@ -400,7 +406,7 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     });
   }
   if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.clock)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "clock", {
       template: "text.clock",
       dpInit: "",
       data: {
@@ -413,7 +419,7 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     });
   }
   if (page.media.volumePresets) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "volumePresets", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -467,7 +473,7 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
     if (tempOff && tempOff.type === "const") {
       colorOff = tempOff.constVal;
     }
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "repeat", {
       role: "repeatValue",
       type: "button",
       dpInit: "",
@@ -543,6 +549,7 @@ async function getPageSpotify(configManager, page, gridItem, messages, justCheck
       }
     });
   }
+  gridItem.pageItems.push(...(0, import_mediaToolbar.orderMediaToolbarItems)(toolbar, page.media.itemsOrder));
   return { gridItem, messages };
 }
 // Annotate the CommonJS export names for ESM import in node:

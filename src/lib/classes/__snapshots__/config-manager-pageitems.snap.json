@@ -60586,6 +60586,7 @@
       "role": "timer",
       "type": "timer",
       "dpInit": "",
+      "useValue": true,
       "data": {
         "icon": {
           "true": {

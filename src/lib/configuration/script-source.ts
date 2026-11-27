@@ -970,6 +970,28 @@ export function scanScriptConfig(source: string): ScriptConfigSummary {
     return { found: true, pages: entries('pages'), subPages: entries('subPages') };
 }
 
+/** position of the `config` object literal of a script, see {@link locateConfigObject} */
+export type ConfigObjectLocation = {
+    /** position of the opening `{` */
+    open: number;
+    /** position of the closing `}` */
+    close: number;
+    /** the source with every character outside of code (comments, strings, …) replaced by a space */
+    blank: string;
+};
+
+/**
+ * Finds the `config` object literal of a script (`const config(: Type)? = { … }`, `export` allowed).
+ *
+ * @param source the script source
+ * @returns the position of the object literal and the code-only form of the source, undefined when there is none
+ */
+export function locateConfigObject(source: string): ConfigObjectLocation | undefined {
+    const s = scanSource(source);
+    const cfg = findConfigObject(s);
+    return cfg ? { open: cfg.open, close: cfg.close, blank: s.blank } : undefined;
+}
+
 /**
  * Removes the pages with the given uniqueNames from `pages`/`subPages` of the config object and comments
  * their definitions out (only when the identifier is not referenced anywhere else in the code). A link to the

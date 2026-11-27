@@ -148,7 +148,7 @@
 | " | ~~STATE~~ | boolean | button |  | X | Becomes `true` when an internal timer runs out and when **Finish** is pressed – never with Cancel or Clear. |
 | " | ~~STATUS~~ | number | level.mode |  | X | 0: off, 1: pause, 2: running. Needed for Start, Pause and On/Off of an external timer and an alarm clock; for an internal timer also from outside (2 starts, 1 pauses, 0 cancels), the adapter mirrors its state into it. |
 
-None of the states is mandatory: a channel `level.timer` without any states is an internal timer (egg timer). Which kind to take for what and how to create it is under [timer popup – Which kind do I need?](popupTimer#which-kind-do-i-need). The timers of an Echo device need no channel, see [Alexa timer](popupTimer#7-alexa-timer-alexa2).
+None of the states is mandatory: a channel `level.timer` without any states is an internal timer (egg timer). Which kind to take for what and how to create it is under [timer popup – Which kind do I need?](popupTimer#which-kind-do-i-need). The timers of an Echo device need no channel, see [Alexa timer](popupTimer#7-alexa-timer-alexa2). On a media page with alexa2 there is also the toolbar item **Timer** for this, which follows the Echo the page currently controls, see [Media page – Timer (Alexa only)](cardMedia#timer-alexa-only).
 
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |

@@ -12,6 +12,7 @@ Contents:
 - [Error cases](#7-error-cases)
 - [The old tabs "Page Power" and "Page Chart"](#8-the-old-tabs-page-power-and-page-chart)
 - ["Panel uses no script"](#9-panel-uses-no-script)
+- [From the old NSPanelTs script](#10-from-the-old-nspanelts-script)
 - [Pitfalls](#pitfalls)
 
 ## 1. Prerequisites
@@ -189,6 +190,10 @@ The tick box sits in the panel card under `NSPanelsetting`, below the model:
 **When to set it:** **after** the conversion. So the order is: take the script over → reload the admin → check that the pages, the screensaver and the buttons are right → disable the script in the JavaScript adapter → set the tick box → **save**. The tick box is a normal setting of the instance configuration; it only takes effect with the save, and the save restarts the adapter.
 
 Old scripts send the complete command topic (`<topic>.cmnd.CustomSend`). The adapter cuts the addition off before it looks for the panel — so the tick box works for such scripts too.
+
+## 10. From the old NSPanelTs script
+
+Whoever still uses the old standalone script **NSPanelTs.ts** (javascript adapter, version 4.4 or newer) first lets it be converted into a configuration script of the adapter: button **⇄** on the panel card in the NSPanel settings tab, described under [Converting the old NSPanelTs script](NSPanelsetting#10-converting-the-old-nspanelts-script). Stop the old script, review and activate the new one – then continue here with [Take script over into admin](#2-the-button-take-script-over-into-admin).
 
 ## Pitfalls
 

@@ -32,6 +32,7 @@ __export(getSqueezebox_exports, {
 });
 module.exports = __toCommonJS(getSqueezebox_exports);
 var import_Color = require("../../const/Color");
+var import_mediaToolbar = require("./mediaToolbar");
 var tools = __toESM(require("../../const/tools"));
 async function getPageSqueezebox(configManager, page, gridItem, messages, justCheck = false) {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A;
@@ -269,8 +270,9 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     pageItems: []
   };
   gridItem.pageItems = gridItem.pageItems || [];
+  const toolbar = [];
   if (!((_e = page.media.deactivateDefaultItems) == null ? void 0 : _e.online)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "online", {
       role: "",
       type: "text",
       dpInit: "",
@@ -311,7 +313,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     const list = page.media.speakerList;
     const names = devices.rows.filter((v) => v && v.id && v.id.split(".").length === 4).map((v) => tools.getStringFromStringOrTranslated(adapter, v.value.common.name)).filter((n) => !list || list.length === 0 || list.includes(n));
     if (names.length > 1) {
-      gridItem.pageItems.push({
+      (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "speakerList", {
         role: "SqueezeboxSpeaker",
         type: "button",
         data: {
@@ -350,7 +352,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     }
   }
   if (!((_k = page.media.deactivateDefaultItems) == null ? void 0 : _k.favoriteList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "favoriteList", {
       role: "squeezebox-favorites",
       type: "input_sel",
       dpInit: "",
@@ -387,7 +389,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     });
   }
   if (!((_m = page.media.deactivateDefaultItems) == null ? void 0 : _m.playList)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "playList", {
       role: "squeezebox-playlist",
       type: "input_sel",
       dpInit: "",
@@ -426,7 +428,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     });
   }
   if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.clock)) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "clock", {
       template: "text.clock",
       dpInit: "",
       data: {
@@ -439,7 +441,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     });
   }
   if (page.media.volumePresets) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "volumePresets", {
       role: "",
       type: "input_sel",
       dpInit: "",
@@ -483,7 +485,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     });
   }
   if (((_w = page.media.deactivateDefaultItems) == null ? void 0 : _w.trackList) !== true) {
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "trackList", {
       role: "spotify-tracklist",
       type: "input_sel",
       dpInit: "",
@@ -557,7 +559,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
     if (tempOff && tempOff.type === "const" && import_Color.Color.isRGB(tempOff.constVal)) {
       colorOff = tempOff.constVal;
     }
-    gridItem.pageItems.push({
+    (0, import_mediaToolbar.addMediaToolbarItem)(toolbar, "repeat", {
       role: "repeatValue",
       type: "button",
       dpInit: "",
@@ -631,6 +633,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
       }
     });
   }
+  gridItem.pageItems.push(...(0, import_mediaToolbar.orderMediaToolbarItems)(toolbar, page.media.itemsOrder));
   return { gridItem, messages };
 }
 // Annotate the CommonJS export names for ESM import in node:

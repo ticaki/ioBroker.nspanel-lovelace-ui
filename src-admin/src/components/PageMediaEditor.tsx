@@ -12,6 +12,7 @@ import {
     Alert,
     Box,
     Button,
+    Checkbox,
     Chip,
     CircularProgress,
     Dialog,
@@ -58,7 +59,11 @@ import {
     ADAPTER_NAME,
     SENDTO_GET_MEDIA_PLAYER_COMMAND,
     isMainPageEntry,
+    isMediaOptInToolbarItem,
+    isMediaToolbarItemOn,
     mediaBackendFeatures,
+    mediaToolbarOrder,
+    mediaToolbarOrderToStore,
     mediaBackendOf,
     mediaListKinds,
     mediaVisibleToolbarItems,
@@ -96,6 +101,7 @@ const TOOLBAR_ICONS: Record<MediaToolbarItem, string> = {
     trackList: 'animation-play-outline',
     repeat: 'repeat-variant',
     crossfade: 'shuffle',
+    timer: 'timer',
 };
 
 /** colors of the mock where the adapter takes the color theme of the panel */
@@ -130,6 +136,7 @@ const MEDIA_ITEM_DEFAULT_COLORS: Partial<
     volumePresets: { on: 'activated' },
     repeat: { on: 'activated', off: 'deactivated' },
     crossfade: { on: 'activated', off: 'deactivated' },
+    timer: { on: 'activated' },
 };
 
 /** what a place of the bar shows */
@@ -156,6 +163,10 @@ interface PageMediaEditorState extends ConfigGenericState {
     editingIndex: number | null;
     dragOverKey: string | null;
     dragSource: number | null;
+    /** standard item whose chip is dragged */
+    chipDragSource: MediaToolbarItem | null;
+    /** standard item whose chip the dragged chip is over */
+    chipDragOver: MediaToolbarItem | null;
     /** the player selection list is open (in the player dialog) */
     playerSelectOpen: boolean;
     /** color theme of the adapter - the default colors of the color fields */
@@ -238,6 +249,8 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
             editingIndex: null,
             dragOverKey: null,
             dragSource: null,
+            chipDragSource: null,
+            chipDragOver: null,
             playerSelectOpen: false,
             colorTheme: Color.defaultTheme,
         };
@@ -446,7 +459,8 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
         }
         const next: MediaToolbarConfig = { ...draft.toolbar?.[item], ...patch };
         const toolbar = { ...draft.toolbar };
-        if (next.enabled !== false && !next.colorOn && !next.colorOff) {
+        const switchAtDefault = isMediaOptInToolbarItem(item) ? next.enabled !== true : next.enabled !== false;
+        if (switchAtDefault && !next.colorOn && !next.colorOff) {
             delete toolbar[item];
         } else {
             toolbar[item] = next;
@@ -932,7 +946,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         sx={{ mb: 2, display: 'block' }}
                         control={
                             <Switch
-                                checked={config.enabled !== false}
+                                checked={isMediaToolbarItemOn(item, config)}
                                 onChange={(_e, checked) => this.setDraftToolbar(item, { enabled: checked })}
                             />
                         }
@@ -953,6 +967,27 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         this.defaultColor(MEDIA_ITEM_DEFAULT_COLORS[item]?.off),
                         v => this.setDraftToolbar(item, { colorOff: v }),
                     )}
+                {item === 'speakerList' && backend === 'alexa2' && config.enabled !== false && (
+                    <Tooltip title={this.getText('media_speakerMoveMusicHint')}>
+                        <FormControlLabel
+                            sx={{ display: 'block' }}
+                            control={
+                                <Checkbox
+                                    checked={draft.speakerMoveMusic !== false}
+                                    onChange={(_e, checked) =>
+                                        this.setDraft({ speakerMoveMusic: checked ? undefined : false })
+                                    }
+                                />
+                            }
+                            label={
+                                <>
+                                    {this.getText('media_speakerMoveMusic')}
+                                    <DocHelp topic="pages2.mediaSpeakerMoveMusic" />
+                                </>
+                            }
+                        />
+                    </Tooltip>
+                )}
                 {list && config.enabled !== false && this.renderListEditor(draft, list)}
             </>
         );
@@ -1619,47 +1654,128 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
     }
 
     /**
-     * the standard items of the backend as chips - also the switched off ones, which the bar does not show
+     * stores a new order of the standard items; the order of the backend is not stored
+     *
+     * @param backend backend of the player
+     * @param order new order, undefined = order of the backend
+     */
+    private setToolbarOrder(backend: MediaBackend, order: MediaToolbarItem[] | undefined): void {
+        const next: MediaEntry = { ...this.props.entry };
+        const stored = mediaToolbarOrderToStore(order, mediaBackendFeatures[backend].items);
+        if (stored) {
+            next.toolbarOrder = stored;
+        } else {
+            delete next.toolbarOrder;
+        }
+        this.props.onEntryChange(next);
+    }
+
+    /**
+     * moves a dragged chip onto the place of the chip it was dropped on
+     *
+     * @param backend backend of the player
+     * @param target standard item the chip was dropped on
+     * @param e drop event
+     */
+    private onChipDrop(backend: MediaBackend, target: MediaToolbarItem, e: React.DragEvent): void {
+        e.preventDefault();
+        const source = this.state.chipDragSource;
+        this.setState({ chipDragSource: null, chipDragOver: null });
+        if (!source || source === target) {
+            return;
+        }
+        const order = mediaToolbarOrder(this.props.entry.toolbarOrder, mediaBackendFeatures[backend].items);
+        const without = order.filter(item => item !== source);
+        const at =
+            order.indexOf(source) < order.indexOf(target) ? without.indexOf(target) + 1 : without.indexOf(target);
+        without.splice(at, 0, source);
+        this.setToolbarOrder(backend, without);
+    }
+
+    private onChipDragEnd = (): void => {
+        this.setState({ chipDragSource: null, chipDragOver: null });
+    };
+
+    /**
+     * the standard items of the backend as chips - also the switched off ones, which the bar does not show;
+     * dragging a chip changes the order of the bar
      *
      * @param backend
      */
     private renderStandardItems(backend: MediaBackend): React.JSX.Element {
         const { entry } = this.props;
-        const { alive } = this.state;
+        const { alive, chipDragSource, chipDragOver } = this.state;
         return (
             <Box sx={{ mt: 1.5 }}>
                 <Typography variant="subtitle2">
                     {this.getText('media_standardItems')}
                     <DocHelp topic="pages2.mediaStandardItems" />
+                    {entry.toolbarOrder && (
+                        <Button
+                            size="small"
+                            sx={{ ml: 1, py: 0 }}
+                            disabled={!alive}
+                            onClick={() => this.setToolbarOrder(backend, undefined)}
+                        >
+                            {this.getText('media_defaultOrder')}
+                        </Button>
+                    )}
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.5 }}>
-                    {mediaBackendFeatures[backend].items.map(item => {
+                    {mediaToolbarOrder(entry.toolbarOrder, mediaBackendFeatures[backend].items).map(item => {
                         const off =
                             item === 'volumePresets'
                                 ? (entry.volumePresets ?? []).length === 0
-                                : entry.toolbar?.[item]?.enabled === false;
+                                : !isMediaToolbarItemOn(item, entry.toolbar?.[item]);
                         const list = mediaListKinds.find(l => l === item);
                         const count = list ? (entry[list] ?? []).length : 0;
                         return (
-                            <Chip
+                            <Tooltip
                                 key={item}
-                                data-item={item}
-                                size="small"
-                                disabled={!alive}
-                                variant={off ? 'outlined' : 'filled'}
-                                icon={
-                                    <Box sx={{ display: 'flex', pl: 0.5 }}>
-                                        {coloredIcon(
-                                            TOOLBAR_ICONS[item],
-                                            off ? '#888' : entry.toolbar?.[item]?.colorOn || MOCK.item,
-                                            16,
-                                        )}
-                                    </Box>
-                                }
-                                label={`${this.getText(`media_item_${item}`)}${count ? ` (${count})` : ''}`}
-                                sx={off ? { textDecoration: 'line-through', opacity: 0.7 } : undefined}
-                                onClick={() => this.openDialog('item', item)}
-                            />
+                                title={alive ? this.getText('media_chipDragHint') : ''}
+                            >
+                                <Chip
+                                    data-item={item}
+                                    size="small"
+                                    disabled={!alive}
+                                    variant={off ? 'outlined' : 'filled'}
+                                    draggable={alive}
+                                    onDragStart={e => {
+                                        e.dataTransfer.effectAllowed = 'move';
+                                        e.dataTransfer.setData('text/plain', item);
+                                        this.setState({ chipDragSource: item });
+                                    }}
+                                    onDragOver={e => {
+                                        if (chipDragSource) {
+                                            e.preventDefault();
+                                            e.dataTransfer.dropEffect = 'move';
+                                            if (chipDragOver !== item) {
+                                                this.setState({ chipDragOver: item });
+                                            }
+                                        }
+                                    }}
+                                    onDragLeave={() => this.setState({ chipDragOver: null })}
+                                    onDrop={e => this.onChipDrop(backend, item, e)}
+                                    onDragEnd={this.onChipDragEnd}
+                                    icon={
+                                        <Box sx={{ display: 'flex', pl: 0.5 }}>
+                                            {coloredIcon(
+                                                TOOLBAR_ICONS[item],
+                                                off ? '#888' : entry.toolbar?.[item]?.colorOn || MOCK.item,
+                                                16,
+                                            )}
+                                        </Box>
+                                    }
+                                    label={`${this.getText(`media_item_${item}`)}${count ? ` (${count})` : ''}`}
+                                    sx={{
+                                        cursor: alive ? 'grab' : undefined,
+                                        outline: chipDragOver === item ? '2px solid #4da3ff' : 'none',
+                                        ...(chipDragSource === item ? { opacity: 0.4 } : {}),
+                                        ...(off ? { textDecoration: 'line-through', opacity: 0.7 } : {}),
+                                    }}
+                                    onClick={() => this.openDialog('item', item)}
+                                />
+                            </Tooltip>
                         );
                     })}
                 </Box>

@@ -803,6 +803,7 @@ const mediaMappedKeys = [
   "colorMediaArtist",
   "colorMediaTitle",
   "speakerList",
+  "speakerMoveMusic",
   "volumePresets",
   "favoriteList",
   "playList",
@@ -810,20 +811,9 @@ const mediaMappedKeys = [
   "maxValue",
   "itemsColorOn",
   "itemsColorOff",
-  "deactivateDefaultItems"
-];
-const mediaToolbarItems = [
-  "reminder",
-  "online",
-  "speakerList",
-  "favoriteList",
-  "playList",
-  "equalizer",
-  "clock",
-  "volumePresets",
-  "trackList",
-  "repeat",
-  "crossfade"
+  "deactivateDefaultItems",
+  "activateDefaultItems",
+  "itemsOrder"
 ];
 function mediaNameList(value, where) {
   if (value === void 0 || value === null) {
@@ -901,6 +891,9 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
       entry[key] = list;
     }
   }
+  if (bool(media.speakerMoveMusic, reason, "media.speakerMoveMusic") === false && (0, import_adminShareConfig.mediaBackendOf)(mediaId) === "alexa2") {
+    entry.speakerMoveMusic = false;
+  }
   if (media.volumePresets !== void 0 && media.volumePresets !== null) {
     const presets = media.volumePresets;
     if (!Array.isArray(presets) || presets.length === 0) {
@@ -933,7 +926,7 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
   const toolbar = {};
   const toolbarOf = (item, where) => {
     var _a;
-    if (!mediaToolbarItems.includes(item)) {
+    if (!(0, import_adminShareConfig.isMediaToolbarItem)(item)) {
       throw new ConvertError(reason, `${where}.${item}: unknown standard item`);
     }
     return (_a = toolbar[item]) != null ? _a : toolbar[item] = {};
@@ -947,10 +940,25 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
       if (value === void 0 || value === null || value === false) {
         continue;
       }
-      if (value !== true || item === "volumePresets") {
+      if (value !== true || item === "volumePresets" || item === "timer") {
         throw new ConvertError(reason, `media.deactivateDefaultItems.${item}: not available in the admin`);
       }
       toolbarOf(item, "media.deactivateDefaultItems").enabled = false;
+    }
+  }
+  if (media.activateDefaultItems !== void 0 && media.activateDefaultItems !== null) {
+    const on = media.activateDefaultItems;
+    if (!isDict(on)) {
+      throw new ConvertError(reason, "media.activateDefaultItems: expected an object");
+    }
+    for (const [item, value] of Object.entries(on)) {
+      if (value === void 0 || value === null || value === false) {
+        continue;
+      }
+      if (value !== true || item !== "timer") {
+        throw new ConvertError(reason, `media.activateDefaultItems.${item}: not available in the admin`);
+      }
+      toolbarOf(item, "media.activateDefaultItems").enabled = true;
     }
   }
   for (const [field, color] of [
@@ -969,7 +977,7 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
       if (hex === void 0) {
         continue;
       }
-      if (field === "itemsColorOff" && item === "volumePresets") {
+      if (field === "itemsColorOff" && (item === "volumePresets" || item === "timer")) {
         throw new ConvertError(reason, `media.${field}.${item}: not available in the admin`);
       }
       toolbarOf(item, `media.${field}`)[color] = hex;
@@ -977,6 +985,17 @@ function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
   }
   if (Object.keys(toolbar).length) {
     entry.toolbar = toolbar;
+  }
+  if (media.itemsOrder !== void 0 && media.itemsOrder !== null) {
+    const order = media.itemsOrder;
+    if (!Array.isArray(order) || !order.every((name2) => typeof name2 === "string")) {
+      throw new ConvertError(reason, "media.itemsOrder: expected a list of item names");
+    }
+    const backend = (0, import_adminShareConfig.mediaBackendOf)(entry.mediaId);
+    const toolbarOrder = backend ? (0, import_adminShareConfig.mediaToolbarOrderToStore)(order, import_adminShareConfig.mediaBackendFeatures[backend].items) : void 0;
+    if (toolbarOrder) {
+      entry.toolbarOrder = toolbarOrder;
+    }
   }
   return entry;
 }

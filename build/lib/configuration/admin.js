@@ -1156,12 +1156,17 @@ function buildMediaScriptPage(entry) {
   const deactivateDefaultItems = {};
   const itemsColorOn = {};
   const itemsColorOff = {};
+  const activateDefaultItems = {};
   for (const [key, config] of Object.entries((_a = entry.toolbar) != null ? _a : {})) {
     if (!config) {
       continue;
     }
     const item = key;
-    if (config.enabled === false && item !== "volumePresets") {
+    if (ShareConfig.isMediaOptInToolbarItem(item)) {
+      if (config.enabled === true) {
+        activateDefaultItems[item] = true;
+      }
+    } else if (config.enabled === false && item !== "volumePresets") {
       deactivateDefaultItems[item] = true;
     }
     const on = thermo2Rgb(config.colorOn);
@@ -1169,11 +1174,13 @@ function buildMediaScriptPage(entry) {
       itemsColorOn[item] = on;
     }
     const off = thermo2Rgb(config.colorOff);
-    if (off && item !== "volumePresets") {
+    if (off && item !== "volumePresets" && item !== "timer") {
       itemsColorOff[item] = off;
     }
   }
   const volumePresets = (Array.isArray(entry.volumePresets) ? entry.volumePresets : []).filter((p) => p && thermo2Text(p.name) && typeof p.value === "number" && Number.isFinite(p.value)).map((p) => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
+  const backend = ShareConfig.mediaBackendOf(entry.mediaId);
+  const itemsOrder = backend ? ShareConfig.mediaToolbarOrderToStore(entry.toolbarOrder, ShareConfig.mediaBackendFeatures[backend].items) : void 0;
   const media = {
     id: (_b = thermo2Text(entry.mediaId)) != null ? _b : "",
     name: thermo2Text(entry.name),
@@ -1184,12 +1191,16 @@ function buildMediaScriptPage(entry) {
     colorMediaArtist: thermo2Rgb(entry.colorMediaArtist),
     colorMediaTitle: thermo2Rgb(entry.colorMediaTitle),
     speakerList: mediaList(entry.speakerList),
+    // only an explicit false is written, missing = default (move the music)
+    speakerMoveMusic: backend === "alexa2" && entry.speakerMoveMusic === false ? false : void 0,
     playList: mediaList(entry.playList),
     favoriteList: mediaList(entry.favoriteList),
     volumePresets: volumePresets.length ? volumePresets : void 0,
     deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : void 0,
     itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : void 0,
-    itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : void 0
+    itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : void 0,
+    activateDefaultItems: Object.keys(activateDefaultItems).length ? activateDefaultItems : void 0,
+    itemsOrder
   };
   for (const key of Object.keys(media)) {
     if (media[key] === void 0) {

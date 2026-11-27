@@ -464,6 +464,11 @@ declare namespace ScriptConfig {
         colorMediaTitle?: RGB;
         speakerList?: string[];
         /**
+         * Only alexa2. Default true: when the Echo is switched in the speaker list while music plays, the music is
+         * moved to the new Echo. false = the playing music is not moved, only the panel switches to the new Echo.
+         */
+        speakerMoveMusic?: boolean;
+        /**
          * Optional list of predefined volume presets.
          * Each entry must be a string formatted as "name?value",
          * e.g. ["quiet?5", "loud?95"].
@@ -512,6 +517,8 @@ declare namespace ScriptConfig {
             favoriteList?: RGB;
             clock?: RGB;
             volumePresets?: RGB;
+            /** alexa2 only, see activateDefaultItems */
+            timer?: RGB;
         };
         itemsColorOff?: {
             trackList?: RGB;
@@ -537,6 +544,20 @@ declare namespace ScriptConfig {
             clock?: boolean;
             favoriteList?: boolean;
             crossfade?: boolean;
+        };
+        /**
+         * order of the standard items in the bar, names as in deactivateDefaultItems / activateDefaultItems
+         * (e.g. ['clock', 'speakerList']); unknown and repeated names are ignored, missing items follow in the
+         * order of the backend. Own page items stay behind the standard items.
+         */
+        itemsOrder?: string[];
+        /** standard items that are only added when switched on here */
+        activateDefaultItems?: {
+            /**
+             * alexa2: timer item (popupTimer) of the Echo device the page currently controls - follows a change
+             * through the speaker list
+             */
+            timer?: boolean;
         };
     };
 

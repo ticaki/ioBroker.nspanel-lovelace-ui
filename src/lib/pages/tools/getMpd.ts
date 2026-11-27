@@ -1,6 +1,7 @@
 import { Color } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
+import { addMediaToolbarItem, orderMediaToolbarItems, type MediaToolbarEntry } from './mediaToolbar';
 
 export async function getPageMpd(
     configManager: ConfigManager,
@@ -193,10 +194,12 @@ export async function getPageMpd(
         pageItems: [],
     };
     gridItem.pageItems = gridItem.pageItems || [];
+    /** standard items of the bar, put in the order of itemsOrder at the end */
+    const toolbar: MediaToolbarEntry[] = [];
 
     // Connection status
     if (page.media.deactivateDefaultItems?.online !== true) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'online', {
             role: '',
             type: 'text',
             dpInit: '',
@@ -237,7 +240,7 @@ export async function getPageMpd(
 
     // Repeat mode
     if (page.media.deactivateDefaultItems?.repeat !== true) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'repeat', {
             role: '',
             type: 'button',
             dpInit: '',
@@ -267,7 +270,7 @@ export async function getPageMpd(
 
     // time
     if (!page.media.deactivateDefaultItems?.clock) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'clock', {
             template: 'text.clock',
             dpInit: '',
             data: {
@@ -282,7 +285,7 @@ export async function getPageMpd(
         });
     }
     if (page.media.volumePresets) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'volumePresets', {
             role: '',
             type: 'input_sel',
             dpInit: '',
@@ -328,7 +331,7 @@ export async function getPageMpd(
         });
     }
     if (page.media.deactivateDefaultItems?.crossfade !== true) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'crossfade', {
             role: '',
             type: 'number',
             dpInit: '',
@@ -367,6 +370,8 @@ export async function getPageMpd(
             },
         });
     }
+
+    gridItem.pageItems.push(...orderMediaToolbarItems(toolbar, page.media.itemsOrder));
 
     return { gridItem, messages };
 }

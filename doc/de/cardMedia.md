@@ -13,6 +13,9 @@ Inhalt:
 - [Farben](#4-farben)
 - [Lautstärke: Bereich und Voreinstellungen](#5-lautstärke-bereich-und-voreinstellungen)
 - [Standard-Elemente des Players](#6-standard-elemente-des-players)
+  - [Reihenfolge per Drag-and-drop](#reihenfolge-per-drag-and-drop)
+  - [Timer (nur Alexa)](#timer-nur-alexa)
+  - [Lautsprecher wechseln: Musik mitnehmen (nur Alexa)](#lautsprecher-wechseln-musik-mitnehmen-nur-alexa)
 - [Die drei Listen: Lautsprecher, Playlisten, Favoriten](#7-die-drei-listen-lautsprecher-playlisten-favoriten)
 - [Eigene Seitenelemente](#8-eigene-seitenelemente)
 - [Blättern der Optionsleiste](#9-blättern-der-optionsleiste)
@@ -44,7 +47,7 @@ Unter der Vorschau steht der Hinweis, der die Arbeitsweise zusammenfasst: *„Ä
 | **Pfeile oben links/rechts** | Die Navigationspfeile des Panels, vom Panel vorgegeben. |
 | **Plätze der Leiste** | Elemente mit **Schloss** sind Standard-Elemente des Players (*Standard-Element des Players – klicken zum Ändern*). Elemente mit **blauem Rahmen** sind eigene Seitenelemente. Ein Platz mit **+** ist frei und legt ein neues Seitenelement an. |
 | **Seite x/y** mit Pfeilen | Erscheint, sobald die Elemente nicht auf eine Leiste passen. |
-| **Standard-Elemente des Players** | Die Marken unter der Vorschau: alle Elemente, die das gewählte Backend kennt – auch die abgeschalteten (durchgestrichen). Klick öffnet die Einstellungen des Elements. |
+| **Standard-Elemente des Players** | Die Marken unter der Vorschau: alle Elemente, die das gewählte Backend kennt – auch die abgeschalteten (durchgestrichen). Klick öffnet die Einstellungen des Elements, Ziehen ändert ihre [Reihenfolge](#reihenfolge-per-drag-and-drop). |
 | **Seitenelement hinzufügen** | Neues eigenes Seitenelement, gleichbedeutend mit dem Klick auf einen freien Platz. |
 | **Player** / **Farben** / **Lautstärke** | Dieselben drei Dialoge als Knöpfe. |
 
@@ -135,15 +138,24 @@ Ein leeres Namensfeld wird rot markiert und sperrt **Übernehmen**. Die Werte we
 
 <img alt="Die Marken der Standard-Elemente unter der Vorschau, ein abgeschaltetes durchgestrichen" src="../Pictures/cardMedia/media-06-standardelemente.png" width="100%"/>
 
-Welche Elemente es gibt und in welcher Reihenfolge sie in die Leiste kommen, bestimmt der Player – nicht die Reihenfolge im Editor:
+Welche Elemente es gibt, bestimmt der Player. Ohne eigene Reihenfolge kommen sie in dieser Reihenfolge in die Leiste; ändern lässt sie sich per [Drag-and-drop](#reihenfolge-per-drag-and-drop):
 
 | Backend | Standard-Elemente in der Reihenfolge des Adapters |
 |---|---|
-| **Alexa** | Erinnerungen · Offline-Anzeige · Lautsprecher · Playlisten · Equalizer · Uhr · Lautstärke-Voreinstellungen · Wiederholen |
+| **Alexa** | Erinnerungen · Offline-Anzeige · Lautsprecher · Playlisten · Equalizer · Uhr · Lautstärke-Voreinstellungen · Wiederholen · Timer |
 | **Sonos** | Offline-Anzeige · Lautsprecher · Favoriten · Playlisten · Uhr · Lautstärke-Voreinstellungen · Titelliste · Wiederholen · Überblenden |
 | **Spotify** | Offline-Anzeige · Lautsprecher · Playlisten · Titelliste · Uhr · Lautstärke-Voreinstellungen · Wiederholen |
 | **MPD** | Offline-Anzeige · Wiederholen · Uhr · Lautstärke-Voreinstellungen · Überblenden |
 | **Squeezebox (LMS)** | Offline-Anzeige · Lautsprecher · Favoriten · Playlisten · Uhr · Lautstärke-Voreinstellungen · Titelliste · Wiederholen |
+
+### Reihenfolge per Drag-and-drop
+
+Die Marken unter der Vorschau lassen sich **ziehen** (*„Klicken zum Ändern, ziehen zum Verschieben"*): eine Marke auf eine andere fallen lassen setzt sie an deren Platz. Die Leiste auf dem Panel und die Vorschau folgen dieser Reihenfolge.
+
+- Auch **abgeschaltete** Elemente lassen sich verschieben – schaltet man sie später ein, stehen sie gleich an der gewünschten Stelle.
+- Neben der Überschrift **Standard-Elemente des Players** erscheint dann **Standardreihenfolge**; der Knopf stellt die Reihenfolge des Adapters (Tabelle oben) wieder her.
+- Die eigenen Seitenelemente bleiben **hinter** den Standard-Elementen.
+- Im Skript heißt das Feld `media.itemsOrder`, eine Liste der Namen wie in `deactivateDefaultItems`, z. B. `['clock', 'speakerList']`. Unbekannte oder doppelte Namen werden übergangen, fehlende Elemente folgen in der Reihenfolge des Adapters.
 
 ### Einstellungen eines Elements
 
@@ -162,11 +174,34 @@ Welche Farbfelder erscheinen, hängt am Element und am Backend:
 |---|---|
 | **Offline-Anzeige**, **Lautsprecher**, **Wiederholen** | *Farbe an* und *Farbe aus* |
 | **Überblenden** | *Farbe an* und *Farbe aus* bei Sonos; bei MPD **keine** |
-| **Playlisten**, **Favoriten**, **Equalizer**, **Uhr**, **Lautstärke-Voreinstellungen** | nur *Farbe* |
+| **Playlisten**, **Favoriten**, **Equalizer**, **Uhr**, **Lautstärke-Voreinstellungen**, **Timer** | nur *Farbe* |
 | **Erinnerungen** | nur *Farbe aus* |
 | **Titelliste** | keine |
 
 Die Hilfstexte der Dialoge beschreiben, was ein Element tut, zum Beispiel *„Wählt den Lautsprecher bzw. die Raumgruppe, auf der der Player spielt."*, *„Springt zu einem Titel der aktuellen Warteschlange."*, *„Bässe, Mitten und Höhen des Echo-Geräts."* oder *„Erscheint, sobald mindestens eine Lautstärke-Voreinstellung angelegt ist."*
+
+### Timer (nur Alexa)
+
+Der **Timer** ist als einziges Standard-Element **standardmäßig aus**: Marke anklicken und **Auf dem Panel anzeigen** einschalten. Er öffnet beim Antippen das [Timer-Popup](popupTimer#7-alexa-timer-alexa2) wie ein Pageitem der Art **Alexa-Timer** – Restzeit des nächsten bzw. klingelnden Timers, Stoppen, neuen Timer stellen. Wecker zeigt er nicht.
+
+- **Läuft ein Timer**, steht statt des Symbols die **Restzeit** in der Schrift der Uhr – im Format des Bildschirmschoner-Timers: Minuten mit einer Nachkommastelle, immer aufgerundet (`12.5`, `0.1`), ab 1000 Minuten ganze Minuten (bis `9999`). Farbe ist die Farbe des Elements. Ohne Timer und solange ein Timer klingelt, zeigt er das Symbol. Die Leiste wird nur neu gesendet, wenn sich die angezeigte Zahl ändert (alle 6 Sekunden, ab 1000 Minuten jede Minute); ein Antippen öffnet weiterhin das Timer-Popup. Es ist dieselbe Anzeige wie die Option [Wert statt Icon](popupTimer#wert-statt-icon) eines Timer-Pageitems, hier fest eingeschaltet.
+- Er gehört immer zum Echo-Gerät, das die Seite **gerade steuert**: nach einem Wechsel über die **Lautsprecher**-Liste zeigt und bedient er die Timer des neuen Geräts. Laufende Timer am vorherigen Echo laufen dort weiter.
+- Ein eigenes Gerät lässt sich nicht wählen – dafür ein Pageitem **Alexa-Timer** anlegen.
+- Voraussetzung wie beim Pageitem: in der alexa2-Instanz die Option **Fragen Sie die Aktivität bei Geräteinteraktion automatisch ab** einschalten, siehe [Voraussetzungen](popupTimer#voraussetzungen).
+- Ohne eigene Reihenfolge steht er als letztes Standard-Element in der Leiste; sind mehr Elemente sichtbar, als die Leiste Plätze hat (5 auf dem NSPanel), wird [geblättert](#9-blättern-der-optionsleiste). Per [Drag-and-drop](#reihenfolge-per-drag-and-drop) lässt er sich nach vorn holen.
+
+### Lautsprecher wechseln: Musik mitnehmen (nur Alexa)
+
+Wählt man in der **Lautsprecher**-Liste einen anderen Echo, steuert die Seite danach dieses Gerät. Spielt der bisherige Echo gerade, schickt der Adapter ihm zusätzlich den Sprachbefehl *„Schiebe Musik auf <Name>"* – die laufende Musik wandert dann auf den neuen Echo.
+
+| Feld | Wirkung |
+|---|---|
+| **Musik beim Wechsel des Lautsprechers mitnehmen** | Im Dialog des Elements *Lautsprecher*, nur bei Alexa. **Standardmäßig an** (bisheriges Verhalten). Aus: nur das Panel wechselt auf den neuen Echo, die Musik spielt weiter, wo sie ist. |
+
+Der Hilfstext dazu: *„Läuft Musik, wandert sie beim Wechsel des Echos auf den neuen Echo. Aus: nur das Panel wechselt auf den neuen Echo, die Musik spielt weiter, wo sie ist."*
+
+- Im Skript heißt das Feld `media.speakerMoveMusic`; nur `false` schaltet das Mitnehmen ab, fehlt es, bleibt es an.
+- Ist das Element *Lautsprecher* ausgeschaltet, ist auch die Option ausgeblendet.
 
 > Die **Offline-Anzeige** belegt in der Vorschau keinen Platz: *„Erscheint nur, solange der Player nicht erreichbar ist – sonst belegt es keinen Platz."* Nur als Marke unter der Vorschau ist sie zu sehen.
 
@@ -257,3 +292,4 @@ Unten **Speichern** bzw. **Speichern und schließen**. Die Instanz startet danac
 - **Die Vorschau zählt einen Platz mehr als das Panel.** Der Editor hält immer einen freien Platz zum Anlegen offen. Bei genau fünf Elementen zeigt die Vorschau deshalb zwei Seiten (und in der Einstellung *Pfeil* schon einen Blätterpfeil), während das Panel alle fünf auf einer Leiste unterbringt.
 - **Der Pageitem-Dialog öffnet in der Grid-Variante.** Darum stehen dort **Wert statt Icon verwenden** und die Text-/Icongröße – und beide wirken hier auch: der Adapter zählt die Mediaplayer-Seite zu den Grid-Karten. Nur der **lange Druck** bleibt den drei Grid-Varianten vorbehalten.
 - **Die Lautstärke-Voreinstellungen verschwinden mit ihrem letzten Eintrag.** Das Element hat keinen Schalter; es erscheint genau dann, wenn mindestens eine Voreinstellung angelegt ist.
+- **Musik mitnehmen klappt nur auf deutschen Echos.** Der Adapter schickt beim [Wechsel des Lautsprechers](#lautsprecher-wechseln-musik-mitnehmen-nur-alexa) immer den deutschen Sprachbefehl *„Schiebe Musik auf <Name>"*. Ein Echo mit anderer Sprache versteht ihn nicht – die Musik bleibt dann auch bei eingeschalteter Option auf dem alten Gerät, eine Meldung gibt es nicht.

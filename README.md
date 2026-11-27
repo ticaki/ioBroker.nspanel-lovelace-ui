@@ -159,6 +159,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) NSPanel settings: new button on the panel card converts the configuration of the old standalone script NSPanelTs.ts (javascript adapter, v4.4 up to v5.1.1.x) into a new, disabled configuration script of the adapter - what the adapter can do almost the same way is taken over (with a short note), only what has no counterpart is kept as TODO comment
+- (ticaki) Media page (alexa2): option to not move the playing music to the new Echo when switching the speaker
+- (ticaki) Media page (alexa2): optional toolbar item "Timer" for the Alexa timers of the currently selected Echo device - while a timer runs it shows the remaining time (as on the screensaver) instead of the icon
+- (ticaki) Media page: the order of the toolbar items can be changed by drag and drop in the admin
+- (ticaki) Timer page item: option "value instead of icon" shows the remaining time while a timer runs
 - (ticaki) Selection popups: an empty value or list entry is no longer sent as "error"
 - (ticaki) panel setup, berry/TFT install, restart and reset of tasmota: the log shows the cause of network errors (e.g. `ECONNREFUSED`, `EHOSTUNREACH`) instead of only "fetch failed"
 - (ticaki) panel setup: clear hint in the admin if the panel does not answer (Tasmota HTTP API off since 15.4.0.2, enable with SetOption128 1)

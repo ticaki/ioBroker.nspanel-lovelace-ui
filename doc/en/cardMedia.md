@@ -13,6 +13,9 @@ Contents:
 - [Colors](#4-colors)
 - [Volume: range and presets](#5-volume-range-and-presets)
 - [Standard items of the player](#6-standard-items-of-the-player)
+  - [Order by drag and drop](#order-by-drag-and-drop)
+  - [Timer (Alexa only)](#timer-alexa-only)
+  - [Switching the speaker: move the music (Alexa only)](#switching-the-speaker-move-the-music-alexa-only)
 - [The three lists: speakers, playlists, favorites](#7-the-three-lists-speakers-playlists-favorites)
 - [Own page items](#8-own-page-items)
 - [Paging of the option bar](#9-paging-of-the-option-bar)
@@ -44,7 +47,7 @@ Below the preview sits the hint that sums up the way of working: *„Similar to 
 | **Arrows at the top left/right** | The navigation arrows of the panel, given by the panel. |
 | **Places of the bar** | Items with a **lock** are standard items of the player (*standard item of the player - click to change*). Items with a **blue border** are own page items. A place with **+** is free and creates a new page item. |
 | **Page x/y** with arrows | Appears as soon as the items do not fit into one bar. |
-| **Standard items of the player** | The chips below the preview: all items the chosen backend knows – including the switched off ones (struck through). A click opens the settings of the item. |
+| **Standard items of the player** | The chips below the preview: all items the chosen backend knows – including the switched off ones (struck through). A click opens the settings of the item, dragging changes their [order](#order-by-drag-and-drop). |
 | **Add page item** | New own page item, the same as clicking a free place. |
 | **Player** / **Colors** / **Volume** | The same three dialogs as buttons. |
 
@@ -135,15 +138,24 @@ An empty name field is marked red and blocks **Apply**. The values are rounded t
 
 <img alt="The chips of the standard items below the preview, a switched off one struck through" src="../Pictures/cardMedia/media-06-standardelemente.png" width="100%"/>
 
-Which items there are and in which order they go into the bar is decided by the player – not by the order in the editor:
+Which items there are is decided by the player. Without an own order they go into the bar in this order; it can be changed by [drag and drop](#order-by-drag-and-drop):
 
 | Backend | Standard items in the order of the adapter |
 |---|---|
-| **Alexa** | Reminders · Offline indicator · Speakers · Playlists · Equalizer · Clock · Volume presets · Repeat |
+| **Alexa** | Reminders · Offline indicator · Speakers · Playlists · Equalizer · Clock · Volume presets · Repeat · Timer |
 | **Sonos** | Offline indicator · Speakers · Favorites · Playlists · Clock · Volume presets · Track list · Repeat · Crossfade |
 | **Spotify** | Offline indicator · Speakers · Playlists · Track list · Clock · Volume presets · Repeat |
 | **MPD** | Offline indicator · Repeat · Clock · Volume presets · Crossfade |
 | **Squeezebox (LMS)** | Offline indicator · Speakers · Favorites · Playlists · Clock · Volume presets · Track list · Repeat |
+
+### Order by drag and drop
+
+The chips below the preview can be **dragged** (*„Click to change, drag to move"*): dropping a chip on another one puts it at that place. The bar on the panel and the preview follow this order.
+
+- **Switched off** items can be moved as well – when they are switched on later they are already at the wanted place.
+- Next to the heading **Standard items of the player** the button **Default order** appears then; it restores the order of the adapter (table above).
+- The own page items stay **behind** the standard items.
+- In the script the field is `media.itemsOrder`, a list of the names as in `deactivateDefaultItems`, e.g. `['clock', 'speakerList']`. Unknown or repeated names are skipped, missing items follow in the order of the adapter.
 
 ### Settings of an item
 
@@ -162,11 +174,34 @@ Which color fields appear depends on the item and on the backend:
 |---|---|
 | **Offline indicator**, **Speakers**, **Repeat** | *Color on* and *Color off* |
 | **Crossfade** | *Color on* and *Color off* with Sonos; with MPD **none** |
-| **Playlists**, **Favorites**, **Equalizer**, **Clock**, **Volume presets** | *Color* only |
+| **Playlists**, **Favorites**, **Equalizer**, **Clock**, **Volume presets**, **Timer** | *Color* only |
 | **Reminders** | *Color off* only |
 | **Track list** | none |
 
 The help texts of the dialogs describe what an item does, for example *„Selects the speaker or the room group the player plays on."*, *„Jumps to a title of the current queue."*, *„Bass, mid and treble of the Echo device."* or *„Appears as soon as at least one volume preset is set."*
+
+### Timer (Alexa only)
+
+The **Timer** is the only standard item that is **off by default**: click its chip and switch on **Show on the panel**. A tap opens the [timer popup](popupTimer#7-alexa-timer-alexa2) like a page item of kind **Alexa timer** – remaining time of the next or ringing timer, stop, set a new timer. It shows no alarms.
+
+- **While a timer runs**, the **remaining time** replaces the icon, in the font of the clock – in the format of the screensaver timer: minutes with one decimal, always rounded up (`12.5`, `0.1`), from 1000 minutes on whole minutes (up to `9999`). Its colour is the colour of the item. Without a timer and while a timer rings it shows the icon. The bar is only sent again when the shown number changes (every 6 seconds, from 1000 minutes on every minute); a tap still opens the timer popup. It is the same display as the option [Value instead of icon](popupTimer#value-instead-of-icon) of a timer page item, switched on for good here.
+- It always belongs to the Echo device the page **currently controls**: after a change through the **Speakers** list it shows and controls the timers of the new device. Timers running on the previous Echo keep running there.
+- An own device cannot be chosen – create a page item **Alexa timer** for that.
+- Requirement as for the page item: switch on the option **Automatically query activity on device interaction** in the alexa2 instance, see [Requirements](popupTimer#requirements).
+- Without an own order it is the last standard item of the bar; when more items are visible than the bar has places (5 on the NSPanel), the bar [pages](#9-paging-of-the-option-bar). By [drag and drop](#order-by-drag-and-drop) it can be moved to the front.
+
+### Switching the speaker: move the music (Alexa only)
+
+Choosing another Echo in the **Speakers** list makes the page control that device. If the previous Echo is playing, the adapter additionally sends it the voice command *„Schiebe Musik auf <name>"* – the playing music then moves to the new Echo.
+
+| Field | Effect |
+|---|---|
+| **Move the music when switching the speaker** | In the dialog of the item *Speakers*, Alexa only. **On by default** (previous behaviour). Off: only the panel switches to the new Echo, the music keeps playing where it is. |
+
+Its help text: *„While music plays, switching the Echo moves it to the new Echo. Off: only the panel switches to the new Echo, the music keeps playing where it is."*
+
+- In the script the field is `media.speakerMoveMusic`; only `false` switches the move off, if it is missing it stays on.
+- If the item *Speakers* is switched off, the option is hidden as well.
 
 > The **Offline indicator** takes no place in the preview: *„Only appears while the player is not reachable - it takes no place otherwise."* It can only be seen as a chip below the preview.
 
@@ -257,3 +292,4 @@ At the bottom **Save** or **Save and close**. The instance restarts afterwards a
 - **The preview counts one place more than the panel.** The editor always keeps one free place for creating items. With exactly five items the preview therefore shows two pages (and with the setting *Arrow* a paging arrow already), while the panel fits all five onto one bar.
 - **The pageitem dialog opens in the grid variant.** That is why **Use Value Instead of Icon** and the text/icon size are offered there – and both do take effect here: the adapter counts the media player page among the grid cards. Only the **long press** stays reserved for the three grid variants.
 - **The volume presets disappear with their last entry.** The item has no switch; it appears exactly when at least one preset is set.
+- **Moving the music only works on German Echos.** When [switching the speaker](#switching-the-speaker-move-the-music-alexa-only) the adapter always sends the German voice command *„Schiebe Musik auf <name>"*. An Echo with another language does not understand it – the music then stays on the old device even with the option on, there is no message.

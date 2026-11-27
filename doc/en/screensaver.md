@@ -485,7 +485,7 @@ While one of the two fields is empty, the dialog says *Choose the alexa2 instanc
 - A timer set by voice shows up on the panel about 10 seconds later – that is how long alexa2 takes. Started through a page item it is about 6 seconds.
 - A ringing timer stands as `0.0` in red until it is stopped – on the Echo by voice or through a page item.
 - There is no pause; the info icon `timer-pause` does not occur with this source.
-- Page items with **Use the timer of the screensaver** start and stop the timer through the Echo device, as described in the [timer popup](popupTimer#7-alexa-timer-alexa2). A page item of the kind **Alexa timer** with the same device works the same way.
+- Page items with **Use the timer of the screensaver** start and stop the timer through the Echo device, as described in the [timer popup](popupTimer#7-alexa-timer-alexa2). A page item of the kind **Alexa timer** with the same device works the same way. The toolbar item **Timer** of a [media page](cardMedia#timer-alexa-only) shares the timer as long as the page controls the same Echo.
 - If the device cannot be found, the panel shows the clock and the log warns; further pitfalls under [Pitfalls of the Alexa timer](popupTimer#pitfalls-of-the-alexa-timer).
 
 ![The web panel shows the remaining time 1.3 of an Alexa timer on the screensaver, with the hourglass as info icon](../Pictures/screensaverAdmin/admin-33-timer-alexa-restzeit.png)

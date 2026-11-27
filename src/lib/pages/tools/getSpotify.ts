@@ -1,6 +1,7 @@
 import { Color, type RGB } from '../../const/Color';
 import type * as pages from '../../types/pages';
 import type { ConfigManager } from '../../classes/config-manager';
+import { addMediaToolbarItem, orderMediaToolbarItems, type MediaToolbarEntry } from './mediaToolbar';
 
 export async function getPageSpotify(
     configManager: ConfigManager,
@@ -212,9 +213,13 @@ export async function getPageSpotify(
         pageItems: [],
     };
     gridItem.pageItems = gridItem.pageItems || [];
+    /** standard items of the bar, put in the order of itemsOrder at the end */
+    const toolbar: MediaToolbarEntry[] = [];
     //online
     if (page.media.deactivateDefaultItems?.online !== true) {
-        gridItem.pageItems.push(
+        addMediaToolbarItem(
+            toolbar,
+            'online',
             // online
             {
                 role: '',
@@ -260,7 +265,7 @@ export async function getPageSpotify(
 
     //speaker select
     if (page.media.deactivateDefaultItems?.speakerList !== true) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'speakerList', {
             role: 'spotify-speaker',
             type: 'input_sel',
 
@@ -318,7 +323,9 @@ export async function getPageSpotify(
     }
     //playlist select
     if (page.media.deactivateDefaultItems?.playList !== true) {
-        gridItem.pageItems.push(
+        addMediaToolbarItem(
+            toolbar,
+            'playList',
             //playlist select
             {
                 role: 'spotify-playlist',
@@ -361,7 +368,7 @@ export async function getPageSpotify(
     }
     //tracklist
     if (page.media.deactivateDefaultItems?.trackList !== true) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'trackList', {
             role: 'spotify-tracklist',
             type: 'input_sel',
             dpInit: '',
@@ -407,7 +414,7 @@ export async function getPageSpotify(
     }
     // time
     if (!page.media.deactivateDefaultItems?.clock) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'clock', {
             template: 'text.clock',
             dpInit: '',
             data: {
@@ -423,7 +430,7 @@ export async function getPageSpotify(
     }
     // volume presets
     if (page.media.volumePresets) {
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'volumePresets', {
             role: '',
             type: 'input_sel',
             dpInit: '',
@@ -620,7 +627,7 @@ export async function getPageSpotify(
         if (tempOff && tempOff.type === 'const') {
             colorOff = tempOff.constVal as RGB;
         }
-        gridItem.pageItems.push({
+        addMediaToolbarItem(toolbar, 'repeat', {
             role: 'repeatValue',
             type: 'button',
             dpInit: '',
@@ -698,6 +705,8 @@ export async function getPageSpotify(
             },
         });
     }
+
+    gridItem.pageItems.push(...orderMediaToolbarItems(toolbar, page.media.itemsOrder));
 
     return { gridItem, messages };
 }

@@ -44,7 +44,7 @@ Zwei Haken am Kopf des Dialogs entscheiden, welche Art von Element entsteht:
 
 #### Art des Items: Standard oder Alexa-Timer
 
-Auf Seiten mit Pageitems steht ganz oben die **Art des Items**. **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** ist alles, was dieser Abschnitt beschreibt. **Alexa-Timer** macht aus dem Item einen Timer, der die Timer eines Echo-Geräts zeigt – statt des Kanalfelds stehen dann **alexa2-Instanz** und **Echo-Gerät** da, dazu **Anzeigen** (**Timer** oder **Wecker**, beim Wecker noch **Welcher Wecker**), Name, Symbole und Farben. Bei gesetztem **Ist eine Navigation** ist **Alexa-Timer** gesperrt. Einzelheiten unter [Timer-Popup](popupTimer#7-alexa-timer-alexa2).
+Auf Seiten mit Pageitems steht ganz oben die **Art des Items**. **Standard (Kanal, benutzerdefinierter Knopf, Navigation)** ist alles, was dieser Abschnitt beschreibt. **Alexa-Timer** macht aus dem Item einen Timer, der die Timer eines Echo-Geräts zeigt – statt des Kanalfelds stehen dann **alexa2-Instanz** und **Echo-Gerät** da, dazu **Anzeigen** (**Timer** oder **Wecker**, beim Wecker noch **Welcher Wecker**), Name, Symbole und Farben. Bei gesetztem **Ist eine Navigation** ist **Alexa-Timer** gesperrt. Einzelheiten unter [Timer-Popup](popupTimer#7-alexa-timer-alexa2). Auf einer Mediaplayer-Seite mit alexa2 gibt es dafür auch das Toolbar-Element **Timer**, das dem gerade gesteuerten Echo folgt, siehe [Mediaplayer – Timer (nur Alexa)](cardMedia#timer-nur-alexa).
 
 #### Die Zielseite
 
@@ -86,7 +86,7 @@ Diese Felder erscheinen nur dort, wo der Adapter sie auswertet:
 |---|---|---|
 | **Heizkreis** | nur auf der Thermostat-Seite | Ordnet das Pageitem einem Heizkreis zu, oder *alle Heizkreise* — dann erscheint es bei jedem. |
 | **Text-/Icongröße** | auf den drei Grid-Varianten, auf der Thermostat- und auf der Mediaplayer-Seite — **nicht** bei *Entities* und *Schedule* | Die Nextion-Schrift, mit der das Panel Symbol oder Wert dieses Elements zeichnet (siehe unten). |
-| **Wert statt Icon verwenden** | dieselben fünf Kartentypen, nicht beim benutzerdefinierten Knopf | Die Fläche zeigt den Wert als Text statt des Symbols. Der Adapter macht das nur, wenn der `ACTUAL`-Datenpunkt eine Zahl, eine Zeichenkette oder `mixed` ist; sonst bleibt es beim Symbol. |
+| **Wert statt Icon verwenden** | dieselben fünf Kartentypen, nicht beim benutzerdefinierten Knopf | Die Fläche zeigt den Wert als Text statt des Symbols. Der Adapter macht das nur, wenn der `ACTUAL`-Datenpunkt eine Zahl, eine Zeichenkette oder `mixed` ist; sonst bleibt es beim Symbol. Beim **Timer** (auch Alexa-Timer) steht stattdessen die Restzeit, solange ein Timer läuft, siehe [Timer-Popup – Wert statt Icon](popupTimer#wert-statt-icon). |
 | **Langer Druck** | **nur** auf den drei Grid-Varianten, und nur bei Navigation, benutzerdefiniertem Knopf oder `role=button` | Zweite Funktion derselben Fläche. |
 
 #### Langer Druck

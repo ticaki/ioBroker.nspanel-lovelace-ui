@@ -27,8 +27,11 @@ import {
     timerPopupButtons,
     timerPopupFields,
     timerSecondsOf,
+    timerText,
+    nextTextChangeMs,
     timerValueOf,
     type ClockTimerAccess,
+    type TimerSelection,
     type TimerCountdownView,
     type TimerPopupButtons,
 } from './screensaver-timer';
@@ -72,6 +75,43 @@ function getMediaDeviceIdent(parent: unknown): string | undefined {
         return current;
     }
     return 'items' in parent && Array.isArray(parent.items) ? getIdent(parent.items[0]) : undefined;
+}
+
+/** font of the remaining time in the toolbar item of an alexa2 media page - that of the clock (text.clock) */
+const MEDIA_TIMER_TEXT_SIZE = 1;
+/** shown remaining time (minutes) from which a tile takes the font of the clock: `100.0` has 5 characters */
+const TILE_SMALL_FROM_MINUTES = 100;
+/** key in {@link PageItem.timeouts}: next change of the remaining time a timer item shows instead of its icon */
+const TIMER_ICON_TIMEOUT = 'timerIconText';
+
+/**
+ * Text a timer item with `useValue` shows instead of its icon: the remaining time as on the screensaver
+ * ({@link timerText}) while a timer runs; no timer, a paused or an expired/ringing one keeps the icon.
+ *
+ * @param selection state and remaining time of the timer
+ * @returns the text, undefined = icon
+ */
+export function timerIconText(
+    selection: Pick<TimerSelection, 'status' | 'remainingMs'> | undefined,
+): string | undefined {
+    return selection?.status === 'running' ? timerText(selection.remainingMs) : undefined;
+}
+
+/** the part of `alexaTimer` of an item that names the Echo device */
+type AlexaTimerItemDevice = { instance: string; serial: string; followMedia?: boolean };
+
+/**
+ * Instance and serial of an Echo device of alexa2.
+ *
+ * @param ident device id `alexa2.<n>.Echo-Devices.<serial>`
+ * @returns undefined when the id has another form
+ */
+function echoDeviceOf(ident: string | undefined): { instance: string; serial: string } | undefined {
+    const parts = (ident ?? '').split('.');
+    if (parts.length !== 4 || parts[2] !== 'Echo-Devices' || !parts[0] || !parts[1] || !parts[3]) {
+        return undefined;
+    }
+    return { instance: `${parts[0]}.${parts[1]}`, serial: parts[3] };
 }
 
 //light, shutter, delete, text, button, switch, number,input_sel, timer und fan types
@@ -881,6 +921,13 @@ export class PageItem extends BaseTriggeredPage {
                         {
                             message.iconColor = await tools.getIconEntryColor(item.icon, v, Color.White);
                             message.icon = await tools.getIconEntryValue(item.icon, v, 'gesture-tap-button');
+                            if (entry.useValue) {
+                                // value instead of icon: the remaining time replaces the icon, like the clock
+                                const text = await this.drawTimerIconText(item);
+                                if (text !== undefined) {
+                                    message.icon = text + (await this.timerIconTextSuffix(entry, text));
+                                }
+                            }
                             message.optionalValue = this.library.getTranslation(
                                 (await tools.getEntryTextOnOff(item.text, on)) ?? opt,
                             );
@@ -1656,12 +1703,8 @@ export class PageItem extends BaseTriggeredPage {
         if (!config) {
             return undefined;
         }
-        if (!this.alexaTimer) {
-            this.alexaTimer = this.controller.alexaTimers.get(config);
-            this.alexaTimer.addListener(this.onClockTimerChange);
-            await this.alexaTimer.ready;
-        }
-        const view = this.alexaTimer.getView();
+        const timer = await this.useAlexaTimer(config);
+        const view = timer.getView();
         const now = Date.now();
         const memory = new Map([['alexa', stepTimerItem(undefined, view).memory]]);
         const selection = selectTimer(memory, now);
@@ -1674,6 +1717,127 @@ export class PageItem extends BaseTriggeredPage {
         this.tempData.lastStatus = selection.status;
         this.parent.setTimerTick(this, access.ticking);
         return access;
+    }
+
+    /**
+     * The timer of the Echo device of this item ({@link alexaTimer}), changes of the device update this item from now on.
+     * With `followMedia` the device is the one the media page currently controls: after a change the listener moves
+     * from the timer of the old device to the one of the new device.
+     *
+     * @param config `alexaTimer` of the item
+     * @returns the timer, its states are read
+     */
+    private async useAlexaTimer(config: AlexaTimerItemDevice): Promise<AlexaTimer> {
+        const device = (config.followMedia && echoDeviceOf(getMediaDeviceIdent(this.parent))) || config;
+        if (this.alexaTimer && this.alexaTimer.deviceId !== `${device.instance}.Echo-Devices.${device.serial}`) {
+            this.alexaTimer.removeListener(this.onClockTimerChange);
+            this.alexaTimer = undefined;
+            this.scheduleTimerIconRedraw(undefined);
+        }
+        if (!this.alexaTimer) {
+            this.alexaTimer = this.controller.alexaTimers.get(device);
+            this.alexaTimer.addListener(this.onClockTimerChange);
+        }
+        const timer = this.alexaTimer;
+        await timer.ready;
+        return timer;
+    }
+
+    /**
+     * The remaining time a timer item with `useValue` shows instead of its icon, see {@link timerIconText}. The page
+     * is sent as a whole only, so it is not redrawn by the ticker of the page each second but once the shown text
+     * changes ({@link scheduleTimerIconRedraw}); an open popup keeps the ticker.
+     *
+     * @param item data of the item
+     * @returns the text, undefined = icon
+     */
+    private async drawTimerIconText(item: NSPanel.PageItemTimerDataItems['data']): Promise<string | undefined> {
+        let selection: Pick<TimerSelection, 'status' | 'remainingMs'> | undefined;
+        let timed = true;
+        switch (this.tempData?.role) {
+            case 'alexa-timer':
+            case 'ss-timer': {
+                selection = (await this.getSharedTimerAccess())?.selection;
+                break;
+            }
+            case 'timer': {
+                const endTs = Number(this.tempData.endTs) || 0;
+                selection =
+                    this.tempData.status === 'run' && endTs > 0
+                        ? { status: 'running', remainingMs: endTs - Date.now() }
+                        : undefined;
+                break;
+            }
+            case 'ex-timer': {
+                // counted outside: every new value of ACTUAL draws the page anyway, STATUS 1 = paused, 0 = off
+                timed = false;
+                const seconds = timerSecondsOf(await this.getTimerActual(item), item.entity1?.value?.common.unit);
+                const status = item.setValue2 ? await item.setValue2.getNumber() : null;
+                selection =
+                    seconds > 0 && (typeof status !== 'number' || status === 2)
+                        ? { status: 'running', remainingMs: seconds * 1000 }
+                        : undefined;
+                break;
+            }
+        }
+        const text = timerIconText(selection);
+        this.parent.setTimerTick(this, false);
+        this.scheduleTimerIconRedraw(
+            text !== undefined && timed && selection ? nextTextChangeMs(Math.max(1, selection.remainingMs)) : undefined,
+        );
+        return text;
+    }
+
+    /**
+     * The font of the remaining time in the icon field - decided only here. The toolbar item of a media page takes that
+     * of the clock. On the tiles the font of the item, as items with value instead of icon (textNotIcon) show their
+     * value (the text size of the admin, without one the font of the HMI) - but from `100.0` on (5 characters, also
+     * `1000` and more) the tile is too narrow for it, then the font of the clock as well.
+     *
+     * @param entry the timer item
+     * @param text the shown remaining time ({@link timerIconText})
+     * @returns `¬<font>`, or '' for the font of the HMI
+     */
+    private async timerIconTextSuffix(entry: NSPanel.PageItemTimerDataItems, text: string): Promise<string> {
+        const small = entry.alexaTimer?.followMedia || Number(text) >= TILE_SMALL_FROM_MINUTES;
+        const size = small
+            ? MEDIA_TIMER_TEXT_SIZE
+            : entry.data.icon?.textSize
+              ? await entry.data.icon.textSize.getNumber()
+              : null;
+        return size != null ? `¬${size}` : '';
+    }
+
+    /**
+     * Next redraw of the page for the remaining time a timer item shows instead of its icon; replaces the one waiting
+     * so far. The page draws the item again, which schedules the next one.
+     *
+     * @param waitMs ms until the shown text changes, undefined = no redraw (no running timer, popup open, device change)
+     */
+    private scheduleTimerIconRedraw(waitMs: number | undefined): void {
+        const waiting = this.timeouts[TIMER_ICON_TIMEOUT];
+        if (waiting) {
+            this.adapter.clearTimeout(waiting);
+            this.timeouts[TIMER_ICON_TIMEOUT] = undefined;
+        }
+        if (waitMs === undefined || this.unload) {
+            return;
+        }
+        this.timeouts[TIMER_ICON_TIMEOUT] = this.adapter.setTimeout(() => {
+            this.timeouts[TIMER_ICON_TIMEOUT] = undefined;
+            if (
+                this.unload ||
+                this.adapter.unload ||
+                this.lastPopupType ||
+                this.parent.sleep ||
+                !this.parent.getVisibility()
+            ) {
+                return;
+            }
+            void this.parent
+                .onStateTriggerSuperDoNotOverride('timer', this)
+                .catch((err: unknown) => this.log.warn(`${this.name}: timer: ${String(err)}`));
+        }, waitMs + 1);
     }
 
     /**
@@ -1906,6 +2070,10 @@ export class PageItem extends BaseTriggeredPage {
         }
         this.visibility = true;
         this.lastPopupType = mode;
+        if (entry.type === 'timer') {
+            // the popup counts with the ticker of the page, the redraw of the remaining time in the icon waits for its end
+            this.scheduleTimerIconRedraw(undefined);
+        }
         switch (mode) {
             case 'popupLightNew':
             case 'popupLight': {
@@ -3374,6 +3542,11 @@ export class PageItem extends BaseTriggeredPage {
                     break;
                 }
                 if (this.tempData?.role === 'alexa-timer') {
+                    const config = this.dataItems?.type === 'timer' ? this.dataItems.alexaTimer : undefined;
+                    if (config?.followMedia) {
+                        // the Echo of the media page may have changed since the popup was drawn
+                        await this.useAlexaTimer(config);
+                    }
                     await this.alexaTimer?.stop();
                     break;
                 }
@@ -3538,7 +3711,13 @@ export class PageItem extends BaseTriggeredPage {
                 const v = parseInt(value);
                 // sList.list is built 1:1 from tempData, so the selected position is the tempData index
                 const speaker: unknown = Array.isArray(this.tempData) ? this.tempData[v] : undefined;
-                if ((this.parent as PageMedia).currentItem?.ident && (await (this.parent as PageMedia).isPlaying())) {
+                // the option only switches the move off with an explicit false
+                const moveMusic = entry.type !== 'input_sel' || entry.moveMusic !== false;
+                if (
+                    moveMusic &&
+                    (this.parent as PageMedia).currentItem?.ident &&
+                    (await (this.parent as PageMedia).isPlaying())
+                ) {
                     await this.adapter.setForeignStateAsync(
                         `${(this.parent as PageMedia).currentItem!.ident}.Commands.textCommand`,
                         `Schiebe Musik auf ${sList.list[v]}`,

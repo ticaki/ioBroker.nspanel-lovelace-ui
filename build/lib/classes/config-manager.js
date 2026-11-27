@@ -2211,9 +2211,10 @@ class ConfigManager extends import_library.BaseClass {
    * (src/lib/classes/alexa-timer.ts, for an alarm src/lib/classes/alexa-alarm.ts).
    *
    * @param item the script item with `alexaTimer`
+   * @param page page of the item: `useValue` only on grid cards
    * @returns the item
    */
-  async getAlexaTimerItemConfig(item) {
+  async getAlexaTimerItemConfig(item, page) {
     const alexa = item.alexaTimer;
     if (!(0, import_adminShareConfig.isAlexaTimerConfig)(alexa) || !(0, import_adminShareConfig.isAlexaTimerComplete)(alexa)) {
       throw new Error(
@@ -2229,6 +2230,8 @@ class ConfigManager extends import_library.BaseClass {
       dpInit: "",
       alexaTimer: (0, import_adminShareConfig.copyAlexaTimerConfig)(alexa),
       itemId: item.itemId,
+      // value instead of icon like valueDisplayRole: only on grid cards
+      useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : void 0,
       data: {
         icon: {
           true: {
@@ -2265,7 +2268,7 @@ class ConfigManager extends import_library.BaseClass {
       return { itemConfig, messages };
     }
     if ("alexaTimer" in item && item.alexaTimer !== void 0) {
-      return { itemConfig: await this.getAlexaTimerItemConfig(item), messages };
+      return { itemConfig: await this.getAlexaTimerItemConfig(item, page), messages };
     }
     if ("id" in item && item.id) {
       if (["delete", "empty"].includes(item.id)) {
@@ -3540,6 +3543,8 @@ class ConfigManager extends import_library.BaseClass {
               dpInit: "",
               useScreensaverTimer: item.useScreensaverTimer === true ? true : void 0,
               itemId: item.itemId,
+              // value instead of icon like valueDisplayRole: only on grid cards
+              useValue: globals.isCardGridType(page.type) && item.useValue === true ? true : void 0,
               data: {
                 icon: {
                   true: {
