@@ -107,7 +107,7 @@ describe('lib/configuration/nspanelts-import-runner', () => {
         const first = await importer.convert({ scriptId: old._id, panelName: 'Flur', topic: ' SmartHome/NSPanel_1 ' });
         expect(first).to.deep.include({
             scriptId: `${folder}.Flur`,
-            todoPages: ['Alarm', 'Tuer', 'Strom', 'Chart1', 'Chart2', 'Heizung2', 'MusikBose', 'Gast'],
+            todoPages: ['Alarm', 'Tuer', 'Strom', 'Chart1', 'Chart2', 'MusikBose', 'Gast'],
         });
         const created = db[`${folder}.Flur`];
         expect(created.type).to.equal('script');

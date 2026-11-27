@@ -13,6 +13,7 @@ import * as fs from 'node:fs';
 import path from 'node:path';
 import * as vm from 'node:vm';
 import * as ts from 'typescript';
+import { Color } from '../const/Color';
 import { SCRIPT_END_STOP_TOKEN } from '../tools/panel-setup';
 import {
     NSPANELTS_SERVICE_PAGES,
@@ -21,6 +22,9 @@ import {
     isSupportedNsPanelTsVersion,
     stripTypes,
     topicFromMqttState,
+    oldColorScale,
+    OLD_SCALE_GREEN,
+    OLD_SCALE_RED,
     type NsPanelTsConvertResult,
 } from './nspanelts-import';
 import { planScriptToAdmin } from './script-to-admin';
@@ -162,28 +166,16 @@ describe('lib/configuration/nspanelts-import', () => {
                 'Musik',
                 'Licht',
                 'Grid2Seite',
+                'Heizung2',
                 'MusikSqueeze',
                 'Grid3Seite',
             ]);
         });
-        it('keeps admin-only cards, thermostat 2 and unsupported players as TODO blocks', () => {
-            expect(r.todoPages).to.have.members([
-                'Alarm',
-                'Tuer',
-                'Strom',
-                'Chart1',
-                'Chart2',
-                'Heizung2',
-                'MusikBose',
-                'Gast',
-            ]);
+        it('keeps admin-only cards and unsupported players as TODO blocks', () => {
+            expect(r.todoPages).to.have.members(['Alarm', 'Tuer', 'Strom', 'Chart1', 'Chart2', 'MusikBose', 'Gast']);
             expect(src).to.include("// TODO: cardAlarm page 'Alarm'");
             expect(src).to.include(
                 "//     items: [{ id: 'alias.0.Alarm', actionStringArray: ['Vollschutz', 'Zuhause', 'Nacht', 'Besuch'] }],",
-            );
-            expect(src).to.include("// TODO: cardThermo2 page 'Heizung2'");
-            expect(src).to.include(
-                "//         { id: 'alias.0.Bad.Feuchte.ACTUAL', unit: '%', onColor: { red: 255, green: 255, blue: 255 } },",
             );
             expect(src).to.include("// TODO: cardMedia page 'MusikBose'");
         });
@@ -220,14 +212,25 @@ describe('lib/configuration/nspanelts-import', () => {
                 ),
             ).to.equal(true);
         });
-        it('notes the fields without counterpart as TODO with the original value', () => {
+        it('keeps fields without counterpart as TODO and approximations as note', () => {
             const texts = r.todos.map(t => t.text);
+            const notes = r.notes.map(t => t.text);
             expect(texts).to.include('hideEntity2: true - no counterpart in the adapter');
-            expect(texts).to.include('shutterZeroIsClosed: true - no counterpart in the adapter');
-            expect(texts).to.include('interpolateColor: true - not evaluated by the adapter');
-            expect(texts).to.include("media playerMediaIcon: 'logo-alexa' - no counterpart in the adapter");
-            expect(texts).to.include('setThermoDestTemp2 is not evaluated by the adapter');
-            expect(texts).to.include('useColor: false - the adapter always uses the colors');
+            expect(notes).to.include(
+                'shutterZeroIsClosed: true - in the adapter the instance option "shutterClosedIsZero" (admin) applies to all shutters',
+            );
+            expect(notes).to.include(
+                'interpolateColor dropped - the adapter dims the icon color of a light by its brightness itself',
+            );
+            expect(notes).to.include(
+                "playerMediaIcon 'logo-alexa' dropped - the adapter shows the logo of the player itself",
+            );
+            expect(notes).to.include(
+                "setThermoDestTemp2 'ACTUAL2' dropped - the adapter shows SET2 of an airCondition channel as second set point",
+            );
+            expect(notes).to.include('useColor: false dropped - the adapter colors an "on" state with onColor');
+            expect(src.match(/\/\/ note:/g)?.length).to.equal(r.notes.length);
+            expect(src).to.include(` * ${r.notes.length} note(s): taken over as approximation`);
             expect(texts.some(t => t.startsWith("page 'Grid3Seite' was not listed in pages/subPages"))).to.equal(true);
             expect(
                 texts.some(t =>
@@ -268,6 +271,74 @@ describe('lib/configuration/nspanelts-import', () => {
             expect(musik && 'media' in musik ? musik.media.id : '').to.equal('alexa2.0.Echo-Devices.G0XXXXXXXXXXXXXX');
             const lms = page('MusikSqueeze');
             expect(lms && 'media' in lms ? lms.media.id : '').to.equal('squeezeboxrpc.0.Players.Kueche');
+        });
+        it('turns the thermostat list of cardThermo2 into one heating circuit', () => {
+            const heizung2 = page('Heizung2');
+            expect(heizung2 && 'thermoItems' in heizung2 ? heizung2.thermoItems : undefined).to.deep.equal([
+                {
+                    thermoId1: 'alias.0.Bad.Temperatur.ACTUAL',
+                    thermoId2: 'alias.0.Bad.Feuchte.ACTUAL',
+                    modeId: 'alias.0.Heizung.Bad.MODE',
+                    set: 'alias.0.Heizung.Bad.SET',
+                    minValue: 5,
+                    maxValue: 30,
+                    stepValue: 0.5,
+                    unit: '°C',
+                    onColor: { red: 255, green: 255, blue: 255 },
+                    unit2: '%',
+                    onColor2: { red: 255, green: 255, blue: 255 },
+                },
+            ]);
+            const tenths = runGenerated(
+                convertNsPanelTs({
+                    source: fixture,
+                    template,
+                    endToken: SCRIPT_END_STOP_TOKEN,
+                    panelTopic: 'nspanel/test',
+                    namespace: 'nspanel-lovelace-ui.1',
+                    sourceScriptId: 'x',
+                    today: '2026-11-27',
+                    thermo2Tenths: true,
+                }).scriptSource ?? '',
+            ).config.subPages.find(p => 'uniqueName' in p && p.uniqueName === 'Heizung2');
+            expect(tenths && 'thermoItems' in tenths ? tenths.thermoItems[0] : {}).to.deep.include({
+                minValue: 50,
+                maxValue: 300,
+                stepValue: 5,
+            });
+        });
+        it('keeps a cardThermo2 without mode as TODO block', () => {
+            const r2 = convert(fixture.replace("{id: 'alias.0.Heizung.Bad.MODE', onColor: White},", ''));
+            expect(r2.todoPages).to.include('Heizung2');
+        });
+        it('takes over the headline mode and the crossfade item of the media page', () => {
+            const musik = page('Musik');
+            expect(musik && 'media' in musik ? musik.media : {}).to.deep.include({
+                headlineMode: 'device',
+                deactivateDefaultItems: { crossfade: true },
+            });
+        });
+        it('maps the hardware button mode set', () => {
+            const src = (button1: string): ScriptConfig.Config =>
+                runGenerated(
+                    convert(fixture.replace(/button1: \{[\s\S]*?setValue: null\n {4}\},/, `button1: ${button1},`))
+                        .scriptSource ?? '',
+                ).config;
+            expect(
+                src("{mode: 'set', setOn: {dp: 'a.b', val: true}, setOff: {dp: 'a.b', val: false}}").buttonLeft,
+            ).to.deep.equal({ mode: 'switch', state: 'a.b' });
+            expect(src("{mode: 'set', setOn: {dp: 'a.b', val: true}}").buttonLeft).to.deep.equal({
+                mode: 'button',
+                state: 'a.b',
+            });
+            expect(src("{mode: 'set', entity: '', setValue: null}").buttonLeft).to.equal(null);
+            const other = convert(
+                fixture.replace(
+                    /button1: \{[\s\S]*?setValue: null\n {4}\},/,
+                    "button1: {mode: 'set', setOn: {dp: 'a.b', val: 5}},",
+                ),
+            );
+            expect(other.todos.some(t => t.text.startsWith('button1 of the old script'))).to.equal(true);
         });
         it('moves alwaysOnDisplay of the thermostat item to the page', () => {
             const heizung = page('Heizung');
@@ -330,6 +401,101 @@ describe('lib/configuration/nspanelts-import', () => {
                 .getPreEmitDiagnostics(program)
                 .map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n'));
             expect(diagnostics).to.deep.equal([]);
+        });
+    });
+
+    describe('color scales as hue scale with the end colors of the old palette', () => {
+        type Rgb = { red: number; green: number; blue: number };
+        const toAdapter = (c: Rgb | undefined): { r: number; g: number; b: number } | undefined =>
+            c ? { r: c.red, g: c.green, b: c.blue } : undefined;
+        const dist = (a: { r: number; g: number; b: number }, b: Rgb): number =>
+            Math.hypot(a.r - b.red, a.g - b.green, a.b - b.blue);
+        /**
+         * The color the adapter computes for a value of the converted scale.
+         *
+         * @param old scale of the old script
+         * @param value value of the state
+         * @returns green or red, whichever is nearer
+         */
+        const colorAt = (old: Record<string, number>, value: number): 'green' | 'red' => {
+            const r = oldColorScale(old);
+            const c = Color.computeNumberScaleColor(value, toAdapter(r.onColor), toAdapter(r.offColor), r.scale, {
+                r: 0,
+                g: 0,
+                b: 0,
+            });
+            expect(
+                dist(c, OLD_SCALE_GREEN) < 25 || dist(c, OLD_SCALE_RED) < 25,
+                `${JSON.stringify(c)} is an end color`,
+            ).to.equal(true);
+            return dist(c, OLD_SCALE_GREEN) < dist(c, OLD_SCALE_RED) ? 'green' : 'red';
+        };
+
+        it('0 / 1: 1 green, 0 red', () => {
+            expect(oldColorScale({ val_min: 0, val_max: 1 }).scale).to.deep.equal({
+                val_min: 0,
+                val_max: 1,
+                mode: 'hue',
+            });
+            expect(colorAt({ val_min: 0, val_max: 1 }, 1)).to.equal('green');
+            expect(colorAt({ val_min: 0, val_max: 1 }, 0)).to.equal('red');
+        });
+        it('without val_best: val_min green, val_max red - also with the defaults and val_best = val_min', () => {
+            expect(oldColorScale({ val_min: 0, val_max: 120 }).scale).to.deep.equal({
+                val_min: 0,
+                val_max: 120,
+                mode: 'hue',
+            });
+            expect(colorAt({ val_min: 0, val_max: 120 }, 0)).to.equal('green');
+            expect(colorAt({ val_min: 0, val_max: 120 }, 120)).to.equal('red');
+            expect(colorAt({ val_min: 10, val_max: 50, val_best: 10 }, 10)).to.equal('green');
+            expect(colorAt({ val_min: 10, val_max: 50, val_best: 10 }, 50)).to.equal('red');
+            expect(colorAt({ val_max: 40 }, 0)).to.equal('green');
+            expect(colorAt({ val_max: 40 }, 40)).to.equal('red');
+        });
+        it('without val_best, val_min > val_max (RSSI 100..0): val_min green, val_max red', () => {
+            expect(colorAt({ val_min: 100, val_max: 0 }, 100)).to.equal('green');
+            expect(colorAt({ val_min: 100, val_max: 0 }, 0)).to.equal('red');
+        });
+        it('with val_best, val_min < val_max: best green, both ends red', () => {
+            const old = { val_min: 0, val_max: 40, val_best: 21 };
+            expect(oldColorScale(old).scale).to.deep.equal({ ...old, mode: 'hue' });
+            expect(colorAt(old, 21)).to.equal('green');
+            expect(colorAt(old, 0)).to.equal('red');
+            expect(colorAt(old, 40)).to.equal('red');
+        });
+        it('with val_best, val_min > val_max: best green, both ends red', () => {
+            const old = { val_min: 40, val_max: 0, val_best: 10 };
+            expect(colorAt(old, 10)).to.equal('green');
+            expect(colorAt(old, 0)).to.equal('red');
+            expect(colorAt(old, 40)).to.equal('red');
+        });
+        it('is applied to page items and screensaver elements of the fixture without TODO', () => {
+            const r = convert();
+            const { config } = runGenerated(r.scriptSource ?? '');
+            const main = config.pages.find(p => 'uniqueName' in p && p.uniqueName === 'main');
+            const items = main && 'items' in main ? (main.items ?? []) : [];
+            expect(items[1]).to.deep.include({
+                colorScale: { val_min: 0, val_max: 40, val_best: 21, mode: 'hue' },
+                onColor: OLD_SCALE_GREEN,
+                offColor: OLD_SCALE_RED,
+            });
+            expect(config.leftScreensaverEntity[0]).to.deep.include({
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 35, val_best: 22, mode: 'hue' },
+                ScreensaverEntityOnColor: OLD_SCALE_GREEN,
+                ScreensaverEntityOffColor: OLD_SCALE_RED,
+            });
+            expect(config.bottomScreensaverEntity[0]).to.deep.include({
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 120, mode: 'hue' },
+                ScreensaverEntityOnColor: OLD_SCALE_RED,
+                ScreensaverEntityOffColor: OLD_SCALE_GREEN,
+            });
+            // a RGB color stays a color
+            expect(config.bottomScreensaverEntity[1]).to.deep.include({
+                ScreensaverEntityOnColor: { red: 255, green: 255, blue: 0 },
+            });
+            expect(r.todos.some(t => /colorScale|IconColor/.test(t.text))).to.equal(false);
+            expect(r.notes.some(t => t.text.startsWith('colorScale as hue scale'))).to.equal(true);
         });
     });
 

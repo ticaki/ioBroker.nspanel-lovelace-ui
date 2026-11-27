@@ -149,6 +149,8 @@ let Musik: PageType =
         adapterPlayerInstance: 'alexa2.0.',
         mediaDevice: 'G0XXXXXXXXXXXXXX',
         playerMediaIcon: 'logo-alexa',
+        showOnlyPlayerHeadline: true,
+        crossfade: false,
         colorMediaIcon: colorAlexa,
         colorMediaTitle: colorAlexa,
         colorMediaArtist: Yellow,

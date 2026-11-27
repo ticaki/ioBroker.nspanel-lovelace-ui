@@ -196,20 +196,37 @@ Der Dialog aktiviert und stoppt **nichts**, und das alte Skript bleibt unveränd
 
 **Was übernommen wird**
 
-- Alle Seiten der Typen *cardEntities*, *cardSchedule*, *cardGrid*, *cardGrid2*, *cardGrid3*, *cardThermo* und *cardMedia* (Alexa, Sonos, Squeezebox, MPD, Spotify) mit ihren Einträgen, Farben und Navigation. Die Seiten bekommen den Variablennamen aus dem alten Skript als `uniqueName`; die erste Hauptseite heißt im Adapter `main`.
+- Alle Seiten der Typen *cardEntities*, *cardSchedule*, *cardGrid*, *cardGrid2*, *cardGrid3*, *cardThermo*, *cardThermo2* und *cardMedia* (Alexa, Sonos, Squeezebox, MPD, Spotify) mit ihren Einträgen, Farben und Navigation. Die Seiten bekommen den Variablennamen aus dem alten Skript als `uniqueName`; die erste Hauptseite heißt im Adapter `main`.
 - Seiten, die das alte Skript nur über einen Verweis erreichte (nicht in `pages`/`subPages` eingetragen), kommen zu den Unterseiten – mit einem TODO zum Prüfen.
 - Screensaver (links, unten, Indikatoren, MR-Icons), die Farben, die Hardware-Taster im Modus *page* und *toggle*, das Wetter aus `weatherAdapterInstance`.
 - Beim Mediaplayer baut der Dialog die Geräte-ID aus Instanz und `mediaDevice`; der vom alten Skript angelegte Alias wird nicht mehr gebraucht.
 
+**Angenähert statt TODO**
+
+Grundsatz: Was der Adapter **fast gleich** kann, wird übernommen – auch wenn es nicht exakt dasselbe macht. Solche Stellen tragen nur einen einzeiligen Kommentar `// note: …`, der sagt, was anders ist; sie müssen nicht bearbeitet werden. Angenähert werden:
+
+| Altes Skript | Im neuen Skript |
+|---|---|
+| `colorScale` (Seiten-Einträge) und `ScreensaverEntityIconColor` als Skala | Skala mit `mode: 'hue'` zwischen den Endfarben der alten Palette (grün `{99,190,123}`, rot `{248,105,107}`); `onColor`/`offColor` bzw. `ScreensaverEntityOnColor`/`OffColor` werden dafür gesetzt. Grün und Rot liegen wie früher; der Übergang ist stufenlos statt in 11 Stufen. |
+| *cardThermo2* (`thermoItems` [0] Thermostat, [1] Temperatur, [2] Feuchte, [3] Modus) | ein Heizkreis `{ thermoId1, thermoId2, modeId, set: '<[0]>.SET', minValue, maxValue, stepValue }`; mit der Instanzoption *Werte in Zehnteln* werden die Grenzen ×10 geschrieben. Die Farbe des Modustextes entfällt. |
+| `showOnlyPlayerHeadline: true` | `media.headlineMode: 'device'` |
+| `crossfade: false` (Media) | `media.deactivateDefaultItems: { crossfade: true }` |
+| `playerMediaIcon`, `equalizerSlider` | entfällt – der Adapter zeigt das Logo des Players und seinen eigenen Equalizer-Eintrag |
+| `useColor: false`, `interpolateColor: true` | entfällt – der Adapter färbt „an“ mit `onColor` und dimmt die Farbe einer Leuchte selbst nach der Helligkeit |
+| `setThermoDestTemp2` | entfällt – der Adapter zeigt `SET2` eines airCondition-Kanals als zweiten Sollwert |
+| `shutterType` | entfällt – der Adapter wählt das Rollladen-Popup selbst |
+| `shutterZeroIsClosed` | gilt im Adapter instanzweit (Option *shutterClosedIsZero* im Admin) |
+| Hardware-Taster *set* ohne `setOn`/`setOff`, mit `true`/`false` auf demselben Datenpunkt bzw. nur `setOn` = `true` | keine Aktion bzw. *switch* bzw. *button* |
+
 **Was TODO bedeutet**
 
-Was sich nicht 1:1 übertragen lässt, rät der Dialog nicht, sondern schreibt es als Kommentar `// TODO: …` mit dem Originalwert an die passende Stelle ins neue Skript. Im Skript nach „TODO“ suchen und jede Stelle selbst entscheiden. Typische Fälle:
+`// TODO: …` steht nur dort, wo der Adapter **nichts Vergleichbares** hat; der Originalwert steht dabei. Im Skript nach „TODO“ suchen und jede Stelle selbst entscheiden:
 
-- Felder ohne Gegenstück im Adapter (z. B. `hideEntity2`, `shutterZeroIsClosed`, `playerMediaIcon`, `setThermoDestTemp2`).
-- `colorScale`: Das alte Skript hatte eine eigene Farbpalette, der Adapter rechnet zwischen `onColor` und `offColor` – die Farben prüfen.
+- Felder ohne Gegenstück (z. B. `hideEntity2`, `iconArray`, `customIcons`, `monobutton`, `popUpThermoName`, `inSel_ChoiceState: false`).
 - Verweise auf Datenpunkte, die das alte Skript selbst angelegt hat (`0_userdata.0.NSPanel.…`, Aliase unter `alias.0.NSPanel.<n>.Config`, `.Sensor` …) – der Adapter aktualisiert sie nicht.
-- Ganze Seiten, die das Konfigurationsskript des Adapters nicht kennt: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, *cardThermo2* und Mediaplayer ohne Unterstützung (Volumio, Bose). Sie stehen als auskommentierter Block mit dem Original im Skript; im Admin unter demselben Namen anlegen.
-- Hardware-Taster im Modus *set*.
+- Seiten, die das alte Skript nur über einen Verweis erreichte, und Verweise auf verworfene Service-Seiten.
+- Ganze Seiten, die das Konfigurationsskript des Adapters nicht kennt: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, eine *cardThermo2* ohne Thermostat, Temperatur oder Modus und Mediaplayer ohne Unterstützung (Volumio, Bose). Sie stehen als auskommentierter Block mit dem Original im Skript; im Admin unter demselben Namen anlegen.
+- Hardware-Taster *set* mit anderen Werten (z. B. abwechselnd zwei Texte) und nicht unterstützte Wetteradapter.
 
 **Was verworfen wird**
 

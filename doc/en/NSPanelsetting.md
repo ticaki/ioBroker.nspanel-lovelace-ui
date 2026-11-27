@@ -196,20 +196,37 @@ The dialog activates and stops **nothing**, and the old script stays unchanged. 
 
 **What is taken over**
 
-- All pages of the types *cardEntities*, *cardSchedule*, *cardGrid*, *cardGrid2*, *cardGrid3*, *cardThermo* and *cardMedia* (Alexa, Sonos, Squeezebox, MPD, Spotify) with their items, colors and navigation. The pages get the variable name of the old script as `uniqueName`; the first main page is called `main` in the adapter.
+- All pages of the types *cardEntities*, *cardSchedule*, *cardGrid*, *cardGrid2*, *cardGrid3*, *cardThermo*, *cardThermo2* and *cardMedia* (Alexa, Sonos, Squeezebox, MPD, Spotify) with their items, colors and navigation. The pages get the variable name of the old script as `uniqueName`; the first main page is called `main` in the adapter.
 - Pages the old script only reached by a reference (not listed in `pages`/`subPages`) are added to the subpages – with a TODO to check them.
 - Screensaver (left, bottom, indicators, MR icons), the colors, the hardware buttons in mode *page* and *toggle*, the weather from `weatherAdapterInstance`.
 - For a media player the dialog builds the device id from instance and `mediaDevice`; the alias the old script created is not needed any more.
 
+**Approximated instead of TODO**
+
+Principle: what the adapter can do **almost the same way** is taken over – even if it is not exactly the same. Such places only carry a one-line comment `// note: …` saying what is different; nothing has to be done there. Approximated are:
+
+| Old script | In the new script |
+|---|---|
+| `colorScale` (page items) and `ScreensaverEntityIconColor` as scale | scale with `mode: 'hue'` between the end colors of the old palette (green `{99,190,123}`, red `{248,105,107}`); `onColor`/`offColor` or `ScreensaverEntityOnColor`/`OffColor` are set for it. Green and red sit where they used to; the transition is continuous instead of 11 steps. |
+| *cardThermo2* (`thermoItems` [0] thermostat, [1] temperature, [2] humidity, [3] mode) | one heating circuit `{ thermoId1, thermoId2, modeId, set: '<[0]>.SET', minValue, maxValue, stepValue }`; with the instance option *values in tenths* the limits are written ×10. The color of the mode text is dropped. |
+| `showOnlyPlayerHeadline: true` | `media.headlineMode: 'device'` |
+| `crossfade: false` (media) | `media.deactivateDefaultItems: { crossfade: true }` |
+| `playerMediaIcon`, `equalizerSlider` | dropped – the adapter shows the logo of the player and its own equalizer item |
+| `useColor: false`, `interpolateColor: true` | dropped – the adapter colors "on" with `onColor` and dims the color of a light by its brightness itself |
+| `setThermoDestTemp2` | dropped – the adapter shows `SET2` of an airCondition channel as second set point |
+| `shutterType` | dropped – the adapter chooses the shutter popup itself |
+| `shutterZeroIsClosed` | instance-wide in the adapter (option *shutterClosedIsZero* in the admin) |
+| hardware button *set* without `setOn`/`setOff`, with `true`/`false` on the same state or only `setOn` = `true` | no action, *switch* or *button* |
+
 **What TODO means**
 
-What cannot be transferred 1:1 is not guessed but written as comment `// TODO: …` with the original value at the matching place in the new script. Search the script for "TODO" and decide each place yourself. Typical cases:
+`// TODO: …` is only written where the adapter has **nothing comparable**; the original value is next to it. Search the script for "TODO" and decide each place yourself:
 
-- Fields without counterpart in the adapter (e.g. `hideEntity2`, `shutterZeroIsClosed`, `playerMediaIcon`, `setThermoDestTemp2`).
-- `colorScale`: the old script had its own palette, the adapter scales between `onColor` and `offColor` – check the colors.
+- Fields without counterpart (e.g. `hideEntity2`, `iconArray`, `customIcons`, `monobutton`, `popUpThermoName`, `inSel_ChoiceState: false`).
 - References to states the old script created itself (`0_userdata.0.NSPanel.…`, aliases below `alias.0.NSPanel.<n>.Config`, `.Sensor` …) – the adapter does not update them.
-- Whole pages the configuration script of the adapter does not know: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, *cardThermo2* and unsupported media players (Volumio, Bose). They are kept as commented-out block with the original; create them in the admin under the same name.
-- Hardware buttons in mode *set*.
+- Pages the old script only reached by a reference, and references to dropped service pages.
+- Whole pages the configuration script of the adapter does not know: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, a *cardThermo2* without thermostat, temperature or mode, and unsupported media players (Volumio, Bose). They are kept as commented-out block with the original; create them in the admin under the same name.
+- Hardware buttons *set* with other values (e.g. two texts alternately) and unsupported weather adapters.
 
 **What is dropped**
 

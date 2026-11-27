@@ -447,12 +447,16 @@ export type NsPanelTsConvertInput = {
     sourceScriptId: string;
     /** date for the header (YYYY-MM-DD) */
     today: string;
+    /** instance option `defaultValueCardThermo`: cardThermo2 takes minValue/maxValue/stepValue in tenths */
+    thermo2Tenths?: boolean;
 };
 
 export type NsPanelTsConvertResult = {
     /** the new script, undefined on errors */
     scriptSource?: string;
     todos: NsPanelTsTodo[];
+    /** approximations: taken over with a `// note:` comment because the adapter does it a little differently */
+    notes: NsPanelTsTodo[];
     /** uniqueNames of the pages written as pages of the script */
     pages: string[];
     /** uniqueNames of the pages kept only as TODO block (card types the script configuration cannot define) */
@@ -471,6 +475,7 @@ const CARD_TYPES: Record<string, string> = {
     cardGrid3: 'PageGrid3',
     cardThermo: 'PageThermo',
     cardMedia: 'PageMedia',
+    cardThermo2: 'PageThermo2',
 };
 
 /** card types of the old script the script configuration of the adapter cannot define (admin only) */
@@ -482,7 +487,7 @@ const ADMIN_ONLY_CARDS: Record<string, string> = {
     cardChart: 'create it in the admin (tab PageConfig, type chart)',
     cardLChart: 'create it in the admin (tab PageConfig, type chart)',
     cardThermo2:
-        'the thermostat list (thermoItems) of the old script has no unambiguous form in the adapter - create it in the admin (tab PageConfig, type thermostat 2) or as script page with thermoItems',
+        'thermoItems need the thermostat [0], the temperature [1] and the mode [3] with an id - create it in the admin (tab PageConfig, type thermostat 2) or as script page with thermoItems',
 };
 
 /** item fields taken over as they are */
@@ -525,10 +530,8 @@ const ITEM_COPY = new Set([
     'iconArray',
     'customIcons',
     'actionStringArray',
-    'inSel_ChoiceState',
     'hidePassword',
     'monobutton',
-    'shutterType',
     'yAxis',
     'yAxisTicks',
     'xAxisDecorationId',
@@ -539,15 +542,12 @@ const ITEM_NOT_EVALUATED = new Set([
     'iconArray',
     'customIcons',
     'actionStringArray',
-    'inSel_ChoiceState',
     'hidePassword',
     'monobutton',
-    'shutterType',
     'yAxis',
     'yAxisTicks',
     'xAxisDecorationId',
     'popUpThermoName',
-    'setThermoDestTemp2',
 ]);
 
 const PAGE_COPY = new Set([
@@ -646,6 +646,78 @@ const CONFIG_KNOWN = new Set([
     'defaultBackgroundColor',
 ]);
 
+/** end colors of the 11-step palette of the old script (colorScale0 / colorScale10) */
+export const OLD_SCALE_GREEN = { red: 99, green: 190, blue: 123 };
+export const OLD_SCALE_RED = { red: 248, green: 105, blue: 107 };
+
+export type OldColorScale = {
+    /** the scale for the adapter (`mode: 'hue'`), or the value as it was when it is no scale */
+    scale: unknown;
+    /** on color (`onColor` / `ScreensaverEntityOnColor`) the scale needs */
+    onColor?: typeof OLD_SCALE_GREEN;
+    /** off color (`offColor` / `ScreensaverEntityOffColor`) the scale needs */
+    offColor?: typeof OLD_SCALE_GREEN;
+};
+
+/**
+ * The color scale of the old script (`colorScale` of a page item, `ScreensaverEntityIconColor` as scale) as
+ * `mode: 'hue'` scale of the adapter between the end colors of the old palette (11 steps green → yellow → red;
+ * missing values were val_min 0, val_max 100, val_best = val_min). In the adapter (`computeNumberScaleColor`)
+ * val_min gets the off color and val_max the on color; with val_best the best point gets the on color and both
+ * ends the off color. A reversed range (val_min > val_max) is swapped there together with the colors.
+ *
+ * - val_min 0 and val_max 1: 1 green, 0 red → on = green, off = red
+ * - without val_best (or val_best = val_min): val_min green → val_max red → off = green, on = red
+ * - with val_best, val_min < val_max: best green, ends red → on = green, off = red
+ * - with val_best, val_min > val_max: the adapter swaps the colors → on = red, off = green
+ *
+ * @param v the scale of the old script
+ * @returns the scale and the two colors
+ */
+export function oldColorScale(v: unknown): OldColorScale {
+    if (!isRecord(v)) {
+        return { scale: v };
+    }
+    const num = (x: unknown, d: number): number => (typeof x === 'number' && Number.isFinite(x) ? x : d);
+    const min = num(v.val_min, 0);
+    const max = num(v.val_max, 100);
+    const best = num(v.val_best, min);
+    const green = { ...OLD_SCALE_GREEN };
+    const red = { ...OLD_SCALE_RED };
+    if (min === 0 && max === 1) {
+        return { scale: { val_min: 0, val_max: 1, mode: 'hue' }, onColor: green, offColor: red };
+    }
+    if (best === min) {
+        return { scale: { val_min: min, val_max: max, mode: 'hue' }, onColor: red, offColor: green };
+    }
+    const scale = { val_min: min, val_max: max, val_best: best, mode: 'hue' };
+    return min < max ? { scale, onColor: green, offColor: red } : { scale, onColor: red, offColor: green };
+}
+
+/** the thermostat list of an old cardThermo2: [0] thermostat channel, [1] temperature, [2] humidity, [3] mode */
+type OldThermo2 = { thermostat: Rec; temperature: Rec; humidity: Rec | undefined; mode: Rec };
+
+function oldThermo2(page: Rec): OldThermo2 | undefined {
+    const t = Array.isArray(page.thermoItems) ? page.thermoItems : [];
+    const [a, b, c, d] = t;
+    if (
+        !isRecord(a) ||
+        typeof a.id !== 'string' ||
+        !isRecord(b) ||
+        typeof b.id !== 'string' ||
+        !isRecord(d) ||
+        typeof d.id !== 'string'
+    ) {
+        return undefined;
+    }
+    return {
+        thermostat: a,
+        temperature: b,
+        humidity: isRecord(c) && typeof c.id === 'string' ? c : undefined,
+        mode: d,
+    };
+}
+
 /** a page of the old script with the name it gets */
 type PageInfo = {
     varName: string;
@@ -659,6 +731,7 @@ type PageInfo = {
 
 class Converter {
     readonly todos: NsPanelTsTodo[] = [];
+    readonly notes: NsPanelTsTodo[] = [];
     readonly errors: string[] = [];
     readonly discarded: string[] = [];
     private readonly byObject = new Map<unknown, string>();
@@ -670,7 +743,10 @@ class Converter {
     /** alias folder of the old script (`AliasPath`) - only its own sub folders count, `usr` etc. belong to the user */
     private readonly aliasPath: string | undefined;
 
-    constructor(private readonly ev: Evaluated) {
+    constructor(
+        private readonly ev: Evaluated,
+        private readonly thermo2Tenths = false,
+    ) {
         for (const [name, v] of ev.vars) {
             if (isRecord(v) && typeof v.type === 'string' && v.type.startsWith('card')) {
                 this.pageVars.set(name, v);
@@ -688,6 +764,18 @@ class Converter {
     private todo(page: string | undefined, text: string): string {
         this.todos.push(page ? { page, text } : { text });
         return `// TODO: ${text}`;
+    }
+
+    /**
+     * an approximation: taken over, the adapter does it a little differently
+     *
+     * @param page uniqueName of the page, undefined for the general part
+     * @param text what is different
+     * @returns the comment line
+     */
+    private note(page: string | undefined, text: string): string {
+        this.notes.push(page ? { page, text } : { text });
+        return `// note: ${text}`;
     }
 
     /**
@@ -795,7 +883,12 @@ class Converter {
     }
 
     private isScriptCard(page: Rec): boolean {
-        return typeof page.type === 'string' && page.type in CARD_TYPES && this.mediaId(page) !== undefined;
+        return (
+            typeof page.type === 'string' &&
+            page.type in CARD_TYPES &&
+            this.mediaId(page) !== undefined &&
+            (page.type !== 'cardThermo2' || oldThermo2(page) !== undefined)
+        );
     }
 
     /**
@@ -872,11 +965,16 @@ class Converter {
         }
         const e: Entry[] = [];
         const navigateById = item.navigate === true && item.targetPage === undefined && typeof item.id === 'string';
+        const scale = item.colorScale !== undefined ? oldColorScale(item.colorScale) : undefined;
         for (const [k, v] of Object.entries(item)) {
             if (v === undefined) {
                 continue;
             }
             const ec: string[] = [];
+            if ((k === 'onColor' || k === 'offColor') && scale?.onColor) {
+                // replaced by the colors of the scale - the old script ignored them with a colorScale as well
+                continue;
+            }
             if (k === 'navigate') {
                 e.push({ k, v: toNode(v), c: ec });
                 continue;
@@ -891,20 +989,87 @@ class Converter {
                 }
                 continue;
             }
-            if (k === 'colorScale') {
-                ec.push(
-                    this.todo(
-                        page,
-                        `colorScale: the old script used its own 11-step palette green → red, the adapter scales between onColor and offColor (or colorScale.mode) - check the colors`,
-                    ),
-                );
-                e.push({ k, v: toNode(v), c: ec });
+            if (k === 'colorScale' && scale) {
+                if (scale.onColor && scale.offColor) {
+                    ec.push(this.note(page, 'colorScale as hue scale between the end colors of the old palette'));
+                    e.push({ k, v: toNode(scale.scale), c: ec });
+                    e.push({ k: 'onColor', v: toNode(scale.onColor), c: [] });
+                    e.push({ k: 'offColor', v: toNode(scale.offColor), c: [] });
+                } else {
+                    e.push({ k, v: toNode(scale.scale), c: ec });
+                }
                 continue;
             }
-            if (k === 'useColor' || k === 'interpolateColor') {
-                if ((k === 'useColor' && v !== true) || (k === 'interpolateColor' && v === true)) {
-                    e.push({ c: [this.todo(page, `${k}: ${show(v)} - not evaluated by the adapter`)] });
+            if (k === 'useColor') {
+                if (v !== true) {
+                    e.push({
+                        c: [
+                            this.note(
+                                page,
+                                `useColor: ${show(v)} dropped - the adapter colors an "on" state with onColor`,
+                            ),
+                        ],
+                    });
                 }
+                continue;
+            }
+            if (k === 'interpolateColor') {
+                if (v === true) {
+                    e.push({
+                        c: [
+                            this.note(
+                                page,
+                                'interpolateColor dropped - the adapter dims the icon color of a light by its brightness itself',
+                            ),
+                        ],
+                    });
+                }
+                continue;
+            }
+            if (k === 'inSel_ChoiceState') {
+                if (v === false) {
+                    e.push({
+                        c: [
+                            this.todo(
+                                page,
+                                'inSel_ChoiceState: false (do not show the chosen value) - not evaluated by the adapter',
+                            ),
+                        ],
+                    });
+                }
+                continue;
+            }
+            if (k === 'shutterType') {
+                e.push({
+                    c: [
+                        this.note(
+                            page,
+                            `shutterType ${show(v)} dropped - the adapter chooses the shutter popup itself`,
+                        ),
+                    ],
+                });
+                continue;
+            }
+            if (k === 'shutterZeroIsClosed') {
+                e.push({
+                    c: [
+                        this.note(
+                            page,
+                            `shutterZeroIsClosed: ${show(v)} - in the adapter the instance option "shutterClosedIsZero" (admin) applies to all shutters`,
+                        ),
+                    ],
+                });
+                continue;
+            }
+            if (k === 'setThermoDestTemp2' && thermo) {
+                e.push({
+                    c: [
+                        this.note(
+                            page,
+                            `setThermoDestTemp2 ${show(v)} dropped - the adapter shows SET2 of an airCondition channel as second set point`,
+                        ),
+                    ],
+                });
                 continue;
             }
             if (ITEM_COPY.has(k) || (thermo && THERMO_ITEM_COPY.has(k)) || (thermo && ITEM_NOT_EVALUATED.has(k))) {
@@ -984,9 +1149,88 @@ class Converter {
                 e.push({ k, v: toNode(v), c: [] });
                 continue;
             }
+            if (k === 'showOnlyPlayerHeadline') {
+                continue;
+            }
+            if (k === 'crossfade') {
+                if (v === false) {
+                    e.push({ k: 'deactivateDefaultItems', v: toNode({ crossfade: true }), c: [] });
+                }
+                continue;
+            }
+            if (k === 'playerMediaIcon') {
+                c.push(
+                    this.note(
+                        name,
+                        `playerMediaIcon ${show(v)} dropped - the adapter shows the logo of the player itself`,
+                    ),
+                );
+                continue;
+            }
+            if (k === 'equalizerSlider') {
+                c.push(
+                    this.note(
+                        name,
+                        'equalizerSlider dropped - the adapter offers its own equalizer item where the player has one',
+                    ),
+                );
+                continue;
+            }
             c.push(this.todo(name, `media ${k}: ${show(v)} - no counterpart in the adapter`));
         }
+        if (page.showOnlyPlayerHeadline === true || item.showOnlyPlayerHeadline === true) {
+            e.push({ k: 'headlineMode', v: toNode('device'), c: [] });
+        }
         return { k: 'media', v: { t: 'obj', e }, c };
+    }
+
+    /**
+     * The thermostat list of an old cardThermo2 as one heating circuit of the adapter: temperature = [1],
+     * humidity = [2], mode = [3], set point = `<[0]>.SET` (the old script read exactly these).
+     *
+     * @param page the page
+     * @param name uniqueName of the page
+     * @returns the entry `thermoItems`
+     */
+    private thermo2(page: Rec, name: string): Entry {
+        const t = oldThermo2(page);
+        if (!t) {
+            return { c: [] };
+        }
+        const c: string[] = [];
+        const factor = this.thermo2Tenths ? 10 : 1;
+        const n = (x: unknown, d: number): number => (typeof x === 'number' && Number.isFinite(x) ? x : d) * factor;
+        const circuit: Rec = {
+            thermoId1: t.temperature.id,
+            ...(t.humidity ? { thermoId2: t.humidity.id } : {}),
+            modeId: t.mode.id,
+            set: `${String(t.thermostat.id)}.SET`,
+            minValue: n(t.thermostat.minValue, 4.5),
+            maxValue: n(t.thermostat.maxValue, 30.5),
+            stepValue: n(t.thermostat.stepValue, 0.5),
+        };
+        const unit = t.thermostat.unit ?? t.temperature.unit;
+        if (typeof unit === 'string') {
+            circuit.unit = unit;
+        }
+        if (isRecord(t.temperature.onColor)) {
+            circuit.onColor = t.temperature.onColor;
+        }
+        if (t.humidity && typeof t.humidity.unit === 'string') {
+            circuit.unit2 = t.humidity.unit;
+        }
+        if (t.humidity && isRecord(t.humidity.onColor)) {
+            circuit.onColor2 = t.humidity.onColor;
+        }
+        if (t.mode.onColor !== undefined) {
+            c.push(
+                this.note(
+                    name,
+                    `color of the mode text ${show(t.mode.onColor)} dropped - the adapter colors it itself`,
+                ),
+            );
+        }
+        return { k: 'thermoItems', v: { t: 'arr', e: [{ v: toNode(circuit), c: [] }] }, c };
     }
 
     /**
@@ -1015,8 +1259,7 @@ class Converter {
                 ),
             );
         }
-        const mediaId = this.mediaId(page);
-        if (!(type in CARD_TYPES) || mediaId === undefined) {
+        if (!this.isScriptCard(page)) {
             const reason =
                 ADMIN_ONLY_CARDS[type] ??
                 (type === 'cardMedia'
@@ -1076,19 +1319,21 @@ class Converter {
             }
             if (k === 'useColor') {
                 if (v !== true && type !== 'cardThermo' && type !== 'cardMedia') {
-                    c.push(this.todo(uniqueName, `useColor: ${show(v)} - the adapter always uses the colors`));
+                    c.push(
+                        this.note(
+                            uniqueName,
+                            `useColor: ${show(v)} dropped - the adapter colors an "on" state with onColor`,
+                        ),
+                    );
                     e.push({ c });
                 }
                 continue;
             }
-            if (k === 'showOnlyPlayerHeadline') {
-                c.push(
-                    this.todo(
-                        uniqueName,
-                        `showOnlyPlayerHeadline: ${show(v)} - in the adapter the headline of a media page is set in the admin (headline mode)`,
-                    ),
-                );
-                e.push({ c });
+            if (k === 'showOnlyPlayerHeadline' && type === 'cardMedia') {
+                // media.headlineMode 'device'
+                continue;
+            }
+            if (k === 'thermoItems' && type === 'cardThermo2') {
                 continue;
             }
             c.push(this.todo(uniqueName, `${k}: ${show(v)} - no counterpart in the adapter`));
@@ -1109,6 +1354,9 @@ class Converter {
             page.alwaysOnDisplay === undefined
         ) {
             e.push({ k: 'alwaysOnDisplay', v: toNode(first.alwaysOnDisplay), c: [] });
+        }
+        if (type === 'cardThermo2') {
+            e.push(this.thermo2(page, uniqueName));
         }
         if (type === 'cardMedia') {
             e.push(this.media(page, uniqueName));
@@ -1155,11 +1403,18 @@ class Converter {
         }
         const e: Entry[] = [{ k: 'type', v: toNode('script'), c: [] }];
         const copy = mr ? MR_COPY : SCREENSAVER_COPY;
+        // the same 11-step palette as colorScale of the page items; without val_min it is a RGB color
+        const iconColor = el.ScreensaverEntityIconColor;
+        const scale =
+            !mr && isRecord(iconColor) && iconColor.val_min !== undefined ? oldColorScale(iconColor) : undefined;
         for (const [k, v] of Object.entries(el)) {
             if (v === undefined) {
                 continue;
             }
             const ec: string[] = [];
+            if ((k === 'ScreensaverEntityOnColor' || k === 'ScreensaverEntityOffColor') && scale?.onColor) {
+                continue;
+            }
             if (k === 'ScreensaverEntityNaviToPage' && !mr) {
                 const name = this.pageRef(v, undefined, `${where} ScreensaverEntityNaviToPage`, ec);
                 if (name !== undefined) {
@@ -1186,6 +1441,18 @@ class Converter {
                         ),
                     );
                 }
+            }
+            if (k === 'ScreensaverEntityIconColor' && scale?.onColor && scale.offColor) {
+                ec.push(
+                    this.note(
+                        undefined,
+                        `${where}: color scale as hue scale between the end colors of the old palette`,
+                    ),
+                );
+                e.push({ k, v: toNode(scale.scale), c: ec });
+                e.push({ k: 'ScreensaverEntityOnColor', v: toNode(scale.onColor), c: [] });
+                e.push({ k: 'ScreensaverEntityOffColor', v: toNode(scale.offColor), c: [] });
+                continue;
             }
             e.push({ k, v: toNode(value), c: ec });
         }
@@ -1214,6 +1481,37 @@ class Converter {
             }
         } else if (b.mode === 'toggle' && typeof b.entity === 'string' && b.entity) {
             return { k: target, v: toNode({ mode: 'switch', state: b.entity }), c };
+        } else if (b.mode === 'set') {
+            const on = isRecord(b.setOn) && typeof b.setOn.dp === 'string' && b.setOn.dp ? b.setOn : undefined;
+            const off = isRecord(b.setOff) && typeof b.setOff.dp === 'string' && b.setOff.dp ? b.setOff : undefined;
+            if (!on && !off) {
+                c.push(
+                    this.note(
+                        undefined,
+                        `${key} of the old script: mode 'set' without setOn/setOff did nothing - no action`,
+                    ),
+                );
+                return { k: target, v: { t: 'lit', s: 'null' }, c };
+            }
+            if (on && off && on.dp === off.dp && on.val === true && off.val === false) {
+                c.push(
+                    this.note(
+                        undefined,
+                        `${key} of the old script: 'set' true/false alternately - as 'switch' (flips the current value)`,
+                    ),
+                );
+                return { k: target, v: toNode({ mode: 'switch', state: on.dp }), c };
+            }
+            if (on && !off && on.val === true) {
+                c.push(this.note(undefined, `${key} of the old script: 'set' to true - as 'button'`));
+                return { k: target, v: toNode({ mode: 'button', state: on.dp }), c };
+            }
+            c.push(
+                this.todo(
+                    undefined,
+                    `${key} of the old script ${show({ mode: b.mode, setOn: b.setOn, setOff: b.setOff })} has no counterpart - configure the button in the admin`,
+                ),
+            );
         } else {
             c.push(
                 this.todo(
@@ -1333,7 +1631,14 @@ class Converter {
  * @returns the new script and what happened
  */
 export function convertNsPanelTs(input: NsPanelTsConvertInput): NsPanelTsConvertResult {
-    const result: NsPanelTsConvertResult = { todos: [], pages: [], todoPages: [], discarded: [], errors: [] };
+    const result: NsPanelTsConvertResult = {
+        todos: [],
+        notes: [],
+        pages: [],
+        todoPages: [],
+        discarded: [],
+        errors: [],
+    };
     const info = inspectNsPanelTs(input.source);
     result.version = info.version;
     if (!info.isNsPanelTs) {
@@ -1365,7 +1670,7 @@ export function convertNsPanelTs(input: NsPanelTsConvertInput): NsPanelTsConvert
         );
         return result;
     }
-    const conv = new Converter(ev);
+    const conv = new Converter(ev, input.thermo2Tenths === true);
     conv.collectPages();
     let body: string;
     try {
@@ -1375,6 +1680,7 @@ export function convertNsPanelTs(input: NsPanelTsConvertInput): NsPanelTsConvert
         return result;
     }
     result.todos = conv.todos;
+    result.notes = conv.notes;
     result.pages = conv.scriptPageNames;
     result.todoPages = conv.todoPageNames;
     result.discarded = conv.discarded;
@@ -1383,11 +1689,13 @@ export function convertNsPanelTs(input: NsPanelTsConvertInput): NsPanelTsConvert
     const header = [
         '/*',
         ` * Converted by ${input.namespace} on ${input.today} from the NSPanelTs script ${input.sourceScriptId} (${info.version ?? '?'}).`,
-        ` * ${result.todos.length} TODO(s): search for "TODO" - these settings could not be taken over 1:1.`,
+        ` * ${result.todos.length} TODO(s): search for "TODO" - the adapter has nothing comparable, decide yourself.`,
+        ` * ${result.notes.length} note(s): taken over as approximation, the adapter does it a little differently ("note:").`,
         ` * Stop the old script ${input.sourceScriptId} before you activate this script!`,
         ' *',
         ` * Umgewandelt von ${input.namespace} am ${input.today} aus dem NSPanelTs-Skript ${input.sourceScriptId} (${info.version ?? '?'}).`,
-        ` * ${result.todos.length} TODO(s): nach "TODO" suchen - diese Einstellungen ließen sich nicht 1:1 übernehmen.`,
+        ` * ${result.todos.length} TODO(s): nach "TODO" suchen - dafür hat der Adapter nichts Vergleichbares, bitte selbst entscheiden.`,
+        ` * ${result.notes.length} Hinweis(e) "note:": angenähert übernommen, der Adapter macht es etwas anders.`,
         ` * Das alte Skript ${input.sourceScriptId} vor dem Aktivieren dieses Skripts stoppen!`,
         ' */',
         '',
