@@ -161,7 +161,7 @@ describe('lib/pages/popupNotify3', () => {
         });
 
         it('every icon of the list is a MDI icon', () => {
-            expect(POPUP_NOTIFY3_ICONS).to.have.length(55);
+            expect(POPUP_NOTIFY3_ICONS).to.have.length(87);
             for (const icon of POPUP_NOTIFY3_ICONS) {
                 expect(Icons.iconMap.has(icon), icon).to.equal(true);
             }

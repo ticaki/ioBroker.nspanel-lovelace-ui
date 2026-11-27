@@ -227,7 +227,12 @@ The panel has these big icons (names of the Material Design Icons):
 `weather-tornado`, `home-alert`, `subway-alert-variant`, `home-flood`, `snowflake-alert`, `sun-thermometer`,
 `weather-fog`, `washing-machine`, `tumble-dryer`, `dishwasher`, `washing-machine-alert`, `tumble-dryer-alert`,
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
-`smoke-detector-alert`, `fire-alert`
+`smoke-detector-alert`, `fire-alert`, `garage-variant`, `garage-open-variant`, `chevron-triple-up`,
+`chevron-triple-down`, `chevron-triple-left`, `chevron-triple-right`, `school`, `gate-open`, `door-sliding-open`,
+`lock-open-alert`, `car-door`, `garage-alert-variant`, `gate-alert`, `key-alert`, `molecule-co2`,
+`thermometer-alert`, `heat-wave`, `fan-alert`, `flash-alert`, `car-battery`, `battery-charging-high`,
+`motion-sensor`, `cctv`, `lightbulb-alert`, `leak`, `water-pump-off`, `pill`, `pill-multiple`, `medication`,
+`bus-school`, `stove`, `pot-steam`
 
 The [icon overview](symbolOverview#large-notification-popupnotify3) in the admin shows exactly these icons with the
 button **Large notification (popupNotify3)**.

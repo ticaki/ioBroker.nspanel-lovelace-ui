@@ -5,8 +5,8 @@ Usage (from the repository root):
   e.g. HMI/us-l/nspanel-us-l-v6.1.1.HMI HMI/us-l/nspanel-us-l-v6.2.0.HMI; the output must not exist.
 
 Unlike EU there is no prepared base: the script adds the page and the font itself.
-1. Font: the icon font 9.zi of the EU project HMI/nspanel-v6.2.0.HMI ('mdi-notify-255', 55 icons, 255 px) is taken
-   byte for byte and added as last font (screensaver5.add_clock_font: new zi section, entry in main.HMI behind the
+1. Font: the icon font 9.zi of the EU project HMI/nspanel-v6.2.0.HMI ('mdi-notify-255', the icons of
+   templates/popup-notify3-icons.json, 255 px) is taken byte for byte and added as last font (screensaver5.add_clock_font: new zi section, entry in main.HMI behind the
    last font). The adapter sends font id 9 on every model, so the model must have exactly 9 fonts (ids 0..8)
    before - otherwise the script stops (no reordering). Fonts 3 and 4 (text, cross, button icons) must be the
    ones of EU; 0 and 2 may have more characters but the same metrics for the common ones (checked; not on us-p:
