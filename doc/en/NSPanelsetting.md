@@ -226,13 +226,13 @@ Principle: what the adapter can do **almost the same way** is taken over – eve
 
 - Fields without counterpart (e.g. `hideEntity2`, `iconArray`, `customIcons`, `monobutton`, `popUpThermoName`, `inSel_ChoiceState: false`).
 - References to states the old script created itself (`0_userdata.0.NSPanel.…`, aliases below `alias.0.NSPanel.<n>.Config`, `.Sensor` …) – the adapter does not update them.
-- Pages the old script only reached by a reference, and references to dropped service pages.
+- Pages the old script only reached by a reference.
 - Whole pages the configuration script of the adapter does not know: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, a *cardThermo2* without thermostat, temperature or mode, and unsupported media players (Volumio, Bose). They are kept as commented-out block with the original; create them in the admin under the same name.
 - Hardware buttons *set* with other values (e.g. two texts alternately) and unsupported weather adapters.
 
 **What is dropped**
 
-The **service pages** of the old script (`NSPanel_Service`, `NSPanel_Infos`, `Unlock_Service` etc.) – the adapter has its own service menu. References of other pages to them are removed (with a TODO).
+The **service pages** of the old script (`NSPanel_Service`, `NSPanel_Infos`, `Unlock_Service` etc.) – the adapter solves this differently. References of other pages to them (navigation, jump targets, buttons, screensaver) are removed silently; an item that only jumped to a service page is dropped completely. If a page is left without navigation by that, the adapter's default applies. The result dialog lists the dropped service pages for information.
 
 ## Pitfalls
 

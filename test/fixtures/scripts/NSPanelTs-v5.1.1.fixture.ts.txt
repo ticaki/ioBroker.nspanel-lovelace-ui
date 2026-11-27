@@ -54,6 +54,8 @@ let Wohnen: PageType =
         /*PageItem*/{id: AliasPath + 'Sensor.ANALOG.Temperature', name: 'Panel', interpolateColor: true},
         /*PageItem*/{id: 'alias.0.Fernseher', name: 'TV', hideEntity2: true, onColor: MSGreen, offColor: MSRed},
         /*PageItem*/{navigate: true, id: 'alias.0.Fenster', targetPage: 'Grid2Seite', name: 'Fenster'},
+        /*PageItem*/{navigate: true, id: 'NSPanel_Service', icon: 'cog', name: 'Service'},
+        /*PageItem*/{navigate: true, id: 'alias.0.Status', targetPage: 'NSPanel_Infos', name: 'Status'},
     ]
 };
 

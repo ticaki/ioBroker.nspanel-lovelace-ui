@@ -676,7 +676,6 @@ class Converter {
       return void 0;
     }
     if (NSPANELTS_SERVICE_PAGES.includes(name)) {
-      comments.push(this.todo(page, `${what} '${name}' pointed to a service page of the old script - dropped`));
       return void 0;
     }
     const info = this.pages.get(name);
@@ -726,6 +725,11 @@ class Converter {
     }
     const e = [];
     const navigateById = item.navigate === true && item.targetPage === void 0 && typeof item.id === "string";
+    const target = navigateById ? item.id : item.targetPage;
+    const toService = typeof target === "string" && NSPANELTS_SERVICE_PAGES.includes(target);
+    if (toService && (navigateById || typeof item.id !== "string" || !item.id)) {
+      return void 0;
+    }
     const scale = item.colorScale !== void 0 ? oldColorScale(item.colorScale) : void 0;
     for (const [k, v] of Object.entries(item)) {
       if (v === void 0) {
@@ -736,7 +740,9 @@ class Converter {
         continue;
       }
       if (k === "navigate") {
-        e.push({ k, v: toNode(v), c: ec });
+        if (!toService) {
+          e.push({ k, v: toNode(v), c: ec });
+        }
         continue;
       }
       if (k === "id" && navigateById) {
@@ -1105,7 +1111,7 @@ class Converter {
       k: "items",
       v: {
         t: "arr",
-        e: items.filter((it) => it != null).map((it) => this.item(it, uniqueName, type === "cardThermo"))
+        e: items.filter((it) => it != null).map((it) => this.item(it, uniqueName, type === "cardThermo")).filter((x) => x !== void 0)
       },
       c: []
     });

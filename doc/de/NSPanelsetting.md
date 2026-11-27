@@ -226,13 +226,13 @@ Grundsatz: Was der Adapter **fast gleich** kann, wird übernommen – auch wenn 
 
 - Felder ohne Gegenstück (z. B. `hideEntity2`, `iconArray`, `customIcons`, `monobutton`, `popUpThermoName`, `inSel_ChoiceState: false`).
 - Verweise auf Datenpunkte, die das alte Skript selbst angelegt hat (`0_userdata.0.NSPanel.…`, Aliase unter `alias.0.NSPanel.<n>.Config`, `.Sensor` …) – der Adapter aktualisiert sie nicht.
-- Seiten, die das alte Skript nur über einen Verweis erreichte, und Verweise auf verworfene Service-Seiten.
+- Seiten, die das alte Skript nur über einen Verweis erreichte.
 - Ganze Seiten, die das Konfigurationsskript des Adapters nicht kennt: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, eine *cardThermo2* ohne Thermostat, Temperatur oder Modus und Mediaplayer ohne Unterstützung (Volumio, Bose). Sie stehen als auskommentierter Block mit dem Original im Skript; im Admin unter demselben Namen anlegen.
 - Hardware-Taster *set* mit anderen Werten (z. B. abwechselnd zwei Texte) und nicht unterstützte Wetteradapter.
 
 **Was verworfen wird**
 
-Die **Service-Seiten** des alten Skripts (`NSPanel_Service`, `NSPanel_Infos`, `Unlock_Service` usw.) – der Adapter hat ein eigenes Service-Menü. Verweise anderer Seiten auf sie fallen weg (mit TODO).
+Die **Service-Seiten** des alten Skripts (`NSPanel_Service`, `NSPanel_Infos`, `Unlock_Service` usw.) – der Adapter löst das anders. Verweise anderer Seiten auf sie (Navigation, Sprungziele, Taster, Screensaver) fallen still weg; ein Eintrag, der nur zu einer Service-Seite sprang, entfällt ganz. Bleibt eine Seite dadurch ohne Navigation, gilt der Standard des Adapters. Der Ergebnisdialog listet die verworfenen Service-Seiten zur Information.
 
 ## Fallstricke
 

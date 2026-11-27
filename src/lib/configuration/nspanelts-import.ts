@@ -914,7 +914,7 @@ class Converter {
             return undefined;
         }
         if (NSPANELTS_SERVICE_PAGES.includes(name)) {
-            comments.push(this.todo(page, `${what} '${name}' pointed to a service page of the old script - dropped`));
+            // service pages are solved differently in the adapter - the reference goes silently
             return undefined;
         }
         const info = this.pages.get(name);
@@ -958,13 +958,19 @@ class Converter {
      * @param thermo item of a cardThermo
      * @returns the entry
      */
-    private item(item: unknown, page: string, thermo: boolean): Entry {
+    private item(item: unknown, page: string, thermo: boolean): Entry | undefined {
         const c: string[] = [];
         if (!isRecord(item)) {
             return { v: toNode(item) ?? { t: 'lit', s: 'null' }, c };
         }
         const e: Entry[] = [];
         const navigateById = item.navigate === true && item.targetPage === undefined && typeof item.id === 'string';
+        const target = navigateById ? item.id : item.targetPage;
+        const toService = typeof target === 'string' && NSPANELTS_SERVICE_PAGES.includes(target);
+        if (toService && (navigateById || typeof item.id !== 'string' || !item.id)) {
+            // its only purpose was the jump to a service page of the old script - dropped silently
+            return undefined;
+        }
         const scale = item.colorScale !== undefined ? oldColorScale(item.colorScale) : undefined;
         for (const [k, v] of Object.entries(item)) {
             if (v === undefined) {
@@ -976,7 +982,9 @@ class Converter {
                 continue;
             }
             if (k === 'navigate') {
-                e.push({ k, v: toNode(v), c: ec });
+                if (!toService) {
+                    e.push({ k, v: toNode(v), c: ec });
+                }
                 continue;
             }
             if (k === 'id' && navigateById) {
@@ -1364,7 +1372,10 @@ class Converter {
             k: 'items',
             v: {
                 t: 'arr',
-                e: items.filter(it => it != null).map(it => this.item(it, uniqueName, type === 'cardThermo')),
+                e: items
+                    .filter(it => it != null)
+                    .map(it => this.item(it, uniqueName, type === 'cardThermo'))
+                    .filter((x): x is Entry => x !== undefined),
             },
             c: [],
         });

@@ -184,9 +184,9 @@ describe('lib/configuration/nspanelts-import', () => {
             for (const name of NSPANELTS_SERVICE_PAGES) {
                 expect(src).not.to.include(`const ${name}`);
             }
-            expect(src).to.include(
-                "// TODO: home 'NSPanel_Service' pointed to a service page of the old script - dropped",
-            );
+            // references to them go silently
+            expect(r.todos.some(t => t.text.includes('NSPanel_'))).to.equal(false);
+            expect(r.notes.some(t => t.text.includes('NSPanel_'))).to.equal(false);
         });
         it('writes the header with source, version, TODO count and the stop hint', () => {
             expect(
@@ -267,6 +267,14 @@ describe('lib/configuration/nspanelts-import', () => {
             expect(items[4]).to.deep.include({ navigate: true, id: 'alias.0.Fenster', targetPage: 'Grid2Seite' });
             const grid2 = page('Grid2Seite');
             expect(grid2).to.include({ prev: 'Licht' });
+            expect(grid2).not.to.have.property('home');
+        });
+        it('drops items that only jumped to a service page and the service target of other items', () => {
+            const wohnen = page('main');
+            const items = wohnen && 'items' in wohnen ? (wohnen.items ?? []) : [];
+            expect(items).to.have.length(6);
+            expect(items[5]).to.deep.equal({ id: 'alias.0.Status', name: 'Status' });
+            const grid2 = page('Grid2Seite');
             expect(grid2).not.to.have.property('home');
         });
         it('builds the media id from instance and device', () => {
