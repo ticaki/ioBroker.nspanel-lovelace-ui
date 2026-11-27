@@ -212,11 +212,13 @@ Grundsatz: Was der Adapter **fast gleich** kann, wird übernommen – auch wenn 
 | `showOnlyPlayerHeadline: true` | `media.headlineMode: 'device'` |
 | `crossfade: false` (Media) | `media.deactivateDefaultItems: { crossfade: true }` |
 | `playerMediaIcon`, `equalizerSlider` | entfällt – der Adapter zeigt das Logo des Players und seinen eigenen Equalizer-Eintrag |
-| `useColor: false`, `interpolateColor: true` | entfällt – der Adapter färbt „an“ mit `onColor` und dimmt die Farbe einer Leuchte selbst nach der Helligkeit |
+| `interpolateColor: true` | entfällt – der Adapter dimmt die Farbe einer Leuchte selbst nach der Helligkeit |
 | `setThermoDestTemp2` | entfällt – der Adapter zeigt `SET2` eines airCondition-Kanals als zweiten Sollwert |
 | `shutterType` | entfällt – der Adapter wählt das Rollladen-Popup selbst |
 | `shutterZeroIsClosed` | gilt im Adapter instanzweit (Option *shutterClosedIsZero* im Admin) |
 | Hardware-Taster *set* ohne `setOn`/`setOff`, mit `true`/`false` auf demselben Datenpunkt bzw. nur `setOn` = `true` | keine Aktion bzw. *switch* bzw. *button* |
+
+`useColor` (Seite und Eintrag) gibt es im Adapter bewusst nicht; es wird ohne Kommentar weggelassen.
 
 **Was TODO bedeutet**
 

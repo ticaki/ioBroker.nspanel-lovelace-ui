@@ -761,16 +761,6 @@ class Converter {
         continue;
       }
       if (k === "useColor") {
-        if (v !== true) {
-          e.push({
-            c: [
-              this.note(
-                page,
-                `useColor: ${show(v)} dropped - the adapter colors an "on" state with onColor`
-              )
-            ]
-          });
-        }
         continue;
       }
       if (k === "interpolateColor") {
@@ -1040,7 +1030,7 @@ class Converter {
     ];
     const sink = (list) => original ? [] : list;
     for (const [k, v] of Object.entries(page)) {
-      if (v === void 0 || k === "type" || k === "uniqueName" || k === "items") {
+      if (v === void 0 || k === "type" || k === "uniqueName" || k === "items" || k === "useColor") {
         continue;
       }
       const c = [];
@@ -1068,18 +1058,6 @@ class Converter {
         e.push({ k, v: toNode(v), c });
         continue;
       }
-      if (k === "useColor") {
-        if (v !== true && type !== "cardThermo" && type !== "cardMedia") {
-          c.push(
-            this.note(
-              uniqueName,
-              `useColor: ${show(v)} dropped - the adapter colors an "on" state with onColor`
-            )
-          );
-          e.push({ c });
-        }
-        continue;
-      }
       if (k === "showOnlyPlayerHeadline" && type === "cardMedia") {
         continue;
       }
@@ -1091,7 +1069,14 @@ class Converter {
     }
     const items = Array.isArray(page.items) ? page.items : [];
     if (original) {
-      e.push({ k: "items", v: (_a = toNode(items)) != null ? _a : { t: "arr", e: [] }, c: [] });
+      const raw = items.map((it) => {
+        if (!isRecord(it)) {
+          return it;
+        }
+        const { useColor: _ignored, ...rest } = it;
+        return rest;
+      });
+      e.push({ k: "items", v: (_a = toNode(raw)) != null ? _a : { t: "arr", e: [] }, c: [] });
       return e;
     }
     const first = items[0];

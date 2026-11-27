@@ -228,7 +228,10 @@ describe('lib/configuration/nspanelts-import', () => {
             expect(notes).to.include(
                 "setThermoDestTemp2 'ACTUAL2' dropped - the adapter shows SET2 of an airCondition channel as second set point",
             );
-            expect(notes).to.include('useColor: false dropped - the adapter colors an "on" state with onColor');
+            // useColor is ignored silently - neither note nor TODO nor in the script
+            expect([...texts, ...notes].some(t => t.includes('useColor'))).to.equal(false);
+            // (the template part from END STOP on declares the type field)
+            expect(src.slice(0, src.indexOf(SCRIPT_END_STOP_TOKEN))).not.to.include('useColor');
             expect(src.match(/\/\/ note:/g)?.length).to.equal(r.notes.length);
             expect(src).to.include(` * ${r.notes.length} note(s): taken over as approximation`);
             expect(texts.some(t => t.startsWith("page 'Grid3Seite' was not listed in pages/subPages"))).to.equal(true);

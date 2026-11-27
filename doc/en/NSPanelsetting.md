@@ -212,11 +212,13 @@ Principle: what the adapter can do **almost the same way** is taken over – eve
 | `showOnlyPlayerHeadline: true` | `media.headlineMode: 'device'` |
 | `crossfade: false` (media) | `media.deactivateDefaultItems: { crossfade: true }` |
 | `playerMediaIcon`, `equalizerSlider` | dropped – the adapter shows the logo of the player and its own equalizer item |
-| `useColor: false`, `interpolateColor: true` | dropped – the adapter colors "on" with `onColor` and dims the color of a light by its brightness itself |
+| `interpolateColor: true` | dropped – the adapter dims the color of a light by its brightness itself |
 | `setThermoDestTemp2` | dropped – the adapter shows `SET2` of an airCondition channel as second set point |
 | `shutterType` | dropped – the adapter chooses the shutter popup itself |
 | `shutterZeroIsClosed` | instance-wide in the adapter (option *shutterClosedIsZero* in the admin) |
 | hardware button *set* without `setOn`/`setOff`, with `true`/`false` on the same state or only `setOn` = `true` | no action, *switch* or *button* |
+
+`useColor` (page and item) deliberately does not exist in the adapter; it is left out without a comment.
 
 **What TODO means**
 

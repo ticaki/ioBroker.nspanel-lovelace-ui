@@ -1001,16 +1001,7 @@ class Converter {
                 continue;
             }
             if (k === 'useColor') {
-                if (v !== true) {
-                    e.push({
-                        c: [
-                            this.note(
-                                page,
-                                `useColor: ${show(v)} dropped - the adapter colors an "on" state with onColor`,
-                            ),
-                        ],
-                    });
-                }
+                // the adapter has no useColor on purpose - silently ignored
                 continue;
             }
             if (k === 'interpolateColor') {
@@ -1289,7 +1280,8 @@ class Converter {
         // inside a TODO block the comments of the fields are not needed again
         const sink = (list: string[]): string[] => (original ? [] : list);
         for (const [k, v] of Object.entries(page)) {
-            if (v === undefined || k === 'type' || k === 'uniqueName' || k === 'items') {
+            // the adapter has no useColor on purpose - silently ignored, also in the TODO blocks
+            if (v === undefined || k === 'type' || k === 'uniqueName' || k === 'items' || k === 'useColor') {
                 continue;
             }
             const c: string[] = [];
@@ -1317,18 +1309,6 @@ class Converter {
                 e.push({ k, v: toNode(v), c });
                 continue;
             }
-            if (k === 'useColor') {
-                if (v !== true && type !== 'cardThermo' && type !== 'cardMedia') {
-                    c.push(
-                        this.note(
-                            uniqueName,
-                            `useColor: ${show(v)} dropped - the adapter colors an "on" state with onColor`,
-                        ),
-                    );
-                    e.push({ c });
-                }
-                continue;
-            }
             if (k === 'showOnlyPlayerHeadline' && type === 'cardMedia') {
                 // media.headlineMode 'device'
                 continue;
@@ -1342,7 +1322,14 @@ class Converter {
         const items = Array.isArray(page.items) ? page.items : [];
         if (original) {
             // the items as they are in the old script
-            e.push({ k: 'items', v: toNode(items) ?? { t: 'arr', e: [] }, c: [] });
+            const raw = items.map(it => {
+                if (!isRecord(it)) {
+                    return it;
+                }
+                const { useColor: _ignored, ...rest } = it;
+                return rest;
+            });
+            e.push({ k: 'items', v: toNode(raw) ?? { t: 'arr', e: [] }, c: [] });
             return e;
         }
         // cardThermo / cardMedia: the old script read alwaysOnDisplay of the first item, the adapter that of the page
