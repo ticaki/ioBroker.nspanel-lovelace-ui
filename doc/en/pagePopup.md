@@ -229,8 +229,8 @@ The panel has these big icons (names of the Material Design Icons):
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
 `smoke-detector-alert`, `fire-alert`
 
-These icons only come with the TFT after 6.2.0 (together with the device page); an older TFT shows
-`information-outline` instead:
+These icons only come with the TFT after 6.2.0 (together with the device page); on an older TFT the icon stays
+empty:
 `garage-variant`, `garage-open-variant`, `chevron-triple-up`, `chevron-triple-down`, `chevron-triple-left`,
 `chevron-triple-right`, `school`, `gate-open`, `door-sliding-open`, `lock-open-alert`, `car-door`,
 `garage-alert-variant`, `gate-alert`, `key-alert`, `molecule-co2`, `thermometer-alert`, `heat-wave`, `fan-alert`,

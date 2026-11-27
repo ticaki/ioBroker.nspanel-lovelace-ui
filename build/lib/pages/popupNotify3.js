@@ -35,11 +35,9 @@ __export(popupNotify3_exports, {
   NOTIFY3_TEXT: () => NOTIFY3_TEXT,
   NOTIFY3_TEXT_MAX_BYTES: () => NOTIFY3_TEXT_MAX_BYTES,
   POPUP_NOTIFY3: () => POPUP_NOTIFY3,
-  POPUP_NOTIFY3_BASE_ICON_COUNT: () => POPUP_NOTIFY3_BASE_ICON_COUNT,
   POPUP_NOTIFY3_ICONS: () => POPUP_NOTIFY3_ICONS,
   POPUP_NOTIFY3_MIN_VERSION: () => POPUP_NOTIFY3_MIN_VERSION,
   POPUP_NOTIFY3_MODELS: () => POPUP_NOTIFY3_MODELS,
-  POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION: () => POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION,
   cutUtf8: () => cutUtf8,
   notify3Font: () => notify3Font,
   notify3Icon: () => notify3Icon,
@@ -60,10 +58,7 @@ const POPUP_NOTIFY3 = "popupNotify3";
 const POPUP_NOTIFY3_MIN_VERSION = "6.2.0";
 const POPUP_NOTIFY3_MODELS = /* @__PURE__ */ new Set(["eu", "us-l", "us-p"]);
 const POPUP_NOTIFY3_ICONS = import_popup_notify3_icons.default;
-const POPUP_NOTIFY3_BASE_ICON_COUNT = 55;
-const POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION = "6.2.0";
-const BASE_ICON_SET = new Set(POPUP_NOTIFY3_ICONS.slice(0, POPUP_NOTIFY3_BASE_ICON_COUNT));
-const MORE_ICON_SET = new Set(POPUP_NOTIFY3_ICONS.slice(POPUP_NOTIFY3_BASE_ICON_COUNT));
+const ICON_SET = new Set(POPUP_NOTIFY3_ICONS);
 const BUTTON_FONT = 4;
 const NOTIFY3_DEFAULT_ICON_LEFT = "close-thick";
 const NOTIFY3_DEFAULT_ICON_RIGHT = "check-bold";
@@ -91,18 +86,9 @@ const NOTIFY3_FALLBACK_ICON = "information-outline";
 function drawsAllIcons(target) {
   return target.isVirtual && target.allowWebExtensions;
 }
-function fontHasIcon(icon, target) {
-  if (BASE_ICON_SET.has(icon)) {
-    return true;
-  }
-  if (!MORE_ICON_SET.has(icon)) {
-    return false;
-  }
-  return target.isVirtual || !!target.displayVersion && (0, import_tools.isVersionGreaterOrEqual)(target.displayVersion, POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION);
-}
 function notify3Icon(details, target) {
   const icon = typeof details.icon === "string" ? details.icon.trim() : "";
-  if (icon && isKnownIcon(icon) && (drawsAllIcons(target) || fontHasIcon(icon, target))) {
+  if (icon && isKnownIcon(icon) && (drawsAllIcons(target) || ICON_SET.has(icon))) {
     return { icon };
   }
   return {
@@ -225,11 +211,9 @@ function popupNotify3Message(input) {
   NOTIFY3_TEXT,
   NOTIFY3_TEXT_MAX_BYTES,
   POPUP_NOTIFY3,
-  POPUP_NOTIFY3_BASE_ICON_COUNT,
   POPUP_NOTIFY3_ICONS,
   POPUP_NOTIFY3_MIN_VERSION,
   POPUP_NOTIFY3_MODELS,
-  POPUP_NOTIFY3_MORE_ICONS_MIN_VERSION,
   cutUtf8,
   notify3Font,
   notify3Icon,
