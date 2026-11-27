@@ -1,0 +1,4 @@
+# gitignored files Claude Code copies into new worktrees (agent worktrees under .claude/worktrees)
+# .eslintcache holds absolute paths - rewrite them in the worktree before use:
+#   sed -i "s#/home/tim/ioBroker.nspanel-lovelace-ui/#$PWD/#g" .eslintcache
+.eslintcache
