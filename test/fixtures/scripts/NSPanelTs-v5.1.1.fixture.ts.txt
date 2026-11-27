@@ -1,0 +1,388 @@
+/*-----------------------------------------------------------------------
+TypeScript v5.1.1.10 zur Steuerung des SONOFF NSPanel mit dem ioBroker by @Armilar / @TT-Tom / @ticaki / @Britzelpuf / @Sternmiere / @ravenSt0ne
+- shortened synthetic test fixture: the configuration part of NSPanelTs.ts v5.1.1.10 with example pages of every card type
+---------------------------------------------------------------------------------------
+*/
+
+/******************************* Begin CONFIG Parameter *******************************/
+
+var Debug: boolean = false;
+
+const NSPanelReceiveTopic: string = 'mqtt.0.SmartHome.NSPanel_1.tele.RESULT';
+const NSPanelSendTopic: string = 'mqtt.0.SmartHome.NSPanel_1.cmnd.CustomSend';
+
+const NSPanel_Path = '0_userdata.0.NSPanel.1.';
+const NSPanel_Alarm_Path = '0_userdata.0.NSPanel.';
+
+const weatherAdapterInstance: string = 'pirate-weather.0.';
+const weatherScreensaverTempMinMax: string = 'MinMax';
+const weatherEntityPath: string = 'alias.0.Pirate_Weather';
+
+const HMIOff: RGB = {red: 68, green: 115, blue: 158};
+const HMIOn: RGB = {red: 3, green: 169, blue: 244};
+const HMIDark: RGB = {red: 29, green: 29, blue: 29};
+const Off: RGB = {red: 253, green: 128, blue: 0};
+const On: RGB = {red: 253, green: 216, blue: 53};
+const MSRed: RGB = {red: 251, green: 105, blue: 98};
+const MSGreen: RGB = {red: 121, green: 222, blue: 121};
+const White: RGB = {red: 255, green: 255, blue: 255};
+const Yellow: RGB = {red: 255, green: 255, blue: 0};
+const Menu: RGB = {red: 150, green: 150, blue: 100};
+const colorAlexa: RGB = {red: 49, green: 196, blue: 243};
+
+const autoCreateAlias = true;
+const AliasPath: string = 'alias.0.' + NSPanel_Path.substring(13, NSPanel_Path.length);
+
+const defaultOffColorParam: any = Off;
+const defaultOnColorParam: any = On;
+const defaultColorParam: any = Off;
+const defaultBackgroundColorParam: any = HMIDark;
+
+/******************************** End CONFIG Parameter ********************************/
+
+// a page in a comment is not a page
+// let Kommentar: PageType = { 'type': 'cardGrid', 'heading': 'nope', 'useColor': true, 'items': [] };
+
+let Wohnen: PageType =
+{
+    'type': 'cardGrid',
+    'heading': 'Wohnen',
+    'useColor': true,
+    'items': [
+        /*PageItem*/{navigate: true, id: 'Licht', icon: 'lightbulb', name: 'Licht', offColor: Menu, onColor: Menu},
+        /*PageItem*/{id: 'alias.0.NSPanel.1.usr.Temperatur', name: 'Temperatur', useValue: true, colorScale: {'val_min': 0, 'val_max': 40, 'val_best': 21}},
+        /*PageItem*/{id: AliasPath + 'Sensor.ANALOG.Temperature', name: 'Panel', interpolateColor: true},
+        /*PageItem*/{id: 'alias.0.Fernseher', name: 'TV', hideEntity2: true, onColor: MSGreen, offColor: MSRed},
+        /*PageItem*/{navigate: true, id: 'alias.0.Fenster', targetPage: 'Grid2Seite', name: 'Fenster'},
+        /*PageItem*/{navigate: true, id: 'NSPanel_Service', icon: 'cog', name: 'Service'},
+        /*PageItem*/{navigate: true, id: 'alias.0.Status', targetPage: 'NSPanel_Infos', name: 'Status'},
+    ]
+};
+
+let Licht: PageType =
+{
+    'type': 'cardEntities',
+    'heading': 'Licht',
+    'useColor': true,
+    'subPage': true,
+    'parent': Wohnen,
+    'next': 'Grid2Seite',
+    'items': [
+        /*PageItem*/{id: 'alias.0.Licht.Decke', name: 'Decke', icon: 'ceiling-light', onColor: On, offColor: HMIOff, minValueBrightness: 0, maxValueBrightness: 100},
+        /*PageItem*/{id: 'alias.0.Licht.Stehlampe', name: 'Stehlampe', fontSize: 2},
+        /*PageItem*/{id: 'alias.0.Rollo', name: 'Rollo', shutterZeroIsClosed: true},
+    ]
+};
+
+let Grid2Seite: PageType =
+{
+    'type': 'cardGrid2',
+    'heading': 'Grid 2',
+    'useColor': true,
+    'subPage': true,
+    'prev': 'Licht',
+    'home': 'NSPanel_Service',
+    'items': [
+        /*PageItem*/{navigate: true, id: null, targetPage: 'Grid3Seite', icon: 'arrow-right', name: 'weiter'},
+        /*PageItem*/{id: 'alias.0.Steckdose', name: 'Steckdose'},
+    ]
+};
+
+// not listed in subPages - the old script reached it by its variable name
+let Grid3Seite: PageType =
+{
+    'type': 'cardGrid3',
+    'heading': 'Grid 3',
+    'useColor': false,
+    'subPage': true,
+    'parent': Grid2Seite,
+    'items': [
+        /*PageItem*/{id: 'alias.0.Licht.Flur', name: 'Flur'},
+    ]
+};
+
+let Zeitplan: PageType =
+{
+    'type': 'cardSchedule',
+    'heading': 'Abfall',
+    'useColor': true,
+    'items': [
+        /*PageItem*/{id: 'alias.0.Abfall.event1', icon: 'trash-can'},
+    ]
+};
+
+let Heizung: PageType =
+{
+    'type': 'cardThermo',
+    'heading': 'Heizung',
+    'items': [/*PageThermoItem*/{
+        id: 'alias.0.Heizung.Wohnzimmer',
+        minValue: 50,
+        maxValue: 300,
+        stepValue: 5,
+        alwaysOnDisplay: true,
+        setThermoDestTemp2: 'ACTUAL2',
+        popupThermoMode1: ['Auto', 'Manuell'],
+        setThermoAlias: ['MODE1'],
+    }]
+};
+
+let Heizung2: PageType =
+{
+    'type': 'cardThermo2',
+    'heading': 'Heizung 2',
+    'subPage': true,
+    'parent': Wohnen,
+    'thermoItems': [
+        {id: 'alias.0.Heizung.Bad', minValue: 5, maxValue: 30, stepValue: 0.5},
+        {id: 'alias.0.Bad.Temperatur.ACTUAL', unit: '°C', onColor: White},
+        {id: 'alias.0.Bad.Feuchte.ACTUAL', unit: '%', onColor: White},
+        {id: 'alias.0.Heizung.Bad.MODE', onColor: White},
+    ],
+    'items': []
+};
+
+let Musik: PageType =
+{
+    'type': 'cardMedia',
+    'heading': 'Alexa',
+    'items': [/*PageItem*/{
+        id: AliasPath + 'Media.PlayerAlexa',
+        adapterPlayerInstance: 'alexa2.0.',
+        mediaDevice: 'G0XXXXXXXXXXXXXX',
+        playerMediaIcon: 'logo-alexa',
+        showOnlyPlayerHeadline: true,
+        crossfade: false,
+        colorMediaIcon: colorAlexa,
+        colorMediaTitle: colorAlexa,
+        colorMediaArtist: Yellow,
+        autoCreateALias: true,
+        speakerList: ['Küche', 'Wohnzimmer'],
+        playList: ['Spotify-Playlist.Party'],
+        minValue: 0,
+        maxValue: 80,
+    }]
+};
+
+let MusikSqueeze: PageType =
+{
+    'type': 'cardMedia',
+    'heading': 'LMS',
+    'subPage': true,
+    'parent': Musik,
+    'items': [/*PageItem*/{
+        id: AliasPath + 'Media.PlayerLMS',
+        adapterPlayerInstance: 'squeezeboxrpc.0.',
+        mediaDevice: 'Kueche',
+    }]
+};
+
+let MusikBose: PageType =
+{
+    'type': 'cardMedia',
+    'heading': 'Bose',
+    'subPage': true,
+    'parent': Musik,
+    'items': [/*PageItem*/{
+        id: AliasPath + 'Media.PlayerBose',
+        adapterPlayerInstance: 'bosesoundtouch.0.',
+    }]
+};
+
+let Alarm: PageType =
+{
+    'type': 'cardAlarm',
+    'heading': 'Alarm',
+    'items': [/*PageItem*/{id: 'alias.0.Alarm', actionStringArray: ['Vollschutz', 'Zuhause', 'Nacht', 'Besuch']}]
+};
+
+let Tuer: PageType =
+{
+    'type': 'cardUnlock',
+    'heading': 'Tür',
+    'items': [/*PageItem*/{id: 'alias.0.Unlock', targetPage: 'Licht'}]
+};
+
+let Gast: PageType =
+{
+    'type': 'cardQR',
+    'heading': 'Gäste-WLAN',
+    'useColor': true,
+    'subPage': true,
+    'parent': Wohnen,
+    'items': [/*PageItem*/{id: '0_userdata.0.Gast_Wlan', hidePassword: true}]
+};
+
+let Strom: PageType =
+{
+    'type': 'cardPower',
+    'heading': 'Energie',
+    'items': [/*PageItem*/{id: 'alias.0.Power'}]
+};
+
+let Chart1: PageType =
+{
+    'type': 'cardChart',
+    'heading': 'Balken',
+    'items': [/*PageItem*/{id: 'alias.0.Chart.Balken', yAxis: 'kWh', yAxisTicks: [0, 10, 20], onColor: Yellow}]
+};
+
+let Chart2: PageType =
+{
+    'type': 'cardLChart',
+    'heading': 'Linie',
+    'items': [/*PageItem*/{id: 'alias.0.Chart.Linie', yAxis: '°C', yAxisTicks: '0_userdata.0.Ticks', xAxisDecorationId: '0_userdata.0.Deco'}]
+};
+
+// Service pages of the old script - dropped by the conversion
+let NSPanel_Service: PageType =
+{
+    'type': 'cardEntities',
+    'heading': findLocaleServMenu('service_menu'),
+    'useColor': true,
+    'items': [
+        /*PageItem*/{navigate: true, id: 'NSPanel_Infos', icon: 'information-outline', offColor: Menu, onColor: Menu, name: findLocaleServMenu('infos'), buttonText: findLocaleServMenu('more')},
+        /*PageItem*/{id: AliasPath + 'Config.rebootNSPanel', name: findLocaleServMenu('reboot'), icon: 'refresh', offColor: MSRed, onColor: MSGreen, buttonText: findLocaleServMenu('start')},
+    ]
+};
+
+let NSPanel_Infos: PageType =
+{
+    'type': 'cardEntities',
+    'heading': findLocaleServMenu('nspanel_infos'),
+    'useColor': true,
+    'subPage': true,
+    'parent': NSPanel_Service,
+    'home': 'NSPanel_Service',
+    'items': [
+        /*PageItem*/{id: AliasPath + 'Config.Update.UpdateMessage', name: findLocaleServMenu('update_message'), icon: 'message-alert-outline', offColor: HMIOff, onColor: MSGreen},
+    ]
+};
+
+export const config: Config = {
+    pages: [
+        Wohnen,
+        Zeitplan,
+        Heizung,
+        Musik,
+        Alarm,
+        Tuer,
+        Strom,
+        Chart1,
+        Chart2,
+        NSPanel_Service, //Auto-Alias Service Page
+    ],
+    subPages: [
+        Licht,
+        Grid2Seite,
+        Heizung2,
+        MusikSqueeze,
+        MusikBose,
+        Gast,
+        NSPanel_Infos, //Auto-Alias Service Page
+    ],
+
+    leftScreensaverEntity: [
+        {
+            ScreensaverEntity: 'alias.0.Aussen.Temperatur.ACTUAL',
+            ScreensaverEntityFactor: 1,
+            ScreensaverEntityDecimalPlaces: 1,
+            ScreensaverEntityIconOn: 'thermometer',
+            ScreensaverEntityText: 'Außen',
+            ScreensaverEntityUnitText: '°C',
+            ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 35, 'val_best': 22}
+        },
+        null,
+        {
+            ScreensaverEntity: NSPanel_Path + 'Sensor.ANALOG.Temperature',
+            ScreensaverEntityText: 'Panel',
+            ScreensaverEntityUnitText: '°C',
+        },
+    ],
+
+    bottomScreensaverEntity: [
+        {
+            ScreensaverEntity: 'pirate-weather.0.weather.currently.windSpeed',
+            ScreensaverEntityFactor: 1000 / 3600,
+            ScreensaverEntityDecimalPlaces: 1,
+            ScreensaverEntityIconOn: 'weather-windy',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityText: "Wind",
+            ScreensaverEntityUnitText: 'm/s',
+            ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120},
+            ScreensaverEntityNaviToPage: Musik
+        },
+        {
+            ScreensaverEntity: NSPanel_Path + 'Relay.1',
+            ScreensaverEntityIconOn: 'coach-lamp-variant',
+            ScreensaverEntityText: 'Street',
+            ScreensaverEntityOnColor: Yellow,
+            ScreensaverEntityOffColor: White,
+            ScreensaverEntityOnText: 'Is ON',
+            ScreensaverEntityOffText: 'Not ON'
+        },
+    ],
+
+    indicatorScreensaverEntity: [
+        {
+            ScreensaverEntity: 'alias.0.Fenster.ACTUAL',
+            ScreensaverEntityIconOn: 'window-open-variant',
+            ScreensaverEntityIconOff: 'window-closed-variant',
+            ScreensaverEntityText: 'Fenster',
+            ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 1},
+            ScreensaverEntityIconSelect: [{icon: 'window-open', value: 1}],
+        },
+    ],
+
+    mrIcon1ScreensaverEntity: {
+        ScreensaverEntity: NSPanel_Path + 'Relay.1',
+        ScreensaverEntityIconOn: 'lightbulb',
+        ScreensaverEntityIconOff: null,
+        ScreensaverEntityValue: null,
+        ScreensaverEntityValueDecimalPlace: 0,
+        ScreensaverEntityValueUnit: null,
+        ScreensaverEntityOnColor: On,
+        ScreensaverEntityOffColor: HMIOff
+    },
+    mrIcon2ScreensaverEntity: {
+        ScreensaverEntity: 'alias.0.Licht.Decke.ACTUAL',
+        ScreensaverEntityIconOn: 'lightbulb',
+        ScreensaverEntityIconOff: null,
+        ScreensaverEntityValue: null,
+        ScreensaverEntityValueDecimalPlace: 0,
+        ScreensaverEntityValueUnit: null,
+        ScreensaverEntityOnColor: On,
+        ScreensaverEntityOffColor: HMIOff
+    },
+
+    button1: {
+        mode: 'page',
+        page: Heizung,
+        entity: null,
+        setValue: null
+    },
+
+    button2: {
+        mode: 'toggle',
+        page: null,
+        entity: 'alias.0.Licht.Decke.SET',
+        setValue: null
+    },
+
+    panelRecvTopic: NSPanelReceiveTopic,
+    panelSendTopic: NSPanelSendTopic,
+    weatherEntity: weatherEntityPath,
+    defaultOffColor: defaultOffColorParam,
+    defaultOnColor: defaultOnColorParam,
+    defaultColor: defaultColorParam,
+    defaultBackgroundColor: defaultBackgroundColorParam,
+};
+
+// ________________________________ end of the configuration part ________________________________
+
+const tasmotaOtaVersion: string = 'tasmota32-nspanel.bin';
+const scriptVersion: string = 'v5.1.1.10';
+
+function findLocaleServMenu(id: string): string {
+    return id;
+}

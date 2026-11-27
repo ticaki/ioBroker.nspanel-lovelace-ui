@@ -49,6 +49,7 @@ var import_navigation_overrides = require("./lib/configuration/navigation-overri
 var import_panel_buttons = require("./lib/configuration/panel-buttons");
 var import_no_script = require("./lib/configuration/no-script");
 var import_page_dump = require("./lib/configuration/page-dump");
+var import_nspanelts_import_runner = require("./lib/configuration/nspanelts-import-runner");
 var import_pageDump = require("./lib/types/pageDump");
 var import_script_to_admin_runner = require("./lib/configuration/script-to-admin-runner");
 var import_admin_page_item = require("./lib/configuration/admin-page-item");
@@ -2117,6 +2118,27 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "nspanelTsList":
+        case "nspanelTsConvert": {
+          let answer;
+          try {
+            const importer = this.nsPanelTsImport();
+            if (obj.command === "nspanelTsList") {
+              answer = { scripts: await importer.list() };
+            } else if ((0, import_nspanelts_import_runner.isNsPanelTsConvertRequest)(obj.message)) {
+              answer = await importer.convert(obj.message);
+            } else {
+              answer = { error: "invalid message" };
+            }
+          } catch (e) {
+            this.log.error(`${obj.command}: ${(0, import_error_format.formatErrorForLog)(e)}`);
+            answer = { error: String(e) };
+          }
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, answer, obj.callback);
+          }
+          break;
+        }
         case "getIcons": {
           const icons = Array.from(import_icon_mapping.Icons.iconMap, ([name]) => name).map((a) => {
             return { label: a, value: a };
@@ -3065,6 +3087,22 @@ class NspanelLovelaceUi extends utils.Adapter {
     } catch (e) {
       this.log.error(`Error while moving the script configuration from ${oldTopic} to ${newTopic}: ${String(e)}`);
     }
+  }
+  /**
+   * The NSPanelTs import (old standalone script → configuration script of this instance).
+   *
+   * @returns the importer
+   */
+  nsPanelTsImport() {
+    var _a;
+    return new import_nspanelts_import_runner.NsPanelTsImport({
+      adapter: this,
+      folder: this.configurationScriptFolder(),
+      scriptIdFor: (name) => this.configurationScriptId(name),
+      template: fs.readFileSync(import_node_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"), "utf8"),
+      endToken: import_panel_setup.SCRIPT_END_STOP_TOKEN,
+      panelNames: ((_a = this.config.panels) != null ? _a : []).filter((p) => p && p.kind !== "web" && typeof p.name === "string" && p.name).map((p) => p.name)
+    });
   }
   async createConfigurationScript(panelName, panelTopic) {
     var _a;

@@ -19,6 +19,7 @@ Contents:
 - [Decoupling the relay](#7-decoupling-the-relay)
 - [The action types](#8-the-action-types)
 - [Colour of the buttons on the card](#9-colour-of-the-buttons-on-the-card)
+- [Converting the old NSPanelTs script](#10-converting-the-old-nspanelts-script)
 - [Pitfalls](#pitfalls)
 
 ## 1. When the tab appears
@@ -61,6 +62,7 @@ The head of the card holds the panel name, for a web panel the **Web** label, an
 | **⧉ (Open web panel in a new tab)** | Appears when the web panels are switched on and the panel has a topic — for a real NSPanel as well. Opens `http(s)://<host>:<port>/<topic>` in a new tab; a stored PIN is built into the address by the admin. More under [web panel](WebPanel). |
 | **↓ (Export panel configuration)** | Writes the configuration of this panel as a JSON file — pages, screensaver, hardware buttons and panel settings. Only active when the panel has an id and a topic. See [export and import a panel configuration](panelConfigTransfer). |
 | **↑ (Import panel configuration)** | Reads such a file back in. Before applying it, the admin shows a review with every single page, the import mode and the conflicts. See [export and import a panel configuration](panelConfigTransfer). |
+| **⇄ (Convert the old NSPanelTs script)** | Only for an NSPanel and with the instance running; hidden while *Panel uses no script* is checked. Converts the configuration of the old standalone script *NSPanelTs.ts* into a new, disabled configuration script for this panel. See [Converting the old NSPanelTs script](#10-converting-the-old-nspanelts-script). |
 | **Pencil** | For an NSPanel: copies IP, name, topic and model up into the form, the frame blinks briefly. **The change itself only happens** when *NSPanel configuration update* is run afterwards. For a web panel the pencil opens its dialog — that works with the instance stopped as well. |
 | **Bin** | Asks for confirmation and then removes the entry **from the panel table**. Only with the instance running. The device keeps its Tasmota settings; to really wipe it, use the factory reset in the [Tasmota tools](tasmotatools). |
 
@@ -157,6 +159,80 @@ where you stand. Every colour has a tooltip of its own that spells the state out
 | **Grey** | Nothing configured and the button switches its relay — the factory state. |
 
 If the decoupling cannot be read — with the instance stopped, for instance — it counts as decoupled; the button is green then. The dialog uses the same rule when it decides whether to offer the action.
+
+## 10. Converting the old NSPanelTs script
+
+Whoever ran the panel with the old standalone script **NSPanelTs.ts** of the javascript adapter (project joBr99 / Armilar) does not have to type the pages in again. The **⇄** button on the panel card turns the configuration of that script into a **new configuration script of the adapter** for the panel of the card.
+
+> This is **not** about the configuration script that belongs to the adapter (folder `script.js.nspanel-lovelace-ui_0`), but about the old script with the header *"TypeScript v… zur Steuerung des SONOFF NSPanel mit dem ioBroker"*.
+
+**Prerequisites**
+
+- The old script is **version 4.4 or newer** (up to 5.1.1.x). The version is in the line `const scriptVersion: string = 'v…';`. Older and unknown newer versions are refused with the reason.
+- Only the **configuration part** of the script is converted (everything up to the end of `export const config`). Changes further down in the script are not part of the result.
+- The panel is set up in the adapter and the instance is running.
+- **Panel uses no script** is **not** checked on the card – otherwise the button is hidden (right when the box is checked, even before saving).
+
+**Steps**
+
+1. Click **⇄** on the card of the panel. First a **warning** explains what this is about. **Cancel** closes, **Continue** goes on to the selection.
+
+   ![Warning before the conversion](../Pictures/Migration/nspanelts-01-warnung.png)
+
+2. The dialog lists all old NSPanelTs scripts with name, version, state (running/stopped), detected topic and whether it can be converted. Click a script.
+3. Below it is the field **Topic**, filled with the MQTT topic of the old script (from `NSPanelReceiveTopic`, e.g. `mqtt.0.SmartHome.NSPanel_1.tele.RESULT` → `SmartHome/NSPanel_1`), and below that the topic of the panel in the adapter. The field can be changed; its value is written as `panelTopic` into the new script. **If the two differ**, the dialog shows a hint: the script only works if its `panelTopic` matches the topic of the panel. **Use topic of the panel** puts the panel's topic into the field. The dialog never changes the topic of the panel itself – that is done in the setup form above. If no topic could be read, the field is empty and required.
+
+   ![Script selection with topic field and hint about a different topic](../Pictures/Migration/nspanelts-02-auswahl.png)
+
+4. **Convert**. The dialog then shows the id of the new script, the number of pages taken over, the number of **TODOs**, the pages only kept as TODO and the dropped service pages.
+
+   ![Result of the conversion](../Pictures/Migration/nspanelts-03-ergebnis.png)
+
+5. Open the new script in the javascript adapter (folder `nspanel-lovelace-ui_0`, name = panel name, or `<panel>_NSPanelTs` if that exists already) and review it.
+6. **Stop the old script**, then activate the new one. Running both at the same time sends everything twice to the panel.
+7. To maintain the pages in the admin, use [Take script over into admin](Migration) afterwards as usual.
+
+The dialog activates and stops **nothing**, and the old script stays unchanged. An existing script is never overwritten.
+
+**What is taken over**
+
+- All pages of the types *cardEntities*, *cardSchedule*, *cardGrid*, *cardGrid2*, *cardGrid3*, *cardThermo*, *cardThermo2* and *cardMedia* (Alexa, Sonos, Squeezebox, MPD, Spotify) with their items, colors and navigation. The pages get the variable name of the old script as `uniqueName`; the first main page is called `main` in the adapter.
+- Pages the old script only reached by a reference (not listed in `pages`/`subPages`) are added to the subpages – with a TODO to check them.
+- Screensaver (left, bottom, indicators, MR icons), the colors, the hardware buttons in mode *page* and *toggle*, the weather from `weatherAdapterInstance`.
+- For a media player the dialog builds the device id from instance and `mediaDevice`; the alias the old script created is not needed any more.
+
+**Approximated instead of TODO**
+
+Principle: what the adapter can do **almost the same way** is taken over – even if it is not exactly the same. Such places only carry a one-line comment `// note: …` saying what is different; nothing has to be done there. Approximated are:
+
+| Old script | In the new script |
+|---|---|
+| `colorScale` (page items) and `ScreensaverEntityIconColor` as scale | scale with `mode: 'hue'` between the end colors of the old palette (green `{99,190,123}`, red `{248,105,107}`); `onColor`/`offColor` or `ScreensaverEntityOnColor`/`OffColor` are set for it. Green and red sit where they used to; the transition is continuous instead of 11 steps. |
+| *cardThermo2* (`thermoItems` [0] thermostat, [1] temperature, [2] humidity, [3] mode) | one heating circuit `{ thermoId1, thermoId2, modeId, set: '<[0]>.SET', minValue, maxValue, stepValue }`; with the instance option *values in tenths* the limits are written ×10. The color of the mode text is dropped. |
+| `showOnlyPlayerHeadline: true` | `media.headlineMode: 'device'` |
+| `crossfade: false` (media) | `media.deactivateDefaultItems: { crossfade: true }` |
+| `playerMediaIcon`, `equalizerSlider` | dropped – the adapter shows the logo of the player and its own equalizer item |
+| `interpolateColor: true` | dropped – the adapter dims the color of a light by its brightness itself |
+| `setThermoDestTemp2` | dropped – the adapter shows `SET2` of an airCondition channel as second set point |
+| `shutterType` | dropped – the adapter chooses the shutter popup itself |
+| `shutterZeroIsClosed` | instance-wide in the adapter (option *shutterClosedIsZero* in the admin) |
+| hardware button *set* without `setOn`/`setOff`, with `true`/`false` on the same state or only `setOn` = `true` | no action, *switch* or *button* |
+
+`useColor` (page and item) deliberately does not exist in the adapter; it is left out without a comment.
+
+**What TODO means**
+
+`// TODO: …` is only written where the adapter has **nothing comparable**; the original value is next to it. Search the script for "TODO" and decide each place yourself:
+
+- Fields without counterpart (e.g. `hideEntity2`, `iconArray`, `customIcons`, `monobutton`, `popUpThermoName`, `inSel_ChoiceState: false`).
+- References to states the old script created itself (`0_userdata.0.NSPanel.…`, aliases below `alias.0.NSPanel.<n>.Config`, `.Sensor` …) – the adapter does not update them.
+- Pages the old script only reached by a reference.
+- Whole pages the configuration script of the adapter does not know: *cardAlarm*, *cardUnlock*, *cardQR*, *cardPower*, *cardChart*, *cardLChart*, a *cardThermo2* without thermostat, temperature or mode, and unsupported media players (Volumio, Bose). They are kept as commented-out block with the original; create them in the admin under the same name.
+- Hardware buttons *set* with other values (e.g. two texts alternately) and unsupported weather adapters.
+
+**What is dropped**
+
+The **service pages** of the old script (`NSPanel_Service`, `NSPanel_Infos`, `Unlock_Service` etc.) – the adapter solves this differently. References of other pages to them (navigation, jump targets, buttons, screensaver) are removed silently; an item that only jumped to a service page is dropped completely. If a page is left without navigation by that, the adapter's default applies. The result dialog lists the dropped service pages for information.
 
 ## Pitfalls
 
