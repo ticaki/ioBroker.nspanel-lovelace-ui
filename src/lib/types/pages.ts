@@ -252,8 +252,9 @@ export type cardDeviceTypes = Extract<PageTypeCards, 'cardDevice1' | 'cardDevice
 
 /**
  * device page of a device item (device-page.ts buildDevicePage): its page items are the elements - main, the slots of
- * the layout (the card says the layout), info and the hidden status item (an empty item = empty slot / no info / no
- * status), behind them the extra slots of the web models when the page has them
+ * the layout (the card says the layout), info, the hidden status item and the places of the status icon grid (an
+ * empty item = empty slot / no info / no status / a place the stage does not show), behind them the extra slots of
+ * the web models when the page has them
  */
 export type cardDeviceDataItemOptions = {
     card: cardDeviceTypes;
@@ -264,6 +265,8 @@ export type cardDeviceDataItemOptions = {
      * kind of the slot
      */
     channelSlots?: number[];
+    /** the stage of the status icon grid (deviceDetails.ts devicePageStageOf), missing = 0: no grid */
+    statusStage?: 0 | 1 | 2 | 3;
 };
 
 type PageBaseTemplate = {

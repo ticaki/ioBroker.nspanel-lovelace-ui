@@ -190,13 +190,94 @@ export type DevicePageSlotKind = 'info' | 'value' | 'progress' | 'button' | 'swi
  * the slots (HMI doc/ideas/device-details/device-page-hmi.md, section "Art je Slot").
  */
 export const DEVICE_PAGE_LAYOUTS: Readonly<Record<DevicePageLayout, readonly DevicePageSlotKind[]>> = {
-    /** "Steuern" (control): slots 7-10 are the 2x2 status icons right of the big icon */
-    1: ['info', 'info', 'button', 'button', 'button', 'button', 'status', 'status', 'status', 'status'],
+    /** "Steuern" (control): the status icons are no slots, they come with devIcons ({@link DEVICE_PAGE_STATUS_SLOTS}) */
+    1: ['info', 'info', 'button', 'button', 'button', 'button'],
     /** "Fortschritt" (progress) */
     2: ['value', 'progress', 'info', 'info', 'info', 'button'],
     /** "Werte" (values) */
     3: ['info', 'info', 'info', 'info', 'info', 'info', 'switch', 'switch'],
 };
+
+/** the stage of the status icon grid of a device page (cardDevice1 0-3, cardDevice3 0-2, cardDevice2 none) */
+export type DevicePageStatusStage = 0 | 1 | 2 | 3;
+
+/**
+ * The places of the status icon grid per layout (TFT device13, `devIcons`): cardDevice1 8 x 2 = 16 cells, cardDevice3
+ * 8 x 1 = 8 cells, cardDevice2 none. Always this many cells in `devIcons`; how many of them the page shows depends on
+ * the stage ({@link DEVICE_PAGE_STAGE_CAPACITY}).
+ */
+export const DEVICE_PAGE_STATUS_SLOTS: Readonly<Record<DevicePageLayout, number>> = {
+    1: 16,
+    2: 0,
+    3: 8,
+};
+
+/** the most status icon places a configuration keeps ({@link DevicePageConfig.statusSlots}): the largest grid */
+export const DEVICE_PAGE_STATUS_SLOTS_MAX = 16;
+
+/**
+ * The status icon places each stage shows (index = stage): cardDevice1 none / 1-3 / 4-5 / 6-8 columns of 2 cells,
+ * cardDevice3 none / 1-4 / 5-8 cells. The highest index is the highest stage of the layout.
+ */
+export const DEVICE_PAGE_STAGE_CAPACITY: Readonly<Record<DevicePageLayout, readonly number[]>> = {
+    1: [0, 6, 10, 16],
+    2: [0],
+    3: [0, 4, 8],
+};
+
+/**
+ * The slots of the layout (index, 0 = slot 1) the status grid covers in each stage (index = stage): cardDevice1 the
+ * two info rows in stage 3, cardDevice3 tile 1 in stage 1 and tiles 1 and 2 in stage 2. Their configuration stays,
+ * the page does not show them.
+ */
+export const DEVICE_PAGE_STAGE_HIDDEN_SLOTS: Readonly<Record<DevicePageLayout, readonly (readonly number[])[]>> = {
+    1: [[], [], [], [0, 1]],
+    2: [[]],
+    3: [[], [0], [0, 1]],
+};
+
+/**
+ * @param value anything
+ * @returns true for a stage of the status icon grid (0-3)
+ */
+export function isDevicePageStatusStage(value: unknown): value is DevicePageStatusStage {
+    return value === 0 || value === 1 || value === 2 || value === 3;
+}
+
+/**
+ * @param layout the layout
+ * @param stage the stored stage (missing / invalid = 0)
+ * @returns the stage the layout shows: cut to the highest stage of the layout (cardDevice2 always 0)
+ */
+export function devicePageStageOf(layout: DevicePageLayout, stage: unknown): DevicePageStatusStage {
+    const max = DEVICE_PAGE_STAGE_CAPACITY[layout].length - 1;
+    const value = isDevicePageStatusStage(stage) ? stage : 0;
+    const out = Math.min(value, max);
+    return isDevicePageStatusStage(out) ? out : 0;
+}
+
+/**
+ * @param layout the layout
+ * @param stage the stage
+ * @returns the number of status icon places the stage shows ({@link DEVICE_PAGE_STAGE_CAPACITY})
+ */
+export function devicePageStatusCapacity(layout: DevicePageLayout, stage: DevicePageStatusStage): number {
+    return DEVICE_PAGE_STAGE_CAPACITY[layout][devicePageStageOf(layout, stage)] ?? 0;
+}
+
+/**
+ * @param layout the layout
+ * @param stage the stage
+ * @param slot index of a slot of the layout (0 = slot 1)
+ * @returns true when the status grid of the stage covers the slot ({@link DEVICE_PAGE_STAGE_HIDDEN_SLOTS})
+ */
+export function devicePageSlotHiddenByStage(
+    layout: DevicePageLayout,
+    stage: DevicePageStatusStage,
+    slot: number,
+): boolean {
+    return (DEVICE_PAGE_STAGE_HIDDEN_SLOTS[layout][devicePageStageOf(layout, stage)] ?? []).includes(slot);
+}
 
 /**
  * The extra slots of every layout: more elements of the same kinds, shown only by the standalone web panels of the
@@ -261,8 +342,15 @@ export type DevicePageLayoutFields = {
     /** the fields of the kinds of slots the layout has (`status` shows no text) */
     slots: Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>;
     /**
-     * the fields that change when at least one `status` slot is filled (layout 1: the info rows get narrower to make
-     * room for the 2x2 status icons); missing kinds keep {@link DevicePageLayoutFields.slots}
+     * the fields that change with the stage of the status icon grid (layout 1 of the HMI models: the info rows in set
+     * B with a short name, in set C without name - `name` 0); missing stages and kinds keep
+     * {@link DevicePageLayoutFields.slots}. In stage 3 of layout 1 the info rows are not shown at all
+     * ({@link DEVICE_PAGE_STAGE_HIDDEN_SLOTS}).
+     */
+    slotsByStage?: Partial<Record<DevicePageStatusStage, Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>>>;
+    /**
+     * web models only, until the web panel gets the status grid: the fields while the old 2x2 status block is shown
+     * (layout 1: narrower info rows); missing kinds keep {@link DevicePageLayoutFields.slots}
      */
     slotsWithStatus?: Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>;
 };
@@ -279,6 +367,12 @@ export const DEVICE_PAGE_STATUS_MAX_BYTES = 63;
  */
 export const DEVICE_PAGE_STATUS_COMMAND = 'devStatus';
 
+/**
+ * the message with the cells of the status icon grid (cardDevice1 16, cardDevice3 8): `devIcons~<type>~<id>~<icon>~
+ * <color>~…`, sent behind every `entityUpd` of a page with a stage, alone when only a status icon changed
+ */
+export const DEVICE_PAGE_ICONS_COMMAND = 'devIcons';
+
 /** a status text is split into at most this many parts; what is left behind the last one is cut with an ellipsis */
 export const DEVICE_PAGE_STATUS_MAX_PARTS = 3;
 
@@ -291,9 +385,9 @@ export const DEVICE_PAGE_STATUS_INTERVAL_MS = 3000;
  * (`web-l`, `web-p`) have no HMI page and no such buffer.
  */
 export const DEVICE_PAGE_RECEIVE_BYTES: Readonly<Record<DevicePageLayout, number>> = {
-    1: 943,
-    2: 875,
-    3: 1019,
+    1: 703,
+    2: 775,
+    3: 959,
 };
 
 /** maximum bytes of the name and of the value of an element (txt_maxl of tEntity / tValue / tMainName) */
@@ -315,9 +409,9 @@ export const DEVICE_PAGE_FIELDS: Readonly<Record<DevicePageLayout, DevicePageLay
         mainName: 110,
         status: 390,
         slots: { info: { name: 164, value: 110 }, button: { name: 104 } },
-        // at least one status icon: the 2x2 block stands right of the big icon, the info rows get narrower (empty status
-        // slots inside the shown block stay empty grid cells)
-        slotsWithStatus: { info: { name: 86, value: 110 } },
+        // the status grid right of the big icon: stage 1 set B (icon, name 49 px, the value of set A), stage 2 set C
+        // (icon and value 87 px, no name), stage 3 no info rows
+        slotsByStage: { 1: { info: { name: 49, value: 110 } }, 2: { info: { name: 0, value: 87 } } },
     },
     2: {
         mainName: 96,
@@ -347,6 +441,9 @@ export const DEVICE_PAGE_FIELDS_US_P: Readonly<Record<DevicePageLayout, DevicePa
         mainName: 150,
         status: 262,
         slots: { info: { name: 156, value: 104 }, button: { name: 148 } },
+        // the status grid where the info rows are, the rows right of the big icon as set C (icon, value 106 px) in
+        // stages 1 and 2, none in stage 3; us-p has no set B
+        slotsByStage: { 1: { info: { name: 0, value: 106 } }, 2: { info: { name: 0, value: 106 } } },
     },
     2: {
         mainName: 90,
@@ -406,7 +503,12 @@ export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DeviceP
  * by side in 100 px each (the width of this button on eu) with a name of 96 px, which keeps 4 px between two names.
  */
 export const DEVICE_PAGE_FIELDS_WEB_P: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
-    1: DEVICE_PAGE_FIELDS_US_P[1],
+    // the web panel has no status grid yet: us-p without the stages
+    1: {
+        mainName: DEVICE_PAGE_FIELDS_US_P[1].mainName,
+        status: DEVICE_PAGE_FIELDS_US_P[1].status,
+        slots: DEVICE_PAGE_FIELDS_US_P[1].slots,
+    },
     2: {
         ...DEVICE_PAGE_FIELDS_US_P[2],
         slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 96 } },
@@ -446,32 +548,43 @@ export function devicePageSlotCount(layout: DevicePageLayout): number {
 }
 
 /**
- * @param layout the layout
- * @param slots the slots of the page (same order as {@link DEVICE_PAGE_LAYOUTS})
- * @returns true when at least one `status` slot is filled - then the HMI draws the 2x2 status icons
+ * @param config the device page
+ * @param config.layout the layout
+ * @param config.statusStage the stored stage
+ * @param config.statusSlots the status icon places
+ * @returns true when the stage of the layout shows the status grid and one of its places is filled
  */
-export function devicePageHasStatusIcons(
-    layout: DevicePageLayout,
-    slots: readonly (DevicePageSlotRef | null | undefined)[],
-): boolean {
-    return DEVICE_PAGE_LAYOUTS[layout].some((kind, i) => kind === 'status' && !!slots[i]);
+export function devicePageHasStatusIcons(config: {
+    layout: DevicePageLayout;
+    statusStage?: unknown;
+    statusSlots?: readonly (DevicePageSlotRef | null | undefined)[];
+}): boolean {
+    const capacity = devicePageStatusCapacity(config.layout, devicePageStageOf(config.layout, config.statusStage));
+    return (config.statusSlots ?? []).slice(0, capacity).some(slot => !!slot);
 }
 
 /**
  * @param layout the layout
  * @param kind the kind of the slot
- * @param withStatusIcons at least one status slot is filled ({@link devicePageHasStatusIcons})
+ * @param stage the stage of the status icon grid ({@link devicePageStageOf}); on a web model any stage above 0 is the
+ * old 2x2 status block of the web panel
  * @param model the model of the panel, default `eu`
  * @returns the text fields of the kind, undefined for a kind without text
  */
 export function devicePageSlotFields(
     layout: DevicePageLayout,
     kind: DevicePageSlotKind,
-    withStatusIcons: boolean,
+    stage: DevicePageStatusStage,
     model: PanelModel = 'eu',
 ): DevicePageSlotFields | undefined {
     const fields = devicePageFields(layout, model);
-    return (withStatusIcons ? fields.slotsWithStatus?.[kind] : undefined) ?? fields.slots[kind];
+    if (stage > 0) {
+        const staged = fields.slotsByStage?.[stage]?.[kind] ?? fields.slotsWithStatus?.[kind];
+        if (staged) {
+            return staged;
+        }
+    }
+    return fields.slots[kind];
 }
 
 /**
@@ -901,6 +1014,19 @@ export type DevicePageConfig = {
      * them. Missing = off: the extra slots that are stored stay stored but are ignored (never sent, not built).
      */
     webExtras?: true;
+    /**
+     * the stage of the status icon grid: cardDevice1 0 none, 1 = 1-3 columns, 2 = 4-5, 3 = 6-8; cardDevice3 0 none,
+     * 1 = 1-4 cells (over tile 1), 2 = 5-8 (over tiles 1 and 2); cardDevice2 has none. Missing = 0. Kept as stored
+     * on a layout change - a layout uses it cut to its highest stage ({@link devicePageStageOf}).
+     */
+    statusStage?: DevicePageStatusStage;
+    /**
+     * the status icons in the order of the grid (column by column: top, bottom, next column; cardDevice3 one row),
+     * null = empty place: at most {@link DEVICE_PAGE_STATUS_SLOTS_MAX}, independent of the layout (a layout change keeps
+     * them; cardDevice3 uses the first 8). Places beyond the stage stay stored, the page does not show them. Missing =
+     * none.
+     */
+    statusSlots?: (DevicePageSlotRef | null)[];
     /** the "i" icon bottom right opens the detail page - only if the device has ticked rows ({@link DeviceDetailsConfig.entries}) */
     showInfo: boolean;
     /** MDI name of the big device icon, missing = the icon of the item */
@@ -921,6 +1047,14 @@ export type DevicePageRuntime = {
      * follows (N + E entries); otherwise there are only the N slots of the layout.
      */
     slots: (DevicePageSlotRef | null)[];
+    /** the stage of the status icon grid, cut to the layout ({@link devicePageStageOf}); missing = 0 */
+    statusStage?: DevicePageStatusStage;
+    /**
+     * the status icon places of the layout ({@link DEVICE_PAGE_STATUS_SLOTS}: cardDevice1 16, cardDevice3 8), null =
+     * empty - never a custom one without id; all of them, also those beyond the stage (the page leaves them out when it
+     * is built). Missing = none.
+     */
+    statusSlots?: (DevicePageSlotRef | null)[];
     /** the info icon is shown (configured and the device has rows for the detail page) */
     showInfo: boolean;
     icon?: string;
@@ -1186,10 +1320,13 @@ function devicePageStatusRefOf(value: unknown): DevicePageStatusRef | null {
 
 /**
  * The normalized device page of a stored configuration: an unknown layout becomes 1, the slots are cut or filled to
- * the slots of the layout (an invalid slot or one without state is empty; an older layout 1 with 6 slots gets its 4
- * status slots empty; an older own icon is kept only on a `status` slot, the own look on every slot), `showInfo` is
- * true unless it is false, an empty icon or status is left out - an own data point of the status line and an own
- * data point or alias channel of a slot (`custom`) stay also without id.
+ * the slots of the layout (an invalid slot or one without state is empty; an older own icon is kept only on a `status`
+ * slot, the own look on every slot), `showInfo` is true unless it is false, an empty icon or status is left out - an
+ * own data point of the status line and an own data point or alias channel of a slot (`custom`) stay also without id.
+ * The stage and the status icons ({@link DevicePageConfig.statusStage}, {@link DevicePageConfig.statusSlots}) stay
+ * as stored, also what the layout or the stage does not show: a stage 1-3 (0 is left out) and at most
+ * {@link DEVICE_PAGE_STATUS_SLOTS_MAX} status places as `status` slots, empty places at the end left out, an empty
+ * list too. Nothing is filtered by the stage here - the admin saves with this function.
  *
  * The extra slots ({@link DEVICE_PAGE_EXTRA_SLOTS}) follow the slots of the layout only when at least one of them is
  * stored - a configuration without them stays exactly as it was. `webExtras` is kept only when it is true; stored
@@ -1221,6 +1358,21 @@ export function devicePageConfigOf(value: unknown): DevicePageConfig | undefined
     };
     if ('webExtras' in value && value.webExtras === true) {
         config.webExtras = true;
+    }
+    // the stage and the status icons as stored, whatever the layout shows of them
+    const statusStage = 'statusStage' in value ? value.statusStage : undefined;
+    if (isDevicePageStatusStage(statusStage) && statusStage > 0) {
+        config.statusStage = statusStage;
+    }
+    const rawStatus: unknown[] = 'statusSlots' in value && Array.isArray(value.statusSlots) ? value.statusSlots : [];
+    const statusSlots = rawStatus
+        .slice(0, DEVICE_PAGE_STATUS_SLOTS_MAX)
+        .map(slot => devicePageSlotRefOf(slot, 'status'));
+    while (statusSlots.length > 0 && statusSlots[statusSlots.length - 1] === null) {
+        statusSlots.pop();
+    }
+    if (statusSlots.length > 0) {
+        config.statusSlots = statusSlots;
     }
     const icon = 'icon' in value && typeof value.icon === 'string' ? value.icon.trim() : '';
     if (icon) {
@@ -1769,6 +1921,26 @@ export function deviceDetailsRuntimeOf(config: unknown): DeviceDetailsRuntime | 
             showInfo: page.showInfo && runtime.entries.length > 0,
             shortPress: deviceShortPressOf(config),
         };
+        const statusStage = devicePageStageOf(page.layout, page.statusStage);
+        if (statusStage > 0) {
+            devicePage.statusStage = statusStage;
+        }
+        // the status icon places of the layout, empty like a slot: an own data point or channel that is not entered
+        // yet, a navigation without target page
+        const statusCount = DEVICE_PAGE_STATUS_SLOTS[page.layout];
+        if (statusCount > 0 && page.statusSlots) {
+            const statusSlots = page.statusSlots;
+            devicePage.statusSlots = Array.from({ length: statusCount }, (_v, i) => {
+                const slot = statusSlots[i];
+                if (!slot) {
+                    return null;
+                }
+                if (slot.custom === 'navigation') {
+                    return slot.targetPage && devicePageSlotAcceptsNavigation('status') ? slot : null;
+                }
+                return slot.id !== '' ? slot : null;
+            });
+        }
         if (page.icon) {
             devicePage.icon = page.icon;
         }

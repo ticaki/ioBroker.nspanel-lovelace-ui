@@ -52,10 +52,6 @@ import { channelIdOf, channelRolesOf, isInChannels, roleOfObject } from './chann
 
 const DEV = 'shelly.0.dev1';
 
-/** the status slots of layout 1 (indexes) - their number comes from DEVICE_PAGE_LAYOUTS only */
-const STATUS = DEVICE_PAGE_LAYOUTS[1].flatMap((kind, i) => (kind === 'status' ? [i] : []));
-/** nulls for the status slots of layout 1 */
-const STATUS_NULLS: null[] = STATUS.map(() => null);
 
 function state(rest: string, extra: Partial<DeviceStateInfo> = {}): DeviceStateInfo {
     return { id: `${DEV}.${rest}`, name: rest, role: 'state', type: 'number', read: true, write: false, ...extra };
@@ -102,7 +98,6 @@ describe('devicePageConfig - device page of the page item dialog', () => {
                 null,
                 null,
                 null,
-                ...STATUS_NULLS,
             ],
             showInfo: true,
         });
@@ -157,18 +152,8 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         };
         const one = withDevicePageLayout(page, 1);
         expect(one.layout).to.equal(1);
-        // slots 7/8 (switch) stay by position in the first status slots
-        expect(one.slots).to.deep.equal([
-            { key: 'a', id: 'x.1' },
-            null,
-            null,
-            null,
-            null,
-            null,
-            { key: 'b', id: 'x.7' },
-            { key: 'c', id: 'x.8' },
-            ...STATUS_NULLS.slice(2),
-        ]);
+        // slots 7/8 (switch) have no place in layout 1 (6 slots, the status icons are no slots)
+        expect(one.slots).to.deep.equal([{ key: 'a', id: 'x.1' }, null, null, null, null, null]);
         expect(withDevicePageLayout(page, 3)).to.equal(page);
         expect(withDevicePageLayout(one, 3).slots).to.have.length(8);
     });
@@ -176,7 +161,7 @@ describe('devicePageConfig - device page of the page item dialog', () => {
     it('withDevicePageSlot / withDevicePageStatus / withDevicePageIcon', () => {
         const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
         const withSlot = withDevicePageSlot(page, 2, { key: '', id: 'x.3' });
-        expect(withSlot.slots).to.deep.equal([null, null, { key: '', id: 'x.3' }, null, null, null, ...STATUS_NULLS]);
+        expect(withSlot.slots).to.deep.equal([null, null, { key: '', id: 'x.3' }, null, null, null]);
         expect(withDevicePageSlot(withSlot, 2, null).slots[2]).to.equal(null);
         // behind the slots of the layout come its extra slots, behind them nothing
         const beyond = DEVICE_PAGE_LAYOUTS[1].length + DEVICE_PAGE_EXTRA_SLOTS[1].length;
@@ -239,16 +224,12 @@ describe('devicePageConfig - device page of the page item dialog', () => {
 
     it('settings of a slot: stay when something else is chosen, the dialog replaces all of them', () => {
         const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
-        const s = STATUS[0];
+        // a button slot (the status icons are no slots of layout 1 any more - the older icon lives on in statusSlots)
+        const s = DEVICE_PAGE_LAYOUTS[1].indexOf('button');
         expect(withDevicePageSlotLook(page, s, { trueIcon: 'filter' })).to.equal(page);
-        // an older status icon: the dialog starts with it for both states and writes the new fields
+        // the older own icon only on a status slot: dropped here
         const old = withDevicePageSlot(page, s, { key: '', id: 'x.door', icon: 'filter' });
-        expect(old.slots[s]).to.deep.equal({ key: '', id: 'x.door', icon: 'filter' });
-        const oldSlot = old.slots[s];
-        expect(oldSlot && devicePageSlotDialogValue(oldSlot)).to.deep.equal({
-            trueIcon: 'filter',
-            falseIcon: 'filter',
-        });
+        expect(old.slots[s]).to.deep.equal({ key: '', id: 'x.door' });
         const look = { trueIcon: ' play ', falseIcon: 'pause', trueColor: '#00ff00', falseColor: '', longPress: 'a.b' };
         const withLook = withDevicePageSlotLook(old, s, look);
         expect(withLook.slots[s]).to.deep.equal({
@@ -610,21 +591,10 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         expect(shortPressToSave({})).to.equal('state');
     });
 
-    it('preview: the status grid only with a status slot filled, 2 columns, narrow info rows then', () => {
+    it('preview: narrow info rows while status icons are shown (provisional: no grid until the admin has the stages)', () => {
         const plain = devicePagePreviewAreas(1, false);
-        expect(plain.filter(a => STATUS.includes(a.slot - 1))).to.deep.equal([]);
         expect(plain.find(a => a.slot === 1)).to.deep.include({ x: 126, w: 314 });
         const grid = devicePagePreviewAreas(1, true);
-        const cells = grid.filter(a => STATUS.includes(a.slot - 1));
-        expect(cells.map(a => a.slot)).to.deep.equal(STATUS.map(i => i + 1));
-        expect(cells.slice(0, 4).map(a => [a.x, a.y, a.w, a.h])).to.deep.equal([
-            [124, 71, 38, 45],
-            [161, 71, 38, 45],
-            [124, 115, 38, 45],
-            [161, 115, 38, 45],
-        ]);
-        const rows = new Set(cells.map(a => a.y));
-        expect(rows.size).to.equal(STATUS.length / 2);
         expect(grid.find(a => a.slot === 1)).to.deep.include({ x: 204, w: 236 });
         for (const layout of [1, 2, 3] as const) {
             const areas = devicePagePreviewAreas(layout, layout === 1);
@@ -785,16 +755,23 @@ describe('devicePageConfig - extra slots of the web panels (web-l / web-p)', () 
         const one = withDevicePageLayout(filled, 1);
         expect(one.slots).to.have.length(DEVICE_PAGE_LAYOUTS[1].length + DEVICE_PAGE_EXTRA_SLOTS[1].length);
         expect(one.slots[0]).to.deep.equal({ key: '', id: 'x.1' });
-        // no status icon out of an extra slot
-        expect(STATUS.every(i => one.slots[i] === null)).to.equal(true);
         expect(one.slots[DEVICE_PAGE_LAYOUTS[1].length]).to.deep.equal({ key: '', id: 'x.e1' });
         expect(one.webExtras).to.equal(true);
         // and back
         expect(withDevicePageLayout(one, 2)).to.deep.equal(filled);
-        // a status icon of layout 1 is no extra slot of layout 2
-        const status: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
-        const withStatus = withDevicePageSlot(status, STATUS[0], { key: '', id: 'x.s' });
-        expect(withDevicePageLayout(withStatus, 2).slots).to.deep.equal(new Array<null>(N).fill(null));
+        // the stage and the status icons stay with a layout change
+        const status: DevicePageConfig = {
+            layout: 1,
+            slots: [],
+            showInfo: true,
+            statusStage: 3,
+            statusSlots: [{ key: '', id: 'x.s' }],
+        };
+        const two = withDevicePageLayout(status, 2);
+        expect(two.slots).to.deep.equal(new Array<null>(N).fill(null));
+        expect(two.statusStage).to.equal(3);
+        expect(two.statusSlots).to.deep.equal([{ key: '', id: 'x.s' }]);
+        expect(devicePageToSave({ devicePage: two })).to.deep.equal(two);
     });
 
     it('saved as it is: with the option and the extra slots, also unticked; old pages unchanged', () => {

@@ -14,6 +14,10 @@ import {
     devicePageMainItem,
     devicePageMaxPayloadBytes,
     devicePageName,
+    devicePageNumberedElement,
+    devicePageInfoElement,
+    devicePageIconsMessage,
+    devicePageTypeNumber,
     devicePageNavigationSlotItem,
     devicePagePayload,
     devicePageSlotItem,
@@ -38,12 +42,16 @@ import {
     DEVICE_PAGE_STATUS_INTERVAL_MS,
     DEVICE_PAGE_STATUS_MAX_BYTES,
     DEVICE_PAGE_STATUS_MAX_PARTS,
+    DEVICE_PAGE_STATUS_SLOTS,
     DEVICE_PAGE_TEXT_MAX_BYTES,
     defaultDevicePageConfig,
     defaultDevicePageSlots,
     devicePageConfigOf,
     devicePageHasStatusIcons,
     devicePageProgressPercent,
+    devicePageSlotHiddenByStage,
+    devicePageStageOf,
+    devicePageStatusCapacity,
     DEVICE_PAGE_CHANNEL_ROLES,
     devicePageSlotAccepts,
     devicePageSlotAcceptsChannel,
@@ -106,10 +114,10 @@ objects['0_userdata.0.wm'] = { type: 'folder', common: { name: 'wm' } };
 const getObject = async (id: string): Promise<ioBroker.Object | null> => Promise.resolve(objects[id] ?? null);
 const ref = (id: string): { key: string; id: string } => ({ key: '', id: `${DEV}.${id}` });
 /**
- * @param used status slots of layout 1 that are already given
- * @returns nulls for the other status slots of layout 1 (their number comes from DEVICE_PAGE_LAYOUTS only)
+ * @param count number of places
+ * @returns that many empty status icon places
  */
-const statusNulls = (used: number): null[] => DEVICE_PAGE_LAYOUTS[1].slice(6 + used).map(() => null);
+const statusNulls = (count: number): null[] => new Array<null>(count).fill(null);
 
 const sourceSwitch = {
     type: 'switch' as const,
@@ -208,9 +216,9 @@ describe('lib/types/deviceDetails - device page configuration', () => {
             'button',
             'button',
         ]);
-        // the status icons follow the six slots, how many comes from the table only
-        expect(DEVICE_PAGE_LAYOUTS[1].slice(6).length).to.be.above(0);
-        expect(DEVICE_PAGE_LAYOUTS[1].slice(6).every(k => k === 'status')).to.equal(true);
+        // the status icons are no slots (devIcons, TFT device13)
+        expect(DEVICE_PAGE_LAYOUTS[1]).to.have.length(6);
+        expect(DEVICE_PAGE_LAYOUTS[1].includes('status')).to.equal(false);
         expect(DEVICE_PAGE_LAYOUTS[2].includes('status')).to.equal(false);
         expect(DEVICE_PAGE_LAYOUTS[3].includes('status')).to.equal(false);
         expect(DEVICE_PAGE_LAYOUTS[2]).to.deep.equal(['value', 'progress', 'info', 'info', 'info', 'button']);
@@ -229,7 +237,8 @@ describe('lib/types/deviceDetails - device page configuration', () => {
         });
         expect(c).to.deep.equal({
             layout: 1,
-            slots: [ref('power'), null, null, null, null, ref('on'), ref('door'), ref('start'), ...statusNulls(2)],
+            // behind the six slots: the two extra slots (one of them is filled)
+            slots: [ref('power'), null, null, null, null, ref('on'), ref('door'), ref('start')],
             showInfo: true,
         });
         const d = devicePageConfigOf({
@@ -261,54 +270,106 @@ describe('lib/types/deviceDetails - device page configuration', () => {
     });
     it('a layout change keeps the slots by position', () => {
         const slots = [ref('power'), null, ref('door'), null, null, ref('start'), ref('on'), ref('on')];
-        expect(fitDevicePageSlots(slots, 1, 1)).to.deep.equal([...slots, ...statusNulls(2)]);
+        expect(fitDevicePageSlots(slots.slice(0, 6), 1, 1)).to.deep.equal(slots.slice(0, 6));
         expect(fitDevicePageSlots(slots.slice(0, 6), 3, 2)).to.deep.equal([...slots.slice(0, 6), null, null]);
-        expect(fitDevicePageSlots(slots, 2, 1)).to.deep.equal(slots.slice(0, 6));
+        expect(fitDevicePageSlots(slots, 2, 3)).to.deep.equal(slots.slice(0, 6));
     });
-    it('an older layout 1 with 6 slots stays valid: the status slots are empty', () => {
-        const old = {
-            layout: 1,
-            slots: [ref('power'), ref('door'), ref('start'), null, null, ref('on')],
-            showInfo: true,
-        };
-        const c = devicePageConfigOf(old);
-        expect(c?.slots).to.have.length(DEVICE_PAGE_LAYOUTS[1].length);
-        expect(c?.slots.slice(0, 6)).to.deep.equal(old.slots);
-        expect(c?.slots.slice(6).every(s => s === null)).to.equal(true);
-        expect(devicePageHasStatusIcons(1, c?.slots ?? [])).to.equal(false);
-        const runtimePage = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [], devicePage: old })?.devicePage;
-        expect(runtimePage?.slots).to.have.length(DEVICE_PAGE_LAYOUTS[1].length);
+    it('stage and status icons: stored as they are, independent of the layout; nothing filtered by the stage', () => {
+        const statusSlots: unknown[] = new Array(18).fill(null);
+        statusSlots[0] = { ...ref('door'), icon: ' delete-empty ' };
+        statusSlots[1] = { key: 'x' };
+        statusSlots[3] = { ...ref('on'), icon: '  ', name: 'own' };
+        // beyond the most places of a grid: dropped
+        statusSlots[17] = ref('power');
+        const c = devicePageConfigOf({ layout: 2, slots: [], statusStage: 3, statusSlots });
+        expect(c?.statusStage).to.equal(3);
+        // empty places at the end left out, the own icon of a status icon kept (trimmed)
+        expect(c?.statusSlots).to.deep.equal([
+            { ...ref('door'), icon: 'delete-empty' },
+            null,
+            null,
+            { ...ref('on'), name: 'own' },
+        ]);
+        // saved again: the same
+        expect(devicePageConfigOf(c)).to.deep.equal(c);
+        // stage 0, an invalid stage and no status icons are left out
+        for (const statusStage of [0, 4, -1, '2', 1.5, null]) {
+            expect(devicePageConfigOf({ layout: 1, statusStage }), String(statusStage)).to.not.have.property(
+                'statusStage',
+            );
+        }
+        expect(devicePageConfigOf({ layout: 1, statusSlots: [null, { key: '', id: '' }] })).to.not.have.property(
+            'statusSlots',
+        );
+        // places beyond the stage stay: 10 icons in stage 1 (6 places)
+        const ten = new Array(10).fill(0).map((_v, i) => ({ key: '', id: `${DEV}.s${i}` }));
+        expect(devicePageConfigOf({ layout: 1, statusStage: 1, statusSlots: ten })?.statusSlots).to.have.length(10);
     });
-    it('own icon: kept (trimmed) only on a status slot, an empty one is left out', () => {
-        const first = DEVICE_PAGE_LAYOUTS[1].indexOf('status');
-        const slots: unknown[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
-        slots[0] = { ...ref('power'), icon: 'filter' };
-        slots[first] = { ...ref('door'), icon: ' delete-empty ' };
-        slots[first + 1] = { ...ref('on'), icon: '  ' };
-        const c = devicePageConfigOf({ layout: 1, slots, status: { ...ref('phase'), icon: 'x' } });
-        expect(c?.slots[0]).to.deep.equal(ref('power'));
-        expect(c?.slots[first]).to.deep.equal({ ...ref('door'), icon: 'delete-empty' });
-        expect(c?.slots[first + 1]).to.deep.equal(ref('on'));
-        expect(c?.status).to.deep.equal(ref('phase'));
-        // a layout change by position: the icon does not travel to another kind
-        expect(fitDevicePageSlots(c?.slots ?? [], 3, 1)[first]).to.deep.equal(ref('door'));
-        expect(fitDevicePageSlots(c?.slots ?? [], 1, 1)[first]).to.deep.equal({
-            ...ref('door'),
-            icon: 'delete-empty',
-        });
+    it('stage per layout: cut to the highest stage of the layout, capacity and covered slots', () => {
+        expect([0, 1, 2, 3, undefined, 7].map(st => devicePageStageOf(1, st))).to.deep.equal([0, 1, 2, 3, 0, 0]);
+        expect([0, 1, 2, 3].map(st => devicePageStageOf(3, st))).to.deep.equal([0, 1, 2, 2]);
+        expect([0, 1, 2, 3].map(st => devicePageStageOf(2, st))).to.deep.equal([0, 0, 0, 0]);
+        expect(([0, 1, 2, 3] as const).map(st => devicePageStatusCapacity(1, st))).to.deep.equal([0, 6, 10, 16]);
+        expect(([0, 1, 2, 3] as const).map(st => devicePageStatusCapacity(3, st))).to.deep.equal([0, 4, 8, 8]);
+        expect(devicePageStatusCapacity(2, 2)).to.equal(0);
+        const hidden = (layout: 1 | 2 | 3, stage: 0 | 1 | 2 | 3): number[] =>
+            DEVICE_PAGE_LAYOUTS[layout].flatMap((_k, i) => (devicePageSlotHiddenByStage(layout, stage, i) ? [i] : []));
+        expect([hidden(1, 0), hidden(1, 1), hidden(1, 2), hidden(1, 3)]).to.deep.equal([[], [], [], [0, 1]]);
+        expect([hidden(3, 0), hidden(3, 1), hidden(3, 2), hidden(3, 3)]).to.deep.equal([[], [0], [0, 1], [0, 1]]);
+        expect(hidden(2, 3)).to.deep.equal([]);
     });
-    it('status icons: shown when at least one status slot is set; narrower info rows then', () => {
-        const slots: ({ key: string; id: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
-        slots[0] = ref('power');
-        expect(devicePageHasStatusIcons(1, slots)).to.equal(false);
-        slots[DEVICE_PAGE_LAYOUTS[1].length - 1] = ref('door');
-        expect(devicePageHasStatusIcons(1, slots)).to.equal(true);
-        expect(devicePageHasStatusIcons(3, [ref('power')])).to.equal(false);
-        expect(devicePageSlotFields(1, 'info', false)).to.deep.equal({ name: 164, value: 110 });
-        expect(devicePageSlotFields(1, 'info', true)).to.deep.equal({ name: 86, value: 110 });
-        expect(devicePageSlotFields(1, 'button', true)).to.deep.equal({ name: 104 });
-        expect(devicePageSlotFields(1, 'status', true)).to.equal(undefined);
-        expect(devicePageSlotFields(3, 'info', true)).to.deep.equal({ name: 125, value: 125 });
+    it('runtime: the stage of the layout and its status icon places, all of them, empty ones null', () => {
+        const statusSlots = [
+            ref('door'),
+            { key: '', id: '', custom: 'state' },
+            { key: '', id: '', custom: 'navigation', targetPage: 'rooms' },
+            { key: '', id: '', custom: 'navigation' },
+        ];
+        const one = deviceDetailsRuntimeOf({
+            deviceId: DEV,
+            entries: [],
+            devicePage: { layout: 1, statusStage: 1, statusSlots },
+        })?.devicePage;
+        expect(one?.statusStage).to.equal(1);
+        expect(one?.statusSlots).to.have.length(16);
+        expect(one?.statusSlots?.slice(0, 4)).to.deep.equal([
+            ref('door'),
+            null,
+            { key: '', id: '', custom: 'navigation', targetPage: 'rooms' },
+            null,
+        ]);
+        // cardDevice3: 8 places, stage 3 is cut to 2; cardDevice2: none
+        const three = deviceDetailsRuntimeOf({
+            deviceId: DEV,
+            entries: [],
+            devicePage: { layout: 3, statusStage: 3, statusSlots },
+        })?.devicePage;
+        expect(three?.statusStage).to.equal(2);
+        expect(three?.statusSlots).to.have.length(8);
+        const two = deviceDetailsRuntimeOf({
+            deviceId: DEV,
+            entries: [],
+            devicePage: { layout: 2, statusStage: 2, statusSlots },
+        })?.devicePage;
+        expect(two).to.not.have.property('statusStage');
+        expect(two).to.not.have.property('statusSlots');
+        // stage 0: no stage at runtime
+        const none = deviceDetailsRuntimeOf({ deviceId: DEV, entries: [], devicePage: { layout: 1, statusSlots } });
+        expect(none?.devicePage).to.not.have.property('statusStage');
+    });
+    it('status icons: shown when the stage shows a filled place', () => {
+        expect(devicePageHasStatusIcons({ layout: 1, statusSlots: [ref('door')] })).to.equal(false);
+        expect(devicePageHasStatusIcons({ layout: 1, statusStage: 1, statusSlots: [ref('door')] })).to.equal(true);
+        expect(
+            devicePageHasStatusIcons({ layout: 1, statusStage: 1, statusSlots: [...statusNulls(6), ref('door')] }),
+        ).to.equal(false);
+        expect(devicePageHasStatusIcons({ layout: 2, statusStage: 1, statusSlots: [ref('door')] })).to.equal(false);
+        expect(devicePageSlotFields(1, 'info', 0)).to.deep.equal({ name: 164, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 1)).to.deep.equal({ name: 49, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 2)).to.deep.equal({ name: 0, value: 87 });
+        expect(devicePageSlotFields(1, 'button', 1)).to.deep.equal({ name: 104 });
+        expect(devicePageSlotFields(1, 'status', 1)).to.equal(undefined);
+        expect(devicePageSlotFields(3, 'info', 1)).to.deep.equal({ name: 125, value: 125 });
     });
     it('suggestion: only info / value slots, from the ticked rows in order, no status', () => {
         const entries = [ref('power'), ref('progress'), ref('phase'), { key: 'x', id: '' }, ref('door')];
@@ -606,36 +667,42 @@ describe('lib/pages/device-page - status line', () => {
             `${type}~dp_1234567890?${n}~I~65535~${'n'.repeat(31)}~${'w'.repeat(31)}`;
         const info = 'button~dp_1234567890?9~I~65535~~1';
         const status = 's'.repeat(40);
-        it('buffers of the HMI pages: 943 / 875 / 1019, never more than the display takes (1017)', () => {
-            expect(DEVICE_PAGE_RECEIVE_BYTES).to.deep.equal({ 1: 943, 2: 875, 3: 1019 });
+        it('buffers of the HMI pages (device13): 703 / 775 / 959, never more than the display takes (1017)', () => {
+            expect(DEVICE_PAGE_RECEIVE_BYTES).to.deep.equal({ 1: 703, 2: 775, 3: 959 });
             for (const model of ['eu', 'us-l', 'us-p'] as const) {
                 expect(
                     [1, 2, 3].map(l => devicePageMaxPayloadBytes(l as 1 | 2 | 3, model)),
                     model,
-                ).to.deep.equal([943, 875, 1017]);
+                ).to.deep.equal([703, 775, 959]);
             }
         });
         it('a message that fits keeps the part of the status text', () => {
             const elements = [full('text', 1), full('text', 2), info];
             const out = devicePagePayload(head, main, elements, status, 3, 'eu');
-            expect(out).to.equal([head, `button~dp_12?0~I~65535~${'M'.repeat(31)}~${status}`, ...elements].join('~'));
+            expect(out).to.equal(
+                [
+                    head,
+                    `1~dp_12?0~I~65535~${'M'.repeat(31)}~${status}`,
+                    ...elements.map(devicePageNumberedElement),
+                ].join('~'),
+            );
             expect(devicePagePayload(head, '', [], '', 2, 'eu')).to.equal(`${head}~~~~~~`);
         });
-        it('layout 2 (875 bytes): the status line gives way when the message gets too long', () => {
+        it('layout 2 (775 bytes): the status line gives way when the message gets too long', () => {
             const elements = [1, 2, 3, 4, 5, 6].map(n => full('input_sel', n));
             elements.push(info);
             const headOf = (n: number): string => `entityUpd~${'H'.repeat(n)}~${NAV}`;
-            const room = 875 - bytes(devicePagePayload(headOf(0), main, elements, '', 2, 'eu'));
+            const room = 775 - bytes(devicePagePayload(headOf(0), main, elements, '', 2, 'eu'));
             // exactly the room of the status text
             const fits = devicePagePayload(headOf(room - 40), main, elements, status, 2, 'eu');
-            expect(bytes(fits)).to.equal(875);
+            expect(bytes(fits)).to.equal(775);
             expect(fits.split('~')[19]).to.equal(status);
             // 10 bytes less: the text is cut by them, with "..."
             const tighter = devicePagePayload(headOf(room - 30), main, elements, status, 2, 'eu');
-            expect(bytes(tighter)).to.equal(875);
+            expect(bytes(tighter)).to.equal(775);
             expect(tighter.split('~')[19]).to.equal(`${'s'.repeat(27)}...`);
             // nothing else changed
-            expect(tighter.split('~').slice(20).join('~')).to.equal(elements.join('~'));
+            expect(tighter.split('~').slice(20).join('~')).to.equal(elements.map(devicePageNumberedElement).join('~'));
             // no room at all: no status text
             const none = devicePagePayload(headOf(room), main, elements, status, 2, 'eu');
             expect(none.split('~')[19]).to.equal('');
@@ -643,14 +710,16 @@ describe('lib/pages/device-page - status line', () => {
         it('the longest message the adapter builds fits every layout (names and values 31 bytes, status 63)', () => {
             for (const layout of [1, 2, 3] as const) {
                 const kinds = DEVICE_PAGE_LAYOUTS[layout];
-                const elements = kinds.map((kind, i) =>
-                    kind === 'status'
-                        ? devicePageStatusIconElement(full('text', i + 1))
-                        : devicePageClampElement(
-                              `input_sel~dp_12?${i + 1}~I~65535~${'ü'.repeat(40)}~${'ü'.repeat(40)}`,
-                          ),
-                );
-                elements.push(info);
+                // ids of 7 bytes (999?999), icons of 4 bytes; a button / switch has the value 0/1, a bar 0-100
+                const elements = kinds.map((kind, i) => {
+                    const value =
+                        kind === 'button' || kind === 'switch' ? '1' : kind === 'progress' ? '100' : 'ü'.repeat(40);
+                    return devicePageClampElement(
+                        `input_sel~999?9${String(i + 1).padStart(2, '0')}~IIII~65535~${'ü'.repeat(40)}~${value}`,
+                    );
+                });
+                // info with the highest stage of the layout in field 6
+                elements.push(devicePageInfoElement('button~999?999~IIII~65535~~1', layout, layout === 2 ? 0 : 3));
                 const part = splitDevicePageStatus('ü'.repeat(200), layout, 'eu')[2];
                 expect(bytes(part)).to.equal(63);
                 const out = devicePagePayload(head, main, elements, part, layout, 'eu');
@@ -762,14 +831,18 @@ describe('lib/pages/device-page - elements', () => {
             const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
             expect(content.headline).to.equal('Waschmaschine');
             expect(content.slotCount).to.equal(DEVICE_PAGE_LAYOUTS[layout].length);
-            expect(content.elements).to.have.length(DEVICE_PAGE_LAYOUTS[layout].length + 3);
+            // main, the slots, info, status and the status icon places (16 / 0 / 8, empty in stage 0)
+            const places = DEVICE_PAGE_STATUS_SLOTS[layout];
+            expect(content.elements).to.have.length(DEVICE_PAGE_LAYOUTS[layout].length + 3 + places);
+            expect(content.elements.slice(content.slotCount + 3).every(e => e === undefined)).to.equal(true);
+            expect(content.page.config).to.not.have.property('statusStage');
             expect(content.elements[0]?.type).to.equal('switch');
             expect(content.elements.slice(1, content.slotCount + 1).every(e => e === undefined)).to.equal(true);
             expect(content.elements[content.slotCount + 1]?.role).to.equal(DEVICE_PAGE_INFO_ROLE);
             expect(content.elements[content.slotCount + 2]?.type).to.equal('text');
             expect(content.page.config?.card).to.equal(`cardDevice${layout}`);
             expect(content.page.uniqueID).to.equal('device-test');
-            expect(content.page.pageItems).to.have.length(DEVICE_PAGE_LAYOUTS[layout].length + 3);
+            expect(content.page.pageItems).to.have.length(DEVICE_PAGE_LAYOUTS[layout].length + 3 + places);
             expect(content.page.pageItems?.[1]).to.deep.equal({ type: 'empty', data: undefined });
         });
     }
@@ -839,21 +912,141 @@ describe('lib/pages/device-page - elements', () => {
         const item = content.elements[1];
         expect(item.data.text.true.constVal).to.equal('power Pumpe mit einem sehr langen Namen');
     });
-    it('status slots: an item without name, they do not count for the duplicates of the named slots', async () => {
-        const first = DEVICE_PAGE_LAYOUTS[1].indexOf('status');
-        const slots: ({ key: string; id: string; icon?: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
+    it('status icons: an item without name, they do not count for the duplicates of the named slots', async () => {
+        const slots: ({ key: string; id: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
         slots[0] = ref('power');
-        slots[first] = ref('power');
-        slots[first + 1] = { ...ref('door'), icon: 'door-open' };
-        const { details, page } = runtime({ slots });
+        const statusSlots = [ref('power'), { ...ref('door'), icon: 'door-open' }];
+        const { details, page } = runtime({ slots, statusStage: 1, statusSlots });
         const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
-        // the same state in a status slot: no automatic suffix for the info row
+        // the same state as a status icon: no automatic suffix for the info row
         expect(content.elements[1].data.text.true.constVal).to.equal('power');
-        const status = content.elements[first + 1];
+        const first = content.slotCount + 3;
+        const status = content.elements[first];
         expect(status.type).to.equal('text');
         expect(status.data.text.true.constVal).to.equal('');
-        expect(content.elements[first + 2].data.icon.true.value.constVal).to.equal('door-open');
+        expect(content.elements[first + 1].data.icon.true.value.constVal).to.equal('door-open');
         expect(content.skipped).to.deep.equal([]);
+        expect(content.page.config).to.have.property('statusStage', 1);
+    });
+    describe('what the stage does not show is not built (no item, no object read, no report)', () => {
+        /**
+         * @param layout the layout
+         * @param stage the stage
+         * @param slots the slots of the layout
+         * @param statusSlots the status icon places
+         * @returns the page built and the ids read
+         */
+        const buildWith = async (
+            layout: 1 | 3,
+            stage: 0 | 1 | 2 | 3,
+            slots: ({ key: string; id: string } | null)[],
+            statusSlots: ({ key: string; id: string } | null)[],
+        ): Promise<{ content: BuiltDevicePage; read: string[] }> => {
+            const read: string[] = [];
+            const reading = async (id: string): Promise<ioBroker.Object | null> => {
+                read.push(id);
+                return getObject(id);
+            };
+            const { details, page } = runtime({
+                layout,
+                slots,
+                statusStage: devicePageStageOf(layout, stage),
+                statusSlots,
+            });
+            const content = await devicePageElements(sourceSwitch, details, page, reading, tr, 'de');
+            return { content, read };
+        };
+        const icon = (i: number): { key: string; id: string } => ({ key: '', id: `${DEV}.s${i}` });
+        for (const i of new Array(16).fill(0).map((_v, k) => k)) {
+            objects[`${DEV}.s${i}`] = { type: 'state', common: { type: 'boolean', role: 'sensor', write: false } };
+        }
+        const sixteen = new Array(16).fill(0).map((_v, i) => icon(i));
+        it('cardDevice1: the status icons up to 0 / 6 / 10 / 16 places, stage 3 without the info rows', async () => {
+            const slots = [ref('power'), ref('phase'), ref('start'), null, null, null];
+            for (const [stage, capacity] of [
+                [0, 0],
+                [1, 6],
+                [2, 10],
+                [3, 16],
+            ] as const) {
+                const { content, read } = await buildWith(1, stage, slots, [...sixteen, ref('gone')]);
+                const first = content.slotCount + 3;
+                const places = content.elements.slice(first, first + 16);
+                expect(places).to.have.length(16);
+                expect(
+                    places.map(p => p !== undefined),
+                    `stage ${stage}`,
+                ).to.deep.equal(new Array(16).fill(0).map((_v, i) => i < capacity));
+                for (let i = 0; i < 16; i++) {
+                    expect(read.includes(`${DEV}.s${i}`), `stage ${stage} read s${i}`).to.equal(i < capacity);
+                }
+                // the info slots 1-2 only below stage 3, the buttons always
+                const infos = stage < 3;
+                expect(content.elements[1] !== undefined, `stage ${stage} info 1`).to.equal(infos);
+                expect(content.elements[2] !== undefined, `stage ${stage} info 2`).to.equal(infos);
+                expect(read.includes(`${DEV}.power`), `stage ${stage}`).to.equal(infos);
+                expect(content.elements[3]?.type, `stage ${stage}`).to.equal('button');
+                expect(content.skipped, `stage ${stage}`).to.deep.equal([]);
+                expect(content.page.pageItems).to.have.length(6 + 3 + 16);
+            }
+        });
+        it('cardDevice3: the status icons up to 0 / 4 / 8 places, stage 1 without tile 1, stage 2 without tiles 1-2', async () => {
+            const slots = [ref('power'), ref('phase'), ref('program'), null, null, null, ref('on'), null];
+            for (const [stage, capacity, hidden] of [
+                [0, 0, 0],
+                [1, 4, 1],
+                [2, 8, 2],
+            ] as const) {
+                const { content, read } = await buildWith(3, stage, slots, sixteen);
+                const first = content.slotCount + 3;
+                const places = content.elements.slice(first);
+                expect(places).to.have.length(8);
+                expect(places.map(p => p !== undefined)).to.deep.equal(
+                    new Array(8).fill(0).map((_v, i) => i < capacity),
+                );
+                // places 9-16 of the configuration are no places of cardDevice3
+                expect(read.includes(`${DEV}.s8`)).to.equal(false);
+                expect(
+                    [1, 2, 3].map(i => content.elements[i] !== undefined),
+                    `stage ${stage}`,
+                ).to.deep.equal([1, 2, 3].map(i => i > hidden));
+                expect(read.includes(`${DEV}.power`)).to.equal(hidden < 1);
+                expect(read.includes(`${DEV}.phase`)).to.equal(hidden < 2);
+                expect(content.elements[7]?.type).to.equal('switch');
+            }
+        });
+        it('a channel or navigation the stage does not show is not built, a missing one not reported', async () => {
+            const pageItemOf: DevicePageBuildContext['pageItemOf'] = async () => {
+                throw new Error('must not be built');
+            };
+            const { details, page } = runtime({
+                layout: 1,
+                slots: [{ key: '', id: 'alias.0.gone', custom: 'channel' }, null, null, null, null, null],
+                statusStage: 1,
+                statusSlots: [
+                    ...statusNulls(6),
+                    { key: '', id: 'alias.0.gone', custom: 'channel' },
+                    { key: '', id: '', custom: 'navigation', targetPage: 'rooms' },
+                ],
+            });
+            const one = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de', pageItemOf);
+            expect(one.messages.join(' ')).to.contain('slot 1');
+            expect(one.messages.join(' ')).to.not.contain('status icon');
+            const three = await devicePageElements(
+                sourceSwitch,
+                details,
+                { ...page, statusStage: 3 },
+                getObject,
+                tr,
+                'de',
+                pageItemOf,
+            );
+            // stage 3: the info slot is covered, the channel of place 7 is built (and reported), place 8 navigates
+            expect(three.messages.join(' ')).to.not.contain('slot 1');
+            expect(three.messages.join(' ')).to.contain('status icon 7');
+            expect(three.elements[three.slotCount + 3 + 7]?.data?.setNavi?.constVal).to.equal('rooms');
+            expect(three.channelSlots).to.deep.equal([]);
+        });
     });
 });
 
@@ -921,13 +1114,10 @@ describe('lib/pages/device-page - own names of the slots', () => {
         expect(nameOf(both.elements[2])).to.equal('power B');
         expect(nameOf(both.elements[3])).to.equal('Pumpe');
     });
-    it('a status slot shows no name, also with an own one', async () => {
-        const status = DEVICE_PAGE_LAYOUTS[1].indexOf('status');
-        const slots: ({ key: string; id: string; name?: string } | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
-        slots[status] = { ...ref('door'), name: 'Tür' };
-        const { details, page } = runtime({ slots });
+    it('a status icon shows no name, also with an own one', async () => {
+        const { details, page } = runtime({ statusStage: 1, statusSlots: [{ ...ref('door'), name: 'Tür' }] });
         const content = await devicePageElements(sourceSwitch, details, page, getObject, tr, 'de');
-        expect(nameOf(content.elements[1 + status])).to.equal('');
+        expect(nameOf(content.elements[content.slotCount + 3])).to.equal('');
     });
     it('alias channel: the own name goes to the page item of the channel, the look does not take it', () => {
         const slot = { key: '', id: 'alias.0.s', custom: 'channel' as const, name: 'Steckdose' };
@@ -1102,11 +1292,13 @@ describe('lib/pages/device-page - main', () => {
  * @param slotCount number of slots
  * @param payloads payloads of the page items (index = item number), undefined = no item
  * @param layout the layout
+ * @param statusStage the stage of the status icon grid
  */
 function fakeDevicePage(
     slotCount: number,
     payloads: (string | undefined)[],
     layout: 1 | 2 | 3 = 1,
+    statusStage: 0 | 1 | 2 | 3 = 0,
 ): {
     page: PageDevice;
     sent: string[];
@@ -1122,6 +1314,8 @@ function fakeDevicePage(
         slotCount,
         layout,
         channelSlots: new Set<number>(),
+        statusStage,
+        lastIcons: '',
         visibility: true,
         refreshTimeout: null,
         statusText: undefined,
@@ -1178,10 +1372,20 @@ describe('lib/pages/pageDevice - payload', () => {
             // heading + navigation (12) + main + slots + info
             expect(fields).to.have.length(2 + 12 + 6 * (n + 2));
             const elements = fields.slice(14);
-            expect(elements.slice(0, 6)).to.deep.equal(['switch', 'dp_3?0', 'M', '1', 'WM', 'Schleudern']);
+            // the type as a number: switch, text and button only send (1)
+            expect(elements.slice(0, 6)).to.deep.equal(['1', 'dp_3?0', 'M', '1', 'WM', 'Schleudern']);
+            expect(elements.slice(6, 12)).to.deep.equal(['1', 'dp_3?1', 'I', '2', 'S1', '1 W']);
             // empty slot 2
             expect(elements.slice(12, 18)).to.deep.equal(['', '', '', '', '', '']);
-            expect(elements.slice(6 * (n + 1), 6 * (n + 1) + 2)).to.deep.equal(['button', `dp_3?${n + 1}`]);
+            // info: field 6 is the stage on cardDevice1 / cardDevice3 (0: empty), cardDevice2 keeps it
+            expect(elements.slice(6 * (n + 1))).to.deep.equal([
+                '1',
+                `dp_3?${n + 1}`,
+                'i',
+                '3',
+                '',
+                layout === 2 ? '1' : '',
+            ]);
         });
     }
     it('no info and no status: empty element, field 6 of main empty', async () => {
@@ -1189,7 +1393,7 @@ describe('lib/pages/pageDevice - payload', () => {
         const { page, sent } = fakeDevicePage(n, ['text~dp_3?0~M~1~WM~5 W']);
         await page.update();
         const elements = sent[0].split('~').slice(14);
-        expect(elements.slice(0, 6)).to.deep.equal(['text', 'dp_3?0', 'M', '1', 'WM', '']);
+        expect(elements.slice(0, 6)).to.deep.equal(['1', 'dp_3?0', 'M', '1', 'WM', '']);
         expect(elements).to.have.length(6 * (n + 2));
         expect(elements.slice(6 * (n + 1))).to.deep.equal(['', '', '', '', '', '']);
     });
@@ -1299,68 +1503,169 @@ describe('lib/pages/pageDevice - payload', () => {
             expect(intervals.size).to.equal(0);
         });
     });
-    describe('layout 1 with status icons', () => {
-        const kinds = DEVICE_PAGE_LAYOUTS[1];
-        const n = kinds.length;
-        const statusIndexes = kinds.map((k, i) => (k === 'status' ? i + 1 : 0)).filter(i => i > 0);
+    describe('the status icon grid: stage in info, devIcons behind entityUpd', () => {
         /**
-         * @param filled item numbers of the filled status slots
-         * @returns the elements after the navigation
+         * @param layout the layout
+         * @param filled numbers of the filled status icon places (0 = the first one)
+         * @param prefix what the icons are called (a change gives other payloads)
+         * @returns the payloads: main, the slots, info, the status item, the status icon places
          */
-        async function send(filled: number[]): Promise<string[]> {
+        const payloadsOf = (layout: 1 | 3, filled: number[], prefix = 'S'): (string | undefined)[] => {
+            const n = DEVICE_PAGE_LAYOUTS[layout].length;
             const payloads: (string | undefined)[] = ['switch~dp_3?0~M~1~WM~1'];
             for (let i = 1; i <= n; i++) {
-                if (kinds[i - 1] === 'status') {
-                    payloads.push(filled.includes(i) ? `text~dp_3?${i}~S${i}~${100 + i}~Name${i}~Wert${i}` : undefined);
-                } else {
-                    payloads.push(`text~dp_3?${i}~I~2~S${i}~${i} W`);
-                }
+                payloads.push(`text~dp_3?${i}~I~2~S${i}~${i} W`);
             }
             payloads.push(`button~dp_3?${n + 1}~i~3~~1`);
-            const { page, sent } = fakeDevicePage(n, payloads, 1);
+            payloads.push(undefined);
+            for (let place = 0; place < DEVICE_PAGE_STATUS_SLOTS[layout]; place++) {
+                const at = n + 3 + place;
+                payloads.push(
+                    filled.includes(place)
+                        ? `${place === 1 ? 'light' : 'text'}~dp_3?${at}~${prefix}${place}~${100 + place}~Name~Wert`
+                        : undefined,
+                );
+            }
+            return payloads;
+        };
+        it('type numbers: one function, 0-9 as the HMI takes them, an empty type stays empty', () => {
+            expect(
+                ['', 'delete', 'text', 'button', 'switch', 'shutter', 'shutter2', 'input_sel', 'timer'].map(
+                    devicePageTypeNumber,
+                ),
+            ).to.deep.equal(['', '0', '1', '1', '1', '2', '3', '4', '5']);
+            expect(['light', 'light2', 'fan', 'number', 'media', 'anything'].map(devicePageTypeNumber)).to.deep.equal([
+                '6',
+                '7',
+                '8',
+                '9',
+                '1',
+                '1',
+            ]);
+            expect(devicePageNumberedElement('fan~1?2~I~3~N~V')).to.equal('8~1?2~I~3~N~V');
+            expect(devicePageNumberedElement(DEVICE_PAGE_EMPTY_ELEMENT)).to.equal(DEVICE_PAGE_EMPTY_ELEMENT);
+            expect(devicePageNumberedElement('')).to.equal('');
+        });
+        it('info element: field 6 the stage, empty for 0 and on an empty info; cardDevice2 unchanged', () => {
+            expect(devicePageInfoElement('button~1?7~i~3~~1', 1, 2)).to.equal('button~1?7~i~3~~2');
+            expect(devicePageInfoElement('button~1?7~i~3~~1', 1, 0)).to.equal('button~1?7~i~3~~');
+            expect(devicePageInfoElement('', 1, 3)).to.equal('~~~~~3');
+            expect(devicePageInfoElement('', 3, 0)).to.equal(DEVICE_PAGE_EMPTY_ELEMENT);
+            // cardDevice3 has stages 0-2
+            expect(devicePageInfoElement('', 3, 3)).to.equal('~~~~~2');
+            expect(devicePageInfoElement('button~1?7~i~3~~1', 2, 2)).to.equal('button~1?7~i~3~~1');
+        });
+        it('devIcons: 16 / 8 cells of type~id~icon~color, the filled ones moved up, the rest ~~~', () => {
+            const cells = ['text~1?9~A~1~N~V', '', '~~~~~', 'light~1?12~B~2~~', 'bad'];
+            const one = devicePageIconsMessage(cells, 1);
+            const fields = one.split('~');
+            expect(fields[0]).to.equal('devIcons');
+            expect(fields).to.have.length(1 + 16 * 4);
+            expect(fields.slice(1, 9)).to.deep.equal(['1', '1?9', 'A', '1', '6', '1?12', 'B', '2']);
+            expect(fields.slice(9).every(f => f === '')).to.equal(true);
+            expect(one).to.equal(`devIcons~1~1?9~A~1~6~1?12~B~2${'~~~~'.repeat(14)}`);
+            expect(devicePageIconsMessage(cells, 3).split('~')).to.have.length(1 + 8 * 4);
+            // more filled ones than cells: the grid takes the first ones
+            const many = new Array(20).fill(0).map((_v, i) => `text~1?${i}~I~1~~`);
+            expect(devicePageIconsMessage(many, 3).split('~').slice(-4)).to.deep.equal(['1', '1?7', 'I', '1']);
+        });
+        it('stage 0: no devIcons, info field 6 empty; cardDevice2 never', async () => {
+            const { page, sent } = fakeDevicePage(6, payloadsOf(1, [0, 1]), 1, 0);
             await page.update();
-            return sent[0].split('~').slice(14);
+            expect(sent).to.have.length(1);
+            expect(sent[0].split('~').slice(14 + 6 * 7)).to.deep.equal(['1', 'dp_3?7', 'i', '3', '', '']);
+        });
+        for (const [layout, stage] of [
+            [1, 1],
+            [1, 3],
+            [3, 1],
+            [3, 2],
+        ] as const) {
+            it(`cardDevice${layout} stage ${stage}: entityUpd with the stage in info, then devIcons`, async () => {
+                const n = DEVICE_PAGE_LAYOUTS[layout].length;
+                const { page, sent } = fakeDevicePage(n, payloadsOf(layout, [1, 3]), layout, stage);
+                await page.update();
+                expect(sent).to.have.length(2);
+                const fields = sent[0].split('~');
+                expect(fields[0]).to.equal('entityUpd');
+                expect(fields).to.have.length(2 + 12 + 6 * (n + 2));
+                // the stage in field 6 of info: cardDevice1 field 61, cardDevice3 field 73 (counted from 1)
+                expect(fields[layout === 1 ? 61 : 73]).to.equal(String(stage));
+                expect(fields.slice(14 + 6 * (n + 1))).to.deep.equal([
+                    '1',
+                    `dp_3?${n + 1}`,
+                    'i',
+                    '3',
+                    '',
+                    String(stage),
+                ]);
+                const at = n + 3;
+                const count = DEVICE_PAGE_STATUS_SLOTS[layout];
+                expect(sent[1]).to.equal(
+                    `devIcons~6~dp_3?${at + 1}~S1~101~1~dp_3?${at + 3}~S3~103${'~~~~'.repeat(count - 2)}`,
+                );
+            });
         }
-        const element = (elements: string[], e: number): string[] => elements.slice(6 * e, 6 * e + 6);
-        it('none: every status slot is the empty element, the order main, slots, info stays', async () => {
-            const elements = await send([]);
-            expect(elements).to.have.length(6 * (n + 2));
-            for (const e of statusIndexes) {
-                expect(element(elements, e)).to.deep.equal(['', '', '', '', '', '']);
-            }
-            expect(element(elements, 1)).to.deep.equal(['text', 'dp_3?1', 'I', '2', 'S1', '1 W']);
-            expect(element(elements, n + 1).slice(0, 2)).to.deep.equal(['button', `dp_3?${n + 1}`]);
-        });
-        it('one: icon and color, name and value empty', async () => {
-            const e = statusIndexes[0];
-            const elements = await send([e]);
-            expect(element(elements, e)).to.deep.equal(['text', `dp_3?${e}`, `S${e}`, String(100 + e), '', '']);
-            for (const other of statusIndexes.slice(1)) {
-                expect(element(elements, other)).to.deep.equal(['', '', '', '', '', '']);
-            }
-        });
-        it('all: every status slot with icon and color only', async () => {
-            const elements = await send(statusIndexes);
-            for (const e of statusIndexes) {
-                expect(element(elements, e)).to.deep.equal(['text', `dp_3?${e}`, `S${e}`, String(100 + e), '', '']);
-            }
-            expect(element(elements, n + 1).slice(0, 2)).to.deep.equal(['button', `dp_3?${n + 1}`]);
+        it('only a status icon changed: devIcons alone; nothing changed: nothing; anything else: both', async () => {
+            const { page, sent } = fakeDevicePage(6, payloadsOf(1, [0]), 1, 2);
+            // the duplicate filter of sendToPanel as it is (baseClassPage)
+            const fake: any = page;
+            Object.assign(page, {
+                filterDuplicateMessages: true,
+                lastMessage: '',
+                sendToPanel: (msg: string): void => {
+                    if (msg === fake.lastMessage) {
+                        return;
+                    }
+                    fake.lastMessage = msg;
+                    sent.push(msg);
+                },
+            });
+            const items = (payloads: (string | undefined)[]): void => {
+                Object.assign(page, {
+                    pageItems: payloads.map(p => (p === undefined ? undefined : { getPageItemPayload: async () => p })),
+                });
+            };
+            await page.update();
+            expect(sent.map(m => m.split('~')[0])).to.deep.equal(['entityUpd', 'devIcons']);
+            // nothing changed: nothing
+            await page.update();
+            expect(sent).to.have.length(2);
+            // another icon: devIcons only
+            items(payloadsOf(1, [0, 2], 'X'));
+            await page.update();
+            expect(sent).to.have.length(3);
+            expect(sent[2].startsWith('devIcons~1~dp_3?9~X0~100~1~dp_3?11~X2~102~')).to.equal(true);
+            await page.update();
+            expect(sent).to.have.length(3);
+            // a slot changed: entityUpd and devIcons (the same cells - the HMI draws the grid after entityUpd)
+            const changed = payloadsOf(1, [0, 2], 'X');
+            changed[3] = 'text~dp_3?3~I~2~S3~99 W';
+            items(changed);
+            await page.update();
+            expect(sent.slice(3).map(m => m.split('~')[0])).to.deep.equal(['entityUpd', 'devIcons']);
+            expect(sent[4]).to.equal(sent[2]);
+            // the filter reset (the page shown again, back from a popup): both again
+            page.resetLastMessage();
+            await page.update();
+            expect(sent.slice(5).map(m => m.split('~')[0])).to.deep.equal(['entityUpd', 'devIcons']);
         });
     });
     it('long press: a slot runs the long press of its item, main and info never; always handled (no tap)', async () => {
         const { page } = fakeDevicePage(6, []);
         const pressed: number[] = [];
-        const items = [0, 1, 2, 3, 4, 5, 6, 7].map(i => ({
+        const items = new Array(26).fill(0).map((_v, i) => ({
             onCommandLongPress: async (): Promise<boolean> => {
                 pressed.push(i);
                 return Promise.resolve(false);
             },
         }));
         Object.assign(page, { pageItems: items });
-        for (const id of ['0', '1', '6', '7']) {
+        // 7 info, 8 the status item, 9-24 the status icons
+        for (const id of ['0', '1', '6', '7', '8', '9', '24', '25']) {
             expect(await page.onButtonPress3(id, undefined, 'button', ''), id).to.equal(true);
         }
-        expect(pressed).to.deep.equal([1, 6]);
+        expect(pressed).to.deep.equal([1, 6, 9, 24]);
     });
     it('alias channel slots: field 6 follows the kind of the slot, other slots stay as they are', async () => {
         // layout 2: value, progress, info, info, info, button
@@ -1379,7 +1684,9 @@ describe('lib/pages/pageDevice - payload', () => {
         const elements = sent[0].split('~').slice(14);
         const field6 = (e: number): string => elements[6 * e + 5];
         expect([1, 2, 3, 4, 5, 6].map(field6)).to.deep.equal(['40', '20', 'on', '', '40|0|200', '']);
-        expect(elements.slice(18, 22)).to.deep.equal(['switch', 'dp_3?3', 'I', '2']);
+        expect(elements.slice(18, 22)).to.deep.equal(['1', 'dp_3?3', 'I', '2']);
+        // number 9, shutter 2
+        expect([1, 4, 5].map(e => elements[6 * e])).to.deep.equal(['9', '2', '9']);
     });
 });
 
@@ -1429,9 +1736,10 @@ describe('lib/types/deviceDetails - own data points, alias channels and settings
         expect(devicePageSlotLookOf(old)).to.deep.equal({ trueIcon: 'door', falseIcon: 'door' });
         expect(devicePageSlotLookOf(old, false)).to.deep.equal({});
         expect(devicePageSlotLookOf({ ...old, falseIcon: 'door-open' })).to.deep.equal({ falseIcon: 'door-open' });
-        const slots = (slot: unknown): unknown[] => [null, null, null, null, null, null, slot];
-        expect(devicePageConfigOf({ layout: 1, slots: slots(old) })?.slots[6]).to.deep.equal(old);
-        expect(devicePageConfigOf({ layout: 1, slots: slots({ ...old, trueIcon: 'a' }) })?.slots[6]).to.deep.equal({
+        expect(devicePageConfigOf({ layout: 1, statusSlots: [old] })?.statusSlots?.[0]).to.deep.equal(old);
+        expect(
+            devicePageConfigOf({ layout: 1, statusSlots: [{ ...old, trueIcon: 'a' }] })?.statusSlots?.[0],
+        ).to.deep.equal({
             ...ref('door'),
             trueIcon: 'a',
         });
@@ -1768,11 +2076,11 @@ describe('lib/pages/device-page - navigation from the slots', () => {
         const slots: (Record<string, unknown> | null)[] = DEVICE_PAGE_LAYOUTS[1].map(() => null);
         slots[first('info')] = { ...ref('power'), isNavigation: true, targetPage: 'rooms' };
         slots[first('button')] = { key: '', id: '', custom: 'navigation', targetPage: 'rooms', name: 'Räume' };
-        slots[first('status')] = { key: '', id: '', custom: 'navigation', targetPage: 'map', trueIcon: 'map' };
+        const statusSlots = [{ key: '', id: '', custom: 'navigation', targetPage: 'map', trueIcon: 'map' }];
         const details = deviceDetailsRuntimeOf({
             deviceId: DEV,
             entries: [ref('power')],
-            devicePage: { layout: 1, slots },
+            devicePage: { layout: 1, slots, statusStage: 1, statusSlots },
         }) as DeviceDetailsRuntime;
         const content = await devicePageElements(
             { type: 'switch', data: {} },
@@ -1785,7 +2093,7 @@ describe('lib/pages/device-page - navigation from the slots', () => {
         expect(content.skipped).to.deep.equal([]);
         const info: any = content.elements[1 + first('info')];
         const button: any = content.elements[1 + first('button')];
-        const status: any = content.elements[1 + first('status')];
+        const status: any = content.elements[content.slotCount + 3];
         expect(info.data.setNavi).to.deep.equal(rooms);
         expect(button.data.setNavi).to.deep.equal(rooms);
         expect(button.data.text.true.constVal).to.equal('Räume');

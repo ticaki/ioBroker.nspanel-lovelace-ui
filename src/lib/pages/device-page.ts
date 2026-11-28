@@ -7,9 +7,11 @@
  * (a generated sub page of the page of the item, read-only in the navigation flow like `media-<id>`).
  *
  * `entityUpd~<heading>~<navigation>~<main>~<slot1>~…~<slotN>~<info>`, every element the 6 fields of a cardGrid cell
- * `type~intName~icon~iconColor~displayName~optionalValue`. The web models (`web-l`, `web-p`) get the same message
- * with the elements of the extra slots of the layout appended: `…~<info>~<extra1>~…~<extraE>`
- * ({@link DEVICE_PAGE_EXTRA_SLOTS}).
+ * `type~intName~icon~iconColor~displayName~optionalValue` with the type as a number ({@link devicePageTypeNumber}).
+ * cardDevice1 and cardDevice3 carry the stage of the status icon grid in field 6 of info ({@link devicePageInfoElement})
+ * and get the cells of the grid with `devIcons~…` behind the `entityUpd` ({@link devicePageIconsMessage}). The web
+ * models (`web-l`, `web-p`) get the same message with the elements of the extra slots of the layout appended:
+ * `…~<info>~<extra1>~…~<extraE>` ({@link DEVICE_PAGE_EXTRA_SLOTS}).
  */
 import { Color } from '../const/Color';
 import { MAX_PANEL_PAYLOAD_BYTES } from '../const/definition';
@@ -23,12 +25,14 @@ import type { NSpanelModel } from '../types/types';
 import {
     DEVICE_DETAIL_ROW_ROLE,
     DEVICE_PAGE_EXTRA_SLOTS,
+    DEVICE_PAGE_ICONS_COMMAND,
     DEVICE_PAGE_INFO_ROLE,
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_RECEIVE_BYTES,
     DEVICE_PAGE_STATUS_COMMAND,
     DEVICE_PAGE_STATUS_MAX_BYTES,
     DEVICE_PAGE_STATUS_MAX_PARTS,
+    DEVICE_PAGE_STATUS_SLOTS,
     DEVICE_PAGE_TEXT_FONT,
     DEVICE_PAGE_TEXT_MAX_BYTES,
     DEVICE_PAGE_NAVIGATION_ICON,
@@ -43,6 +47,9 @@ import {
     devicePageSlotAcceptsChannel,
     devicePageSlotLookOf,
     devicePageSlotTakesTextSize,
+    devicePageSlotHiddenByStage,
+    devicePageStageOf,
+    devicePageStatusCapacity,
     deviceDetailRowKind,
     type DeviceDetailEntryConfig,
     type DeviceDetailsRuntime,
@@ -52,6 +59,7 @@ import {
     type DevicePageSlotLook,
     type DevicePageSlotRef,
     type DevicePageStateRef,
+    type DevicePageStatusStage,
 } from '../types/deviceDetails';
 import {
     deviceDetailRowIcon,
@@ -91,6 +99,49 @@ export const CARD_DEVICE_MODELS: ReadonlySet<NSpanelModel> = new Set<NSpanelMode
 
 /** an element without content (empty slot, no info): what cardGrid sends for an empty cell - the HMI hides it */
 export const DEVICE_PAGE_EMPTY_ELEMENT = '~~~~~';
+
+/**
+ * The type of an element as the device pages take it (TFT device13, `HMI/tools/card_device.py` TYPE_NAMES): 0 hidden,
+ * 1 only sends (text, button, switch and every other type), 2-5 a popup at the touch, 6-9 a popup after 500 ms.
+ */
+const DEVICE_PAGE_TYPE_NUMBERS: Readonly<Record<string, number>> = {
+    delete: 0,
+    shutter: 2,
+    shutter2: 3,
+    input_sel: 4,
+    timer: 5,
+    light: 6,
+    light2: 7,
+    fan: 8,
+    number: 9,
+};
+
+/**
+ * @param type the type of a page item payload (field 1)
+ * @returns the type as the device pages take it ({@link DEVICE_PAGE_TYPE_NUMBERS}, any other type 1); an empty type
+ * stays empty (the HMI reads it as 0 = hidden, an empty element stays `~~~~~`)
+ */
+export function devicePageTypeNumber(type: string): string {
+    if (type === '') {
+        return '';
+    }
+    return String(DEVICE_PAGE_TYPE_NUMBERS[type] ?? 1);
+}
+
+/**
+ * Field 1 of an element of a device page as a number ({@link devicePageTypeNumber}) - the last step before the element
+ * is sent: the functions that build the element read the type name.
+ *
+ * @param element an element (main, slot, info, a cell of the status grid)
+ * @returns the element with the type as a number
+ */
+export function devicePageNumberedElement(element: string): string {
+    const at = element.indexOf('~');
+    if (at < 0) {
+        return element;
+    }
+    return devicePageTypeNumber(element.slice(0, at)) + element.slice(at);
+}
 
 /** what decides whether a panel can show the device page */
 export interface CardDeviceTarget {
@@ -371,7 +422,10 @@ export function devicePagePayload(
     layout: DevicePageLayout,
     model: NSpanelModel,
 ): string {
-    const build = (field: string): string => [head, devicePageMainElement(mainPayload, field), ...elements].join('~');
+    // the type as a number in main and every element, the navigation in the head keeps its names
+    const numbered = elements.map(devicePageNumberedElement);
+    const build = (field: string): string =>
+        [head, devicePageNumberedElement(devicePageMainElement(mainPayload, field)), ...numbered].join('~');
     const payload = build(status);
     const over = byteLength(payload) - devicePageMaxPayloadBytes(layout, model);
     if (over <= 0) {
@@ -381,10 +435,61 @@ export function devicePagePayload(
 }
 
 /**
+ * The info element of a device page: name and value cut ({@link devicePageClampElement}); on cardDevice1 and
+ * cardDevice3 field 6 is the stage of the status icon grid (empty for stage 0), also when there is no info icon
+ * (`~~~~~<stage>`, the HMI hides an icon of type 0). cardDevice2 has no stage, its info stays as it is.
+ *
+ * @param payload payload of the info item ('' = no info icon)
+ * @param layout the layout
+ * @param stage the stage ({@link devicePageStageOf})
+ * @returns the element
+ */
+export function devicePageInfoElement(payload: string, layout: DevicePageLayout, stage: DevicePageStatusStage): string {
+    const element = devicePageClampElement(payload || DEVICE_PAGE_EMPTY_ELEMENT);
+    if (DEVICE_PAGE_STATUS_SLOTS[layout] === 0) {
+        return element;
+    }
+    const fields = element.split('~');
+    const own = fields.length === 6 ? fields : DEVICE_PAGE_EMPTY_ELEMENT.split('~');
+    const shown = devicePageStageOf(layout, stage);
+    own[5] = shown > 0 ? String(shown) : '';
+    return own.join('~');
+}
+
+/**
+ * The `devIcons` message of the status icon grid: one cell per place of the grid ({@link DEVICE_PAGE_STATUS_SLOTS}:
+ * cardDevice1 16, cardDevice3 8), each `type~intName~icon~iconColor` with the type as a number. The filled places move
+ * up without gaps, in the order of the grid (column by column: top, bottom, next column); the rest are empty cells
+ * `~~~` (the HMI reads an empty type as 0: empty cell).
+ *
+ * @param elements the elements of the status icon places in their order ({@link devicePageStatusIconElement}; an
+ * empty element is left out)
+ * @param layout the layout
+ * @returns the message
+ */
+export function devicePageIconsMessage(elements: readonly string[], layout: DevicePageLayout): string {
+    const count = DEVICE_PAGE_STATUS_SLOTS[layout];
+    const cells: string[] = [];
+    for (const element of elements) {
+        const fields = element.split('~');
+        if (fields.length < 4 || !fields[0]) {
+            continue;
+        }
+        cells.push(devicePageNumberedElement(fields.slice(0, 4).join('~')));
+    }
+    const out = cells.slice(0, count);
+    while (out.length < count) {
+        out.push('~~~');
+    }
+    return [DEVICE_PAGE_ICONS_COMMAND, ...out].join('~');
+}
+
+/**
  * The number of the page item of a slot of a device page. The page items are
- * `[main, slot 1 … slot N, info, status, extra slot 1 … extra slot E]`: the extra slots were appended later, so the
- * numbers of main, the slots, info and the status item (and with them the ids `<page>?<n>` of the elements) are the
- * same with and without extra slots.
+ * `[main, slot 1 … slot N, info, status, status icon 1 … status icon M, extra slot 1 … extra slot E]` with M fixed
+ * per layout ({@link DEVICE_PAGE_STATUS_SLOTS}): the numbers of main, the slots, info, the status item and the status
+ * icons (and with them the ids `<page>?<n>` of the elements) are the same with and without extra slots and in every
+ * stage.
  *
  * @param layout the layout
  * @param slot index of the slot in the configuration (0 = slot 1, N = extra slot 1)
@@ -392,7 +497,16 @@ export function devicePagePayload(
  */
 export function devicePageSlotItemIndex(layout: DevicePageLayout, slot: number): number {
     const count = DEVICE_PAGE_LAYOUTS[layout].length;
-    return slot < count ? slot + 1 : slot + 3;
+    return slot < count ? slot + 1 : slot + 3 + DEVICE_PAGE_STATUS_SLOTS[layout];
+}
+
+/**
+ * @param layout the layout
+ * @param place index of the status icon place (0 = the first cell of the grid)
+ * @returns the number of its page item ({@link devicePageSlotItemIndex})
+ */
+export function devicePageStatusItemIndex(layout: DevicePageLayout, place: number): number {
+    return DEVICE_PAGE_LAYOUTS[layout].length + 3 + place;
 }
 
 /**
@@ -432,16 +546,18 @@ export function devicePageOfModel(page: PageBase, model: NSpanelModel): PageBase
     if (isWebModel(model) || !isCardDeviceConfig(page.config) || !page.pageItems) {
         return page;
     }
-    // main, the slots of the layout, info and the status item
-    const count = DEVICE_PAGE_LAYOUTS[layoutOfCardDevice(page.config.card)].length;
-    if (page.pageItems.length <= count + 3) {
+    // main, the slots of the layout, info, the status item and the status icon places
+    const layout = layoutOfCardDevice(page.config.card);
+    const count = DEVICE_PAGE_LAYOUTS[layout].length;
+    const items = count + 3 + DEVICE_PAGE_STATUS_SLOTS[layout];
+    if (page.pageItems.length <= items) {
         return page;
     }
     const config: cardDeviceDataItemOptions = { ...page.config };
     if (config.channelSlots) {
         config.channelSlots = config.channelSlots.filter(slot => slot < count);
     }
-    return { ...page, pageItems: page.pageItems.slice(0, count + 3), config };
+    return { ...page, pageItems: page.pageItems.slice(0, items), config };
 }
 
 /**
@@ -1142,11 +1258,18 @@ async function devicePageChannelSlot(
 /**
  * The configuration of a device page, built like every other page when the panel configuration is built (the
  * objects are read here once, not when the page is opened). Its page items are the elements in the order
- * `[main, slot1 … slotN, info, status]` - an empty slot, no info and no status line an empty item. When the page has
- * extra slots (`page.slots` longer than the slots of the layout - they are switched on and one of them is filled),
- * their items follow: `[…, status, extra1 … extraE]` ({@link devicePageSlotItemIndex}); an extra slot is built like a
- * slot of the layout of the same kind. The model of the panel is not known here - a panel that shows no extra slots
- * leaves their items out ({@link devicePageOfModel}).
+ * `[main, slot1 … slotN, info, status, status icon 1 … status icon M]` - an empty slot, no info and no status line an
+ * empty item; M is fixed per layout ({@link DEVICE_PAGE_STATUS_SLOTS}). When the page has extra slots (`page.slots`
+ * longer than the slots of the layout - they are switched on and one of them is filled), their items follow:
+ * `[…, status icon M, extra1 … extraE]` ({@link devicePageSlotItemIndex}); an extra slot is built like a slot of the
+ * layout of the same kind. The model of the panel is not known here - a panel that shows no extra slots leaves their
+ * items out ({@link devicePageOfModel}).
+ *
+ * The stage of the status icon grid ({@link devicePageStageOf}) decides what is built: the status icon places beyond
+ * the stage ({@link devicePageStatusCapacity}; stage 0: all of them) and the slots of the layout the grid covers
+ * ({@link devicePageSlotHiddenByStage}: cardDevice1 stage 3 the info slots 1-2, cardDevice3 stage 1 tile 1, stage 2
+ * tiles 1 and 2) are left as they are configured but not read, not built and not reported - their place is an empty
+ * item, so the numbers of all items stay.
  *
  * The names of the slots of the layout are found among these slots only, so the elements of the layout are the same
  * with and without extra slots; an extra slot is told apart from all slots.
@@ -1178,8 +1301,30 @@ export async function buildDevicePage(
     const headline = nameOfCommon(device?.common?.name, ctx.language) || deviceId.split('.').pop() || '';
     const layoutKinds = DEVICE_PAGE_LAYOUTS[page.layout];
     const extraKinds = page.slots.length > layoutKinds.length ? DEVICE_PAGE_EXTRA_SLOTS[page.layout] : [];
-    // the kinds in the order of the configuration: the slots of the layout, then the extra slots
-    const kinds = [...layoutKinds, ...extraKinds];
+    const stage = devicePageStageOf(page.layout, page.statusStage);
+    const statusCount = DEVICE_PAGE_STATUS_SLOTS[page.layout];
+    const capacity = devicePageStatusCapacity(page.layout, stage);
+    const firstStatus = layoutKinds.length + extraKinds.length;
+    // the kinds in the order of the configuration: the slots of the layout, the extra slots, the status icon places
+    const kinds: DevicePageSlotKind[] = [
+        ...layoutKinds,
+        ...extraKinds,
+        ...Array.from({ length: statusCount }, (): DevicePageSlotKind => 'status'),
+    ];
+    // what the stage does not show is not built at all (no page item, no subscription, no object read): the slots of
+    // the layout the grid covers and the status icon places beyond the stage - an empty item keeps their place
+    const refs: (DevicePageSlotRef | null)[] = kinds.map((_kind, i) => {
+        if (i >= firstStatus) {
+            const place = i - firstStatus;
+            return place < capacity ? (page.statusSlots?.[place] ?? null) : null;
+        }
+        if (i < layoutKinds.length && devicePageSlotHiddenByStage(page.layout, stage, i)) {
+            return null;
+        }
+        return page.slots[i] ?? null;
+    });
+    const label = (i: number): string =>
+        i >= firstStatus ? `status icon ${i - firstStatus + 1}` : `slot ${i + 1} (${kinds[i]})`;
     const messages: string[] = [];
     const skipped: string[] = [];
     const readCommon = async (ref: DevicePageStateRef | null): Promise<DeviceDetailStateCommon | undefined> => {
@@ -1199,7 +1344,7 @@ export async function buildDevicePage(
     const slots: (NSPanel.PageItemDataItemsOptions | undefined)[] = kinds.map(() => undefined);
     const channelSlots: number[] = [];
     for (let i = 0; i < kinds.length; i++) {
-        const ref = page.slots[i] ?? null;
+        const ref = refs[i];
         if (ref?.custom === 'navigation') {
             slots[i] = devicePageNavigationSlotItem(kinds[i], ref);
             continue;
@@ -1208,9 +1353,12 @@ export async function buildDevicePage(
             const channel = await devicePageChannelSlot(kinds[i], ref, ctx);
             if (channel.item) {
                 slots[i] = channel.item;
-                channelSlots.push(i);
+                // a status icon shows no field 6: only the slots fit it to their kind
+                if (i < firstStatus) {
+                    channelSlots.push(i);
+                }
             } else {
-                messages.push(`Device page slot ${i + 1} (${kinds[i]}): ${channel.error ?? ref.id}`);
+                messages.push(`Device page ${label(i)}: ${channel.error ?? ref.id}`);
             }
             continue;
         }
@@ -1257,20 +1405,26 @@ export async function buildDevicePage(
         ...slots.slice(0, layoutKinds.length),
         page.showInfo ? devicePageInfoItem(details) : undefined,
         status,
+        // a fixed block per layout: the numbers of its items do not depend on the stage
+        ...slots.slice(firstStatus),
         // appended: the numbers of the items above never change
-        ...slots.slice(layoutKinds.length),
+        ...slots.slice(layoutKinds.length, firstStatus),
     ];
+    const config: cardDeviceDataItemOptions = {
+        card: cardDeviceOf(page.layout),
+        data: { headline: { type: 'const', constVal: headline } },
+        channelSlots,
+    };
+    if (stage > 0) {
+        config.statusStage = stage;
+    }
     return {
         page: {
             uniqueID,
             alwaysOn,
             dpInit: '',
             pageItems: elements.map(item => item ?? EMPTY_DEVICE_PAGE_ITEM),
-            config: {
-                card: cardDeviceOf(page.layout),
-                data: { headline: { type: 'const', constVal: headline } },
-                channelSlots,
-            },
+            config,
         },
         messages,
     };

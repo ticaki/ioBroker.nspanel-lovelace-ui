@@ -273,9 +273,10 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      */
     private renderPreview(layout: DevicePageLayout): React.JSX.Element {
         const kinds = DEVICE_PAGE_LAYOUTS[layout];
-        const { showInfo, slots } = this.props.value;
-        // the status grid only when one of its slots is filled - the slots stay by position on a layout change
-        const withStatusIcons = devicePageHasStatusIcons(layout, slots);
+        const { showInfo } = this.props.value;
+        // TODO(status grid): provisional until the admin offers the stage and the status icons (TFT device13) - the
+        // preview only narrows the info rows while a stage shows a filled status icon, it draws no grid
+        const withStatusIcons = devicePageHasStatusIcons({ ...this.props.value, layout });
         return (
             <Box
                 sx={{

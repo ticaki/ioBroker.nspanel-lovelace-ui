@@ -17,8 +17,13 @@ import {
     DEVICE_PAGE_FIELDS_WEB_L,
     DEVICE_PAGE_FIELDS_WEB_P,
     DEVICE_PAGE_LAYOUTS,
+    DEVICE_PAGE_RECEIVE_BYTES,
+    DEVICE_PAGE_STAGE_CAPACITY,
+    DEVICE_PAGE_STAGE_HIDDEN_SLOTS,
     DEVICE_PAGE_STATUS_MAX_BYTES,
+    DEVICE_PAGE_STATUS_SLOTS,
     DEVICE_PAGE_TEXT_FONT,
+    isDevicePageStatusStage,
     deviceDetailsRuntimeOf,
     devicePageConfigOf,
     devicePageConfigSlotKinds,
@@ -40,6 +45,7 @@ import {
     devicePageOfModel,
     devicePagePayload,
     devicePageSlotItemIndex,
+    devicePageStatusItemIndex,
     splitDevicePageStatus,
     type DevicePageBuildContext,
 } from './device-page';
@@ -106,14 +112,19 @@ describe('lib/types/deviceDetails - models of the device page', () => {
                 expect(fields.status, `${model} ${layout}`).to.be.above(0);
                 expect(fields.mainName, `${model} ${layout}`).to.be.above(0);
                 for (const kind of DEVICE_PAGE_LAYOUTS[layout].filter(k => k !== 'status')) {
-                    expect(devicePageSlotFields(layout, kind, false, model), `${model} ${layout} ${kind}`).to.not.equal(
+                    expect(devicePageSlotFields(layout, kind, 0, model), `${model} ${layout} ${kind}`).to.not.equal(
                         undefined,
                     );
                 }
             }
         }
         expect(devicePageFields(1, 'eu').status).to.equal(390);
-        expect(devicePageSlotFields(1, 'info', true)).to.deep.equal({ name: 86, value: 110 });
+        // the stages of the status grid: set B (short name), set C (no name, value 87 px)
+        expect(devicePageSlotFields(1, 'info', 0)).to.deep.equal({ name: 164, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 1)).to.deep.equal({ name: 49, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 2)).to.deep.equal({ name: 0, value: 87 });
+        expect(devicePageSlotFields(1, 'button', 3)).to.deep.equal({ name: 104 });
+        expect(devicePageSlotFields(3, 'info', 2)).to.deep.equal({ name: 125, value: 125 });
     });
     it('us-p, web-l and web-p have their own fields: status line 262 / 580 / 262 px', () => {
         expect(Object.keys(DEVICE_PAGE_FIELDS_BY_MODEL).sort()).to.deep.equal([...panelModels].sort());
@@ -125,24 +136,26 @@ describe('lib/types/deviceDetails - models of the device page', () => {
             expect(devicePageFields(layout, 'web-l').status).to.equal(580);
             expect(devicePageFields(layout, 'web-p').status).to.equal(262);
         }
-        // us-p: the info rows of layout 1 lie below the big icon and keep their width with status icons
+        // us-p: the info rows of layout 1 go right of the big icon as set C in stages 1 and 2 (no set B)
         expect(DEVICE_PAGE_FIELDS_US_P[1].slotsWithStatus).to.equal(undefined);
-        expect(devicePageSlotFields(1, 'info', true, 'us-p')).to.deep.equal({ name: 156, value: 104 });
-        expect(devicePageSlotFields(2, 'button', false, 'us-p')).to.deep.equal({ name: 300 });
-        expect(devicePageSlotFields(2, 'value', false, 'us-p')).to.deep.equal({ name: 172, value: 172, valueFont: 4 });
-        expect(devicePageSlotFields(3, 'switch', false, 'us-p')).to.deep.equal({ name: 212 });
+        expect(devicePageSlotFields(1, 'info', 0, 'us-p')).to.deep.equal({ name: 156, value: 104 });
+        expect(devicePageSlotFields(1, 'info', 1, 'us-p')).to.deep.equal({ name: 0, value: 106 });
+        expect(devicePageSlotFields(1, 'info', 2, 'us-p')).to.deep.equal({ name: 0, value: 106 });
+        expect(devicePageSlotFields(2, 'button', 0, 'us-p')).to.deep.equal({ name: 300 });
+        expect(devicePageSlotFields(2, 'value', 0, 'us-p')).to.deep.equal({ name: 172, value: 172, valueFont: 4 });
+        expect(devicePageSlotFields(3, 'switch', 0, 'us-p')).to.deep.equal({ name: 212 });
         // web-l: eu on the full width - info rows and bar reach the right edge, the rest keeps the eu widths; only
         // the names of buttons that stand side by side are 4 px narrower (a gap between two names)
-        expect(devicePageSlotFields(1, 'info', false, 'web-l')).to.deep.equal({ name: 354, value: 110 });
-        expect(devicePageSlotFields(1, 'info', true, 'web-l')).to.deep.equal({ name: 276, value: 110 });
-        expect(devicePageSlotFields(2, 'progress', false, 'web-l')).to.deep.equal({ name: 620 });
+        expect(devicePageSlotFields(1, 'info', 0, 'web-l')).to.deep.equal({ name: 354, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 1, 'web-l')).to.deep.equal({ name: 276, value: 110 });
+        expect(devicePageSlotFields(2, 'progress', 0, 'web-l')).to.deep.equal({ name: 620 });
         for (const layout of LAYOUTS) {
             const web = DEVICE_PAGE_FIELDS_WEB_L[layout];
             const eu = DEVICE_PAGE_FIELDS[layout];
             expect(web.mainName, `web-l ${layout}`).to.equal(eu.mainName);
             for (const kind of DEVICE_PAGE_LAYOUTS[layout].filter(k => k !== 'status')) {
-                const w = devicePageSlotFields(layout, kind, false, 'web-l');
-                const e = devicePageSlotFields(layout, kind, false, 'eu');
+                const w = devicePageSlotFields(layout, kind, 0, 'web-l');
+                const e = devicePageSlotFields(layout, kind, 0, 'eu');
                 expect(w?.name ?? 0, `web-l ${layout} ${kind}`).to.be.at.least(
                     (e?.name ?? 0) - (kind === 'button' ? 4 : 0),
                 );
@@ -150,29 +163,43 @@ describe('lib/types/deviceDetails - models of the device page', () => {
                 expect(w?.valueFont, `web-l ${layout} ${kind}`).to.equal(e?.valueFont);
             }
         }
-        expect(devicePageSlotFields(1, 'button', false, 'web-l')).to.deep.equal({ name: 100 });
-        expect(devicePageSlotFields(2, 'button', false, 'web-l')).to.deep.equal({ name: 96 });
+        expect(devicePageSlotFields(1, 'button', 0, 'web-l')).to.deep.equal({ name: 100 });
+        expect(devicePageSlotFields(2, 'button', 0, 'web-l')).to.deep.equal({ name: 96 });
         // web-p: us-p with the extra slots - only the buttons of layout 2 share a row (three: 100 px like eu, their
         // names 4 px narrower)
-        expect(DEVICE_PAGE_FIELDS_WEB_P[1]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[1]);
+        // the web panel has no status grid yet: us-p without the stages
+        const { slotsByStage: _stages, ...usP1 } = DEVICE_PAGE_FIELDS_US_P[1];
+        expect(DEVICE_PAGE_FIELDS_WEB_P[1]).to.deep.equal(usP1);
         expect(DEVICE_PAGE_FIELDS_WEB_P[3]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[3]);
         expect(DEVICE_PAGE_FIELDS_WEB_P[2]).to.deep.equal({
             ...DEVICE_PAGE_FIELDS_US_P[2],
             slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 96 } },
         });
-        expect(devicePageSlotFields(2, 'button', false, 'web-p')?.name).to.equal(
-            (devicePageSlotFields(2, 'button', false, 'eu')?.name ?? 0) - 4,
+        expect(devicePageSlotFields(2, 'button', 0, 'web-p')?.name).to.equal(
+            (devicePageSlotFields(2, 'button', 0, 'eu')?.name ?? 0) - 4,
         );
     });
-    it('the fields of eu, us-l and us-p are the boxes of the HMI pages (device-page-geometry.json)', () => {
+    it('the fields of eu, us-l and us-p are the boxes of the HMI pages (device-page-geometry.next.json, device13)', () => {
         type Box = { w: number; font?: number };
-        type Slot = { kind: string; name?: Box; value?: Box; narrow?: { name: Box; value: Box } };
-        type HmiPage = { statusWidth: number; main: { name: Box }; status: Box; slots: Slot[] };
-        const file = path.join(__dirname, '../../../doc/ideas/device-details/device-page-geometry.json');
+        type InfoSet = { name?: Box; value: Box };
+        type Slot = { kind: string; name?: Box | number; value?: Box | number; sets?: Record<string, InfoSet> };
+        type Stage = { stage: number; columns: number; infoSet: string | null; hiddenSlots: number[] };
+        type HmiPage = {
+            slotCount: number;
+            statusWidth: number;
+            strCommand: number;
+            main: { name: Box };
+            status: Box;
+            slots: Slot[];
+            grid?: { cells: unknown[] };
+            stages?: Stage[];
+        };
+        const file = path.join(__dirname, '../../../doc/ideas/device-details/device-page-geometry.next.json');
         const geometry = JSON.parse(fs.readFileSync(file, 'utf8')) as Record<
             string,
             { pages: Record<string, HmiPage> }
         >;
+        const width = (box: Box | number | undefined): number | undefined => (typeof box === 'number' ? box : box?.w);
         expect(Object.keys(geometry).sort()).to.deep.equal([...HMI_MODELS].sort());
         for (const model of HMI_MODELS) {
             for (const layout of LAYOUTS) {
@@ -183,15 +210,14 @@ describe('lib/types/deviceDetails - models of the device page', () => {
                     page.slots.map(s => s.kind),
                     at,
                 ).to.deep.equal(DEVICE_PAGE_LAYOUTS[layout]);
+                expect(page.slotCount, at).to.equal(DEVICE_PAGE_LAYOUTS[layout].length);
+                expect(page.strCommand, at).to.equal(DEVICE_PAGE_RECEIVE_BYTES[layout]);
+                expect(page.grid?.cells.length ?? 0, at).to.equal(DEVICE_PAGE_STATUS_SLOTS[layout]);
                 expect(fields.mainName, at).to.equal(page.main.name.w);
                 expect(fields.status, at).to.equal(page.statusWidth);
                 expect(fields.status, at).to.equal(page.status.w);
                 expect(page.status.font, at).to.equal(DEVICE_PAGE_TEXT_FONT);
-                const narrowKinds = new Set<string>();
                 for (const slot of page.slots) {
-                    if (slot.kind === 'status') {
-                        continue;
-                    }
                     const kind = DEVICE_PAGE_LAYOUTS[layout].find(k => k === slot.kind);
                     expect(kind, at).to.not.equal(undefined);
                     if (kind === undefined) {
@@ -199,21 +225,51 @@ describe('lib/types/deviceDetails - models of the device page', () => {
                     }
                     // every slot of a kind has the same fields
                     const own = fields.slots[kind];
-                    expect(own?.name, `${at} ${kind} name`).to.equal(slot.name?.w);
-                    expect(own?.value, `${at} ${kind} value`).to.equal(slot.value?.w);
-                    if (slot.value) {
-                        expect(own?.valueFont ?? DEVICE_PAGE_TEXT_FONT, `${at} ${kind} font`).to.equal(slot.value.font);
+                    expect(own?.name, `${at} ${kind} name`).to.equal(width(slot.name));
+                    expect(own?.value, `${at} ${kind} value`).to.equal(width(slot.value));
+                }
+                // the stages: capacity, covered slots and the info set with its widths
+                const stages = page.stages ?? [{ stage: 0, columns: 0, infoSet: null, hiddenSlots: [] }];
+                expect(
+                    stages.map(st => st.stage),
+                    at,
+                ).to.deep.equal(DEVICE_PAGE_STAGE_CAPACITY[layout].map((_c, i) => i));
+                const staged = new Set<number>();
+                for (const st of stages) {
+                    const stage = st.stage;
+                    if (!isDevicePageStatusStage(stage)) {
+                        throw new Error(`${at}: stage ${stage}`);
                     }
-                    expect(slot.name?.font, `${at} ${kind} name font`).to.equal(DEVICE_PAGE_TEXT_FONT);
-                    if (slot.narrow) {
-                        narrowKinds.add(kind);
-                        expect(fields.slotsWithStatus?.[kind], `${at} ${kind} narrow`).to.deep.equal({
-                            name: slot.narrow.name.w,
-                            value: slot.narrow.value.w,
+                    const rows = layout === 1 ? 2 : 1;
+                    expect(DEVICE_PAGE_STAGE_CAPACITY[layout][stage], `${at} stage ${stage}`).to.equal(
+                        st.columns * rows,
+                    );
+                    // cardDevice1 stage 3: no info rows (infoSet null) - the two info slots are covered
+                    const hidden = layout === 1 && stage > 0 && st.infoSet === null ? [1, 2] : st.hiddenSlots;
+                    expect(
+                        DEVICE_PAGE_STAGE_HIDDEN_SLOTS[layout][stage].map(i => i + 1),
+                        `${at} stage ${stage} hidden`,
+                    ).to.deep.equal(hidden);
+                    if (st.infoSet === 'B' || st.infoSet === 'C') {
+                        staged.add(stage);
+                        const set = page.slots[0].sets?.[st.infoSet];
+                        expect(
+                            devicePageSlotFields(layout, 'info', stage, model),
+                            `${at} stage ${stage}`,
+                        ).to.deep.equal({
+                            name: set?.name?.w ?? 0,
+                            value: set?.value.w,
                         });
+                        expect(set?.name?.font ?? DEVICE_PAGE_TEXT_FONT, at).to.equal(DEVICE_PAGE_TEXT_FONT);
+                        expect(set?.value.font, at).to.equal(DEVICE_PAGE_TEXT_FONT);
                     }
                 }
-                expect(Object.keys(fields.slotsWithStatus ?? {}).sort(), at).to.deep.equal([...narrowKinds].sort());
+                expect(
+                    Object.keys(fields.slotsByStage ?? {})
+                        .map(Number)
+                        .sort(),
+                    at,
+                ).to.deep.equal([...staged].sort());
             }
         }
     });
@@ -329,12 +385,12 @@ describe('lib/types/deviceDetails - extra slots of the web models', () => {
         expect(none.page.slots).to.have.length(n);
     });
     it('a layout change keeps the extra slots among themselves', () => {
-        const one = [...nulls(6), ref('on'), null, null, ref('power'), ref('start'), ref('on')];
-        // layout 1 -> 2: slots 7-10 (status icons) are no extra slots of layout 2
+        const one = [...nulls(6), ref('start'), ref('on')];
+        // layout 1 -> 2: the extra slots of layout 1 are the first extra slots of layout 2
         expect(fitDevicePageSlots(one, 2, 1)).to.deep.equal([...nulls(6), ref('start'), ref('on'), null]);
-        // layout 2 -> 1: the extra slots do not become status icons
+        // layout 2 -> 1: the extra slots stay extra slots, the third one has no place
         const two = [ref('power'), ...nulls(5), ref('energy'), ref('start'), ref('on')];
-        expect(fitDevicePageSlots(two, 1, 2)).to.deep.equal([ref('power'), ...nulls(9), ref('energy'), ref('start')]);
+        expect(fitDevicePageSlots(two, 1, 2)).to.deep.equal([ref('power'), ...nulls(5), ref('energy'), ref('start')]);
         expect(fitDevicePageSlots(two, 3, 2)).to.deep.equal([
             ref('power'),
             ...nulls(7),
@@ -357,13 +413,22 @@ describe('lib/pages/device-page - page items of the extra slots', () => {
     const pageItemOf: DevicePageBuildContext['pageItemOf'] = async item =>
         Promise.resolve(item.channelId.valueStateId === 'alias.0.socket' ? channelItem : undefined);
 
-    it('number of the page item of a slot: the extra slots stand behind the status item', () => {
+    it('number of the page item of a slot: the extra slots stand behind the status item and the status icons', () => {
         for (const layout of LAYOUTS) {
             const count = DEVICE_PAGE_LAYOUTS[layout].length;
+            const m = DEVICE_PAGE_STATUS_SLOTS[layout];
             expect(devicePageSlotItemIndex(layout, 0)).to.equal(1);
             expect(devicePageSlotItemIndex(layout, count - 1)).to.equal(count);
-            expect(devicePageSlotItemIndex(layout, count)).to.equal(count + 3);
-            expect(devicePageSlotItemIndex(layout, count + 1)).to.equal(count + 4);
+            expect(devicePageSlotItemIndex(layout, count)).to.equal(count + 3 + m);
+            expect(devicePageSlotItemIndex(layout, count + 1)).to.equal(count + 4 + m);
+            expect(devicePageStatusItemIndex(layout, 0)).to.equal(count + 3);
+        }
+        expect(Object.values(DEVICE_PAGE_STATUS_SLOTS)).to.deep.equal([16, 0, 8]);
+        // the ids <page>?<n> fit the 7 bytes of entn: n stays two-digit (999?99), also with the extra slots
+        for (const layout of LAYOUTS) {
+            const last = DEVICE_PAGE_LAYOUTS[layout].length + DEVICE_PAGE_EXTRA_SLOTS[layout].length - 1;
+            expect(devicePageSlotItemIndex(layout, last)).to.be.below(100);
+            expect(`999?${devicePageSlotItemIndex(layout, last)}`.length).to.be.at.most(7);
         }
     });
     it('appended behind the status item, the items of the layout keep number and content', async () => {
@@ -456,6 +521,8 @@ function fakePage(
         slotCount: DEVICE_PAGE_LAYOUTS[layout].length,
         layout,
         channelSlots: new Set<number>(channelSlots),
+        statusStage: 0,
+        lastIcons: '',
         visibility: true,
         refreshTimeout: null,
         statusText: undefined,
@@ -489,6 +556,19 @@ function fakePage(
 describe('lib/pages/pageDevice - message per model', () => {
     /**
      * @param layout the layout
+     * @param k index of the extra slot
+     * @returns the number of its page item
+     */
+    const extraAt = (layout: DevicePageLayout, k: number): number =>
+        devicePageSlotItemIndex(layout, DEVICE_PAGE_LAYOUTS[layout].length + k);
+    /**
+     * @param layout the layout
+     * @returns the info element: type as a number, field 6 the stage (0: empty) on cardDevice1 / cardDevice3
+     */
+    const infoOf = (layout: DevicePageLayout): string =>
+        `1~dp_3?${DEVICE_PAGE_LAYOUTS[layout].length + 1}~i~3~~${layout === 2 ? '1' : ''}`;
+    /**
+     * @param layout the layout
      * @param withExtras with the items of the extra slots
      * @returns the payloads of main, the slots, info, the status item and the extra slots
      */
@@ -501,8 +581,10 @@ describe('lib/pages/pageDevice - message per model', () => {
         payloads.push(`button~dp_3?${n + 1}~i~3~~1`);
         payloads.push(`text~dp_3?${n + 2}~x~4~~Schleudern`);
         if (withExtras) {
+            // the status icon places (none filled), then the extra slots
+            payloads.push(...new Array<string>(DEVICE_PAGE_STATUS_SLOTS[layout]).fill(''));
             DEVICE_PAGE_EXTRA_SLOTS[layout].forEach((_kind, k) => {
-                payloads.push(`button~dp_3?${n + 3 + k}~E~5~X${k + 1}~1`);
+                payloads.push(`button~dp_3?${extraAt(layout, k)}~E~5~X${k + 1}~1`);
             });
         }
         return payloads;
@@ -526,7 +608,7 @@ describe('lib/pages/pageDevice - message per model', () => {
             const eu = await send(layout, 'eu', payloadsOf(layout, false));
             expect(eu.split('~')).to.have.length(2 + 12 + 6 * (n + 2));
             // the last element is info
-            expect(eu.endsWith(`~button~dp_3?${n + 1}~i~3~~1`)).to.equal(true);
+            expect(eu.endsWith(`~${infoOf(layout)}`)).to.equal(true);
             for (const model of HMI_MODELS) {
                 expect(await send(layout, model, payloadsOf(layout, false)), model).to.equal(eu);
                 expect(await send(layout, model, payloadsOf(layout, true)), model).to.equal(eu);
@@ -534,7 +616,9 @@ describe('lib/pages/pageDevice - message per model', () => {
         });
         it(`layout ${layout}: web-l and web-p get it with the ${e} extra elements appended`, async () => {
             const eu = await send(layout, 'eu', payloadsOf(layout, false));
-            const extra = DEVICE_PAGE_EXTRA_SLOTS[layout].map((_kind, k) => `button~dp_3?${n + 3 + k}~E~5~X${k + 1}~1`);
+            const extra = DEVICE_PAGE_EXTRA_SLOTS[layout].map(
+                (_kind, k) => `1~dp_3?${extraAt(layout, k)}~E~5~X${k + 1}~1`,
+            );
             for (const model of WEB_MODELS) {
                 const web = await send(layout, model, payloadsOf(layout, true));
                 expect(web, model).to.equal([eu, ...extra].join('~'));
@@ -556,9 +640,9 @@ describe('lib/pages/pageDevice - message per model', () => {
         const web = await send(2, 'web-l', payloads);
         const elements = web.split('~').slice(14 + 6 * (n + 2));
         expect(elements).to.deep.equal([
-            ...['button', `dp_3?${n + 3}`, 'E', '5', 'X1', '1'],
+            ...['1', `dp_3?${n + 3}`, 'E', '5', 'X1', '1'],
             ...['', '', '', '', '', ''],
-            ...['button', `dp_3?${n + 5}`, 'E', '5', 'X3', '1'],
+            ...['1', `dp_3?${n + 5}`, 'E', '5', 'X3', '1'],
         ]);
     });
     it('extra slots: names and values 31 bytes, field 6 of an alias channel follows the kind of the slot', async () => {
@@ -571,11 +655,11 @@ describe('lib/pages/pageDevice - message per model', () => {
         const web = await send(2, 'web-p', payloads, [n, n + 1]);
         const elements = web.split('~').slice(14 + 6 * (n + 2));
         // an info slot shows on / off of a switch, the name is cut at a character
-        expect(elements.slice(0, 6)).to.deep.equal(['switch', `dp_3?${n + 3}`, 'E', '5', 'ü'.repeat(15), 'on']);
+        expect(elements.slice(0, 6)).to.deep.equal(['1', `dp_3?${n + 3}`, 'E', '5', 'ü'.repeat(15), 'on']);
         // a button slot shows no number
-        expect(elements.slice(6, 12)).to.deep.equal(['number', `dp_3?${n + 4}`, 'E', '5', 'Vol', '']);
+        expect(elements.slice(6, 12)).to.deep.equal(['9', `dp_3?${n + 4}`, 'E', '5', 'Vol', '']);
         // no channel: only cut
-        expect(elements.slice(12, 18)).to.deep.equal(['text', `dp_3?${n + 5}`, 'E', '5', 'Text', 'w'.repeat(31)]);
+        expect(elements.slice(12, 18)).to.deep.equal(['1', `dp_3?${n + 5}`, 'E', '5', 'Text', 'w'.repeat(31)]);
     });
     it('long press: an extra slot runs the long press of its item on a web model, never info or the status item', async () => {
         const n = DEVICE_PAGE_LAYOUTS[2].length;
@@ -674,6 +758,8 @@ describe('lib/pages/pageDevice - the real constructor leaves out the extra slots
     for (const layout of LAYOUTS) {
         const n = DEVICE_PAGE_LAYOUTS[layout].length;
         const e = DEVICE_PAGE_EXTRA_SLOTS[layout].length;
+        // main, the slots, info, the status item and the status icon places
+        const own = n + 3 + DEVICE_PAGE_STATUS_SLOTS[layout];
         // every extra slot filled with something of its kind, the first one with an alias channel
         const extras = DEVICE_PAGE_EXTRA_SLOTS[layout].map((kind, k) =>
             k === 0
@@ -694,13 +780,13 @@ describe('lib/pages/pageDevice - the real constructor leaves out the extra slots
             const a = runtimeOf({ layout, slots: baseSlots, status: ref('power') });
             const b = runtimeOf({ layout, slots: [...baseSlots, ...extras], status: ref('power'), webExtras: true });
             const withExtras = (await build(b.page, b.details, pageItemOf)).page;
-            expect(withExtras.pageItems).to.have.length(n + 3 + e);
+            expect(withExtras.pageItems).to.have.length(own + e);
             // the alias channel of the first extra slot
             expect((withExtras.config as any).channelSlots).to.deep.equal([n]);
             return { plain: (await build(a.page, a.details, pageItemOf)).page, withExtras };
         };
 
-        it(`layout ${layout}: eu, us-l and us-p (hardware and web clone) create only the items 0..${n + 2}`, async () => {
+        it(`layout ${layout}: eu, us-l and us-p (hardware and web clone) create only the items 0..${own - 1}`, async () => {
             const { plain, withExtras } = await configs();
             for (const model of HMI_MODELS) {
                 for (const isVirtual of [false, true]) {
@@ -708,12 +794,12 @@ describe('lib/pages/pageDevice - the real constructor leaves out the extra slots
                     const a = realPage(model, structuredClone(withExtras), isVirtual);
                     const b = realPage(model, structuredClone(plain), isVirtual);
                     // the page keeps the configuration of the page without extra slots
-                    expect(a.page.pageItemConfig, at).to.have.length(n + 3);
+                    expect(a.page.pageItemConfig, at).to.have.length(own);
                     expect(a.page.pageItemConfig, at).to.deep.equal(b.page.pageItemConfig);
                     expect(a.page.config, at).to.deep.equal(b.page.config);
                     expect((a.page.config as any).channelSlots ?? [], at).to.deep.equal([]);
                     // no item is created (and so nothing subscribed) for an extra slot
-                    expect(await show(a.page), at).to.deep.equal(Array.from({ length: n + 3 }, (_v, i) => i));
+                    expect(await show(a.page), at).to.deep.equal(Array.from({ length: own }, (_v, i) => i));
                     await show(b.page);
                     // and the message is the one of the page without extra slots: nothing behind info
                     expect(a.sent, at).to.have.length(1);
@@ -725,20 +811,20 @@ describe('lib/pages/pageDevice - the real constructor leaves out the extra slots
             }
         });
 
-        it(`layout ${layout}: web-l and web-p create all items, the ${e} extra ones at ${n + 3}..${n + 2 + e}`, async () => {
+        it(`layout ${layout}: web-l and web-p create all items, the ${e} extra ones at ${own}..${own - 1 + e}`, async () => {
             const { withExtras } = await configs();
             for (const model of WEB_MODELS) {
                 const a = realPage(model, structuredClone(withExtras), true);
-                expect(a.page.pageItemConfig, model).to.have.length(n + 3 + e);
+                expect(a.page.pageItemConfig, model).to.have.length(own + e);
                 expect(a.page.pageItemConfig, model).to.deep.equal(withExtras.pageItems);
                 expect((a.page.config as any).channelSlots, model).to.deep.equal([n]);
-                expect(await show(a.page), model).to.deep.equal(Array.from({ length: n + 3 + e }, (_v, i) => i));
+                expect(await show(a.page), model).to.deep.equal(Array.from({ length: own + e }, (_v, i) => i));
                 expect(a.sent, model).to.have.length(1);
                 const fields = a.sent[0].split('~');
                 expect(fields, model).to.have.length(2 + 12 + 6 * (n + 2 + e));
                 const tail = fields.slice(14 + 6 * (n + 2));
                 for (let k = 0; k < e; k++) {
-                    expect(tail[k * 6 + 1], `${model} extra ${k}`).to.equal(`7?${n + 3 + k}`);
+                    expect(tail[k * 6 + 1], `${model} extra ${k}`).to.equal(`7?${own + k}`);
                 }
             }
         });
@@ -754,7 +840,7 @@ describe('lib/pages/device-page - length of the message per model', () => {
 
     it('the HMI models keep the buffer of their page, the web models have no limit', () => {
         for (const model of HMI_MODELS) {
-            expect(LAYOUTS.map(layout => devicePageMaxPayloadBytes(layout, model))).to.deep.equal([943, 875, 1017]);
+            expect(LAYOUTS.map(layout => devicePageMaxPayloadBytes(layout, model))).to.deep.equal([703, 775, 959]);
         }
         for (const model of WEB_MODELS) {
             for (const layout of LAYOUTS) {
@@ -766,9 +852,14 @@ describe('lib/pages/device-page - length of the message per model', () => {
         for (const layout of LAYOUTS) {
             const count = DEVICE_PAGE_LAYOUTS[layout].length + 1 + DEVICE_PAGE_EXTRA_SLOTS[layout].length;
             const elements = new Array(count).fill(0).map((_v, i) => full(i + 1));
-            const expected = [head, `button~dp_12?0~I~65535~${'M'.repeat(31)}~${status}`, ...elements].join('~');
-            // longer than every buffer of an HMI page
-            expect(bytes(expected)).to.be.above(1019);
+            // the type as a number: button 1, input_sel 4
+            const expected = [
+                head,
+                `1~dp_12?0~I~65535~${'M'.repeat(31)}~${status}`,
+                ...elements.map(element => element.replace(/^input_sel~/, '4~')),
+            ].join('~');
+            // longer than the buffer of the HMI page
+            expect(bytes(expected)).to.be.above(devicePageMaxPayloadBytes(layout, 'eu'));
             for (const model of WEB_MODELS) {
                 expect(devicePagePayload(head, main, elements, status, layout, model), model).to.equal(expected);
             }
