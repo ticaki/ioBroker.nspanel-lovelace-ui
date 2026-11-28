@@ -5,7 +5,7 @@ import { initialGlobalState } from '../../store/PanelStore';
 import type { Entity6, PanelModel } from '../../protocol/types';
 import type { CardProps } from '../CardContract';
 import { Pressable, type PressableProps } from '../cardEntities/shared/Pressable';
-import { CardDevice, DEVICE_LONG_PRESS_MS, deviceTouch } from './CardDevice';
+import { CardDevice, DEVICE_LONG_PRESS_MS, cutToBytes, deviceTouch } from './CardDevice';
 import { handleCommand, initial, parseEntityUpd, type CardDeviceModel } from './parse';
 import device1 from '../../../scripts/examples/cardDevice1.txt?raw';
 import webL1 from '../../../scripts/examples/web-l-cardDevice1.txt?raw';
@@ -363,65 +363,144 @@ describe('cardDevice status line', () => {
     });
 });
 
-describe('cardDevice1 status block rendering', () => {
+describe('cardDevice status icon grid rendering', () => {
     const NAV = ['button', 'p', '<', '65535', '', '', 'button', 'n', '>', '65535', '', ''];
-    function html(statusIcons: number): string {
-        const slots: string[] = [];
-        for (let i = 1; i <= 10; i++) {
-            const filled = i <= 6 || i - 6 <= statusIcons;
-            slots.push(...(filled ? ['text', `s${i}`, 'X', '65535', `n${i}`, 'v'] : ['', '', '', '', '', '']));
-        }
-        const ctx = { pageType: 'cardDevice1', pageArgs: [] };
-        const model = parseEntityUpd(
-            ['T', ...NAV, 'text', 'm', 'M', '65535', 'Main', 'Status', ...slots],
+    const row = (i: number): string[] => ['1', `s${i}`, 'X', '65535', `Name ${i}`, `Wert ${i}`];
+
+    /**
+     * a page in a stage with `icons` filled cells
+     *
+     * @param pageType cardDevice1 / cardDevice3
+     * @param stage the stage (field 6 of info)
+     * @param icons filled cells
+     * @param model the panel model
+     */
+    function html(pageType: string, stage: number, icons: number, model: PanelModel = 'eu'): string {
+        const count = pageType === 'cardDevice3' ? 8 : 6;
+        const cells = pageType === 'cardDevice3' ? 8 : 16;
+        const slots = Array.from({ length: count }, (_, i) => row(i + 1)).flat();
+        const ctx = { pageType, pageArgs: [], model };
+        const parsed = parseEntityUpd(
+            [
+                'T',
+                ...NAV,
+                '1',
+                'm',
+                'M',
+                '65535',
+                'Main',
+                'Status',
+                ...slots,
+                '1',
+                'info',
+                'i',
+                '65535',
+                '',
+                `${stage}`,
+            ],
             initial(),
             ctx,
         );
+        const args = Array.from({ length: cells }, (_, i) =>
+            i < icons ? ['1', `c${i + 1}`, 'X', '2047'] : ['', '', '', ''],
+        ).flat();
         return renderToStaticMarkup(
             React.createElement(CardDevice, {
-                model,
+                model: handleCommand('devIcons', args, parsed, ctx) ?? parsed,
                 ctx,
-                global: initialGlobalState('eu'),
+                global: initialGlobalState(model),
                 send: () => undefined,
                 press: () => undefined,
                 openPopup: () => undefined,
             }),
         );
     }
+    const cells = (out: string): string[] => out.split('data-kind="status"').slice(1);
 
-    it('shows no cells without status icons, all 4 framed cells with one, only the filled ones tappable', () => {
-        expect(html(0).match(/data-kind="status"/g) ?? []).toHaveLength(0);
-        for (const n of [1, 4]) {
-            const out = html(n);
-            expect(out.match(/data-kind="status"/g) ?? []).toHaveLength(4);
-            const cells = out.split('data-kind="status"').slice(1);
-            cells.forEach((cell, i) => {
-                const own = cell.split('data-role="slot-')[0];
-                expect(own.includes('data-pressable'), `cell ${i + 1} of ${n}`).toBe(i < n);
+    it('shows the columns of the filled cells (a half filled one with its empty cell), only filled ones tappable', () => {
+        expect(cells(html('cardDevice1', 0, 16))).toHaveLength(0);
+        expect(cells(html('cardDevice1', 1, 0))).toHaveLength(0);
+        for (const [stage, n, shown] of [
+            [1, 1, 2],
+            [1, 5, 6],
+            [1, 9, 6],
+            [2, 9, 10],
+            [3, 16, 16],
+        ]) {
+            const out = cells(html('cardDevice1', stage, n));
+            expect(out, `stage ${stage} ${n} icons`).toHaveLength(shown);
+            out.forEach((cell, i) => {
+                const own = cell.split('data-role="cell-')[0].split('data-role="status"')[0];
+                expect(own.includes('data-pressable'), `stage ${stage} cell ${i + 1} of ${n}`).toBe(i < n);
             });
         }
+        // cardDevice3: one row
+        expect(cells(html('cardDevice3', 1, 7))).toHaveLength(4);
+        expect(cells(html('cardDevice3', 2, 7))).toHaveLength(7);
     });
 
-    it('a filled status cell is a touch area over the whole cell, the icon stays in place', () => {
-        const out = html(1);
-        const cell = out.split('data-kind="status"')[1];
+    it('a cell: 1 px grey frame shared with its neighbour, the touch area over the whole cell, press effect', () => {
+        const out = html('cardDevice1', 1, 3);
+        expect(tag(out, 'cell-1')).toContain('left:124px;top:71px;width:38px;height:45px');
+        expect(tag(out, 'cell-3')).toContain('left:161px;top:71px;width:38px;height:45px');
+        expect(tag(out, 'cell-4')).toContain('left:161px;top:115px;width:38px;height:45px');
+        expect(tag(out, 'cell-1')).toContain('border:1px solid');
+        const cell = cells(out)[0];
         expect(cell).toContain('data-role="status-icon"');
-        expect(cell).toContain('data-id="s7"');
+        expect(cell).toContain('data-id="c1"');
         expect(cell).toContain('left:-1px;top:-1px;width:38px;height:45px');
+        expect(cell).not.toContain('opacity:0.6');
     });
 
-    it('moves the info rows right while the block is shown', () => {
-        expect(html(0)).toContain('left:126px;top:76px');
-        expect(html(1)).toContain('left:204px;top:76px');
+    it('the info rows in the set of the stage: A, B (name cut to 15 bytes), C (no name), none', () => {
+        const a = html('cardDevice1', 0, 0);
+        expect(tag(a, 'slot-1')).toContain('left:126px;top:76px');
+        expect(a).toContain('Name 1<');
+        const b = html('cardDevice1', 1, 3);
+        expect(tag(b, 'slot-1')).toContain('left:241px;top:76px');
+        expect(b).toContain('Name 1<');
+        expect(b).toContain('Wert 1<');
+        const c = html('cardDevice1', 2, 9);
+        expect(tag(c, 'slot-1')).toContain('left:315px;top:76px');
+        expect(c).not.toContain('Name 1<');
+        expect(c).toContain('Wert 1<');
+        const none = html('cardDevice1', 3, 16);
+        expect(none).not.toContain('data-role="slot-1"');
+        expect(none).not.toContain('data-role="slot-2"');
+        expect(none).toContain('data-role="slot-3"');
+    });
+
+    it('cardDevice3: tile 1 (stage 1) or tiles 1 and 2 (stage 2) give way to the grid', () => {
+        expect(html('cardDevice3', 0, 0)).toContain('data-role="slot-1"');
+        const one = html('cardDevice3', 1, 4);
+        expect(one).not.toContain('data-role="slot-1"');
+        expect(one).toContain('data-role="slot-2"');
+        const two = html('cardDevice3', 2, 8);
+        expect(two).not.toContain('data-role="slot-1"');
+        expect(two).not.toContain('data-role="slot-2"');
+        expect(tag(two, 'cell-8')).toContain('left:373px;top:67px;width:38px;height:52px');
+    });
+
+    it('cuts a copied text to the bytes of the set, whole characters, never an ellipsis', () => {
+        expect(cutToBytes('Batteriezustand', 15)).toBe('Batteriezustand');
+        expect(cutToBytes('Batteriezustand!', 15)).toBe('Batteriezustand');
+        expect(cutToBytes('Türschloss hinten', 15)).toBe('Türschloss hin');
+        expect(cutToBytes('21,5°C', 19)).toBe('21,5°C');
+        expect(cutToBytes('anything', undefined)).toBe('anything');
     });
 });
 
 describe('cardDevice on the models', () => {
-    /** renders the `entityUpd` of an example of scripts/examples as the store does on this model */
+    /** renders the `entityUpd` (and `devIcons`) of an example of scripts/examples as the store does on this model */
     function render(example: string, pageType: string, model: PanelModel): string {
-        const line = example.split('\n').find(l => l.startsWith('entityUpd~')) ?? '';
+        const lines = example.split('\n');
+        const line = lines.find(l => l.startsWith('entityUpd~')) ?? '';
+        const icons = lines.find(l => l.startsWith('devIcons~'));
         const ctx = { pageType, pageArgs: [], model };
-        const parsed = parseEntityUpd(line.split('~').slice(1), initial(), ctx);
+        const entityUpd = parseEntityUpd(line.split('~').slice(1), initial(), ctx);
+        const parsed = icons
+            ? (handleCommand('devIcons', icons.split('~').slice(1), entityUpd, ctx) ?? entityUpd)
+            : entityUpd;
         return renderToStaticMarkup(
             React.createElement(CardDevice, {
                 model: parsed,
@@ -500,16 +579,19 @@ describe('cardDevice on the models', () => {
         expect(tag(usl, 'info')).toContain('left:419px;top:288px');
     });
 
-    it('us-p: the page of the us-p HMI - status block right of main, rows below, status line 262 px', () => {
+    it('us-p: the page of the us-p HMI (P2) - grid where the rows are, set C right of main, status line 262 px', () => {
         const out = render(usP1, 'cardDevice1', 'us-p');
         expect(out).not.toContain('transform');
         expect(out).not.toContain('data-role="extra-');
         expect(tag(out, 'main')).toContain('left:10px;top:70px;width:150px;height:114px');
+        // stage 1 with four icons: two columns of the 8 x 2 grid
         expect(out.match(/data-kind="status"/g) ?? []).toHaveLength(4);
-        expect(tag(out, 'slot-7')).toContain('left:166px;top:70px;width:72px;height:57px');
-        expect(tag(out, 'slot-10')).toContain('left:237px;top:126px;width:72px;height:57px');
-        // the info rows do not move with the status icons
-        expect(tag(out, 'slot-1')).toContain('left:10px;top:190px;width:300px;height:34px');
+        expect(tag(out, 'cell-1')).toContain('left:10px;top:188px;width:38px;height:41px');
+        expect(tag(out, 'cell-4')).toContain('left:47px;top:228px;width:38px;height:41px');
+        // the info rows as set C right of main (icon and value)
+        expect(tag(out, 'slot-1')).toContain('left:166px;top:76px;width:144px;height:34px');
+        expect(tag(out, 'slot-2')).toContain('left:166px;top:120px;width:144px;height:34px');
+        // without status icons (stage 0): the rows below main
         expect(tag(render(usP1Plain, 'cardDevice1', 'us-p'), 'slot-1')).toContain(
             'left:10px;top:190px;width:300px;height:34px',
         );
@@ -536,8 +618,11 @@ describe('cardDevice on the models', () => {
         const robot = render(webP1, 'cardDevice1', 'web-p');
         expect(robot).not.toContain('transform');
         expect(tag(robot, 'extra-1')).toContain('data-id="9?0?13"');
-        expect(tag(robot, 'extra-1')).toContain('left:10px;top:501px;width:148px;height:80px');
-        expect(tag(robot, 'extra-2')).toContain('left:162px;top:501px;width:148px;height:80px');
+        // stage 1: set C right of main, the grid below it, three rows of buttons
+        expect(tag(robot, 'slot-1')).toContain('left:166px;top:76px;width:144px;height:34px');
+        expect(tag(robot, 'cell-1')).toContain('left:10px;top:210px;width:38px;height:41px');
+        expect(tag(robot, 'extra-1')).toContain('left:10px;top:502px;width:148px;height:80px');
+        expect(tag(robot, 'extra-2')).toContain('left:162px;top:502px;width:148px;height:80px');
         expect(robot).toContain('left:10px;top:607px;width:262px;height:30px');
         expect(tag(robot, 'info')).toContain('left:274px;top:606px;width:36px;height:32px');
         const washer = render(webP2, 'cardDevice2', 'web-p');
@@ -556,7 +641,8 @@ describe('cardDevice on the models', () => {
     it('web-p without additional slots: nothing is drawn for them, the rows share the height', () => {
         const robot = render(webP1Plain, 'cardDevice1', 'web-p');
         expect(robot).not.toContain('data-role="extra-');
-        expect(tag(robot, 'slot-5')).toContain('left:10px;top:478px;width:148px;height:80px');
+        // stage 1: the grid below main, two rows of buttons
+        expect(tag(robot, 'slot-5')).toContain('left:10px;top:475px;width:148px;height:80px');
         const washer = render(webP2Plain, 'cardDevice2', 'web-p');
         expect(washer).not.toContain('data-role="extra-');
         expect(tag(washer, 'slot-6')).toContain('left:10px;top:486px;width:300px;height:80px');

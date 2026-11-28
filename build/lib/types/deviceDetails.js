@@ -29,16 +29,21 @@ __export(deviceDetails_exports, {
   DEVICE_PAGE_FIELDS_US_P: () => DEVICE_PAGE_FIELDS_US_P,
   DEVICE_PAGE_FIELDS_WEB_L: () => DEVICE_PAGE_FIELDS_WEB_L,
   DEVICE_PAGE_FIELDS_WEB_P: () => DEVICE_PAGE_FIELDS_WEB_P,
+  DEVICE_PAGE_ICONS_COMMAND: () => DEVICE_PAGE_ICONS_COMMAND,
   DEVICE_PAGE_INFO_ROLE: () => DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS: () => DEVICE_PAGE_LAYOUTS,
   DEVICE_PAGE_NAVIGATION_ICON: () => DEVICE_PAGE_NAVIGATION_ICON,
   DEVICE_PAGE_PROGRESS_ROLE: () => DEVICE_PAGE_PROGRESS_ROLE,
   DEVICE_PAGE_RECEIVE_BYTES: () => DEVICE_PAGE_RECEIVE_BYTES,
   DEVICE_PAGE_SLOT_LOOK_FIELDS: () => DEVICE_PAGE_SLOT_LOOK_FIELDS,
+  DEVICE_PAGE_STAGE_CAPACITY: () => DEVICE_PAGE_STAGE_CAPACITY,
+  DEVICE_PAGE_STAGE_HIDDEN_SLOTS: () => DEVICE_PAGE_STAGE_HIDDEN_SLOTS,
   DEVICE_PAGE_STATUS_COMMAND: () => DEVICE_PAGE_STATUS_COMMAND,
   DEVICE_PAGE_STATUS_INTERVAL_MS: () => DEVICE_PAGE_STATUS_INTERVAL_MS,
   DEVICE_PAGE_STATUS_MAX_BYTES: () => DEVICE_PAGE_STATUS_MAX_BYTES,
   DEVICE_PAGE_STATUS_MAX_PARTS: () => DEVICE_PAGE_STATUS_MAX_PARTS,
+  DEVICE_PAGE_STATUS_SLOTS: () => DEVICE_PAGE_STATUS_SLOTS,
+  DEVICE_PAGE_STATUS_SLOTS_MAX: () => DEVICE_PAGE_STATUS_SLOTS_MAX,
   DEVICE_PAGE_TEXT_FONT: () => DEVICE_PAGE_TEXT_FONT,
   DEVICE_PAGE_TEXT_MAX_BYTES: () => DEVICE_PAGE_TEXT_MAX_BYTES,
   SENDTO_GET_DEVICE_DETAILS_COMMAND: () => SENDTO_GET_DEVICE_DETAILS_COMMAND,
@@ -77,11 +82,14 @@ __export(deviceDetails_exports, {
   devicePageSlotCount: () => devicePageSlotCount,
   devicePageSlotFields: () => devicePageSlotFields,
   devicePageSlotHasLook: () => devicePageSlotHasLook,
+  devicePageSlotHiddenByStage: () => devicePageSlotHiddenByStage,
   devicePageSlotLookOf: () => devicePageSlotLookOf,
   devicePageSlotTakesLongPress: () => devicePageSlotTakesLongPress,
   devicePageSlotTakesNavigation: () => devicePageSlotTakesNavigation,
   devicePageSlotTakesTextSize: () => devicePageSlotTakesTextSize,
   devicePageSlotTargetOf: () => devicePageSlotTargetOf,
+  devicePageStageOf: () => devicePageStageOf,
+  devicePageStatusCapacity: () => devicePageStatusCapacity,
   deviceSelectionError: () => deviceSelectionError,
   deviceShortPressOf: () => deviceShortPressOf,
   exchangeDeviceDetailRowState: () => exchangeDeviceDetailRowState,
@@ -92,6 +100,7 @@ __export(deviceDetails_exports, {
   isDeviceDetailState: () => isDeviceDetailState,
   isDeviceDetailsConfig: () => isDeviceDetailsConfig,
   isDevicePageLayout: () => isDevicePageLayout,
+  isDevicePageStatusStage: () => isDevicePageStatusStage,
   isDeviceShortPressState: () => isDeviceShortPressState,
   tickDeviceDetailRow: () => tickDeviceDetailRow,
   tickedDeviceDetailRowsFirst: () => tickedDeviceDetailRowsFirst,
@@ -126,13 +135,46 @@ function deviceShortPressOf(config) {
   }
 }
 const DEVICE_PAGE_LAYOUTS = {
-  /** "Steuern" (control): slots 7-10 are the 2x2 status icons right of the big icon */
-  1: ["info", "info", "button", "button", "button", "button", "status", "status", "status", "status"],
+  /** "Steuern" (control): the status icons are no slots, they come with devIcons ({@link DEVICE_PAGE_STATUS_SLOTS}) */
+  1: ["info", "info", "button", "button", "button", "button"],
   /** "Fortschritt" (progress) */
   2: ["value", "progress", "info", "info", "info", "button"],
   /** "Werte" (values) */
   3: ["info", "info", "info", "info", "info", "info", "switch", "switch"]
 };
+const DEVICE_PAGE_STATUS_SLOTS = {
+  1: 16,
+  2: 0,
+  3: 8
+};
+const DEVICE_PAGE_STATUS_SLOTS_MAX = 16;
+const DEVICE_PAGE_STAGE_CAPACITY = {
+  1: [0, 6, 10, 16],
+  2: [0],
+  3: [0, 4, 8]
+};
+const DEVICE_PAGE_STAGE_HIDDEN_SLOTS = {
+  1: [[], [], [], [0, 1]],
+  2: [[]],
+  3: [[], [0], [0, 1]]
+};
+function isDevicePageStatusStage(value) {
+  return value === 0 || value === 1 || value === 2 || value === 3;
+}
+function devicePageStageOf(layout, stage) {
+  const max = DEVICE_PAGE_STAGE_CAPACITY[layout].length - 1;
+  const value = isDevicePageStatusStage(stage) ? stage : 0;
+  const out = Math.min(value, max);
+  return isDevicePageStatusStage(out) ? out : 0;
+}
+function devicePageStatusCapacity(layout, stage) {
+  var _a;
+  return (_a = DEVICE_PAGE_STAGE_CAPACITY[layout][devicePageStageOf(layout, stage)]) != null ? _a : 0;
+}
+function devicePageSlotHiddenByStage(layout, stage, slot) {
+  var _a;
+  return ((_a = DEVICE_PAGE_STAGE_HIDDEN_SLOTS[layout][devicePageStageOf(layout, stage)]) != null ? _a : []).includes(slot);
+}
 const DEVICE_PAGE_EXTRA_SLOTS = {
   /** "Steuern": 6 buttons */
   1: ["button", "button"],
@@ -153,12 +195,13 @@ function devicePageConfigSlotKinds(layout) {
 const DEVICE_PAGE_TEXT_FONT = 0;
 const DEVICE_PAGE_STATUS_MAX_BYTES = 63;
 const DEVICE_PAGE_STATUS_COMMAND = "devStatus";
+const DEVICE_PAGE_ICONS_COMMAND = "devIcons";
 const DEVICE_PAGE_STATUS_MAX_PARTS = 3;
 const DEVICE_PAGE_STATUS_INTERVAL_MS = 3e3;
 const DEVICE_PAGE_RECEIVE_BYTES = {
-  1: 943,
-  2: 875,
-  3: 1019
+  1: 703,
+  2: 775,
+  3: 959
 };
 const DEVICE_PAGE_TEXT_MAX_BYTES = 31;
 const DEVICE_PAGE_FIELDS = {
@@ -166,9 +209,9 @@ const DEVICE_PAGE_FIELDS = {
     mainName: 110,
     status: 390,
     slots: { info: { name: 164, value: 110 }, button: { name: 104 } },
-    // at least one status icon: the 2x2 block stands right of the big icon, the info rows get narrower (empty status
-    // slots inside the shown block stay empty grid cells)
-    slotsWithStatus: { info: { name: 86, value: 110 } }
+    // the status grid right of the big icon: stage 1 set B (icon, name 49 px, the value of set A), stage 2 set C
+    // (icon and value 87 px, no name), stage 3 no info rows
+    slotsByStage: { 1: { info: { name: 49, value: 110 } }, 2: { info: { name: 0, value: 87 } } }
   },
   2: {
     mainName: 96,
@@ -190,7 +233,10 @@ const DEVICE_PAGE_FIELDS_US_P = {
   1: {
     mainName: 150,
     status: 262,
-    slots: { info: { name: 156, value: 104 }, button: { name: 148 } }
+    slots: { info: { name: 156, value: 104 }, button: { name: 148 } },
+    // the status grid where the info rows are, the rows right of the big icon as set C (icon, value 106 px) in
+    // stages 1 and 2, none in stage 3; us-p has no set B
+    slotsByStage: { 1: { info: { name: 0, value: 106 } }, 2: { info: { name: 0, value: 106 } } }
   },
   2: {
     mainName: 90,
@@ -213,7 +259,7 @@ const DEVICE_PAGE_FIELDS_WEB_L = {
     mainName: 110,
     status: 580,
     slots: { info: { name: 354, value: 110 }, button: { name: 100 } },
-    slotsWithStatus: { info: { name: 276, value: 110 } }
+    slotsByStage: { 1: { info: { name: 239, value: 110 } }, 2: { info: { name: 0, value: 277 } } }
   },
   2: {
     mainName: 96,
@@ -252,13 +298,21 @@ function devicePageFields(layout, model) {
 function devicePageSlotCount(layout) {
   return DEVICE_PAGE_LAYOUTS[layout].length;
 }
-function devicePageHasStatusIcons(layout, slots) {
-  return DEVICE_PAGE_LAYOUTS[layout].some((kind, i) => kind === "status" && !!slots[i]);
+function devicePageHasStatusIcons(config) {
+  var _a;
+  const capacity = devicePageStatusCapacity(config.layout, devicePageStageOf(config.layout, config.statusStage));
+  return ((_a = config.statusSlots) != null ? _a : []).slice(0, capacity).some((slot) => !!slot);
 }
-function devicePageSlotFields(layout, kind, withStatusIcons, model = "eu") {
+function devicePageSlotFields(layout, kind, stage, model = "eu") {
   var _a, _b;
   const fields = devicePageFields(layout, model);
-  return (_b = withStatusIcons ? (_a = fields.slotsWithStatus) == null ? void 0 : _a[kind] : void 0) != null ? _b : fields.slots[kind];
+  if (stage > 0) {
+    const staged = (_b = (_a = fields.slotsByStage) == null ? void 0 : _a[stage]) == null ? void 0 : _b[kind];
+    if (staged) {
+      return staged;
+    }
+  }
+  return fields.slots[kind];
 }
 function devicePageSlotAccepts(kind, state) {
   const writable = state.write !== false;
@@ -611,6 +665,18 @@ function devicePageConfigOf(value) {
   if ("webExtras" in value && value.webExtras === true) {
     config.webExtras = true;
   }
+  const statusStage = "statusStage" in value ? value.statusStage : void 0;
+  if (isDevicePageStatusStage(statusStage) && statusStage > 0) {
+    config.statusStage = statusStage;
+  }
+  const rawStatus = "statusSlots" in value && Array.isArray(value.statusSlots) ? value.statusSlots : [];
+  const statusSlots = rawStatus.slice(0, DEVICE_PAGE_STATUS_SLOTS_MAX).map((slot) => devicePageSlotRefOf(slot, "status"));
+  while (statusSlots.length > 0 && statusSlots[statusSlots.length - 1] === null) {
+    statusSlots.pop();
+  }
+  if (statusSlots.length > 0) {
+    config.statusSlots = statusSlots;
+  }
   const icon = "icon" in value && typeof value.icon === "string" ? value.icon.trim() : "";
   if (icon) {
     config.icon = icon;
@@ -878,6 +944,24 @@ function deviceDetailsRuntimeOf(config) {
       showInfo: page.showInfo && runtime.entries.length > 0,
       shortPress: deviceShortPressOf(config)
     };
+    const statusStage = devicePageStageOf(page.layout, page.statusStage);
+    if (statusStage > 0) {
+      devicePage.statusStage = statusStage;
+    }
+    const statusCount = DEVICE_PAGE_STATUS_SLOTS[page.layout];
+    if (statusCount > 0 && page.statusSlots) {
+      const statusSlots = page.statusSlots;
+      devicePage.statusSlots = Array.from({ length: statusCount }, (_v, i) => {
+        const slot = statusSlots[i];
+        if (!slot) {
+          return null;
+        }
+        if (slot.custom === "navigation") {
+          return slot.targetPage && devicePageSlotAcceptsNavigation("status") ? slot : null;
+        }
+        return slot.id !== "" ? slot : null;
+      });
+    }
     if (page.icon) {
       devicePage.icon = page.icon;
     }
@@ -969,16 +1053,21 @@ function deviceDetailSubNames(deviceId, rows) {
   DEVICE_PAGE_FIELDS_US_P,
   DEVICE_PAGE_FIELDS_WEB_L,
   DEVICE_PAGE_FIELDS_WEB_P,
+  DEVICE_PAGE_ICONS_COMMAND,
   DEVICE_PAGE_INFO_ROLE,
   DEVICE_PAGE_LAYOUTS,
   DEVICE_PAGE_NAVIGATION_ICON,
   DEVICE_PAGE_PROGRESS_ROLE,
   DEVICE_PAGE_RECEIVE_BYTES,
   DEVICE_PAGE_SLOT_LOOK_FIELDS,
+  DEVICE_PAGE_STAGE_CAPACITY,
+  DEVICE_PAGE_STAGE_HIDDEN_SLOTS,
   DEVICE_PAGE_STATUS_COMMAND,
   DEVICE_PAGE_STATUS_INTERVAL_MS,
   DEVICE_PAGE_STATUS_MAX_BYTES,
   DEVICE_PAGE_STATUS_MAX_PARTS,
+  DEVICE_PAGE_STATUS_SLOTS,
+  DEVICE_PAGE_STATUS_SLOTS_MAX,
   DEVICE_PAGE_TEXT_FONT,
   DEVICE_PAGE_TEXT_MAX_BYTES,
   SENDTO_GET_DEVICE_DETAILS_COMMAND,
@@ -1017,11 +1106,14 @@ function deviceDetailSubNames(deviceId, rows) {
   devicePageSlotCount,
   devicePageSlotFields,
   devicePageSlotHasLook,
+  devicePageSlotHiddenByStage,
   devicePageSlotLookOf,
   devicePageSlotTakesLongPress,
   devicePageSlotTakesNavigation,
   devicePageSlotTakesTextSize,
   devicePageSlotTargetOf,
+  devicePageStageOf,
+  devicePageStatusCapacity,
   deviceSelectionError,
   deviceShortPressOf,
   exchangeDeviceDetailRowState,
@@ -1032,6 +1124,7 @@ function deviceDetailSubNames(deviceId, rows) {
   isDeviceDetailState,
   isDeviceDetailsConfig,
   isDevicePageLayout,
+  isDevicePageStatusStage,
   isDeviceShortPressState,
   tickDeviceDetailRow,
   tickedDeviceDetailRowsFirst,

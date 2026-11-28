@@ -59,6 +59,13 @@ class BaseTriggeredPage extends import_library.BaseClass {
   resetLastMessage() {
     this.lastMessage = "";
   }
+  /**
+   * @param payload a message
+   * @returns true when sendToPanel would drop it: the same as the last message and the duplicate filter is on
+   */
+  isLastMessage(payload) {
+    return this.filterDuplicateMessages && payload == this.lastMessage;
+  }
   constructor(card, alwaysOn = "none") {
     super(card.adapter, card.name);
     this.minUpdateInterval = 1e3;

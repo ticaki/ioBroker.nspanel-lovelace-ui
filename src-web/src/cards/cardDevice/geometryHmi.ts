@@ -1,5 +1,6 @@
 import {
     box,
+    gridCells,
     shiftTable,
     type Box,
     type ButtonSlotGeometry,
@@ -7,7 +8,6 @@ import {
     type DevicePageTable,
     type InfoSlotGeometry,
     type ProgressSlotGeometry,
-    type StatusSlotGeometry,
     type SwitchSlotGeometry,
     type ValueSlotGeometry,
 } from './geometry';
@@ -28,13 +28,38 @@ function info1(y: number): InfoSlotGeometry {
     return { kind: 'info', icon: box(126, y, 36, 34), name: box(164, y + 4, 164, 26), value: box(330, y + 4, 110, 26) };
 }
 
-/** the info rows of cardDevice1 next to a visible status block */
-function info1Narrow(y: number): InfoSlotGeometry {
-    return { kind: 'info', icon: box(204, y, 36, 34), name: box(242, y + 4, 86, 26), value: box(330, y + 5, 110, 26) };
+/** bytes the HMI copies of the name into set B (`tEntityB1/2`, txt_maxl 15) */
+export const SET_B_NAME_BYTES = 15;
+
+/** bytes the HMI copies of the value into set C (`tValueC1/2`, txt_maxl 19) */
+export const SET_C_VALUE_BYTES = 19;
+
+/**
+ * An info row of cardDevice1 in set B (stage 1, right of 3 columns of the grid): icon, the name 49 px wide, the value
+ * of set A (`tValue1/2`).
+ *
+ * @param y top of the icon
+ */
+function info1B(y: number): InfoSlotGeometry {
+    return {
+        kind: 'info',
+        icon: box(241, y, 36, 34),
+        name: { ...box(279, y + 4, 49, 26), maxBytes: SET_B_NAME_BYTES },
+        value: box(330, y + 4, 110, 26),
+    };
 }
 
-function status1(x: number, y: number): StatusSlotGeometry {
-    return { kind: 'status', cell: box(x, y, 38, 45) };
+/**
+ * An info row of cardDevice1 in set C (stage 2, right of 5 columns of the grid): icon and value, no name.
+ *
+ * @param y top of the icon
+ */
+function info1C(y: number): InfoSlotGeometry {
+    return {
+        kind: 'info',
+        icon: box(315, y, 36, 34),
+        value: { ...box(353, y + 4, 87, 26), maxBytes: SET_C_VALUE_BYTES },
+    };
 }
 
 function button1(x: number): ButtonSlotGeometry {
@@ -75,16 +100,45 @@ const STATUS_P = box(10, 447, 262, 30);
 const INFO_P = box(274, 446, 36, 32);
 
 /**
- * main of the portrait cardDevice1 with its status block (2x2 cells of 72x57 with 1 px overlap).
+ * main of the portrait cardDevice1 at the left: room for set C right of it.
  *
  * @param y top of main
  */
-export function portraitMain1(y: number): { main: DevicePageTable['main']; cells: StatusSlotGeometry[] } {
-    const cell = (cx: number, cy: number): StatusSlotGeometry => ({ kind: 'status', cell: box(cx, cy, 72, 57) });
-    return {
-        main: { icon: box(10, y, 150, 86), name: box(10, y + 88, 150, 26) },
-        cells: [cell(166, y), cell(237, y), cell(166, y + 56), cell(237, y + 56)],
-    };
+export function portraitMain1(y: number): DevicePageTable['main'] {
+    return { icon: box(10, y, 150, 86), name: box(10, y + 88, 150, 26) };
+}
+
+/**
+ * The two info rows of the portrait cardDevice1 in set C (stages 1 and 2): right of main, icon and value, no name.
+ *
+ * @param y top of main
+ */
+export function portraitSetC(y: number): [InfoSlotGeometry, InfoSlotGeometry] {
+    const row = (top: number): InfoSlotGeometry => ({
+        kind: 'info',
+        icon: box(166, top, 36, 34),
+        value: { ...box(204, top + 4, 106, 26), maxBytes: SET_C_VALUE_BYTES },
+    });
+    return [row(y + 6), row(y + 50)];
+}
+
+/**
+ * The status icon grid of the portrait cardDevice1: 8 x 2 cells of 38 x 41 over the width, where set A has its
+ * info rows.
+ *
+ * @param y top of the first row
+ */
+export function portraitGrid1(y: number): ReturnType<typeof gridCells> {
+    return gridCells(10, y, 38, 41, 8, 2);
+}
+
+/**
+ * The status icon grid of the portrait cardDevice3: 8 x 1 cells of 37 x 51 in the first row of tiles.
+ *
+ * @param y top of the first row of tiles
+ */
+export function portraitGrid3(y: number): ReturnType<typeof gridCells> {
+    return gridCells(10, y, 37, 51, 8, 1);
 }
 
 /**
@@ -173,10 +227,11 @@ export function portraitSwitchRow(y: number): SwitchSlotGeometry {
 }
 
 /**
- * The portrait cardDevice1: main with the status block, info rows, rows of two buttons.
+ * The portrait cardDevice1 (variant P2 of the HMI): main at the left, the info rows below it (set A) or as set C
+ * right of it (stages 1 and 2), the status icon grid where set A has its rows, rows of two buttons.
  *
  * @param top top of main
- * @param infoRows top of the two info rows
+ * @param infoRows top of the two info rows (and of the grid)
  * @param buttonRows top of the rows of buttons (two per row)
  * @param status the status line
  * @param info the info icon
@@ -188,15 +243,17 @@ export function portraitPage1(
     status: Box,
     info: Box,
 ): DevicePageTable {
-    const { main, cells } = portraitMain1(top);
+    const [c1, c2] = portraitSetC(top);
     return {
-        main,
+        main: portraitMain1(top),
         slots: [
             ...infoRows.map(portraitInfoRow),
             ...buttonRows.flatMap(y => [portraitButton(10, y, 148), portraitButton(162, y, 148)]),
-            ...cells,
         ],
+        // us-p has no set B: set C in stage 1 and 2
+        byStage: { 1: { 0: c1, 1: c2 }, 2: { 0: c1, 1: c2 } },
         extras: [],
+        grid: portraitGrid1(infoRows[0] - 2),
         status,
         statusAlign: 1,
         info,
@@ -226,6 +283,7 @@ export function portraitPage2(
         main,
         slots: [value, portraitProgress(progress), ...infoRows.map(portraitInfoRow), portraitButton(10, button, 300)],
         extras: [],
+        grid: [],
         status,
         statusAlign: 1,
         info,
@@ -255,6 +313,7 @@ export function portraitPage3(
             ...switchRows.map(portraitSwitchRow),
         ],
         extras: [],
+        grid: portraitGrid3(infoRows[0]),
         status,
         statusAlign: 1,
         info,
@@ -268,21 +327,11 @@ export function portraitPage3(
 export const EU_GEOMETRY: DeviceGeometryTable = {
     1: {
         main: { icon: box(10, 68, 110, 86), name: box(10, 156, 110, 26) },
-        slots: [
-            info1(76),
-            info1(120),
-            button1(10),
-            button1(118),
-            button1(226),
-            button1(334),
-            status1(124, 71),
-            status1(161, 71),
-            status1(124, 115),
-            status1(161, 115),
-        ],
-        // with a visible status block the two info rows move right and get narrower
-        withStatusBlock: { 0: info1Narrow(76), 1: info1Narrow(120) },
+        slots: [info1(76), info1(120), button1(10), button1(118), button1(226), button1(334)],
+        // the info rows in the stages of the status icon grid: set B (stage 1), set C (stage 2), none (stage 3)
+        byStage: { 1: { 0: info1B(76), 1: info1B(120) }, 2: { 0: info1C(76), 1: info1C(120) } },
         extras: [],
+        grid: gridCells(124, 71, 38, 45, 8, 2),
         status: STATUS,
         statusAlign: 1,
         info: INFO,
@@ -298,6 +347,7 @@ export const EU_GEOMETRY: DeviceGeometryTable = {
             { kind: 'button', icon: box(340, 67, 100, 50), name: box(340, 119, 100, 26) },
         ],
         extras: [],
+        grid: [],
         status: STATUS,
         statusAlign: 1,
         info: INFO,
@@ -305,7 +355,9 @@ export const EU_GEOMETRY: DeviceGeometryTable = {
     3: {
         main: { icon: box(10, 67, 100, 82), name: box(10, 151, 100, 26) },
         slots: [info3(0), info3(1), info3(2), info3(3), info3(4), info3(5), switch3(10), switch3(226)],
+        // the first row of tiles: tile 1 (stage 1) or tiles 1 and 2 (stage 2) give way to the grid
         extras: [],
+        grid: gridCells(114, 67, 38, 52, 8, 1),
         status: STATUS,
         statusAlign: 1,
         info: INFO,
@@ -324,9 +376,10 @@ export const US_L_SHIFT = 15;
 export const US_L_GEOMETRY: DeviceGeometryTable = shiftTable(EU_GEOMETRY, US_L_SHIFT);
 
 /**
- * us-p (320x480): the pages of the us-p HMI, content x 10-309. cardDevice1 has the status block right of
- * main and no narrower set of info rows (the rows lie below main); without status icons the place of the block
- * stays empty. cardDevice2 and cardDevice3 list their info rows / tiles and switches below main.
+ * us-p (320x480): the pages of the us-p HMI, content x 10-309. cardDevice1 in variant P2: the status icon grid
+ * over the width where the info rows are, the info rows as set C right of main in stages 1 and 2. cardDevice2 and
+ * cardDevice3 list their info rows / tiles and switches below main, the grid of cardDevice3 in the first row of
+ * tiles.
  */
 export const US_P_GEOMETRY: DeviceGeometryTable = {
     1: portraitPage1(70, [190, 230], [272, 358], STATUS_P, INFO_P),

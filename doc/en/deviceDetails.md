@@ -248,17 +248,69 @@ If **target page not found** stands in red below the row, the page does not exis
 
 ### Status icons
 
-Only layout 1 has four places of the kind **Status icon** (slots 7–10): small icons in a 2×2 grid right next to the big icon, e.g. for Wi-Fi, bin full, filter, error.
+Layout 1 and layout 3 can show a row of small **status icons**, e.g. for Wi-Fi, bin full, filter, error. The icons stand in a grid of boxes with a thin grey frame.
 
 - A status icon shows **only an icon in its colour**, without name and value.
 - The icon comes automatically (the same as in an info line with this value); an own one is chosen through **…**, e.g. `delete-empty` for "empty the bin".
 - The colour comes automatically: on/off values in the colours *activated* / *deactivated* of the [colour theme](colorTheme), other values in the colour of their group.
-- If all four are empty, the page looks as it does without them. If **at least one** is filled, the whole grid appears; empty fields stay as empty boxes.
-- On the **EU panel**, in **US landscape** and on **Smartphone landscape** the status icons sit between the big icon and the info lines: as soon as the grid appears, the two info lines get **narrower** – long names are then cut off earlier. The dialog points this out below the slots. In **US portrait** and on **Smartphone portrait** the info lines sit below the grid and always keep their width.
+- A status icon can be tapped and long pressed like every other element of the page.
 
-| With status icons | Without status icons |
+#### The stage: how much room the grid gets
+
+How many status icons the page can show is set by the **stage**. You choose it in the admin while setting up the device page (see [Setting up the device page](#5-setting-up-the-device-page)). The larger the stage, the more icons fit – and the more of the rest has to make room. The stage is fixed for the page: on the panel nothing appears or disappears when a value changes.
+
+**Layout 1 – Control:** the grid has two rows and stands next to the big icon (in US portrait and on Smartphone portrait below it). It grows to the right into the info lines.
+
+| Stage | Status icons | What the two info lines show |
+|---|---|---|
+| no status icons | – | icon, name and value across the full width |
+| 1–3 columns | up to 6 | icon, **short name**, value – the name is narrow and is cut off earlier (in US portrait: as with 4–5 columns) |
+| 4–5 columns | up to 10 | icon and value, **no name** |
+| 6–8 columns | up to 16 | **no info lines** – the grid needs all the room |
+
+| no status icons | 1–3 columns |
 |---|---|
-| <img alt="Layout 1 on the EU panel with four status icons in the grid next to the big icon, the info lines are narrow" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="Layout 1 on the EU panel without status icons, the info lines use the whole width" src="../Pictures/device-page/eu-cardDevice1-plain.png" width="100%"/> |
+| <img alt="Layout 1 on the EU panel without status icons: two info lines with icon, name and value across the full width" src="../Pictures/device-page/eu-cardDevice1-stage0.png" width="100%"/> | <img alt="Layout 1 on the EU panel with five status icons in three columns, the info lines with a short name" src="../Pictures/device-page/eu-cardDevice1-stage1.png" width="100%"/> |
+| **4–5 columns** | **6–8 columns** |
+| <img alt="Layout 1 on the EU panel with nine status icons in five columns, the info lines only with icon and value" src="../Pictures/device-page/eu-cardDevice1-stage2.png" width="100%"/> | <img alt="Layout 1 on the EU panel with fourteen status icons in seven columns, without info lines" src="../Pictures/device-page/eu-cardDevice1-stage3.png" width="100%"/> |
+
+**Layout 3 – Values:** the grid has one row and stands in the first row of info tiles.
+
+| Stage | Status icons | What is left out |
+|---|---|---|
+| no status icons | – | nothing, all six info tiles |
+| 1–4 | up to 4 | the **first** info tile (slot 1) |
+| 5–8 | up to 8 | the **first two** info tiles (slots 1 and 2) |
+
+| no status icons | 1–4 | 5–8 |
+|---|---|---|
+| <img alt="Layout 3 on the EU panel without status icons: six info tiles" src="../Pictures/device-page/eu-cardDevice3-stage0.png" width="100%"/> | <img alt="Layout 3 on the EU panel with four status icons in the place of the first info tile" src="../Pictures/device-page/eu-cardDevice3-stage1.png" width="100%"/> | <img alt="Layout 3 on the EU panel with seven status icons in the place of the first two info tiles" src="../Pictures/device-page/eu-cardDevice3-stage2.png" width="100%"/> |
+
+Layout 2 has no status icons.
+
+**What you see on the panel:**
+
+- Only as many columns appear as are filled – at most as many as the stage allows. If only five icons are filled in the stage 6–8, three columns are shown; the info lines stay away anyway, because that follows the stage, not the number of icons.
+- The icons fill the grid **column by column**: top, bottom, then the next column. Empty places move up, there is no gap. If the last column is only half filled, its empty box keeps its frame.
+- What the stage covers (the info lines of layout 1 in the stage 6–8, the first info tiles of layout 3) is not shown on the panel – even when the slot is filled.
+
+**Nothing is lost when making the stage smaller.** If you choose a smaller stage, what is assigned to the status icons, info lines and info tiles that are then no longer visible stays stored. With a larger stage it is back.
+
+This is how it looks in the other formats:
+
+| | no status icons | 1–3 columns | 4–5 columns | 6–8 columns |
+|---|---|---|---|---|
+| **US portrait** | <img alt="US portrait, layout 1 without status icons: info lines below the big icon" src="../Pictures/device-page/us-p-cardDevice1-stage0.png" width="100%"/> | <img alt="US portrait, layout 1 with five status icons below the big icon, the info lines right of it only with icon and value" src="../Pictures/device-page/us-p-cardDevice1-stage1.png" width="100%"/> | <img alt="US portrait, layout 1 with nine status icons, the info lines right of the big icon" src="../Pictures/device-page/us-p-cardDevice1-stage2.png" width="100%"/> | <img alt="US portrait, layout 1 with fourteen status icons, without info lines" src="../Pictures/device-page/us-p-cardDevice1-stage3.png" width="100%"/> |
+| **Smartphone landscape** | <img alt="Smartphone landscape, layout 1 without status icons" src="../Pictures/device-page/web-l-cardDevice1-stage0.png" width="100%"/> | <img alt="Smartphone landscape, layout 1 with five status icons, the info lines with a wider short name" src="../Pictures/device-page/web-l-cardDevice1-stage1.png" width="100%"/> | <img alt="Smartphone landscape, layout 1 with nine status icons, the info lines only with icon and value" src="../Pictures/device-page/web-l-cardDevice1-stage2.png" width="100%"/> | <img alt="Smartphone landscape, layout 1 with fourteen status icons, without info lines" src="../Pictures/device-page/web-l-cardDevice1-stage3.png" width="100%"/> |
+
+| | no status icons | 1–4 | 5–8 |
+|---|---|---|---|
+| **US portrait** | <img alt="US portrait, layout 3 without status icons" src="../Pictures/device-page/us-p-cardDevice3-stage0.png" width="100%"/> | <img alt="US portrait, layout 3 with four status icons in the place of the first info tile" src="../Pictures/device-page/us-p-cardDevice3-stage1.png" width="100%"/> | <img alt="US portrait, layout 3 with seven status icons in the place of the first two info tiles" src="../Pictures/device-page/us-p-cardDevice3-stage2.png" width="100%"/> |
+| **Smartphone landscape** | <img alt="Smartphone landscape, layout 3 without status icons" src="../Pictures/device-page/web-l-cardDevice3-stage0.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 with four status icons" src="../Pictures/device-page/web-l-cardDevice3-stage1.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 with seven status icons" src="../Pictures/device-page/web-l-cardDevice3-stage2.png" width="100%"/> |
+
+- **US portrait** and **Smartphone portrait:** the grid of layout 1 stands below the big icon, where the info lines are otherwise; in the stages 1–3 and 4–5 the info lines move right of the big icon (only icon and value). On Smartphone portrait the big icon stands in the middle as long as nothing stands next to it (no status icons, 6–8 columns).
+- **US landscape:** like the EU panel, moved a little to the right.
+- **Smartphone landscape:** like the EU panel; the info lines reach the right edge, so the short name is wider. There are not more status icons than on the EU panel.
 
 ### Show i icon
 
@@ -270,7 +322,7 @@ The models **Smartphone landscape** (`web-l`) and **Smartphone portrait** (`web-
 
 | Layout | on every panel | additionally on smartphone web panels | slot numbers | there in total |
 |---|---|---|---|---|
-| **1 – Control** | 2 info lines, 4 buttons, 4 status icons | 2 buttons | 11–12 | 6 buttons |
+| **1 – Control** | 2 info lines, 4 buttons, up to 16 status icons | 2 buttons | 11–12 | 6 buttons |
 | **2 – Progress** | large value, progress bar, 3 info lines, 1 button | 1 info line, 2 buttons | 7 (info line), 8–9 (buttons) | 4 info lines, 3 buttons |
 | **3 – Values** | 6 info lines, 2 switches | 2 info lines, 1 switch | 9–10 (info lines), 11 (switch) | 8 info lines, 3 switches |
 
@@ -296,7 +348,7 @@ For devices you start and stop: robot vacuum, lawn mower.
 
 - 2 **info lines** next to the icon (slots 1–2),
 - 4 **buttons** below (slots 3–6),
-- 4 **status icons** in a 2×2 grid next to the big icon (slots 7–10), see [Status icons](#status-icons).
+- up to 16 **status icons** in the grid next to the big icon, depending on the stage, see [Status icons](#status-icons).
 
 ![Layout 1 – Control: robot vacuum with battery and area as info lines, the buttons Start, Pause, Charge and Find and four status icons](../Pictures/device-page/eu-cardDevice1.png)
 
@@ -359,7 +411,7 @@ The same arrangement as on the EU panel. The content sits 15 pixels further righ
 
 In portrait the elements are arranged anew:
 
-- **Layout 1:** the main icon at the top left with the name below it, to its right the status icons as a 2×2 block. Below them the two info lines across the full width, then the four buttons as a 2×2 block (slot 3 top left, 4 top right, 5 bottom left, 6 bottom right). The info lines always have the same width here; without status icons the place next to the main icon stays free.
+- **Layout 1:** the main icon at the top left with the name below it. Below them the two info lines across the full width – or, with status icons, their grid; the info lines then stand right of the main icon (see [Status icons](#status-icons)). Then the four buttons as a 2×2 block (slot 3 top left, 4 top right, 5 bottom left, 6 bottom right).
 - **Layout 2:** main icon and large value at the top, the progress bar below. The three infos are full lines (name left, value right) instead of tiles, the button lies below them across the full width.
 - **Layout 3:** the main icon at the top in the middle, its name below across the full width. The six info tiles in two columns, the two switches as lines one below the other.
 
@@ -367,7 +419,7 @@ The status line is narrower here (262 instead of 390 pixels). The status texts o
 
 | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|
-| <img alt="US panel in portrait, layout 1: main icon at the top left, status icons next to it, info lines across the full width, buttons as a 2×2 block, status line at the bottom" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US panel in portrait, layout 2: main icon and remaining time at the top, progress bar, three info lines and the button across the full width" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US panel in portrait, layout 3: main icon at the top in the middle, six info tiles in two columns and two switch lines" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
+| <img alt="US panel in portrait, layout 1: main icon at the top left, the info lines next to it, below them the status icons, buttons as a 2×2 block, status line at the bottom" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US panel in portrait, layout 2: main icon and remaining time at the top, progress bar, three info lines and the button across the full width" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US panel in portrait, layout 3: main icon at the top in the middle, six info tiles in two columns and two switch lines" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
 
 ### Smartphone landscape (`web-l`)
 
@@ -380,7 +432,7 @@ A standalone web panel with this model uses the whole area (640 × 320). The arr
 
 ### Smartphone portrait (`web-p`)
 
-A standalone web panel with this model uses the whole area (320 × 640). The arrangement is that of US portrait; the additional height carries the [additional elements](#additional-elements-for-smartphone-web-panels) as further lines: in layout 1 a third row with two buttons, in layout 2 a fourth info line and up to three buttons in one row, in layout 3 a fourth row of info tiles and a third switch line. Without them the lines spread over the height with larger gaps. Without status icons the main icon of layout 1 stands in the middle. As in US portrait the status line is 262 pixels wide.
+A standalone web panel with this model uses the whole area (320 × 640). The arrangement is that of US portrait; the additional height carries the [additional elements](#additional-elements-for-smartphone-web-panels) as further lines: in layout 1 a third row with two buttons, in layout 2 a fourth info line and up to three buttons in one row, in layout 3 a fourth row of info tiles and a third switch line. Without them the lines spread over the height with larger gaps. The main icon of layout 1 stands in the middle as long as nothing stands next to it (no status icons or 6–8 columns). As in US portrait the status line is 262 pixels wide.
 
 | | 1 – Control | 2 – Progress | 3 – Values |
 |---|---|---|---|
@@ -427,12 +479,14 @@ If an element without a popup is held, its background blinks green and grey afte
 
   | Model | Status line | Layout 1 | Layout 2 | Layout 3 |
   |---|---|---|---|---|
-  | **EU landscape**, **US landscape** | 390 | device name 110 · info line 164 / 110, **with status icons 86 / 110** · button 104 | device name 96 · large value 190 · progress bar 429 · info line 104 / 104 · button 100 | device name 100 · info line 125 / 125 · switch 125 |
-  | **US portrait** | 262 | device name 150 · info line 156 / 104 (also with status icons) · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300 | device name 300 · info line 112 / 112 · switch 212 |
-  | **Smartphone landscape** | 580 | device name 110 · info line 354 / 110, with status icons 276 / 110 · button 104, six of them 100 each | device name 96 · large value 190 · progress bar 620 · info line 104 / 104 · button 100, two or three of them 96 each | device name 100 · info line 125 / 125 · switch 125 |
-  | **Smartphone portrait** | 262 | device name 150 (without status icons 300) · info line 156 / 104 · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300, two of them 148 each, three 96 each | device name 300 · info line 112 / 112 · switch 212 |
+  | **EU landscape**, **US landscape** | 390 | device name 110 · info line 164 / 110, **with 1–3 columns of status icons 49 / 110, with 4–5 columns – / 87** · button 104 | device name 96 · large value 190 · progress bar 429 · info line 104 / 104 · button 100 | device name 100 · info line 125 / 125 · switch 125 |
+  | **US portrait** | 262 | device name 150 · info line 156 / 104, with 1–5 columns of status icons – / 106 · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300 | device name 300 · info line 112 / 112 · switch 212 |
+  | **Smartphone landscape** | 580 | device name 110 · info line 354 / 110, with 1–3 columns of status icons 239 / 110, with 4–5 columns – / 277 · button 104, six of them 100 each | device name 96 · large value 190 · progress bar 620 · info line 104 / 104 · button 100, two or three of them 96 each | device name 100 · info line 125 / 125 · switch 125 |
+  | **Smartphone portrait** | 262 | device name 150 (without status icons and with 6–8 columns 300) · info line 156 / 104, with 1–5 columns of status icons – / 106 · button 148 | device name 90 · large value 172 · progress bar 300 · info line 156 / 104 · button 300, two of them 148 each, three 96 each | device name 300 · info line 112 / 112 · switch 212 |
 
   The large value is drawn in the big font: a digit needs 33 pixels there, "12:34" 149 pixels.
+
+  Next to the grid of the status icons the panel takes the name of an info line with at most **15 bytes** (1–3 columns) and the value with at most **19 bytes** (4–5 columns); this is the same on all models.
 - **Units stand at the value without a space** ("80%", "34m²", "60°C"). This is intended and saves room.
 - **The large value** has a font of its own with digits, letters (also ä, ö, ü) and the characters `: % ° , . - /`. It cannot show a **€**.
 - **The status line** has one line; its width is in the table above. Longer text alternates in up to three parts (each at most 63 bytes), see [Operation on the panel](#9-operation-on-the-panel).
@@ -447,8 +501,8 @@ The technical details (protocol, dimensions) are available for developers in [do
 - **The detail page comes instead of the device page.** The TFT of the panel is too old, see [Limits](#10-limits).
 - **On the entities page nothing happens on a tap on the left.** That needs the new TFT as well. The switch on the right of the row works independently of it.
 - **A slot stays empty on the panel.** The state or channel does not exist (any more) or does not fit the kind of the slot – the row is then red in the dialog. For a channel a warning is written to the log when the adapter starts (*Page '…', page item …: Device page slot …*).
-- **The info lines in layout 1 suddenly cut off earlier.** A status icon is filled; on the EU panel, in US landscape and on Smartphone landscape the two info lines are then narrower (on the EU panel the name 86 instead of 164 pixels).
-- **Slots are missing after a change of layout.** The slots are kept by their number. Layout 2 has only 6 slots: going from layout 1 there and back loses the status icons 7–10. Of the additional slots of the smartphone web panels the third is lost when changing to layout 1.
+- **The info lines in layout 1 are shorter or missing.** That is the [stage of the status icons](#status-icons): with 1–3 columns the name is short, with 4–5 columns it is missing, with 6–8 columns the info lines are missing completely. In layout 3 the first info tiles are missing the same way. What is assigned stays stored; with a smaller stage it is visible again.
+- **Slots are missing after a change of layout.** The slots are kept by their number. Of the additional slots of the smartphone web panels the third is lost when changing to layout 1.
 - **The additional elements are missing on the panel.** They only appear on standalone web panels with the models *Smartphone landscape* and *Smartphone portrait* – and only while the tick box **Web panel elements (web-l / web-p)** is set.
 - **Nothing blinks in the web panel on a long press.** Only the hardware panel shows the blinking; the web panel still triggers on release.
 - **A long press on a button of the device page does nothing.** No **Long press** is set for the element. This is intended: a long press is never taken as a short tap.

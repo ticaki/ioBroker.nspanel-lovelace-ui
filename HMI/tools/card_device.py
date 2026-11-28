@@ -16,8 +16,7 @@ keys: stage size, visible x range and per page every element with its boxes as t
 (x, y, w, h, font, alignment, buffer; roles: header prev/heading/next, main icon/name, per slot icon/name/value/
 bar/toggle/touch and the sets B/C of an info row, status, info, the grid with its cells and the stages) plus
 statusWidth, the width of the status line in px. doc/ideas/device-details/device-page-geometry.json is that file
-for the device12 pages (the web panel builds its layouts from it), device-page-geometry.next.json the one of
-device13.
+for the device13 pages (the web panel builds its layouts from it, adapter and web panel test against it).
 
 Models. The model is read from the project (detect_model: pageStartup sends event,startup,<version>,<model>,..),
 never from the file name; the page size of cardGrid must fit it.

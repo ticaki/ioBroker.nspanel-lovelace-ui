@@ -6,18 +6,33 @@ import {
     DEVICE_PAGE_FIELDS_WEB_L,
     DEVICE_PAGE_FIELDS_WEB_P,
     DEVICE_PAGE_LAYOUTS,
-    type DevicePageLayoutFields,
+    DEVICE_PAGE_STAGE_CAPACITY,
+    DEVICE_PAGE_STAGE_HIDDEN_SLOTS,
+    DEVICE_PAGE_STATUS_SLOTS,
+    devicePageSlotFields,
     type DevicePageSlotFields,
 } from '../../../../src/lib/types/deviceDetails';
 import type { Entity6 } from '../../protocol/types';
-import { DEVICE_EXTRA_KINDS, DEVICE_SLOT_KINDS, type DeviceLayout, type DeviceSlotKind } from './geometry';
+import {
+    DEVICE_EXTRA_KINDS,
+    DEVICE_GRID_CELLS,
+    DEVICE_GRID_ROWS,
+    DEVICE_SLOT_KINDS,
+    DEVICE_STAGE_COLUMNS,
+    DEVICE_STAGE_HIDDEN_SLOTS,
+    isDeviceStage,
+    type DeviceLayout,
+    type DeviceSlotKind,
+    type DeviceStage,
+} from './geometry';
 import { deviceExtraKinds, deviceGeometry } from './layout';
 
 /*
- * The adapter and the web panel each keep their own copy of two tables of the device pages (the web bundle must
+ * The adapter and the web panel each keep their own copy of some tables of the device pages (the web bundle must
  * not pull in the adapter, the adapter not the web panel): the kinds of the slots and of the additional slots of
- * the web models, and the widths of the text fields on web-l / web-p. This test is the guard that both stay the
- * same - like `geometry.test.ts` does for the hardware models against the geometry file of the HMI.
+ * the web models, the status icon grid with its stages, and the widths of the text fields on web-l / web-p. This
+ * test is the guard that both stay the same - like `geometry.test.ts` does for the hardware models against the
+ * geometry file of the HMI.
  */
 
 const LAYOUTS: readonly DeviceLayout[] = [1, 2, 3];
@@ -35,22 +50,24 @@ const filled = (id: string): Entity6 => ({
 const empty: Entity6 = { type: '', id: '', icon: '', iconColor: 0, displayName: '', optionalValue: '' };
 
 /**
- * Every case a page can be laid out for: each combination of filled additional slots, with and without the
- * status block (only cardDevice1 has status slots).
+ * The stages of a page.
  *
  * @param layout the page
  */
-function cases(layout: DeviceLayout): { slots: Entity6[]; extras: Entity6[]; withStatus: boolean }[] {
-    const kinds = DEVICE_SLOT_KINDS[layout];
+function stages(layout: DeviceLayout): DeviceStage[] {
+    return DEVICE_STAGE_COLUMNS[layout].map((_c, i) => i).filter(isDeviceStage);
+}
+
+/**
+ * Every combination of filled additional slots of a page.
+ *
+ * @param layout the page
+ */
+function masks(layout: DeviceLayout): Entity6[][] {
     const extraCount = DEVICE_EXTRA_KINDS[layout].length;
-    const hasStatus = kinds.includes('status');
-    const result: { slots: Entity6[]; extras: Entity6[]; withStatus: boolean }[] = [];
-    for (const withStatus of hasStatus ? [false, true] : [false]) {
-        const slots = kinds.map((kind, i) => (kind === 'status' && !withStatus ? empty : filled(`s${i}`)));
-        for (let mask = 0; mask < 1 << extraCount; mask++) {
-            const extras = Array.from({ length: extraCount }, (_v, k) => (mask & (1 << k) ? filled(`x${k}`) : empty));
-            result.push({ slots, extras, withStatus });
-        }
+    const result: Entity6[][] = [];
+    for (let mask = 0; mask < 1 << extraCount; mask++) {
+        result.push(Array.from({ length: extraCount }, (_v, k) => (mask & (1 << k) ? filled(`x${k}`) : empty)));
     }
     return result;
 }
@@ -58,14 +75,15 @@ function cases(layout: DeviceLayout): { slots: Entity6[]; extras: Entity6[]; wit
 type Widths = { mainName: number; status: number; slots: Partial<Record<DeviceSlotKind, DevicePageSlotFields>> };
 
 /**
- * The narrowest text fields of a page over all cases with or without the status block, in the form of the
- * adapter table: name and value per kind of slot (the bar of a progress slot has the width of its name).
+ * The narrowest text fields of a page in one stage over all combinations of additional slots, in the form of the
+ * adapter table: name and value per kind of slot (the bar of a progress slot has the width of its name, an info row
+ * without name has name 0). Slots the stage hides do not count.
  *
  * @param layout the page
  * @param model the web model
- * @param withStatus cases with (true) or without (false) the status block
+ * @param stage the stage
  */
-function narrowest(layout: DeviceLayout, model: (typeof WEB_MODELS)[number], withStatus: boolean): Widths {
+function narrowest(layout: DeviceLayout, model: (typeof WEB_MODELS)[number], stage: DeviceStage): Widths {
     const result: Widths = { mainName: Number.POSITIVE_INFINITY, status: Number.POSITIVE_INFINITY, slots: {} };
     const take = (kind: DeviceSlotKind, name: number, value?: number): void => {
         const known = result.slots[kind];
@@ -75,15 +93,17 @@ function narrowest(layout: DeviceLayout, model: (typeof WEB_MODELS)[number], wit
         }
         result.slots[kind] = fields;
     };
-    for (const c of cases(layout).filter(c => c.withStatus === withStatus)) {
-        const g = deviceGeometry(layout, c.slots, model, c.extras);
+    for (const extras of masks(layout)) {
+        const g = deviceGeometry(layout, model, extras, stage);
         result.mainName = Math.min(result.mainName, g.main.name.w);
         result.status = Math.min(result.status, g.status.w);
         for (const slot of [...g.slots, ...g.extras]) {
-            if (slot === undefined || slot.kind === 'status') {
+            if (slot === undefined) {
                 continue;
             }
-            if (slot.kind === 'info' || slot.kind === 'value') {
+            if (slot.kind === 'info') {
+                take(slot.kind, slot.name?.w ?? 0, slot.value.w);
+            } else if (slot.kind === 'value') {
                 take(slot.kind, slot.name.w, slot.value.w);
             } else {
                 take(slot.kind, slot.name.w);
@@ -101,10 +121,12 @@ function narrowest(layout: DeviceLayout, model: (typeof WEB_MODELS)[number], wit
  *
  * @param slots the fields per kind of the adapter
  */
-function widthsOf(slots: DevicePageLayoutFields['slots']): Partial<Record<DeviceSlotKind, DevicePageSlotFields>> {
+function widthsOf(
+    slots: Partial<Record<string, DevicePageSlotFields>> | undefined,
+): Partial<Record<DeviceSlotKind, DevicePageSlotFields>> {
     const result: Partial<Record<DeviceSlotKind, DevicePageSlotFields>> = {};
-    for (const kind of Object.keys(slots) as DeviceSlotKind[]) {
-        const own = slots[kind];
+    for (const kind of Object.keys(slots ?? {}) as DeviceSlotKind[]) {
+        const own = slots?.[kind];
         if (own) {
             result[kind] = own.value === undefined ? { name: own.name } : { name: own.name, value: own.value };
         }
@@ -125,27 +147,44 @@ describe('cardDevice: the tables of the adapter and of the web panel are the sam
         }
     });
 
+    it('the status icon grid: cells, stages, places per stage and the slots a stage covers', () => {
+        for (const layout of LAYOUTS) {
+            const at = `cardDevice${layout}`;
+            expect(DEVICE_GRID_CELLS[layout], at).toBe(DEVICE_PAGE_STATUS_SLOTS[layout]);
+            expect(
+                DEVICE_STAGE_COLUMNS[layout].map(columns => columns * DEVICE_GRID_ROWS[layout]),
+                at,
+            ).toEqual(DEVICE_PAGE_STAGE_CAPACITY[layout]);
+            expect(DEVICE_STAGE_HIDDEN_SLOTS[layout], at).toEqual(DEVICE_PAGE_STAGE_HIDDEN_SLOTS[layout]);
+        }
+    });
+
     for (const model of WEB_MODELS) {
         for (const layout of LAYOUTS) {
             it(`${model} cardDevice${layout}: the field widths of the adapter are the narrowest boxes of the web layout`, () => {
                 const adapter = ADAPTER_FIELDS[model][layout];
-                const hasStatus = DEVICE_SLOT_KINDS[layout].includes('status');
-                const plain = narrowest(layout, model, false);
-                const withStatus = hasStatus ? narrowest(layout, model, true) : plain;
-
-                // one status line and one name of main per page: the narrowest of all cases
-                expect(adapter.status, 'status').toBe(Math.min(plain.status, withStatus.status));
-                expect(adapter.mainName, 'mainName').toBe(Math.min(plain.mainName, withStatus.mainName));
+                const all = stages(layout).map(stage => narrowest(layout, model, stage));
+                const plain = all[0];
+                // one status line and one name of main per page: the narrowest of all stages and cases
+                expect(adapter.status, 'status').toBe(Math.min(...all.map(w => w.status)));
+                expect(adapter.mainName, 'mainName').toBe(Math.min(...all.map(w => w.mainName)));
                 // every kind of the page (and of its additional slots) has its fields
                 expect(widthsOf(adapter.slots), 'slots').toEqual(plain.slots);
-                // with status icons: only the kinds whose fields change stand in slotsWithStatus
-                const changed: Partial<Record<DeviceSlotKind, DevicePageSlotFields>> = {};
-                for (const kind of Object.keys(withStatus.slots) as DeviceSlotKind[]) {
-                    if (JSON.stringify(withStatus.slots[kind]) !== JSON.stringify(plain.slots[kind])) {
-                        changed[kind] = withStatus.slots[kind];
+                // per stage: the kinds whose fields change - and devicePageSlotFields gives them
+                for (const stage of stages(layout).slice(1)) {
+                    const own = narrowest(layout, model, stage);
+                    const changed: Partial<Record<DeviceSlotKind, DevicePageSlotFields>> = {};
+                    for (const kind of Object.keys(own.slots) as DeviceSlotKind[]) {
+                        if (JSON.stringify(own.slots[kind]) !== JSON.stringify(plain.slots[kind])) {
+                            changed[kind] = own.slots[kind];
+                        }
+                        const fields = devicePageSlotFields(layout, kind, stage, model);
+                        expect(widthsOf({ [kind]: fields }), `${kind} stage ${stage}`).toEqual({
+                            [kind]: own.slots[kind],
+                        });
                     }
+                    expect(widthsOf(adapter.slotsByStage?.[stage]), `slotsByStage ${stage}`).toEqual(changed);
                 }
-                expect(widthsOf(adapter.slotsWithStatus ?? {}), 'slotsWithStatus').toEqual(changed);
             });
         }
     }

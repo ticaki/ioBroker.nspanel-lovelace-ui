@@ -28,12 +28,15 @@ __export(device_page_exports, {
   devicePageChannelElement: () => devicePageChannelElement,
   devicePageChannelSlotItem: () => devicePageChannelSlotItem,
   devicePageClampElement: () => devicePageClampElement,
+  devicePageIconsMessage: () => devicePageIconsMessage,
+  devicePageInfoElement: () => devicePageInfoElement,
   devicePageInfoItem: () => devicePageInfoItem,
   devicePageMainElement: () => devicePageMainElement,
   devicePageMainItem: () => devicePageMainItem,
   devicePageMaxPayloadBytes: () => devicePageMaxPayloadBytes,
   devicePageName: () => devicePageName,
   devicePageNavigationSlotItem: () => devicePageNavigationSlotItem,
+  devicePageNumberedElement: () => devicePageNumberedElement,
   devicePageOfModel: () => devicePageOfModel,
   devicePagePayload: () => devicePagePayload,
   devicePageSlotItem: () => devicePageSlotItem,
@@ -41,7 +44,9 @@ __export(device_page_exports, {
   devicePageStatusIconElement: () => devicePageStatusIconElement,
   devicePageStatusIconItem: () => devicePageStatusIconItem,
   devicePageStatusItem: () => devicePageStatusItem,
+  devicePageStatusItemIndex: () => devicePageStatusItemIndex,
   devicePageStatusMessage: () => devicePageStatusMessage,
+  devicePageTypeNumber: () => devicePageTypeNumber,
   isCardDeviceConfig: () => isCardDeviceConfig,
   layoutOfCardDevice: () => layoutOfCardDevice,
   optionalValueOf: () => optionalValueOf,
@@ -73,6 +78,31 @@ const CARD_DEVICE_MODELS = /* @__PURE__ */ new Set([
   "web-p"
 ]);
 const DEVICE_PAGE_EMPTY_ELEMENT = "~~~~~";
+const DEVICE_PAGE_TYPE_NUMBERS = {
+  delete: 0,
+  shutter: 2,
+  shutter2: 3,
+  input_sel: 4,
+  timer: 5,
+  light: 6,
+  light2: 7,
+  fan: 8,
+  number: 9
+};
+function devicePageTypeNumber(type) {
+  var _a;
+  if (type === "") {
+    return "";
+  }
+  return String((_a = DEVICE_PAGE_TYPE_NUMBERS[type]) != null ? _a : 1);
+}
+function devicePageNumberedElement(element) {
+  const at = element.indexOf("~");
+  if (at < 0) {
+    return element;
+  }
+  return devicePageTypeNumber(element.slice(0, at)) + element.slice(at);
+}
 function supportsCardDevice(target) {
   if (!CARD_DEVICE_MODELS.has(target.model)) {
     return false;
@@ -210,7 +240,8 @@ function devicePageMaxPayloadBytes(layout, model) {
   return Math.min(import_deviceDetails.DEVICE_PAGE_RECEIVE_BYTES[layout], import_definition.MAX_PANEL_PAYLOAD_BYTES);
 }
 function devicePagePayload(head, mainPayload, elements, status, layout, model) {
-  const build = (field) => [head, devicePageMainElement(mainPayload, field), ...elements].join("~");
+  const numbered = elements.map(devicePageNumberedElement);
+  const build = (field) => [head, devicePageNumberedElement(devicePageMainElement(mainPayload, field)), ...numbered].join("~");
   const payload = build(status);
   const over = byteLength(payload) - devicePageMaxPayloadBytes(layout, model);
   if (over <= 0) {
@@ -218,9 +249,39 @@ function devicePagePayload(head, mainPayload, elements, status, layout, model) {
   }
   return build(cutToBytesWithEllipsis(status, Math.max(0, byteLength(status) - over), statusEllipsis(model)));
 }
+function devicePageInfoElement(payload, layout, stage) {
+  const element = devicePageClampElement(payload || DEVICE_PAGE_EMPTY_ELEMENT);
+  if (import_deviceDetails.DEVICE_PAGE_STATUS_SLOTS[layout] === 0) {
+    return element;
+  }
+  const fields = element.split("~");
+  const own = fields.length === 6 ? fields : DEVICE_PAGE_EMPTY_ELEMENT.split("~");
+  const shown = (0, import_deviceDetails.devicePageStageOf)(layout, stage);
+  own[5] = shown > 0 ? String(shown) : "";
+  return own.join("~");
+}
+function devicePageIconsMessage(elements, layout) {
+  const count = import_deviceDetails.DEVICE_PAGE_STATUS_SLOTS[layout];
+  const cells = [];
+  for (const element of elements) {
+    const fields = element.split("~");
+    if (fields.length < 4 || !fields[0]) {
+      continue;
+    }
+    cells.push(devicePageNumberedElement(fields.slice(0, 4).join("~")));
+  }
+  const out = cells.slice(0, count);
+  while (out.length < count) {
+    out.push("~~~");
+  }
+  return [import_deviceDetails.DEVICE_PAGE_ICONS_COMMAND, ...out].join("~");
+}
 function devicePageSlotItemIndex(layout, slot) {
   const count = import_deviceDetails.DEVICE_PAGE_LAYOUTS[layout].length;
-  return slot < count ? slot + 1 : slot + 3;
+  return slot < count ? slot + 1 : slot + 3 + import_deviceDetails.DEVICE_PAGE_STATUS_SLOTS[layout];
+}
+function devicePageStatusItemIndex(layout, place) {
+  return import_deviceDetails.DEVICE_PAGE_LAYOUTS[layout].length + 3 + place;
 }
 function isCardDeviceConfig(config) {
   return !!config && (0, import_function_and_const.isCardDeviceType)(config.card);
@@ -239,15 +300,17 @@ function devicePageOfModel(page, model) {
   if ((0, import_tools.isWebModel)(model) || !isCardDeviceConfig(page.config) || !page.pageItems) {
     return page;
   }
-  const count = import_deviceDetails.DEVICE_PAGE_LAYOUTS[layoutOfCardDevice(page.config.card)].length;
-  if (page.pageItems.length <= count + 3) {
+  const layout = layoutOfCardDevice(page.config.card);
+  const count = import_deviceDetails.DEVICE_PAGE_LAYOUTS[layout].length;
+  const items = count + 3 + import_deviceDetails.DEVICE_PAGE_STATUS_SLOTS[layout];
+  if (page.pageItems.length <= items) {
     return page;
   }
   const config = { ...page.config };
   if (config.channelSlots) {
     config.channelSlots = config.channelSlots.filter((slot) => slot < count);
   }
-  return { ...page, pageItems: page.pageItems.slice(0, count + 3), config };
+  return { ...page, pageItems: page.pageItems.slice(0, items), config };
 }
 function devicePageStatusIconElement(payload) {
   const fields = payload ? payload.split("~") : [];
@@ -610,14 +673,34 @@ async function devicePageChannelSlot(kind, ref, ctx) {
   }
 }
 async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
-  var _a, _b, _c;
+  var _a, _b;
   const { deviceId, page } = source;
   const details = { deviceId, entries: source.entries };
   const device = await ctx.getObject(deviceId);
   const headline = (0, import_device_details.nameOfCommon)((_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name, ctx.language) || deviceId.split(".").pop() || "";
   const layoutKinds = import_deviceDetails.DEVICE_PAGE_LAYOUTS[page.layout];
   const extraKinds = page.slots.length > layoutKinds.length ? import_deviceDetails.DEVICE_PAGE_EXTRA_SLOTS[page.layout] : [];
-  const kinds = [...layoutKinds, ...extraKinds];
+  const stage = (0, import_deviceDetails.devicePageStageOf)(page.layout, page.statusStage);
+  const statusCount = import_deviceDetails.DEVICE_PAGE_STATUS_SLOTS[page.layout];
+  const capacity = (0, import_deviceDetails.devicePageStatusCapacity)(page.layout, stage);
+  const firstStatus = layoutKinds.length + extraKinds.length;
+  const kinds = [
+    ...layoutKinds,
+    ...extraKinds,
+    ...Array.from({ length: statusCount }, () => "status")
+  ];
+  const refs = kinds.map((_kind, i) => {
+    var _a2, _b2, _c;
+    if (i >= firstStatus) {
+      const place = i - firstStatus;
+      return place < capacity ? (_b2 = (_a2 = page.statusSlots) == null ? void 0 : _a2[place]) != null ? _b2 : null : null;
+    }
+    if (i < layoutKinds.length && (0, import_deviceDetails.devicePageSlotHiddenByStage)(page.layout, stage, i)) {
+      return null;
+    }
+    return (_c = page.slots[i]) != null ? _c : null;
+  });
+  const label = (i) => i >= firstStatus ? `status icon ${i - firstStatus + 1}` : `slot ${i + 1} (${kinds[i]})`;
   const messages = [];
   const skipped = [];
   const readCommon = async (ref) => {
@@ -635,7 +718,7 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
   const slots = kinds.map(() => void 0);
   const channelSlots = [];
   for (let i = 0; i < kinds.length; i++) {
-    const ref = (_b = page.slots[i]) != null ? _b : null;
+    const ref = refs[i];
     if ((ref == null ? void 0 : ref.custom) === "navigation") {
       slots[i] = devicePageNavigationSlotItem(kinds[i], ref);
       continue;
@@ -644,9 +727,11 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
       const channel = await devicePageChannelSlot(kinds[i], ref, ctx);
       if (channel.item) {
         slots[i] = channel.item;
-        channelSlots.push(i);
+        if (i < firstStatus) {
+          channelSlots.push(i);
+        }
       } else {
-        messages.push(`Device page slot ${i + 1} (${kinds[i]}): ${(_c = channel.error) != null ? _c : ref.id}`);
+        messages.push(`Device page ${label(i)}: ${(_b = channel.error) != null ? _b : ref.id}`);
       }
       continue;
     }
@@ -691,20 +776,26 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
     ...slots.slice(0, layoutKinds.length),
     page.showInfo ? devicePageInfoItem(details) : void 0,
     status,
+    // a fixed block per layout: the numbers of its items do not depend on the stage
+    ...slots.slice(firstStatus),
     // appended: the numbers of the items above never change
-    ...slots.slice(layoutKinds.length)
+    ...slots.slice(layoutKinds.length, firstStatus)
   ];
+  const config = {
+    card: cardDeviceOf(page.layout),
+    data: { headline: { type: "const", constVal: headline } },
+    channelSlots
+  };
+  if (stage > 0) {
+    config.statusStage = stage;
+  }
   return {
     page: {
       uniqueID,
       alwaysOn,
       dpInit: "",
       pageItems: elements.map((item) => item != null ? item : EMPTY_DEVICE_PAGE_ITEM),
-      config: {
-        card: cardDeviceOf(page.layout),
-        data: { headline: { type: "const", constVal: headline } },
-        channelSlots
-      }
+      config
     },
     messages
   };
@@ -721,12 +812,15 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
   devicePageChannelElement,
   devicePageChannelSlotItem,
   devicePageClampElement,
+  devicePageIconsMessage,
+  devicePageInfoElement,
   devicePageInfoItem,
   devicePageMainElement,
   devicePageMainItem,
   devicePageMaxPayloadBytes,
   devicePageName,
   devicePageNavigationSlotItem,
+  devicePageNumberedElement,
   devicePageOfModel,
   devicePagePayload,
   devicePageSlotItem,
@@ -734,7 +828,9 @@ async function buildDevicePage(uniqueID, alwaysOn, source, ctx) {
   devicePageStatusIconElement,
   devicePageStatusIconItem,
   devicePageStatusItem,
+  devicePageStatusItemIndex,
   devicePageStatusMessage,
+  devicePageTypeNumber,
   isCardDeviceConfig,
   layoutOfCardDevice,
   optionalValueOf,

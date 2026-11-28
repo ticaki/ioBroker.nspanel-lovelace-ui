@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { PanelModel } from '../../protocol/types';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
-import { DEVICE_GEOMETRY, deviceGeometry, deviceLayout, progressPercent, statusBlockVisible } from './layout';
-import { handleCommand, initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
+import { DEVICE_GEOMETRY, deviceGeometry, deviceLayout, deviceStageOf, progressPercent, slotBoxes } from './layout';
+import {
+    deviceGridColumns,
+    deviceTypeName,
+    handleCommand,
+    initial,
+    parseEntityUpd,
+    parseEntityUpdateDetail,
+    type CardDeviceModel,
+} from './parse';
 import device1 from '../../../scripts/examples/cardDevice1.txt?raw';
 import device1Plain from '../../../scripts/examples/cardDevice1-plain.txt?raw';
 import device2 from '../../../scripts/examples/cardDevice2.txt?raw';
@@ -47,9 +55,14 @@ const EXAMPLES: Readonly<Record<string, string>> = {
 
 const NAV = ['button', 'bSubPrev', '<', '65535', '', '', 'button', 'bSubNext', '>', '65535', '', ''];
 
-/** the `entityUpd` line of an example in scripts/examples (same data as the HMI preview pictures) */
-function example(name: string): string[] {
-    const line = (EXAMPLES[name] ?? '').split('\n').find(l => l.startsWith('entityUpd~'));
+/**
+ * the `entityUpd` line (or another message) of an example in scripts/examples (same data as the HMI preview pictures)
+ *
+ * @param name the example
+ * @param cmd the message
+ */
+function example(name: string, cmd = 'entityUpd'): string[] {
+    const line = (EXAMPLES[name] ?? '').split('\n').find(l => l.startsWith(`${cmd}~`));
     return (line ?? '').split('~').slice(1);
 }
 
@@ -75,10 +88,6 @@ describe('cardDevice layouts', () => {
             'button',
             'button',
             'button',
-            'status',
-            'status',
-            'status',
-            'status',
         ]);
         expect(DEVICE_GEOMETRY[2].slots.map(s => s.kind)).toEqual([
             'value',
@@ -103,23 +112,10 @@ describe('cardDevice layouts', () => {
     it('keeps every element inside the content area x 10-440, y 67-320', () => {
         for (const layout of [1, 2, 3] as const) {
             const g = DEVICE_GEOMETRY[layout];
-            const boxes = [g.main.icon, g.main.name, g.status, g.info];
-            for (const s of g.slots) {
-                if (s.kind === 'status') {
-                    boxes.push(s.cell);
-                    continue;
-                }
-                boxes.push(s.name);
-                if (s.kind === 'progress') {
-                    boxes.push(s.bar);
-                } else {
-                    boxes.push(s.icon);
-                }
-                if (s.kind === 'info' || s.kind === 'value') {
-                    boxes.push(s.value);
-                }
-                if (s.kind === 'switch') {
-                    boxes.push(s.toggle);
+            const boxes = [g.main.icon, g.main.name, g.status, g.info, ...g.grid];
+            for (const stage of [0, 1, 2, 3] as const) {
+                for (const s of deviceGeometry(layout, 'eu', [], stage).slots) {
+                    boxes.push(...(s ? slotBoxes(s) : []));
                 }
             }
             for (const b of boxes) {
@@ -158,40 +154,63 @@ describe('cardDevice parse', () => {
         expect(m.title).toBe('Saugroboter');
         expect(m.navigation.left.id).toBe('bSubPrev');
         expect(m.navigation.right.id).toBe('bSubNext');
-        expect(m.main).toMatchObject({ type: 'button', id: '9?0?main', displayName: 'Robbi' });
+        // type 1 (only sends) is the type text of the touch code
+        expect(m.main).toMatchObject({ type: 'text', id: '9?0?main', displayName: 'Robbi' });
         expect(m.status).toBe('Reinigt Wohnzimmer, noch 12 min (Wischen)');
-        expect(m.slots).toHaveLength(10);
+        expect(m.slots).toHaveLength(6);
         expect(m.slots[0]).toMatchObject({ type: 'text', displayName: 'Akku', optionalValue: '80 %' });
         expect(m.slots[1]).toMatchObject({ displayName: 'Fläche', optionalValue: '34 m²' });
         expect(m.slots.slice(2, 6).map(s => s.displayName)).toEqual(['Start', 'Pause', 'Dock', 'Suchen']);
-        expect(m.slots.slice(6).map(s => s.id)).toEqual(['9?0?7', '9?0?8', '9?0?9', '9?0?10']);
-        expect(m.info).toMatchObject({ type: 'button', id: '9?0?info' });
+        expect(m.info).toMatchObject({ type: 'text', id: '9?0?info' });
         expect(isEmptySlot(m.info)).toBe(false);
-        expect(statusBlockVisible(1, m.slots)).toBe(true);
+        // the stage in field 6 of info
+        expect(m.stage).toBe(1);
+        expect(m.icons).toEqual([]);
+        expect(m.columns).toBe(0);
     });
 
-    it('cardDevice1 without status icons: 4 empty status slots, info icon at field 80', () => {
+    it('cardDevice1 without status icons: info icon at field 56, stage 0', () => {
         const args = example('cardDevice1-plain');
-        // field 80 of the payload (entityUpd = field 0) is args[79]
-        expect(args[79]).toBe('button');
-        expect(args[80]).toBe('9?0?info');
+        // field 56 of the payload (entityUpd = field 0) is args[55]
+        expect(args[55]).toBe('1');
+        expect(args[56]).toBe('9?0?info');
+        expect(args[60]).toBe('');
         const m = parseEntityUpd(args, initial(), ctx('cardDevice1'));
-        expect(m.slots.slice(6).every(isEmptySlot)).toBe(true);
         expect(m.info.id).toBe('9?0?info');
-        expect(statusBlockVisible(1, m.slots)).toBe(false);
+        expect(m.stage).toBe(0);
     });
 
-    it('reads an old cardDevice1 payload with 6 slots: info icon after slot 6, no status icons', () => {
-        const slots6 = Array.from({ length: 6 }, (_, i) => el('text', `s${i + 1}`)).flat();
+    it('the type as a number: 0 hidden, 1 sends, 2-9 the popup types; a name stays a name', () => {
+        expect(['', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '07'].map(deviceTypeName)).toEqual([
+            '',
+            '',
+            'text',
+            'shutter',
+            'shutter2',
+            'input_sel',
+            'timer',
+            'light',
+            'light2',
+            'fan',
+            'number',
+            'text',
+            'light2',
+        ]);
+        expect(['button', 'switch', 'delete', 'light'].map(deviceTypeName)).toEqual([
+            'button',
+            'switch',
+            'delete',
+            'light',
+        ]);
         const m = parseEntityUpd(
-            ['T', ...NAV, ...el('text', 'm'), ...slots6, ...el('button', 'info')],
+            ['T', ...NAV, ...el('6', 'm'), ...el('0', 's1'), ...el('2', 's2'), ...el('9', 's3')],
             initial(),
             ctx('cardDevice1'),
         );
-        expect(m.slots).toHaveLength(10);
-        expect(m.slots.slice(0, 6).map(s => s.id)).toEqual(['s1', 's2', 's3', 's4', 's5', 's6']);
-        expect(m.slots.slice(6).every(isEmptySlot)).toBe(true);
-        expect(m.info.id).toBe('info');
+        expect([m.main, ...m.slots.slice(0, 3)].map(e => e.type)).toEqual(['light', '', 'shutter', 'number']);
+        expect(isEmptySlot(m.slots[0])).toBe(true);
+        // navigation keeps its names
+        expect(m.navigation.left.type).toBe('button');
     });
 
     it('cardDevice2: value, progress, 3 info and a button', () => {
@@ -202,7 +221,7 @@ describe('cardDevice parse', () => {
         expect(m.slots[1]).toMatchObject({ icon: '', displayName: 'Fortschritt 62 %', optionalValue: '62' });
         expect(m.slots[1].iconColor).toBe(1311);
         expect(m.slots[3]).toMatchObject({ displayName: 'Temperatur', optionalValue: '60 °C' });
-        expect(m.slots[5]).toMatchObject({ type: 'button', displayName: 'Pause' });
+        expect(m.slots[5]).toMatchObject({ type: 'text', displayName: 'Pause' });
         expect(m.status).toBe('Schleudern, noch 23 min - Fertig um 14:35');
         expect(m.info.id).toBe('9?0?info');
     });
@@ -219,8 +238,9 @@ describe('cardDevice parse', () => {
             'Laden',
             'km-Stand',
         ]);
-        expect(m.slots[6]).toMatchObject({ type: 'switch', displayName: 'Klima', optionalValue: '1' });
-        expect(m.slots[7]).toMatchObject({ type: 'switch', id: '9?0?8' });
+        expect(m.slots[6]).toMatchObject({ type: 'text', displayName: 'Klima', optionalValue: '1' });
+        expect(m.slots[7]).toMatchObject({ type: 'text', id: '9?0?8' });
+        expect(m.stage).toBe(0);
         expect(m.info.id).toBe('9?0?info');
     });
 
@@ -231,14 +251,14 @@ describe('cardDevice parse', () => {
             ...el('text', 'm', 'Gerät', 'Status'),
             ...EMPTY,
             ...el('delete', '', '', ''),
-            ...el('button', 'b3', 'Start'),
+            ...el('1', 'b3', 'Start'),
             ...EMPTY,
             ...EMPTY,
-            ...EMPTY,
+            ...el('0', 'b6', 'Suchen'),
             ...EMPTY,
         ];
         const m = parseEntityUpd(args, initial(), ctx('cardDevice1'));
-        expect(m.slots.map(isEmptySlot)).toEqual([true, true, false, true, true, true, true, true, true, true]);
+        expect(m.slots.map(isEmptySlot)).toEqual([true, true, false, true, true, true]);
         expect(isEmptySlot(m.info)).toBe(true);
     });
 
@@ -252,14 +272,9 @@ describe('cardDevice parse', () => {
 
     it('reads the info icon at element N+1 of each layout', () => {
         const slots6 = Array.from({ length: 6 }, (_, i) => el('text', `s${i + 1}`)).flat();
-        const slots10 = Array.from({ length: 10 }, (_, i) => el('text', `s${i + 1}`)).flat();
         const slots8 = Array.from({ length: 8 }, (_, i) => el('text', `s${i + 1}`)).flat();
         const info = el('button', 'info');
-        const m1 = parseEntityUpd(
-            ['T', ...NAV, ...el('text', 'm'), ...slots10, ...info],
-            initial(),
-            ctx('cardDevice1'),
-        );
+        const m1 = parseEntityUpd(['T', ...NAV, ...el('text', 'm'), ...slots6, ...info], initial(), ctx('cardDevice1'));
         const m2 = parseEntityUpd(['T', ...NAV, ...el('text', 'm'), ...slots6, ...info], initial(), ctx('cardDevice2'));
         const m3 = parseEntityUpd(['T', ...NAV, ...el('text', 'm'), ...slots8, ...info], initial(), ctx('cardDevice3'));
         for (const m of [m1, m2, m3]) {
@@ -288,9 +303,10 @@ describe('cardDevice parse', () => {
 
     it('starts empty and does not handle entityUpdateDetail', () => {
         const m = initial();
-        expect(m.slots).toHaveLength(10);
+        expect(m.slots).toHaveLength(6);
         expect(m.extras).toEqual([]);
         expect(m.status).toBe('');
+        expect([m.stage, m.icons, m.columns]).toEqual([0, [], 0]);
         expect(parseEntityUpdateDetail(['x'], m, ctx('cardDevice1'))).toBeUndefined();
     });
 });
@@ -299,9 +315,9 @@ describe('cardDevice parse: additional slots of the web models', () => {
     const HARDWARE: readonly PanelModel[] = ['eu', 'us-l', 'us-p'];
     const WEB: readonly PanelModel[] = ['web-l', 'web-p'];
     const PAGES = [
-        { pageType: 'cardDevice1', slots: 10, extras: ['button', 'button'] },
-        { pageType: 'cardDevice2', slots: 6, extras: ['text', 'button', 'button'] },
-        { pageType: 'cardDevice3', slots: 8, extras: ['text', 'text', 'switch'] },
+        { pageType: 'cardDevice1', slots: 6, extras: 2 },
+        { pageType: 'cardDevice2', slots: 6, extras: 3 },
+        { pageType: 'cardDevice3', slots: 8, extras: 3 },
     ] as const;
 
     it('a web model reads them behind the info icon: 2 / 3 / 3 per page', () => {
@@ -310,13 +326,9 @@ describe('cardDevice parse: additional slots of the web models', () => {
                 const m = parseEntityUpd(example(`${model}-${page.pageType}`), initial(), ctx(page.pageType, model));
                 expect(m.slots, page.pageType).toHaveLength(page.slots);
                 expect(m.info.id, page.pageType).toBe('9?0?info');
-                expect(
-                    m.extras.map(e => e.type),
-                    page.pageType,
-                ).toEqual(page.extras);
-                expect(m.extras.every(e => !isEmptySlot(e))).toBe(true);
-                // numbered like the adapter does: behind info (N + 1) and the status item (N + 2)
-                expect(m.extras.map(e => e.id)).toEqual(page.extras.map((_, j) => `9?0?${page.slots + 3 + j}`));
+                expect(m.extras, page.pageType).toHaveLength(page.extras);
+                expect(m.extras.every(e => !isEmptySlot(e) && e.type === 'text')).toBe(true);
+                expect(new Set(m.extras.map(e => e.id)).size).toBe(page.extras);
             }
         }
     });
@@ -345,7 +357,7 @@ describe('cardDevice parse: additional slots of the web models', () => {
             for (const model of WEB) {
                 for (const name of [page.pageType, `${model}-${page.pageType}-plain`]) {
                     const m = parseEntityUpd(example(name), initial(), ctx(page.pageType, model));
-                    expect(m.extras, name).toHaveLength(page.extras.length);
+                    expect(m.extras, name).toHaveLength(page.extras);
                     expect(m.extras.every(isEmptySlot), name).toBe(true);
                     expect(m.info.id, name).toBe('9?0?info');
                 }
@@ -359,18 +371,6 @@ describe('cardDevice parse: additional slots of the web models', () => {
         const m = parseEntityUpd(args.slice(0, args.length - 12), initial(), ctx('cardDevice2', 'web-l'));
         expect(m.extras.map(isEmptySlot)).toEqual([false, true, true]);
         expect(m.extras[0]).toMatchObject({ displayName: 'Wasser', optionalValue: '48 l' });
-    });
-
-    it('an old cardDevice1 payload with 6 slots has no additional slots on a web model either', () => {
-        const slots6 = Array.from({ length: 6 }, (_, i) => el('text', `s${i + 1}`)).flat();
-        const m = parseEntityUpd(
-            ['T', ...NAV, ...el('text', 'm'), ...slots6, ...el('button', 'info')],
-            initial(),
-            ctx('cardDevice1', 'web-l'),
-        );
-        expect(m.info.id).toBe('info');
-        expect(m.extras).toHaveLength(2);
-        expect(m.extras.every(isEmptySlot)).toBe(true);
     });
 
     it('us-p reads its example like eu: the standard part, the first part of the status text', () => {
@@ -395,72 +395,121 @@ describe('cardDevice parse: additional slots of the web models', () => {
     });
 });
 
-describe('cardDevice1 status block', () => {
-    function slots(statusFilled: number): ReturnType<typeof initial>['slots'] {
-        const m = initial();
-        return m.slots.map((s, i) =>
-            i >= 6 && i < 6 + statusFilled
-                ? { ...s, type: 'text', id: `st${i}`, icon: 'X' }
-                : i < 6
-                  ? { ...s, type: 'text', id: `s${i}` }
-                  : s,
-        );
+describe('cardDevice status icon grid (devIcons, stage)', () => {
+    /** a devIcons message with `filled` cells (of `count`) */
+    function icons(filled: number, count = 16): string[] {
+        return Array.from({ length: count }, (_, i) =>
+            i < filled ? ['1', `c${i + 1}`, 'I', '2047'] : ['', '', '', ''],
+        ).flat();
     }
 
-    it('places the 4 cells 38x45 in a 2x2 grid with 1 px overlap', () => {
-        const cells = DEVICE_GEOMETRY[1].slots.flatMap(s => (s.kind === 'status' ? [s.cell] : []));
-        expect(cells).toEqual([
-            { x: 124, y: 71, w: 38, h: 45 },
-            { x: 161, y: 71, w: 38, h: 45 },
-            { x: 124, y: 115, w: 38, h: 45 },
-            { x: 161, y: 115, w: 38, h: 45 },
+    /** an entityUpd of cardDevice1 / cardDevice3 with the stage in field 6 of info */
+    function withStage(pageType: string, stage: string): string[] {
+        const count = pageType === 'cardDevice3' ? 8 : 6;
+        const slots = Array.from({ length: count }, (_, i) => el('1', `s${i + 1}`)).flat();
+        return ['T', ...NAV, ...el('1', 'm'), ...slots, ...el('1', 'info', '', stage)];
+    }
+
+    function open(pageType: string, stage: string, filled: number): CardDeviceModel {
+        const m = parseEntityUpd(withStage(pageType, stage), initial(), ctx(pageType));
+        const count = pageType === 'cardDevice3' ? 8 : 16;
+        return handleCommand('devIcons', icons(filled, count), m, ctx(pageType)) ?? m;
+    }
+
+    it('reads the stage from field 6 of info like covx, limited to the stages of the page', () => {
+        expect(['', '0', '1', '2', '3', '4', 'x', '-1', '2a'].map(f => deviceStageOf(1, f))).toEqual([
+            0, 0, 1, 2, 3, 3, 0, 0, 2,
         ]);
+        expect(['1', '2', '3'].map(f => deviceStageOf(3, f))).toEqual([1, 2, 2]);
+        expect(deviceStageOf(2, '2')).toBe(0);
     });
 
-    it('0 status icons: block hidden, wide info rows', () => {
-        const s = slots(0);
-        expect(statusBlockVisible(1, s)).toBe(false);
-        const g = deviceGeometry(1, s, 'eu');
-        expect(g.slots[0]).toEqual({
-            kind: 'info',
-            icon: { x: 126, y: 76, w: 36, h: 34 },
-            name: { x: 164, y: 80, w: 164, h: 26 },
-            value: { x: 330, y: 80, w: 110, h: 26 },
+    it('devIcons: the cells in their order, type, id, icon and colour, no name and value', () => {
+        const m = open('cardDevice1', '1', 3);
+        expect(m.icons).toHaveLength(16);
+        expect(m.icons[0]).toEqual({
+            type: 'text',
+            id: 'c1',
+            icon: 'I',
+            iconColor: 2047,
+            displayName: '',
+            optionalValue: '',
         });
-        expect(g.slots[1]).toMatchObject({ icon: { x: 126, y: 120 }, name: { x: 164, y: 124, w: 164 } });
+        expect(m.icons.map(isEmptySlot)).toEqual([false, false, false, ...Array.from({ length: 13 }, () => true)]);
+        // the example of the HMI tool: four icons behind the entityUpd
+        const ex = parseEntityUpd(example('cardDevice1'), initial(), ctx('cardDevice1'));
+        const shown = handleCommand('devIcons', example('cardDevice1', 'devIcons'), ex, ctx('cardDevice1'));
+        expect(shown?.icons.slice(0, 4).map(c => c.id)).toEqual(['9?0?7', '9?0?8', '9?0?9', '9?0?10']);
+        expect(shown?.columns).toBe(2);
+        // the rest of the page stays
+        expect(shown?.slots).toBe(ex.slots);
     });
 
-    it('1 status icon: block shown, narrow info rows', () => {
-        const s = slots(1);
-        expect(statusBlockVisible(1, s)).toBe(true);
-        const g = deviceGeometry(1, s, 'eu');
-        expect(g.slots[0]).toEqual({
-            kind: 'info',
-            icon: { x: 204, y: 76, w: 36, h: 34 },
-            name: { x: 242, y: 80, w: 86, h: 26 },
-            value: { x: 330, y: 81, w: 110, h: 26 },
-        });
-        expect(g.slots[1]).toEqual({
-            kind: 'info',
-            icon: { x: 204, y: 120, w: 36, h: 34 },
-            name: { x: 242, y: 124, w: 86, h: 26 },
-            value: { x: 330, y: 125, w: 110, h: 26 },
-        });
-        // buttons and the cells do not move
-        expect(g.slots.slice(2)).toEqual(DEVICE_GEOMETRY[1].slots.slice(2));
+    it('shows the columns up to the highest filled cell, a half filled one included, at most those of the stage', () => {
+        // cardDevice1: stage 1 3 columns, 2 5, 3 8
+        expect([0, 1, 2, 3, 5, 6, 7, 16].map(n => open('cardDevice1', '3', n).columns)).toEqual([
+            0, 1, 1, 2, 3, 3, 4, 8,
+        ]);
+        expect([1, 6, 7, 16].map(n => open('cardDevice1', '1', n).columns)).toEqual([1, 3, 3, 3]);
+        expect([9, 10, 11].map(n => open('cardDevice1', '2', n).columns)).toEqual([5, 5, 5]);
+        expect(open('cardDevice1', '0', 16).columns).toBe(0);
+        // cardDevice3: one row, stage 1 4 cells, 2 8
+        expect([1, 4, 5, 8].map(n => open('cardDevice3', '1', n).columns)).toEqual([1, 4, 4, 4]);
+        expect([1, 5, 8].map(n => open('cardDevice3', '2', n).columns)).toEqual([1, 5, 8]);
+        // an empty cell in front of a filled one counts (the adapter sends them without gaps anyway)
+        const gap = parseEntityUpd(withStage('cardDevice1', '3'), initial(), ctx('cardDevice1'));
+        const cells = [...['', '', '', ''], ...['', '', '', ''], ...['1', 'c3', 'I', '1']];
+        expect(deviceGridColumns(1, handleCommand('devIcons', cells, gap, ctx('cardDevice1'))?.icons ?? [], 3)).toBe(2);
     });
 
-    it('4 status icons: block shown; a delete slot alone does not show it', () => {
-        expect(statusBlockVisible(1, slots(4))).toBe(true);
-        const deleted = slots(0).map((s, i) => (i >= 6 ? { ...s, type: 'delete' } : s));
-        expect(statusBlockVisible(1, deleted)).toBe(false);
+    it('a devIcons alone changes the cells, an entityUpd keeps them and hides the columns beyond its stage', () => {
+        const m = open('cardDevice1', '3', 16);
+        expect(m.columns).toBe(8);
+        const fewer = handleCommand('devIcons', icons(2), m, ctx('cardDevice1'));
+        expect(fewer?.columns).toBe(1);
+        expect(fewer?.icons.filter(c => !isEmptySlot(c))).toHaveLength(2);
+        // the next entityUpd with a smaller stage: the cells stay, at most the columns of the stage
+        const smaller = parseEntityUpd(withStage('cardDevice1', '1'), m, ctx('cardDevice1'));
+        expect(smaller.icons).toBe(m.icons);
+        expect([smaller.stage, smaller.columns]).toEqual([1, 3]);
+        // a larger stage shows no more columns until the next devIcons (like the HMI)
+        const larger = parseEntityUpd(withStage('cardDevice1', '3'), smaller, ctx('cardDevice1'));
+        expect(larger.columns).toBe(3);
+        expect(handleCommand('devIcons', icons(16), larger, ctx('cardDevice1'))?.columns).toBe(8);
     });
 
-    it('cardDevice2 and cardDevice3 have no status block', () => {
-        const many = Array.from({ length: 8 }, (_, i) => ({ ...initial().slots[0], type: 'text', id: `s${i}` }));
-        expect(statusBlockVisible(2, many)).toBe(false);
-        expect(statusBlockVisible(3, many)).toBe(false);
-        expect(deviceGeometry(3, many, 'eu')).toBe(DEVICE_GEOMETRY[3]);
+    it('devIcons before the first entityUpd: stage 0, the grid stays empty until the next devIcons', () => {
+        const early = handleCommand('devIcons', icons(5), initial(), ctx('cardDevice1'));
+        expect(early?.columns).toBe(0);
+        const m = parseEntityUpd(withStage('cardDevice1', '2'), early ?? initial(), ctx('cardDevice1'));
+        expect([m.stage, m.columns, m.icons.length]).toEqual([2, 0, 16]);
+        expect(handleCommand('devIcons', icons(5), m, ctx('cardDevice1'))?.columns).toBe(3);
+        // cardDevice3 starts from the model of a fresh page as well
+        const early3 = handleCommand('devIcons', icons(3, 8), initial(), ctx('cardDevice3'));
+        expect([early3?.layout, early3?.icons.length, early3?.columns]).toEqual([3, 8, 0]);
+    });
+
+    it('cardDevice2 has no grid: devIcons changes nothing', () => {
+        const m = parseEntityUpd(example('cardDevice2'), initial(), ctx('cardDevice2'));
+        expect(handleCommand('devIcons', icons(4), m, ctx('cardDevice2'))).toBe(m);
+        expect(m.stage).toBe(0);
+    });
+
+    it('the geometry follows the stage: info rows in set A / B / C / none, tiles 1 and 2 of cardDevice3', () => {
+        const info = (stage: 0 | 1 | 2 | 3): unknown => deviceGeometry(1, 'eu', [], stage).slots[0];
+        expect(info(0)).toMatchObject({ icon: { x: 126 }, name: { x: 164, w: 164 }, value: { x: 330, w: 110 } });
+        expect(info(1)).toMatchObject({ icon: { x: 241 }, name: { x: 279, w: 49 }, value: { x: 330, w: 110 } });
+        expect(info(2)).toMatchObject({ icon: { x: 315 }, value: { x: 353, w: 87 } });
+        expect(info(2)).not.toHaveProperty('name');
+        expect(info(3)).toBeUndefined();
+        // buttons do not move
+        expect(deviceGeometry(1, 'eu', [], 3).slots.slice(2)).toEqual(DEVICE_GEOMETRY[1].slots.slice(2));
+        expect(deviceGeometry(3, 'eu', [], 1).slots.slice(0, 2)).toEqual([undefined, DEVICE_GEOMETRY[3].slots[1]]);
+        expect(deviceGeometry(3, 'eu', [], 2).slots.slice(0, 3)).toEqual([
+            undefined,
+            undefined,
+            DEVICE_GEOMETRY[3].slots[2],
+        ]);
     });
 });
 

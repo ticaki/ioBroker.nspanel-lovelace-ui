@@ -1,5 +1,6 @@
 # cardDevice1 "Robbi" with the 2 additional buttons of the web models: reference assignment of the docs (doc/Pictures/device-page/BILDER.md), values as the adapter writes them
 # web-l: doc/Pictures/device-page/web-l-cardDevice1.png
 pageType~cardDevice1
-entityUpd~Robbi~button~bUp~~17299~~~~~~~~~text~9?0~~2047~Robbi~Reinigt Wohnzimmer, noch 12 min (Wischen)~text~9?1~~65363~Batterie~80%~text~9?2~~65535~Fläche~34m²~button~9?3~~2047~Starten~1~button~9?4~~2047~Pause~1~button~9?5~~2047~Laden~1~button~9?6~~2047~Suchen~1~text~9?7~~2047~~~text~9?8~~35921~~~text~9?9~~65535~~~text~9?10~~35921~~~button~9?info~~65535~~1~button~9?13~~2047~Zone~1~button~9?14~~2047~Leeren~1
+entityUpd~Robbi~button~bUp~~17299~~~~~~~~~1~9?0~~2047~Robbi~Reinigt Wohnzimmer, noch 12 min (Wischen)~1~9?1~~65363~Batterie~80%~1~9?2~~65535~Fläche~34m²~1~9?3~~2047~Starten~1~1~9?4~~2047~Pause~1~1~9?5~~2047~Laden~1~1~9?6~~2047~Suchen~1~1~9?info~~65535~~1~1~9?13~~2047~Zone~1~1~9?14~~2047~Leeren~1
+devIcons~1~9?7~~2047~1~9?8~~35921~1~9?9~~65535~1~9?10~~35921~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 @sleep 300
