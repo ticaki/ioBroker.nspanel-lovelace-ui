@@ -203,6 +203,7 @@ class VirtualPanelManager extends import_library.BaseClass {
         panel.info.nspanel.model,
         (_b = this.adapter.config.panels.find((p) => p.topic === entry.topic)) == null ? void 0 : _b.webButtons
       ),
+      extensions: panel.webExtensionsAllowed,
       ...build ? { build } : {}
     });
     this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);
