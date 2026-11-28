@@ -39,7 +39,8 @@ auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main un
 auf allen drei Seiten mittig: `tStatus.xcen` 0 → 1 auf cardDevice1 und 3, sonst wie `device8`), `device10`
 (Long-Press-Blinken auf cardGrid, cardGrid2, cardGrid3 und den drei Geräteseiten, sonst wie `device9`), `device12`
 (Drück-Feedback der Status-Zellen `tStat7–10` und der Hotspots `mSlot1/2`, `mSlot7/8`, sonst wie `device11`, alle drei
-Modelle), `device13` (Typ als Zahl, `entn` 7, Status-Raster bis 8×2 bzw. 8×1 per `devIcons`, Stufe in Feld 6 von info –
+Modelle), `device13` (Typ als Zahl, `entn` 7, Status-Raster bis 8×2 bzw. 8×1 per `devIcons`, `entityUpd` von cardDevice1
+ohne Status-Slots (N = 6), Stufe in Feld 6 von info –
 aktuell, alle drei Modelle, siehe [„device13“](#device13-typzahl-status-raster-devicons); alle in
 `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
 cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
@@ -94,40 +95,33 @@ devIcons~<typ>~<id>~<icon>~<farbe>~…    nur cardDevice1 (16 Zellen) und cardDe
 
 **Typ als Zahl** (alle drei Seiten, alle Elemente außer Navigation und info-Icon):
 
-| Zahl | alter Name | Verhalten |
+| Zahl | Typ im Adapter | Verhalten |
 |---|---|---|
-| 0 | `delete`, leer, `0` | Element ausgeblendet, Tipp tut nichts |
-| 1 | `text`, `button`, `switch`, jeder andere Name | nur senden; ohne intName (außer Knopf-Slot) kein Senden, kein Blinken |
+| 0 | leer, `delete` | Element ausgeblendet, Tipp tut nichts |
+| 1 | `text`, `button`, `switch`, jeder andere Typ | nur senden; ohne intName (außer Knopf-Slot) kein Senden, kein Blinken |
 | 2 / 3 / 4 / 5 | `shutter` / `shutter2` / `input_sel` / `timer` | Popup beim Berühren |
 | 6 / 7 / 8 / 9 | `light` / `light2` / `fan` / `number` | Popup nach 500 ms |
 
-- Der Parser liest den Typ von main und den Slots in einer Schleife (`for(sys2…)`, Feld `sys2*6+14`) mit
-  `covx tTmp.txt,sys0,0,0`. Ergibt das 0, übersetzt eine Vergleichskette den alten Namen (älterer Adapter):
-  `delete`/leer/`0` → 0, die Namen oben → ihre Zahl, sonst → 1. Danach steht der Typ in der Zahlvariable
-  `type<k>`/`typeMain`.
-- **Abweichung:** Auch der Text `0` gilt in der Kette als 0 (Tims Liste nennt nur `delete`/leer). Sonst würde aus der
-  Zahl 0 über die Kette eine 1.
+- Der Parser liest den Typ jedes Elements mit `spstr` → `tTmp` und `covx tTmp.txt,type<k>.val,0,0` in die
+  Zahlvariable `type<k>`/`typeMain`. Leer, `0` und jeder Text ohne führende Ziffer ergeben 0 (am Panel gemessen).
 - `down` schreibt den Typ in die neue Zahlvariable `vLPType`, `tmLP` öffnet die Popups 6–9 daraus (vorher `tTmp`, das
   ein `entityUpd` während des Haltens überschrieb). Popups 2–5 vergleichen `type<k>.val`.
-- Navigation (Felder 2 und 8) bleibt Text (`button`), Vergleich wie bisher. Das info-Icon wird bei `delete`, leer
-  **und `0`** ausgeblendet (Annahme: der neue Adapter schickt dort die Zahl).
+- Navigation (Felder 2 und 8) bleibt Text (`button`), Vergleich wie bisher. Das info-Icon wird ebenfalls per `covx`
+  geprüft und bei 0 ausgeblendet.
 - `entn*` (auch `entnMain`, `entnInfo`, `entnStat<i>`) txt_maxl **7**. `nent1/2` txt_maxl **11**: der Adapter schickt
   dort nur `bSubPrev`, `bSubNext`, `bUp`, `bHome` (`Navigation.buildNavigationString`, `Page.getNavigation`), höchstens
   8 Zeichen.
 
-**cardDevice1, Felder von entityUpd** (unverändert gegenüber device12):
+**Felder von entityUpd** (Element e beginnt bei 14 + 6e):
 
-| Element | Felder | device13 |
-|---|---|---|
-| main | 14–19 | wie bisher, Typ als Zahl |
-| Slot 1–2 (info), 3–6 (button) | 20–55 | wie bisher, Typ als Zahl |
-| Slot 7–10 | 56–79 | **reserviert**: die HMI liest dort nichts, der neue Adapter schickt sie leer (`~~~~~`) |
-| info | 80–85 | Typ, ID, Icon, Farbe wie bisher; **Feld 85 = Stufe** 0–3 |
+| Seite | N | main | Slots | info | Stufe |
+|---|---|---|---|---|---|
+| cardDevice1 | **6** (info, info, button × 4) | 14–19 | 20–55 | **56–61** | **Feld 61** (0–3) |
+| cardDevice2 | 6 | 14–19 | 20–55 | 56–61 | – |
+| cardDevice3 | 8 | 14–19 | 20–67 | 68–73 | **Feld 73** (0–2) |
 
-cardDevice3: info 68–73, **Feld 73 = Stufe** 0–2. cardDevice2: keine Stufe, kein `devIcons`.
-
-Ein älterer Adapter schickt kein `devIcons` und lässt die Stufe leer (`covx` → 0): die Seite zeigt Stufe 0 ohne
-Raster, die Status-Slots 7–10 werden ignoriert.
+Die Status-Slots 7–10 von cardDevice1 gibt es in `entityUpd` nicht mehr, die Status-Icons kommen nur noch per
+`devIcons`. cardDevice2 hat keine Stufe und kein `devIcons`.
 
 **Stufe** (Feld 6 von info, leer = 0, auf 0…max begrenzt, steht in `vStage`):
 
@@ -149,7 +143,7 @@ blendet erst die anderen Sätze aus und dann den eigenen ein. Der heutige schmal
 entfallen.
 
 **devIcons:** `devIcons~<typ 1>~<id 1>~<icon 1>~<farbe 1>~…`, Zelle i in den Feldern 1 + 4·(i−1) bis 4·i,
-spaltenweise (Zelle 2c−1 oben, 2c unten; cardDevice3 eine Zeile). Typ per `covx` ohne Namenskette, leer = `0~~~` oder
+spaltenweise (Zelle 2c−1 oben, 2c unten; cardDevice3 eine Zeile). Typ per `covx`, leer = `0~~~` oder
 `~~~`. Icon mit `¬<Font>` wie überall.
 
 - Typ 0: Zelle leer (Text leer, Rahmen bleibt, kein Tipp). Sonst Icon, Schrift und Farbe.
@@ -196,26 +190,21 @@ sichtbaren Bereich, Tippflächen und Überschneidungen je Stufe: keine Meldungen
 
 | Seite | `entityUpd` Größtfall voll / neuer Adapter | `devIcons` voll / neuer Adapter | `strCommand` device12 → device13 |
 |---|---|---|---|
-| cardDevice1 | 794 / **663** | 536 / **392** | 943 → **731** |
+| cardDevice1 | 770 / **639** | 536 / **392** | 943 → **703** |
 | cardDevice2 | 857 / **701** | – | 875 → **775** |
 | cardDevice3 | 1072 / **869** | 272 / **200** | 1019 → **959** |
 
 - „Neuer Adapter“ (`--fields`): Typ 1 Byte, ID 7, Navigation `button`/`bSubPrev`, ein Icon 4 Byte (devIcons 7 mit
-  `¬<Font>`), Farbe 5, Namen und Werte bis zum Puffer, Stufe 1 Byte, reservierte Felder leer. `strCommand` = das
-  Größere aus `entityUpd` und `devIcons` + 10 %, 4k−1.
-- Die Analyse (status-grid-8x2.md Abschnitt 3) hatte für cardDevice1 die Status-Felder **weggelassen** (639 Byte,
-  txt_maxl 703). Mit den reservierten Feldern sind es 24 Trenner mehr: 663 Byte, txt_maxl **731**.
-- Die Begrenzung beim Empfang bleibt. Ein **älterer Adapter** (Typnamen, Status-Slots gefüllt) schickt bis 856 / 793 /
-  994 Byte: davon fällt das Ende weg, also die reservierten Felder und das info-Icon (cardDevice3 auch Teile von
-  Schalter 8).
+  `¬<Font>`), Farbe 5, Namen und Werte bis zum Puffer, Stufe 1 Byte. `strCommand` = das Größere aus `entityUpd`
+  und `devIcons` + 10 %, 4k−1. Die Begrenzung beim Empfang (`clamp_receive`) bleibt.
 
 RAM (Schätzung des Werkzeugs mit global 436; „Prognose“ = gemessener device10-Wert + Änderung der Schätzung):
 
 | Seite | Modell | Schätzung device12 → device13 | Prognose (Editor) | frei (Prognose) |
 |---|---|---|---|---|
-| cardDevice1 | EU | 3201 → 3073 | 3204 | 380 |
-| cardDevice1 | us-l | 3201 → 3073 | 3180 | 404 |
-| cardDevice1 | us-p | 3015 → 2997 | 3058 | 526 |
+| cardDevice1 | EU | 3201 → 3045 | 3176 | 408 |
+| cardDevice1 | us-l | 3201 → 3045 | 3152 | 432 |
+| cardDevice1 | us-p | 3015 → 2969 | 3030 | 554 |
 | cardDevice2 | EU | 2785 → 2456 | 2495 | 1089 |
 | cardDevice2 | us-l / us-p | 2785 → 2456 | 2471 | 1113 |
 | cardDevice3 | EU | 3264 → 3229 | 3317 | 267 |
@@ -231,15 +220,13 @@ doppelt so lang (Prüfliste).
 ### device13 im Editor und am Panel prüfen
 
 1. Alle drei Dateien öffnen (keine Meldung „resource file damaged“), kompilieren: 0 Fehler, keine „Component
-   overlap“. Neu im Code: `for(sys2=0;sys2<7;sys2++)` mit `spstr …,sys2*6+14`, `covx tTmp.txt,sys0,0,0`,
-   `type<k>.val`, `if(type1.val==0||vStage.val>=3)`, `if(sys2<8&&vCols.val>=8)`, `click` in `if/else` (tValue1/2),
+   overlap“. Neu im Code: `covx tTmp.txt,type<k>.val,0,0`, `type<k>.val`, `if(type1.val==0||vStage.val>=3)`, `if(sys2<8&&vCols.val>=8)`, `click` in `if/else` (tValue1/2),
    `if(vStage.val>=1&&vStage.val<=2)` (us-p). Der Code der Seiten ist deutlich länger: übersetzt der Editor ihn?
 2. RAM je Seite und Modell melden (Tabelle oben).
 3. Typzahl: `entityUpd` mit Zahlen 0–9 in main und Slots: 0 blendet aus, 2–5 Popup sofort, 6–9 nach 500 ms, 1 sendet
-   (ohne ID nicht, Knopf-Slot doch). Altes Payload mit Namen (`shutter`, `light`, `text`, `delete`, leer): gleiches
-   Verhalten wie device12.
+   (ohne ID nicht, Knopf-Slot doch); leeres Element und `0` ausgeblendet.
 4. Long-Press während eines `entityUpd`: das Popup eines Typs 6–9 öffnet trotzdem (`vLPType`).
-5. Stufen cardDevice1: Feld 85 = 0/1/2/3, je mit `devIcons` mit 0, 1, 5, 9, 16 belegten Zellen: Spaltenzahl
+5. Stufen cardDevice1: Feld 61 = 0/1/2/3, je mit `devIcons` mit 0, 1, 5, 9, 16 belegten Zellen: Spaltenzahl
    (⌈n/2⌉, höchstens 3/5/8), halbe letzte Spalte mit Rahmen, Info-Sätze A/B/C/keiner, Rahmenkanten nach dem Ausblenden
    von Spalten, keine Reste der anderen Sätze. Abschneiden: Name in Satz B (49 px, 15 Byte), Wert in Satz C (87 px, 19
    Byte; welche Seite fehlt beim rechtsbündigen Wert?).

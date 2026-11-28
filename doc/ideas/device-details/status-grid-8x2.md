@@ -22,7 +22,7 @@ Admin und Web-Panel (Abschnitte 7, 9 „Folgearbeiten“ und 10) sind **nicht** 
 
 **Umgesetzt:** ✅
 
-- ✅ Typ als Zahl auf cardDevice1–3, `covx` mit Namenskette als Rückfall, `vLPType` für tmLP (Abschnitt 6).
+- ✅ Typ als Zahl auf cardDevice1–3 (`covx`, ohne Namenskette), `vLPType` für tmLP (Abschnitt 6).
 - ✅ `entn*` txt_maxl 7, `nent1/2` 11.
 - ✅ Stufe in Feld 6 von info (Entscheidung 3), cardDevice1 Sätze A/B/C/keiner (Abschnitt 1), cardDevice3 Kachel 1/2
   aus (Abschnitt 9).
@@ -39,22 +39,22 @@ Admin und Web-Panel (Abschnitte 7, 9 „Folgearbeiten“ und 10) sind **nicht** 
    die Spaltenzahl also doch (Abschnitt 4 „entfällt“ gilt nicht mehr): `sys2` = höchster belegter Index,
    `sys2=(sys2+1)/2`. Eine halb belegte letzte Spalte behält ihre leere Zelle mit Rahmen. Info-Zeilen und Kacheln
    folgen nur der Stufe.
-2. **Feldpositionen:** `entityUpd` von cardDevice1 behält die Felder der Status-Slots 7–10 (56–79) als reservierte
-   Felder, info bleibt bei 80–85. Abschnitt 3 hatte die Felder weggelassen: neu gerechnet sind es 663 statt 639 Byte
-   im Größtfall, `strCommand` **731** statt 703 (cardDevice3: 959 statt 955, weil das Stufenfeld die 869 Byte + 10 % über 955 hebt).
+2. **Feldpositionen:** `entityUpd` von cardDevice1 hat 6 Slots, info liegt bei 56–61, die Stufe in Feld 61
+   (cardDevice3: info 68–73, Stufe 73). Größtfall 639 Byte, `strCommand` **703** wie in Abschnitt 3 (cardDevice3: 959
+   statt 955, weil das Stufenfeld die 869 Byte + 10 % über 955 hebt).
 3. **Spaltenwechsel:** Nur Spalten, die sich ändern, werden geschaltet (Zahlvariable `vCols`), damit kein `vis 0` auf
    eine schon ausgeblendete Spalte die Sätze B/C übermalt. Je Seite eine Zahlvariable mehr als in Abschnitt 3.
 4. **Stufe auf cardDevice1** steht in der neuen Zahlvariable `vStage` (wie auf cardDevice3), `vStatus` ist entfallen.
-5. **Namenskette:** Auch der Text `0` ergibt 0 (Abschnitt E von hmi-type-number.md, Variante „in der Kette
-   mitprüfen“). Das info-Icon ist bei `delete`, leer und `0` ausgeblendet.
+5. **Keine Namenskette:** Der Typ wird nur per `covx` gelesen (Tim, 2026-11-28: die Geräteseite ist noch nicht
+   veröffentlicht). Auch das info-Icon wird per `covx` geprüft und ist bei 0 ausgeblendet.
 6. **us-p cardDevice1:** P2 hat in der Analyse keine Stufen. Umgesetzt „wie EU sinngemäß“: Stufe 0 die vollen Zeilen
    wie bisher (Satz A, an der Stelle des Rasters), Stufe 1 und 2 Satz C rechts vom Haupt-Icon (Icon 166, Wert 204
    w 106, y 76/120 bzw. 80/124), Stufe 3 keine Info-Zeilen. Raster 8 × 2 bei x 10 + 37·c, y 188/228, h 41.
 7. **Popup-Überschrift aus Satz B/C:** der volle Name der Zeile (`tEntity1/2`), nicht der gekürzte.
 8. **Wert in Stufe B:** `tValue1/2` leitet in Stufe 1 an das Icon von Satz B weiter (`if(vStage.val==1) click
    bEntityB1` …), sonst an `bEntity1/2` (Abschnitt 6 ließ das offen).
-9. **RAM** (Schätzung des Werkzeugs, global 436): cardDevice1 EU/us-l 3073, us-p 2997, cardDevice3 3229,
-   cardDevice2 2456. Abschnitt 3 rechnete für EU ≈ 324 frei, die Prognose aus der device10-Messung ist ≈ 380.
+9. **RAM** (Schätzung des Werkzeugs, global 436): cardDevice1 EU/us-l 3045, us-p 2969, cardDevice3 3229,
+   cardDevice2 2456. Abschnitt 3 rechnete für EU ≈ 324 frei, die Prognose aus der device10-Messung ist ≈ 408.
 
 ## Entscheidungen Tim 2026-11-28
 
@@ -94,7 +94,7 @@ spricht, ist durch die feste Stufe ersetzt.
    - **Die Reihenfolge der Nachrichten spielt keine Rolle.** `entityUpd` zeichnet die Info-Zeilen bzw. Kacheln und kennt
      die Stufe genau in diesem Moment. Beim Öffnen kommt `entityUpd` zuerst, `devIcons` füllt danach nur die Zellen. Es
      gibt kein kurzes Aufblitzen der Stufe A.
-   - **Kompatibel:** Ein älterer Adapter lässt das Feld leer, `covx` ergibt 0, das ist Stufe A bzw. keine Icons.
+   - **Leer:** Ein leeres Feld ergibt per `covx` 0, das ist Stufe A bzw. keine Icons.
    - **Kosten:** 1 Byte je `entityUpd`, kein zusätzliches RAM. Die Stufe steht in `vStatus` (cardDevice1, gibt es schon)
      bzw. in der einen neuen Zahlvariable von cardDevice3.
    - **Die HMI rät nicht.** Sie zählt keine belegten Zellen. Die Spaltenzahl folgt aus der Stufe (B → 3, C → 5, D → 8
@@ -131,7 +131,7 @@ spricht, ist durch die feste Stufe ersetzt.
 
   Der heutige schmale Satz (`bEntityS*`, `tEntityS*`, `tValueS*`) entfällt.
 - **Nachricht:** Die Status-Icons kommen per eigener Kurz-Nachricht `devIcons~…` mit 16 Elementen. `entityUpd` verliert
-  die 4 Status-Slots. Ohne `devIcons` (älterer Adapter) bleibt Stufe A.
+  die 4 Status-Slots.
 
 ## 1. Geometrie EU und us-l
 
@@ -302,8 +302,7 @@ devIcons~<type1>~<id1>~<icon1>~<color1>~<type2>~<id2>~…~<type16>~<id16>~<icon1
 
 **Parser in tmSerial**, Zweig `if(tInstruction.txt=="devIcons")`, je Element k = 1…16:
 
-1. `spstr` Typ → `tTmp`, dann `covx tTmp.txt,typeK.val,0,0`. Nur neue Adapter schicken `devIcons`, deshalb ist hier keine
-   Namenskette nötig.
+1. `spstr` Typ → `tTmp`, dann `covx tTmp.txt,typeK.val,0,0`.
 2. `spstr` ID → `entnK`.
 3. `typeK.val==0`: dann `tStatK.txt=""` (die Zelle behält ihren Rahmen). Sonst `spstr` Icon → `tStatK.txt`, dazu das
    `¬`-Font-Suffix wie heute (`icon_lines`), dann `spstr` Farbe → `tTmp`, `covx` → `tStatK.pco`.
@@ -315,7 +314,7 @@ Spaltenrechnung. Die früher beschriebene Spaltenzahl über `sys0=k+1` und `sys0
 
 **`entityUpd`:**
 
-- Es liest die Stufe aus Feld 6 des Info-Elements (`spstr` → `tTmp`, `covx` → `vStatus`). Leer oder älterer Adapter
+- Es liest die Stufe aus Feld 6 des Info-Elements (`spstr` → `tTmp`, `covx` → `vStatus`). Leer
   ergibt 0.
 - Daraus folgen die Spalten des Rasters. Für Spalte c gilt: `vis` 1, wenn c ≤ 3 / 5 / 8 in Stufe 1 / 2 / 3, sonst
   `vis` 0. Erst alle aus, dann alle an, siehe Abschnitt 5.
@@ -416,8 +415,6 @@ Die heutigen Nummern 12/13 (S-Satz) entfallen.
     - Versionsgrenze für `devIcons` und die Typzahl neben `CARD_DEVICE_MIN_TFT`
   - `src/lib/pages/pageDevice.ts`: `update()` schickt `entityUpd` und `devIcons`, bei reiner Status-Änderung nur
     `devIcons`. Long-Press und Tippen der neuen Element-Nummern.
-  - Kompatibilität: Ein älterer Adapter schickt `entityUpd` mit 10 Slots an die neue TFT. Die neue TFT liest Info dann
-    aus dem Feld von Status-Slot 7.
   - Tests: `device-page*.test.ts`, `hmi-id-length.test.ts`.
 - **Admin**
   - `src-admin/src/devicePageConfig.ts` (+ Test), `components/DevicePageSection.tsx`:

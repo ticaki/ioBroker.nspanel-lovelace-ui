@@ -6,9 +6,9 @@
     "shiftX": 0,
     "pages": {
       "cardDevice1": {
-        "slotCount": 10,
+        "slotCount": 6,
         "statusWidth": 390,
-        "strCommand": 731,
+        "strCommand": 703,
         "header": {
           "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
           "heading": {"object": "tHeading", "x": 65, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
@@ -78,11 +78,7 @@
             "kind": "button",
             "icon": {"object": "bEntity6", "x": 334, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
             "name": {"object": "tEntity6", "x": 334, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
-          },
-          {"slot": 7, "kind": "reserved"},
-          {"slot": 8, "kind": "reserved"},
-          {"slot": 9, "kind": "reserved"},
-          {"slot": 10, "kind": "reserved"}
+          }
         ],
         "status": {"object": "tStatus", "x": 10, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
         "info": {"object": "bInfo", "x": 404, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 7},
@@ -316,9 +312,9 @@
     "shiftX": 15,
     "pages": {
       "cardDevice1": {
-        "slotCount": 10,
+        "slotCount": 6,
         "statusWidth": 390,
-        "strCommand": 731,
+        "strCommand": 703,
         "header": {
           "prev": {"object": "bPrev", "x": 24, "y": 16, "w": 49, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
           "heading": {"object": "tHeading", "x": 80, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
@@ -388,11 +384,7 @@
             "kind": "button",
             "icon": {"object": "bEntity6", "x": 349, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
             "name": {"object": "tEntity6", "x": 349, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
-          },
-          {"slot": 7, "kind": "reserved"},
-          {"slot": 8, "kind": "reserved"},
-          {"slot": 9, "kind": "reserved"},
-          {"slot": 10, "kind": "reserved"}
+          }
         ],
         "status": {"object": "tStatus", "x": 25, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
         "info": {"object": "bInfo", "x": 419, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 7},
@@ -626,9 +618,9 @@
     "shiftX": 0,
     "pages": {
       "cardDevice1": {
-        "slotCount": 10,
+        "slotCount": 6,
         "statusWidth": 262,
-        "strCommand": 731,
+        "strCommand": 703,
         "header": {
           "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
           "heading": {"object": "tHeading", "x": 60, "y": 24, "w": 200, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
@@ -688,11 +680,7 @@
             "kind": "button",
             "icon": {"object": "bEntity6", "x": 162, "y": 358, "w": 148, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
             "name": {"object": "tEntity6", "x": 162, "y": 412, "w": 148, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
-          },
-          {"slot": 7, "kind": "reserved"},
-          {"slot": 8, "kind": "reserved"},
-          {"slot": 9, "kind": "reserved"},
-          {"slot": 10, "kind": "reserved"}
+          }
         ],
         "status": {"object": "tStatus", "x": 10, "y": 447, "w": 262, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
         "info": {"object": "bInfo", "x": 274, "y": 446, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 7},

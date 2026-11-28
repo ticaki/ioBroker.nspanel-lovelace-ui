@@ -7,8 +7,9 @@ Grundlage sind die HMIs `/home/tim/device-page-hmi/nspanel-*v6.2.0.device12.HMI`
 ## Tims Entscheidungen (Vorgabe)
 
 1. Der Typ wird als Zahl mit festen Werten 0–9 übertragen.
-2. Der HMI-Eingang je Element ist `covx tTmp.txt,type<k>.val,0,0`. Ergibt das 0, gilt der alte Weg: eine Vergleichskette
-   übersetzt den Typnamen in die Zahl. `type<k>` wird eine Zahlvariable.
+2. Der HMI-Eingang je Element ist `covx tTmp.txt,type<k>.val,0,0`. `type<k>` wird eine Zahlvariable. (Eine
+   Vergleichskette für Typnamen war als Rückfall vorgesehen; sie entfällt, weil die Geräteseite noch nicht
+   veröffentlicht ist und Text-Payloads nicht mehr vorkommen – Tim, 2026-11-28.)
 3. Der Adapter baut die Zahl nur für cardDevice1–3 und erst ab der TFT-Version, die sie versteht. Die Versionsgrenze ist
    nötig, weil die Seite sonst nicht funktioniert.
 4. `entn` der Geräteseiten bekommt txt_maxl 7 (Puffer 8). Laut Korrektur gilt die ID-Grenze `999?999`, also höchstens
@@ -100,14 +101,8 @@ also auch während der Finger liegt. Wird der Typ eine Zahl, braucht tmLP einen 
 
 Der heutige `tTmp`-Weg hat dasselbe Überschreib-Risiko schon jetzt. Das ist ein Befund, kein Auftrag.
 
-**Wichtig für den Fallback (Entscheidung 2):** `covx` ergibt 0 sowohl für „kein Zahltext“ als auch für den Text `"0"`.
-Die Vergleichskette muss deshalb so aussehen:
-
-- `delete`/`""` → 0, `shutter` → 2, … , `number` → 9,
-- **sonst → 1**.
-
-Daraus folgt: Der Adapter darf für leere Elemente nie `"0"` schicken, sonst wird daraus 1. Das leere Element bleibt
-`~~~~~` (Typ `""`). Den Text `"0"` lässt man entweder in der Kette als 0 mitprüfen oder vermeidet ihn im Adapter.
+**covx und leere Elemente:** `covx` ergibt 0 für leeren Text, für `"0"` und für jeden Text ohne führende Ziffer (am
+Panel gemessen). Ein leeres Element (`~~~~~`) und die Zahl 0 sind damit gleichwertig: ausgeblendet.
 
 ## B. Element-IDs im Adapter
 
@@ -178,7 +173,7 @@ Rechenmodell:
 - `type<k>` String txt_maxl 10 = 8 + 12 = 20 Byte, als Zahlvariable 8 Byte. Ersparnis **12 Byte je Variable**.
 - `entn` 23 → 7: Puffer 24 → 8. Ersparnis **16 Byte je Variable**.
 
-Code kostet kein RAM, die Fallback-Kette ist also gratis. Ausgang sind die gemessenen Editor-Werte (Limit 3584).
+Code kostet kein RAM. Ausgang sind die gemessenen Editor-Werte (Limit 3584).
 
 | Modell | Seite | belegt heute | frei heute | type (Anzahl × 12) | entn (Anzahl × 16) | Ersparnis | frei danach |
 |---|---|---|---|---|---|---|---|
@@ -277,9 +272,7 @@ ASCII representation of an integer value“ und nichts zu leerem Text, `shutter`
    (txt_maxl 10) muss `input_sel` (9 Zeichen) fassen.
 5. entn txt_maxl 7: `999?999` (7 Zeichen) kommt ganz an. Bei 8 Zeichen wird abgeschnitten, was nur für den Test zählt.
 6. Ein langer Druck, während ein `entityUpd` eintrifft, öffnet weiter das richtige Long-Press-Popup (Typ-Träger für tmLP).
-7. Ein altes Text-Payload (Skript/älterer Adapter) gegen die neue TFT. Erwartet: Popups und Senden wie bisher, `"text"`
-   und andere Namen ergeben 1.
-8. Die RAM-Werte der drei Seiten in allen drei Modellen aus dem Editor gegen die Tabelle in C.
+7. Die RAM-Werte der drei Seiten in allen drei Modellen aus dem Editor gegen die Tabelle in C.
 
 ## F. Web-Panel
 
@@ -294,7 +287,7 @@ ASCII representation of an integer value“ und nichts zu leerem Text, `shutter`
   Die Darstellung hängt am Slot, nicht am Typ (`parse.ts`, `layout.ts`).
 - **Mit einer Typzahl** müsste das Web-Panel beim Parsen von cardDevice die Zahl auf die Namen zurückführen, die es
   braucht: 0 → `""`, 2–9 → die festen Namen, 1 → ein „sendet nur“-Typ. Text muss es weiter verstehen, denn
-  web-l/web-p bekommen wegen TFT `1.0.0` Text, ältere Adapter oder Skripte ebenfalls.
+  web-l/web-p bekommen wegen TFT `1.0.0` Text.
 - Web-Klone von EU/us-l/us-p melden die neueste verfügbare TFT und bekommen deshalb die Zahl.
 - Für 1 kann das Web-Panel switch, button und text nicht mehr unterscheiden. Auf der Geräteseite braucht es das nicht,
   weil die Darstellung am Slot hängt und der Adapter nie ein Element ohne ID schickt.
