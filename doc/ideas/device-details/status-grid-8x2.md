@@ -429,9 +429,9 @@ Die heutigen Nummern 12/13 (S-Satz) entfallen.
 
 ## 7. Folgearbeiten (nur Liste) – umgesetzt
 
-Alle Punkte sind umgesetzt bis auf: die eigene **Versionsgrenze** für `devIcons` und die Typzahl (entfällt, die
-Geräteseite ist unveröffentlicht; `CARD_DEVICE_MIN_TFT` wird zum Release angehoben) und `HMI/Readme.md` (enthält
-`devIcons` noch nicht). Ob leere Plätze aufrücken, ist entschieden: ja, lückenlos.
+Alle Punkte sind umgesetzt (`HMI/Readme.md`: Abschnitt „cardDevice1, cardDevice2, cardDevice3“) bis auf die eigene
+**Versionsgrenze** für `devIcons` und die Typzahl (entfällt, die Geräteseite ist unveröffentlicht;
+`CARD_DEVICE_MIN_TFT` wird zum Release angehoben). Ob leere Plätze aufrücken, ist entschieden: ja, lückenlos.
 
 - **Adapter**
   - `src/lib/types/deviceDetails.ts`:
@@ -641,7 +641,7 @@ Zellen bekommen **10–17**.
 5. RAM von cardDevice3 in allen drei Modellen gegen die Tabelle oben. Kommt `strCommand` mit 955 bei der längsten
    Nachricht ganz an? (**EU gemessen:** 3328, 256 frei, `strCommand` umgesetzt mit 959; us-l/us-p offen.)
 
-### Folgearbeiten (cardDevice3) – umgesetzt (ohne eigene Versionsgrenze, ohne `HMI/Readme.md`)
+### Folgearbeiten (cardDevice3) – umgesetzt (ohne eigene Versionsgrenze)
 
 - **Adapter**
   - `deviceDetails.ts` (Layout 3: 8 optionale Status-Plätze, `DEVICE_PAGE_RECEIVE_BYTES[3]` = 955)

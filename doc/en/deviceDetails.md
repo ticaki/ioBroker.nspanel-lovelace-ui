@@ -261,7 +261,7 @@ Layout 1 and layout 3 can show a row of small **status icons**, e.g. for Wi-Fi, 
 
    | Layout | Choice |
    |---|---|
-   | 1 – Control | **No status icons** · **1–3 columns (up to 6 icons)** · **4–5 columns (up to 10 icons), info rows without name** · **6–8 columns (up to 16 icons), without info rows** |
+   | 1 – Control | **No status icons** · **1–3 columns (up to 6 icons)** · **4–5 columns (up to 10 icons), info lines without name** · **6–8 columns (up to 16 icons), without info lines** |
    | 3 – Values | **No status icons** · **1–4 icons, instead of tile 1** · **5–8 icons, instead of tiles 1 and 2** |
 
    Layout 2 has no such choice.
@@ -272,11 +272,11 @@ What the stage covers is hidden by the dialog: in layout 1 with **6–8 columns*
 
 | Layout 1, **1–3 columns**: slots 1–6 and six places | Layout 1, **6–8 columns**: slots 1 and 2 hidden, sixteen places |
 |---|---|
-| <img alt="The dialog with layout 1 and the choice 1–3 columns (up to 6 icons): the preview shows the grid next to narrower info lines, below slots 1 to 6 there are six status icon places" src="../Pictures/device-page-stages/layout1-stage1.png" width="100%"/> | <img alt="The dialog with layout 1 and the choice 6–8 columns (up to 16 icons), without info rows: the preview shows the grid without info lines, the list starts with slot 3, below it sixteen status icon places" src="../Pictures/device-page-stages/layout1-stage3.png" width="100%"/> |
+| <img alt="The dialog with layout 1 and the choice 1–3 columns (up to 6 icons): the preview shows the grid next to narrower info lines, below slots 1 to 6 there are six status icon places" src="../Pictures/device-page-stages/layout1-stage1.png" width="100%"/> | <img alt="The dialog with layout 1 and the choice 6–8 columns (up to 16 icons), without info lines: the preview shows the grid without info lines, the list starts with slot 3, below it sixteen status icon places" src="../Pictures/device-page-stages/layout1-stage3.png" width="100%"/> |
 | **Layout 3, 1–4 icons, instead of tile 1**: slot 1 hidden, four places | |
 | <img alt="The dialog with layout 3 and the choice 1–4 icons, instead of tile 1: the preview shows four cells in the place of tile 1, the list starts with slot 2, below it four empty status icon places" src="../Pictures/device-page-stages/layout3-stage1.png" width="100%"/> | |
 
-The pictures were taken from a German admin. The entries marked in red in them ("nicht im Gerät gefunden" = not found in the device, "passt nicht zu diesem Slot" = does not fit this slot) come from the test configuration the pictures were taken with; they have nothing to do with the stage.
+The pictures were taken from a German admin.
 
 **Hiding is not deleting.** What the choice does not show – places above the chosen number and the covered slots – stays saved with what is assigned to it and its settings. If you later choose more room again, everything is back. On the panel none of it appears as long as it is hidden.
 

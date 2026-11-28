@@ -276,8 +276,6 @@ Was die Stufe verdeckt, blendet der Dialog aus: bei Layout 1 mit **6–8 Spalten
 | **Layout 3, 1–4 Icons, statt Kachel 1**: Slot 1 ausgeblendet, vier Plätze | |
 | <img alt="Der Dialog mit Layout 3 und der Auswahl 1–4 Icons, statt Kachel 1: die Vorschau zeigt vier Zellen an der Stelle von Kachel 1, die Liste beginnt mit Slot 2, darunter vier leere Plätze der Status-Icons" src="../Pictures/device-page-stages/layout3-stage1.png" width="100%"/> | |
 
-Die rot markierten Einträge in diesen Bildern („nicht im Gerät gefunden“, „passt nicht zu diesem Slot“) stammen aus der Testkonfiguration, mit der die Bilder aufgenommen sind; mit der Stufe haben sie nichts zu tun.
-
 **Ausblenden ist nicht löschen.** Was die Auswahl nicht zeigt – Plätze über der gewählten Anzahl und die verdeckten Slots –, bleibt mit seiner Belegung und seinen Einstellungen gespeichert. Wählst du später wieder mehr Platz, ist alles wieder da. Am Panel erscheint davon nichts, solange es ausgeblendet ist.
 
 | 6–8 Spalten, Platz 8 belegt | auf 1–3 Spalten verkleinert: Platz 8 ausgeblendet, Slots 1 und 2 wieder da | wieder 6–8 Spalten: Platz 8 unverändert belegt |

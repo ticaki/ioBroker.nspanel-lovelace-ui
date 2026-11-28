@@ -10,7 +10,7 @@ Prüftabelle der Geräteseite: [../device-page/README.md](../device-page/README.
 
 ## So geht's
 
-1. Öffne im Tab **PageConfig** das Item „Gerät mit Details“, wähle bei **Long-Press öffnet** die **Geräteseite** und
+1. Öffne im Tab **Seitenkonfiguration** (PageConfig) das Item „Gerät mit Details“, wähle bei **Long-Press öffnet** die **Geräteseite** und
    ein Layout.
 2. Unter **Status-Icons** wählst du, wie viel Platz die Icons bekommen (die **Stufe**):
 
@@ -54,8 +54,9 @@ Wechselst du das Layout, bleiben deine Auswahl und die Plätze gespeichert. Pass
 
 ## Bilder zum Prüfen
 
-Aufgenommen im Dev-Server-Admin, Seite `devicepage_test`, Gerät Robbi (Layout 1) bzw. ID.3 (Layout 3). Alle Änderungen
-nur im offenen Dialog, nicht gespeichert.
+Aufgenommen im Dev-Server-Admin (Puppeteer, 2026-11-28, neu mit bereinigten Testdaten), Seite `devicepage_test`, Gerät
+Robbi (Layout 1) bzw. ID.3 (Layout 3). Alle Änderungen nur im offenen Dialog, nicht gespeichert. Kein Bild zeigt rote
+Hinweise.
 
 | Bild | Szenario | Was Tim prüfen soll |
 |---|---|---|
@@ -70,7 +71,3 @@ nur im offenen Dialog, nicht gespeichert.
 | [layout3-stage0.png](layout3-stage0.png) | ID.3, „Keine Status-Icons“ | alle 8 Slots, keine Plätze; Vorschau mit allen Kacheln |
 | [layout3-stage1.png](layout3-stage1.png) | ID.3, „1–4 Icons“ | 4 Plätze; Slot 1 ausgeblendet; Vorschau: 4 Zellen statt Kachel 1 (x 114–262) |
 | [layout3-stage2.png](layout3-stage2.png) | ID.3, „5–8 Icons“ | 8 Plätze; Slots 1/2 ausgeblendet; Vorschau: 8 Zellen über Kachel 1 und 2 (x 114–411) |
-
-Hinweis zu den Testdaten: Die Status-Plätze 1–5 von Robbi sind mit `0_userdata.0.devicepage.icons.i1…i5` belegt, aber
-nicht als „Benutzerdefiniert“ gespeichert. Der Admin markiert sie deshalb rot als „nicht im Gerät gefunden“. Das kommt
-aus der Testkonfiguration, nicht aus der Stufen-Auswahl.

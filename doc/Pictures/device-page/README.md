@@ -87,7 +87,7 @@ Alle Panel-Bilder sind Web-Panel-Aufnahmen mit dem jeweiligen Modell (statisch g
 
 | Bild | Szenario | Was Tim prüfen soll |
 |---|---|---|
-| ![](admin-overview.png) | **veraltet:** Dialog mit Geräteseite, Layout 1 mit den früheren Status-Slots 7–10 (2×2) | wird in keiner Doku mehr verwendet (ersetzt durch `../device-page-stages/layout3-stage0.png`); neu aufnehmen oder löschen? |
+| ![](../device-page-stages/layout3-stage0.png) | Bereich der Geräteseite, Layout 3 „ID.3“, keine Status-Icons | Aufbau verständlich? Vorschau passt zu den Slot-Nummern? |
 | ![](admin-shortpress.png) | Kurzer Tipp „Geräteseite öffnen“ gewählt | Auswahl nur mit „Long-Press öffnet: Geräteseite“ möglich |
 | ![](admin-status-custom.png) | Statuszeile mit „Benutzerdefinierter Datenpunkt“ | Feld für die ID erscheint, nichts rot bei leerem Feld |
 | ![](admin-slot-custom.png) | Slots mit Datenpunkt, Kanal und einem unpassenden Datenpunkt | rote Markierung „passt nicht zu diesem Slot“; die Integration nimmt das Bild neu auf (Wahl „Kanal“ und „Navigation“) |

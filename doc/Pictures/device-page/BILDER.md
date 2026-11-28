@@ -14,8 +14,8 @@ mit den Bildern aus `../device-page-stages/`.
 |---|---|---|---|
 | automatisch (Puppeteer, Web-Panel) | Geräteseiten je Modell und die Detailseite | 23 (eu 5, us-l 3, us-p 3, web-l 6, web-p 6) | **aufgenommen und angesehen** |
 | automatisch (Puppeteer, Web-Panel) | Stufen der Status-Icons (cardDevice1 4, cardDevice3 3 je Modell) | 21 (eu 7, us-p 7, web-l 7) | **aufgenommen und angesehen** (2026-11-28) |
-| automatisch (Puppeteer, Admin) | Dialoge | 9 (2 vorhanden, 3 neu aufgenommen, 4 neu); `admin-overview.png` ist veraltet und nicht mehr verwendet | **aufgenommen und angesehen** |
-| automatisch (Puppeteer, Admin) | Stufen der Status-Icons im Dialog (`../device-page-stages/`) | 11 | **aufgenommen und angesehen** (2026-11-28), Prüftabelle in [../device-page-stages/README.md](../device-page-stages/README.md) |
+| automatisch (Puppeteer, Admin) | Dialoge | 8 (`admin-overview.png` mit dem früheren 2×2-Raster ist gelöscht, ersetzt durch `../device-page-stages/layout3-stage0.png`) | **aufgenommen und angesehen** |
+| automatisch (Puppeteer, Admin) | Stufen der Status-Icons im Dialog (`../device-page-stages/`) | 11 | **aufgenommen und angesehen** (2026-11-28, mit bereinigten Testdaten neu aufgenommen, ohne rote Hinweise), Prüftabelle in [../device-page-stages/README.md](../device-page-stages/README.md) |
 | **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) | – |
 
 Das Web-Panel zeichnet jedes Modell: die Hardware-Modelle eu, us-l und us-p wie die HMI, dazu web-l und web-p.
@@ -196,7 +196,6 @@ ein. `admin-filterlist.png` zeigt ein nachgebautes Shelly 2.5 („Wohnzimmer-Rol
 | `admin-device-item.png` | Pageitem-Konfiguration, Art **Gerät mit Details**, Gerät `0_userdata.0.devicepage.robot` („Robbi – … Einträge angehakt“), Kurzer Tipp, Knopf Filterliste, **Long-Press öffnet: Detailseite** (kein Geräteseiten-Bereich) | Doku Schnellstart 1 | ☑ |
 | `admin-filterlist.png` | Dialog **Filterliste** eines Geräts mit Maske und gleichnamigen Zeilen (z. B. Shelly mit mehreren Temperaturen): angehakte oben, Spalten Eintrag/State, Feld **2. Zeile** sichtbar | Doku §3 | ☑ |
 | `admin-shortpress.png` | **vorhanden, bleibt:** Kurzer Tipp mit „Geräteseite öffnen“, Filterliste-Knopf, Long-Press öffnet: Geräteseite | Doku §2; README | ☑ |
-| `admin-overview.png` | **veraltet, nicht mehr verwendet:** ganzer Dialog mit Geräteseite Layout 1 und den früheren Status-Slots 7–10 (2×2-Raster, Hinweis „… werden die beiden Info-Zeilen schmaler“). Doku und README zeigen stattdessen `../device-page-stages/layout3-stage0.png`. Neu aufnehmen (ganzer Dialog mit der Auswahl „Status-Icons“) oder löschen | – | ☐ |
 | `admin-status-custom.png` | **vorhanden, bleibt:** Statuszeile „Benutzerdefinierter Datenpunkt“ mit ID-Feld | Doku §5 Statuszeile; README | ☑ |
 | `admin-slot-custom.png` | **vorhanden, neu aufnehmen** (die Wahl heißt jetzt „Kanal“, dazu „Navigation“): Slots mit Benutzerdefiniert → Datenpunkt, → Kanal, → **Navigation** mit Zielseite und ein Datenpunkt mit „passt nicht zu diesem Slot“ | Doku §5 Benutzerdefiniert; README | ☑ |
 | `admin-slot-dialog.png` | **vorhanden, neu aufnehmen** (zeigt noch den früheren kleinen Dialog): „…“ eines **Knopf**-Slots = Pageitem-Konfiguration ohne Kanalauswahl, Titel mit „4 Knopf“, Name, Icon `pause`/`play` und Farben für wahr/unwahr, Langer Druck | Doku §5 Einstellungen des Elements; README | ☑ |
