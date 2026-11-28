@@ -2669,6 +2669,11 @@ Pages for one device (robot vacuum, washing machine, car …), part of the HMI f
 build `device13`). cardDevice1 "control", cardDevice2 "progress", cardDevice3 "values". Details and geometry:
 [doc/ideas/device-details/device-page-hmi.md](../doc/ideas/device-details/device-page-hmi.md).
 
+The 6.3.0 files are built from the 6.2.0 projects (eu: `nspanel-v6.2.0.entities5.HMI`) with the tools in `HMI/tools` (order and commands in the build
+sections of that document): `swipe_release_fix.py`, `grid_cell_id_fix.py` (us-p cardGrid3), `grid_long_press_feedback.py`,
+`entities_left_tap.py` (us-l/us-p), `schedule_shutter2_fix.py` (us-p cardSchedule: a tap on a `shutter2` row opens
+popupShutter2 like on eu and us-l), `popup_notify3_font.py`, `card_device.py` (device pages, `tRelease` 6.3.0).
+
 `entityUpd~heading~navigation~main~[slot]*~info`
 
 `devIcons~[type~internalName~icon~iconColor]*` (cardDevice1: 16 cells, cardDevice3: 8 cells)

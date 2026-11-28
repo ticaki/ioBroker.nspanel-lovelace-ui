@@ -6,7 +6,9 @@ aktuellen Stands `device14` je Stufe unter `doc/Pictures/device-page/next/`; die
 `doc/Pictures/device-page/hmi-cardDevice{1,2,3}.png` (cardDevice1 mit 2×2-Status-Block, ohne:
 `hmi-cardDevice1-plain.png`) zeigen `device12`.
 
-> **Aktueller Stand ist `device14`** = `device13` mit Satz B/C 6 px weiter rechts (Abschnitt
+> **Aktueller Stand ist `device15`** = `device14` mit `tRelease` 6.3.0 und dem shutter2-Zweig auf us-p cardSchedule
+> (Abschnitt [„device15“](#device15-komplette-kette-trelease-630-us-p-cardschedule-shutter2)); die Geräteseiten sind
+> dieselben wie in `device14` = `device13` mit Satz B/C 6 px weiter rechts (Abschnitt
 > [„device14“](#device14-satz-bc-6-px-nach-rechts)); sonst gilt der Abschnitt
 > [„device13“](#device13-typzahl-status-raster-devicons). Die Abschnitte ab
 > [„Protokoll“](#protokoll) beschreiben `device12`; wo sie dem Abschnitt „device13“ widersprechen, sind sie
@@ -24,8 +26,14 @@ Verhalten gelten für alle Modelle. Was bei us-l und us-p anders ist (Bauweg, Ge
 ```
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py /mnt/projekte/nspanel-v6.2.0.entities5.HMI /tmp/swipe.HMI
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py /tmp/swipe.HMI /tmp/feedback.HMI [<ref.tft>]
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/feedback.HMI nspanel-v6.2.0.device10.HMI --preview doc/Pictures/device-page --geometry doc/ideas/device-details/device-page-geometry.json
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/schedule_shutter2_fix.py /tmp/feedback.HMI /tmp/schedule.HMI
+PUPPETEER_PATH=$(npm root -g)/ PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/popup_notify3_font.py /tmp/schedule.HMI /tmp/font.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/font.HMI nspanel-v6.2.0.device15.HMI --preview doc/Pictures/device-page/next --geometry doc/ideas/device-details/device-page-geometry.json
 ```
+
+(Bis `device14` ohne `schedule_shutter2_fix.py` – auf EU ohne Wirkung, „nothing to do“ – und ohne
+`popup_notify3_font.py`; die Schrift 9 mit 87 Icons kam ab `device11/12` über die Vorgängerdatei mit, siehe
+[„device15“](#device15-komplette-kette-trelease-630-us-p-cardschedule-shutter2).)
 
 `card_device.py` erkennt das Modell am Projekt (`pageStartup` sendet `event,startup,<Version>,<Modell>,…`) und nimmt
 das passende Layout; der Aufruf ist für alle Modelle gleich. us-l und us-p: siehe [„us-l und us-p“](#us-l-und-us-p).
@@ -70,6 +78,29 @@ cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
   (36 Seiten; pageTest hat keinen Umschalter, wie bisher).
 - Idempotent: Läuft das Werkzeug auf seiner eigenen Ausgabe, baut es die drei Seiten in ihren Abschnitten neu und
   ändert sonst nichts (geprüft).
+
+## device15: komplette Kette, tRelease 6.3.0, us-p cardSchedule shutter2
+
+Stand 2026-11-28. Neu gebaut aus den Ausgangsdateien mit der kompletten Kette (EU siehe [„Bauen“](#bauen), us-l/us-p
+siehe [„us-l und us-p“ → „Bauen“](#bauen-1)) statt aus der Vorgängerdatei. Zwei Änderungen gegenüber `device14`:
+
+- `pageStartup.tRelease` 6.2.0 → **6.3.0** (`card_device.py`, alle drei Modelle).
+- **us-p cardSchedule:** Die Zeilen-Flächen `m0…m5` (`down`) hatten keinen Zweig für `type<r>=="shutter2"` – ein
+  Tipp auf eine shutter2-Zeile tat nichts, EU und us-l öffnen dort `popupShutter2`. Neues Werkzeug
+  `HMI/tools/schedule_shutter2_fix.py` setzt hinter den shutter-Zweig jeder Zeile dessen Kopie mit `"shutter2"` und
+  `page popupShutter2` (Zeile für Zeile wie EU/us-l, Übergabe über die schon vorhandenen `pageIcons.tTmp1–3`). Alle
+  anderen Zweige und die `up`-Ereignisse von `m0…m5` sind auf den drei Modellen gleich (Vergleich mit umbenanntem
+  Zeilenindex); andere Seiten haben die Lücke nicht. Auf EU und us-l meldet das Werkzeug „nothing to do“. Code
+  kostet keinen Seiten-RAM, keine neuen Objekte.
+
+In die Kette kommt außerdem `popup_notify3_font.py` (Schrift 9 von popupNotify3 mit 87 Icons): Die Projekte in
+`HMI/` haben noch die alte Schrift (56 Zeichen), `device11`–`device14` hatten die neue aus ihrer Vorgängerdatei. Die
+gerenderte Schrift ist mit der von `device14` byteweise gleich (alle drei Modelle).
+
+Skript-Vergleich aller lebenden Abschnitte `device14` → `device15`: EU und us-l nur `pageStartup.tRelease`; us-p
+dazu `cardSchedule` (`m0…m5` `down`, je 58 → 63 Zeilen). `device-page-geometry.json` ist unverändert. Ein zweiter
+Lauf von `schedule_shutter2_fix.py` auf `device15` meldet „nothing to do“. Dateien in `/home/tim/device-page-hmi/`
+und `/mnt/projekte/nextion-vm/`; noch nicht kompiliert.
 
 ## device14: Satz B/C 6 px nach rechts
 
@@ -868,10 +899,15 @@ PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/swipe_release_fix.py HMI/$M/nspanel-
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_cell_id_fix.py /tmp/$M-1.HMI /tmp/$M-2.HMI
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py /tmp/$M-2.HMI /tmp/$M-3.HMI
 PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/entities_left_tap.py /tmp/$M-3.HMI /tmp/$M-4.HMI
-PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/$M-4.HMI nspanel-$M-v6.2.0.device10.HMI --preview doc/Pictures/device-page --geometry doc/ideas/device-details/device-page-geometry.json
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/schedule_shutter2_fix.py /tmp/$M-4.HMI /tmp/$M-5.HMI
+PUPPETEER_PATH=$(npm root -g)/ PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/popup_notify3_font.py /tmp/$M-5.HMI /tmp/$M-6.HMI
+PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/$M-6.HMI nspanel-$M-v6.2.0.device15.HMI --preview doc/Pictures/device-page/next --geometry doc/ideas/device-details/device-page-geometry.json
 ```
 
-- Fünf Schritte statt drei. `grid_cell_id_fix.py` behebt die falsche ID von us-p cardGrid3 Zelle 4; auf us-l (und
+- `schedule_shutter2_fix.py` ergänzt auf us-p den shutter2-Zweig von cardSchedule, auf us-l (und EU) „nothing to
+  do“; `popup_notify3_font.py` bringt die Schrift 9 mit 87 Icons (seit `device15` in der Kette, siehe
+  [„device15“](#device15-komplette-kette-trelease-630-us-p-cardschedule-shutter2)).
+- Fünf Schritte statt drei (ohne die beiden seit `device15`). `grid_cell_id_fix.py` behebt die falsche ID von us-p cardGrid3 Zelle 4; auf us-l (und
   EU) meldet es „nothing to do“ und ändert nichts – der Schritt steht in beiden Ketten, damit sie gleich sind. Es
   ignoriert die Blöcke des Long-Press-Blinkens, läuft also vor oder nach `grid_long_press_feedback.py`.
 - Die EU-Basis `entities5` hat den Links-Tipp schon, bei us-l/us-p bringt ihn `entities_left_tap.py` (auf EU 6.2.0
