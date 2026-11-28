@@ -209,9 +209,9 @@ const DEVICE_PAGE_FIELDS = {
     mainName: 110,
     status: 390,
     slots: { info: { name: 164, value: 110 }, button: { name: 104 } },
-    // the status grid right of the big icon: stage 1 set B (icon, name 49 px, the value of set A), stage 2 set C
-    // (icon and value 87 px, no name), stage 3 no info rows
-    slotsByStage: { 1: { info: { name: 49, value: 110 } }, 2: { info: { name: 0, value: 87 } } }
+    // the status grid right of the big icon: stage 1 set B (icon, name 43 px, the value of set A), stage 2 set C
+    // (icon and value 81 px, no name), stage 3 no info rows
+    slotsByStage: { 1: { info: { name: 43, value: 110 } }, 2: { info: { name: 0, value: 81 } } }
   },
   2: {
     mainName: 96,
@@ -259,7 +259,7 @@ const DEVICE_PAGE_FIELDS_WEB_L = {
     mainName: 110,
     status: 580,
     slots: { info: { name: 354, value: 110 }, button: { name: 100 } },
-    slotsByStage: { 1: { info: { name: 239, value: 110 } }, 2: { info: { name: 0, value: 277 } } }
+    slotsByStage: { 1: { info: { name: 233, value: 110 } }, 2: { info: { name: 0, value: 271 } } }
   },
   2: {
     mainName: 96,
