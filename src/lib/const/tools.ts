@@ -681,6 +681,29 @@ export async function getEntryTextOnOff(
     return (await i.getString()) ?? null;
 }
 
+/** the data items of the name of an input_sel / fan item */
+type HeadlineDataItems = { headline?: Dataitem; headlinePrefix?: Dataitem; headlineSuffix?: Dataitem };
+
+/**
+ * Name of an input_sel / fan item for the row and the popup headline: prefix + translated name + suffix.
+ * Prefix and suffix are always appended, the name part falls back to `fallback` only without a headline.
+ *
+ * @param item data items with headline and optional prefix / suffix of the name
+ * @param fallback name without a headline
+ * @param translate translation of the name part
+ * @returns the composed name
+ */
+export async function getHeadlineText(
+    item: HeadlineDataItems,
+    fallback: string,
+    translate: (text: string) => string,
+): Promise<string> {
+    const name = (item.headline && (await item.headline.getString())) ?? fallback;
+    const prefix = (item.headlinePrefix && (await item.headlinePrefix.getString())) ?? '';
+    const suffix = (item.headlineSuffix && (await item.headlineSuffix.getString())) ?? '';
+    return `${prefix}${translate(name)}${suffix}`;
+}
+
 export async function getEnabled(items: Dataitem | undefined | (Dataitem | undefined)[]): Promise<boolean | null> {
     if (!items) {
         return null;

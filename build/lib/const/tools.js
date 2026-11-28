@@ -45,6 +45,7 @@ __export(tools_exports, {
   getEnabledNumber: () => getEnabledNumber,
   getEntryColor: () => getEntryColor,
   getEntryTextOnOff: () => getEntryTextOnOff,
+  getHeadlineText: () => getHeadlineText,
   getIconEntryColor: () => getIconEntryColor,
   getIconEntryValue: () => getIconEntryValue,
   getInternalDefaults: () => getInternalDefaults,
@@ -582,6 +583,13 @@ async function getEntryTextOnOff(i, on, useCommon = false) {
     return v == null ? null : value;
   }
   return (_o = await i.getString()) != null ? _o : null;
+}
+async function getHeadlineText(item, fallback, translate) {
+  var _a, _b, _c;
+  const name = (_a = item.headline && await item.headline.getString()) != null ? _a : fallback;
+  const prefix = (_b = item.headlinePrefix && await item.headlinePrefix.getString()) != null ? _b : "";
+  const suffix = (_c = item.headlineSuffix && await item.headlineSuffix.getString()) != null ? _c : "";
+  return `${prefix}${translate(name)}${suffix}`;
 }
 async function getEnabled(items) {
   if (!items) {
@@ -1258,6 +1266,7 @@ function shortenHeadline(text, model) {
   getEnabledNumber,
   getEntryColor,
   getEntryTextOnOff,
+  getHeadlineText,
   getIconEntryColor,
   getIconEntryValue,
   getInternalDefaults,

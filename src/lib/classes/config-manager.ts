@@ -62,6 +62,13 @@ export class NoPanelsConfiguredError extends Error {
     }
 }
 
+/** the fields of a script item that make up its name: name, prefix and suffix of the name */
+type ItemNameFields = {
+    name?: string | null;
+    prefixName?: string;
+    suffixName?: string;
+};
+
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
     //colorOn: RGB = Color.On;
@@ -1464,13 +1471,7 @@ export class ConfigManager extends BaseClass {
                                   constVal: 'press',
                               },
                     },
-                    text: {
-                        true: item.name
-                            ? await this.getFieldAsDataItemConfig(item.name, true)
-                            : commonName
-                              ? { type: 'const', constVal: commonName }
-                              : { type: 'const', constVal: 'Info' },
-                    },
+                    text: await this.getItemNameTextEntry(item, commonName || 'Info'),
                 },
             };
         }
@@ -1500,25 +1501,11 @@ export class ConfigManager extends BaseClass {
             true: await getButtonsTextTrue(item, 'press'),
             false: await getButtonsTextFalse(item, 'press'),
         };
+        const naviName = await this.getItemNameDataItem(item, commonName || 'Info');
+        const naviNameAffixes = await this.getItemNameAffixes(item);
         const text = {
-            true: {
-                value: item.name
-                    ? await this.getFieldAsDataItemConfig(item.name, true)
-                    : commonName
-                      ? ({ type: 'const', constVal: commonName } as NSPanel.DataItemsOptions)
-                      : ({ type: 'const', constVal: 'Info' } as NSPanel.DataItemsOptions),
-                prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
-                suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
-            },
-            false: {
-                value: item.name
-                    ? await this.getFieldAsDataItemConfig(item.name, true)
-                    : commonName
-                      ? ({ type: 'const', constVal: commonName } as NSPanel.DataItemsOptions)
-                      : ({ type: 'const', constVal: 'Info' } as NSPanel.DataItemsOptions),
-                prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
-                suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
-            },
+            true: { value: naviName, ...naviNameAffixes },
+            false: { value: naviName, ...naviNameAffixes },
             textSize: item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
         };
 
@@ -2608,7 +2595,8 @@ export class ConfigManager extends BaseClass {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                headline: await this.getFieldAsDataItemConfig(item.name || 'Timer', true),
+                headline: await this.getItemNameDataItem(item, 'Timer'),
+                ...(await this.getItemNameHeadlineAffixes(item)),
             },
         };
     }
@@ -2720,13 +2708,7 @@ export class ConfigManager extends BaseClass {
                                                   constVal: 'press',
                                               },
                                     },
-                                    text: {
-                                        true: item.name
-                                            ? await this.getFieldAsDataItemConfig(item.name, true)
-                                            : commonName
-                                              ? { type: 'const', constVal: commonName }
-                                              : { type: 'const', constVal: 'Info' },
-                                    },
+                                    text: await this.getItemNameTextEntry(item, commonName || 'Info'),
                                 },
                             },
                         };
@@ -2770,13 +2752,7 @@ export class ConfigManager extends BaseClass {
                                               constVal: 'press',
                                           },
                                 },
-                                text: {
-                                    true: item.name
-                                        ? await this.getFieldAsDataItemConfig(item.name, true)
-                                        : commonName
-                                          ? { type: 'const', constVal: commonName }
-                                          : { type: 'const', constVal: 'Info' },
-                                },
+                                text: await this.getItemNameTextEntry(item, commonName || 'Info'),
                             },
                         },
                     };
@@ -2816,42 +2792,52 @@ export class ConfigManager extends BaseClass {
                     `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`,
                 );
 
+                /**
+                 * @param item the script item
+                 * @param def1 name without name field and channel name
+                 * @param withNameAffixes the text gets prefix and suffix of the name: then the name part stays
+                 * empty instead of the channel name while only prefix or suffix is set
+                 */
                 const getButtonsTextTrue = async (
                     item: ScriptConfig.PageBaseItem,
                     def1: string,
+                    withNameAffixes: boolean = false,
                 ): Promise<NSPanel.DataItemsOptions> => {
                     return item.buttonText
                         ? await this.getFieldAsDataItemConfig(item.buttonText, true)
                         : item.id && (await this.existsState(`${item.id}.BUTTONTEXT`))
                           ? { type: 'triggered', dp: `${item.id}.BUTTONTEXT` }
-                          : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
+                          : withNameAffixes && !item.name && (item.prefixName || item.suffixName)
+                            ? { type: 'const', constVal: '' }
+                            : await this.getFieldAsDataItemConfig(item.name || commonName || def1, true);
                 };
 
                 const getButtonsTextFalse = async (
                     item: ScriptConfig.PageBaseItem,
                     def1: string,
+                    withNameAffixes: boolean = false,
                 ): Promise<NSPanel.DataItemsOptions> => {
                     return item.buttonTextOff
                         ? await this.getFieldAsDataItemConfig(item.buttonTextOff, true)
                         : item.id && (await this.existsState(`${item.id}.BUTTONTEXTOFF`))
                           ? { type: 'triggered', dp: `${item.id}.BUTTONTEXTOFF` }
-                          : await getButtonsTextTrue(item, def1);
+                          : await getButtonsTextTrue(item, def1, withNameAffixes);
                 };
+                const nameAffixes = await this.getItemNameAffixes(item);
                 const text = {
                     true: {
-                        value: await getButtonsTextTrue(item, role || ''),
-                        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
-                        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+                        value: await getButtonsTextTrue(item, role || '', true),
+                        ...nameAffixes,
                     },
                     false: {
-                        value: await getButtonsTextFalse(item, role || ''),
-                        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
-                        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+                        value: await getButtonsTextFalse(item, role || '', true),
+                        ...nameAffixes,
                     },
                     textSize:
                         item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
                 };
-                const headline = await getButtonsTextTrue(item, role || '');
+                // name of the row and the popup headline: prefix and suffix of the name always around it
+                const headline = await getButtonsTextTrue(item, role || '', true);
 
                 item.icon2 = item.icon2 || item.icon;
 
@@ -2971,6 +2957,8 @@ export class ConfigManager extends BaseClass {
                                 },
                                 colorMode: { type: 'const', constVal: false },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                                 entity1: {
                                     value: foundedStates[role].ON_ACTUAL,
                                     set: foundedStates[role].SET,
@@ -3030,6 +3018,8 @@ export class ConfigManager extends BaseClass {
                                         : undefined,
                                 },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                                 text1: {
                                     true: {
                                         type: 'const',
@@ -3122,6 +3112,8 @@ export class ConfigManager extends BaseClass {
                                         : undefined,
                                 },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                                 hue: role !== 'hue' ? undefined : foundedStates[role].HUE,
                                 Red: role !== 'rgb' ? undefined : foundedStates[role].RED,
                                 Green: role !== 'rgb' ? undefined : foundedStates[role].GREEN,
@@ -3292,6 +3284,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
+                                    headlinePrefix: nameAffixes.prefix,
+                                    headlineSuffix: nameAffixes.suffix,
 
                                     entity1: {
                                         value: foundedStates[role].ACTUAL,
@@ -3383,6 +3377,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
+                                    headlinePrefix: nameAffixes.prefix,
+                                    headlineSuffix: nameAffixes.suffix,
 
                                     entity1: {
                                         value: foundedStates[role].ACTUAL,
@@ -3532,6 +3528,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                     text: text,
                                     headline: headline,
+                                    headlinePrefix: nameAffixes.prefix,
+                                    headlineSuffix: nameAffixes.suffix,
 
                                     entity1: {
                                         value: foundedStates[role].ACTUAL,
@@ -3966,7 +3964,9 @@ export class ConfigManager extends BaseClass {
                                         },
                                     },
                                 },
-                                headline: { type: 'const', constVal: item.name || commonName || role },
+                                headline: await this.getItemNameDataItem(item, commonName || role),
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                             },
                         };
                         break;
@@ -4009,6 +4009,8 @@ export class ConfigManager extends BaseClass {
                                     false: { type: 'const', constVal: 'lockClosed' },
                                 },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
 
                                 entity1: {
                                     value: foundedStates[role].ACTUAL,
@@ -4208,7 +4210,7 @@ export class ConfigManager extends BaseClass {
                                         : undefined,
 
                                 text: {
-                                    true: { type: 'const', constVal: item.name || 'slider' },
+                                    ...(await this.getItemNameTextEntry(item, 'slider')),
                                     false: undefined,
                                 },
                             },
@@ -4338,7 +4340,9 @@ export class ConfigManager extends BaseClass {
                                     foundedStates[role].SET,
                                     isAlarm,
                                 ),
-                                headline: await getButtonsTextTrue(item, 'Timer'),
+                                headline: await getButtonsTextTrue(item, 'Timer', true),
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
 
                                 setValue1: foundedStates[role].STATE,
                                 setValue2: foundedStates[role].STATUS,
@@ -4392,7 +4396,9 @@ export class ConfigManager extends BaseClass {
                                     value: foundedStates[role].SPEED,
                                     maxScale: { type: 'const', constVal: item.maxValueLevel || 100 },
                                 },
-                                headline: { type: 'const', constVal: item.name || commonName || role },
+                                headline: await this.getItemNameDataItem(item, commonName || role),
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                                 text: { true: { type: 'const', constVal: 'Speed' }, false: undefined },
 
                                 //entityInSel: { value: { type: 'const', constVal: '2' } },
@@ -4497,7 +4503,7 @@ export class ConfigManager extends BaseClass {
                                 },
                                 text: text,
                                 text1: {
-                                    true: headline,
+                                    true: await getButtonsTextTrue(item, role || ''),
                                 },
                                 entity1: {
                                     value: foundedStates[role].STATE,
@@ -6090,6 +6096,79 @@ export class ConfigManager extends BaseClass {
             }
         }
         return { type: 'const', constVal: possibleId };
+    }
+
+    /**
+     * The name part of an item text: `name` (text or state id - a state is read and triggers), without a name
+     * `fallback` (channel name, role, ...). While prefix or suffix of the name is set the name part stays empty
+     * instead of the fallback - the text is then built from prefix and suffix only.
+     *
+     * @param item the script item
+     * @param fallback name used without `name`, prefix and suffix
+     */
+    async getItemNameDataItem(item: ItemNameFields, fallback: string): Promise<NSPanel.DataItemsOptions> {
+        if (item.name) {
+            return await this.getFieldAsDataItemConfig(item.name, true);
+        }
+        if (item.prefixName || item.suffixName) {
+            return { type: 'const', constVal: '' };
+        }
+        return { type: 'const', constVal: fallback };
+    }
+
+    /**
+     * Prefix and suffix of the item name (text or state id each), always appended to the name.
+     *
+     * @param item the script item
+     */
+    async getItemNameAffixes(item: ItemNameFields): Promise<{
+        prefix: NSPanel.DataItemsOptions | undefined;
+        suffix: NSPanel.DataItemsOptions | undefined;
+    }> {
+        return {
+            prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : undefined,
+            suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : undefined,
+        };
+    }
+
+    /**
+     * The `text` of an item from its name: without prefix and suffix only the name part, else the name part with
+     * prefix and suffix of the name.
+     *
+     * @param item the script item
+     * @param fallback name used without `name`, prefix and suffix
+     */
+    async getItemNameTextEntry(
+        item: ItemNameFields,
+        fallback: string,
+    ): Promise<
+        | { true: NSPanel.DataItemsOptions }
+        | {
+              true: {
+                  value: NSPanel.DataItemsOptions;
+                  prefix: NSPanel.DataItemsOptions | undefined;
+                  suffix: NSPanel.DataItemsOptions | undefined;
+              };
+          }
+    > {
+        const value = await this.getItemNameDataItem(item, fallback);
+        if (!item.prefixName && !item.suffixName) {
+            return { true: value };
+        }
+        return { true: { value, ...(await this.getItemNameAffixes(item)) } };
+    }
+
+    /**
+     * Prefix and suffix of the item name as `headlinePrefix` / `headlineSuffix` of the page item.
+     *
+     * @param item the script item
+     */
+    async getItemNameHeadlineAffixes(item: ItemNameFields): Promise<{
+        headlinePrefix: NSPanel.DataItemsOptions | undefined;
+        headlineSuffix: NSPanel.DataItemsOptions | undefined;
+    }> {
+        const { prefix, suffix } = await this.getItemNameAffixes(item);
+        return { headlinePrefix: prefix, headlineSuffix: suffix };
     }
 
     async getIconColor(

@@ -85,8 +85,10 @@ function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
     }
     if (item.type !== "custom") {
       item.fontSize = preItem.textSize || preItem.textSize == 0 ? Number(preItem.textSize) : void 0;
-      if (!item.name && preItem.valueEntry) {
-        item.name = preItem.valueEntry.valueStateId;
+      if (preItem.valueEntry) {
+        if (!item.name) {
+          item.name = preItem.valueEntry.valueStateId || void 0;
+        }
         item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : void 0;
         item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : void 0;
       }
