@@ -319,6 +319,26 @@ Wie viele Status-Icons die Seite zeigen kann, legt die **Stufe** fest – die Au
 </tr>
 </table>
 
+<details>
+<summary>US-Hochformat (Aufnahmen der echten Display-Software)</summary>
+
+<table>
+<tr>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat ohne Status-Icons: zwei Info-Zeilen mit Icon, Name und Wert in voller Breite unter dem großen Icon" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-00.png" width="100%"/><br/>0 Icons · keine Status-Icons</td>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit zwei Status-Icons in einer Spalte unter dem großen Icon, die Info-Zeilen rechts neben dem großen Icon nur mit Icon und Wert" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-02.png" width="100%"/><br/>2 Icons · Stufe 1–3 Spalten</td>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit vier Status-Icons in zwei Spalten unter dem großen Icon, die Info-Zeilen rechts neben dem großen Icon nur mit Icon und Wert" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-04.png" width="100%"/><br/>4 Icons · Stufe 1–3 Spalten</td>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit sechs Status-Icons in drei Spalten unter dem großen Icon, die Info-Zeilen rechts neben dem großen Icon nur mit Icon und Wert" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-06.png" width="100%"/><br/>6 Icons · Stufe 1–3 Spalten</td>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit acht Status-Icons in vier Spalten unter dem großen Icon, die Info-Zeilen rechts neben dem großen Icon nur mit Icon und Wert" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-08.png" width="100%"/><br/>8 Icons · Stufe 4–5 Spalten</td>
+</tr>
+<tr>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit zehn Status-Icons in fünf Spalten unter dem großen Icon, die Info-Zeilen rechts neben dem großen Icon nur mit Icon und Wert" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-10.png" width="100%"/><br/>10 Icons · Stufe 4–5 Spalten</td>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit zwölf Status-Icons in sechs Spalten unter dem großen Icon, ohne Info-Zeilen" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-12.png" width="100%"/><br/>12 Icons · Stufe 6–8 Spalten</td>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit vierzehn Status-Icons in sieben Spalten unter dem großen Icon, ohne Info-Zeilen" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-14.png" width="100%"/><br/>14 Icons · Stufe 6–8 Spalten</td>
+<td align="center" width="20%"><img alt="Layout 1 im US-Hochformat mit sechzehn Status-Icons in acht Spalten unter dem großen Icon, ohne Info-Zeilen" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-16.png" width="100%"/><br/>16 Icons · Stufe 6–8 Spalten</td>
+</tr>
+</table>
+</details>
+
 **Layout 3 – Werte:** Das Raster hat eine Zeile und steht in der ersten Reihe der Info-Kacheln.
 
 | Stufe | Status-Icons | Was wegfällt |
@@ -347,6 +367,26 @@ Wie viele Status-Icons die Seite zeigen kann, legt die **Stufe** fest – die Au
 </tr>
 </table>
 
+<details>
+<summary>US-Hochformat (Aufnahmen der echten Display-Software)</summary>
+
+<table>
+<tr>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat ohne Status-Icons: sechs Info-Kacheln" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-0.png" width="100%"/><br/>0 Icons · keine Status-Icons</td>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit einem Status-Icon an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-1.png" width="100%"/><br/>1 Icon · Stufe 1–4</td>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit zwei Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-2.png" width="100%"/><br/>2 Icons · Stufe 1–4</td>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit drei Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-3.png" width="100%"/><br/>3 Icons · Stufe 1–4</td>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit vier Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-4.png" width="100%"/><br/>4 Icons · Stufe 1–4</td>
+</tr>
+<tr>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit fünf Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-5.png" width="100%"/><br/>5 Icons · Stufe 5–8</td>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit sechs Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-6.png" width="100%"/><br/>6 Icons · Stufe 5–8</td>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit sieben Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-7.png" width="100%"/><br/>7 Icons · Stufe 5–8</td>
+<td align="center" width="20%"><img alt="Layout 3 im US-Hochformat mit acht Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-8.png" width="100%"/><br/>8 Icons · Stufe 5–8</td>
+</tr>
+</table>
+</details>
+
 Layout 2 hat keine Status-Icons.
 
 **Was du am Panel siehst:**
@@ -373,16 +413,14 @@ Ein Status-Icon ist ein Element wie die anderen der Seite, nur kleiner. Was Tipp
 
 Am Hardware-Panel wird das Kästchen grau, solange du es berührst, und blinkt beim Halten wie die anderen Elemente. Ein Popup aus einem Status-Icon hat keine Überschrift. Ein leeres Kästchen reagiert nicht.
 
-So sieht es in den anderen Formaten aus:
+So sieht es bei Smartphone quer aus (das US-Hochformat zeigen die eingeklappten Aufnahmen oben):
 
 | | keine Status-Icons | 1–3 Spalten | 4–5 Spalten | 6–8 Spalten |
 |---|---|---|---|---|
-| **US-Hochformat** | <img alt="US-Hochformat, Layout 1 ohne Status-Icons: Info-Zeilen unter dem großen Icon" src="../Pictures/device-page/us-p-cardDevice1-stage0.png" width="100%"/> | <img alt="US-Hochformat, Layout 1 mit fünf Status-Icons unter dem großen Icon, die Info-Zeilen rechts daneben nur mit Icon und Wert" src="../Pictures/device-page/us-p-cardDevice1-stage1.png" width="100%"/> | <img alt="US-Hochformat, Layout 1 mit neun Status-Icons, die Info-Zeilen rechts neben dem großen Icon" src="../Pictures/device-page/us-p-cardDevice1-stage2.png" width="100%"/> | <img alt="US-Hochformat, Layout 1 mit vierzehn Status-Icons, ohne Info-Zeilen" src="../Pictures/device-page/us-p-cardDevice1-stage3.png" width="100%"/> |
 | **Smartphone quer** | <img alt="Smartphone quer, Layout 1 ohne Status-Icons" src="../Pictures/device-page/web-l-cardDevice1-stage0.png" width="100%"/> | <img alt="Smartphone quer, Layout 1 mit fünf Status-Icons, die Info-Zeilen mit breiterem kurzem Namen" src="../Pictures/device-page/web-l-cardDevice1-stage1.png" width="100%"/> | <img alt="Smartphone quer, Layout 1 mit neun Status-Icons, die Info-Zeilen nur mit Icon und Wert" src="../Pictures/device-page/web-l-cardDevice1-stage2.png" width="100%"/> | <img alt="Smartphone quer, Layout 1 mit vierzehn Status-Icons, ohne Info-Zeilen" src="../Pictures/device-page/web-l-cardDevice1-stage3.png" width="100%"/> |
 
 | | keine Status-Icons | 1–4 | 5–8 |
 |---|---|---|---|
-| **US-Hochformat** | <img alt="US-Hochformat, Layout 3 ohne Status-Icons" src="../Pictures/device-page/us-p-cardDevice3-stage0.png" width="100%"/> | <img alt="US-Hochformat, Layout 3 mit vier Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/us-p-cardDevice3-stage1.png" width="100%"/> | <img alt="US-Hochformat, Layout 3 mit sieben Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/us-p-cardDevice3-stage2.png" width="100%"/> |
 | **Smartphone quer** | <img alt="Smartphone quer, Layout 3 ohne Status-Icons" src="../Pictures/device-page/web-l-cardDevice3-stage0.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 mit vier Status-Icons" src="../Pictures/device-page/web-l-cardDevice3-stage1.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 mit sieben Status-Icons" src="../Pictures/device-page/web-l-cardDevice3-stage2.png" width="100%"/> |
 
 - **US-Hochformat** und **Smartphone hochkant:** Das Raster von Layout 1 steht unter dem großen Icon, wo sonst die Info-Zeilen sind; die Info-Zeilen rücken in den Stufen 1–3 und 4–5 rechts neben das große Icon (nur Icon und Wert). Bei Smartphone hochkant steht das große Icon in der Mitte, solange nichts daneben steht (keine Status-Icons, 6–8 Spalten).

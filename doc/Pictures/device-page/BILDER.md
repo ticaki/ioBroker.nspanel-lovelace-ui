@@ -4,25 +4,26 @@ Alle Bilder, die die Nutzer-Doku ([doc/de/deviceDetails.md](../../de/deviceDetai
 [doc/en/deviceDetails.md](../../en/deviceDetails.md)) und die [README dieses Ordners](README.md) verwenden. Die
 Admin-Bilder der Status-Icon-Stufen liegen in [../device-page-stages/](../device-page-stages/README.md).
 
-Stand: 2026-11-28 – Geräteseite auf allen fünf Modellen, Status-Icons in Stufen (TFT `device13`, siehe
+Stand: 2026-11-28 – Geräteseite auf allen fünf Modellen, Status-Icons in Stufen (TFT `device14`: Info-Sätze B und C
+von cardDevice1 6 px weiter rechts als in `device13`, siehe
 [Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28)); die Nutzer-Doku zeigt die Admin-Bedienung der Stufen
-mit den Bildern aus `../device-page-stages/` und das EU-Panel je Icon-Anzahl mit Tims Aufnahmen der echten HMI
-(`hmi/`, siehe [Aufnahmen der echten HMI](#aufnahmen-der-echten-hmi-device13-2026-11-28)).
+mit den Bildern aus `../device-page-stages/` und das EU-Panel und das US-Hochformat je Icon-Anzahl mit Tims Aufnahmen
+der echten HMI (`hmi/`, siehe [Aufnahmen der echten HMI](#aufnahmen-der-echten-hmi-device14-2026-11-28)).
 
 ## Überblick
 
 | Wer | Was | Anzahl | Stand |
 |---|---|---|---|
 | automatisch (Puppeteer, Web-Panel) | Geräteseiten je Modell und die Detailseite | 23 (eu 5, us-l 3, us-p 3, web-l 6, web-p 6) | **aufgenommen und angesehen** |
-| automatisch (Puppeteer, Web-Panel) | Stufen der Status-Icons (cardDevice1 4, cardDevice3 3 je Modell) | 21 (eu 7, us-p 7, web-l 7) | **aufgenommen und angesehen** (2026-11-28) |
+| automatisch (Puppeteer, Web-Panel) | Stufen der Status-Icons (cardDevice1 4, cardDevice3 3 je Modell) | 21 (eu 7, us-p 7, web-l 7) | **aufgenommen und angesehen** (2026-11-28; eu und web-l `cardDevice1-stage1/2` für `device14` neu aufgenommen) |
 | automatisch (Puppeteer, Admin) | Dialoge | 8 (`admin-overview.png` mit dem früheren 2×2-Raster ist gelöscht, ersetzt durch `../device-page-stages/layout3-stage0.png`) | **aufgenommen und angesehen** |
 | automatisch (Puppeteer, Admin) | Stufen der Status-Icons im Dialog (`../device-page-stages/`) | 11 | **aufgenommen und angesehen** (2026-11-28, mit bereinigten Testdaten neu aufgenommen, ohne rote Hinweise), Prüftabelle in [../device-page-stages/README.md](../device-page-stages/README.md) |
-| **Tim (Nextion-Simulator, echte HMI `device13` EU)** | Status-Icons je Anzahl: cardDevice1 mit 0, 2 … 16, cardDevice3 mit 0–8 Icons (`hmi/`) | 18 | **aufgenommen** (2026-11-28) **und angesehen**, [Abgleich](#device13-stufen-gegen-die-echte-hmi-2026-11-28) |
+| **Tim (Nextion-Simulator, echte HMI `device14` EU und us-p)** | Status-Icons je Anzahl: cardDevice1 mit 0, 2 … 16, cardDevice3 mit 0–8 Icons (`hmi/`, us-p mit Präfix `us-p-`) | 36 (eu 18, us-p 18) | **aufgenommen** (2026-11-28) **und angesehen**, [Abgleich](#device14-stufen-gegen-die-echte-hmi-2026-11-28) |
 | **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) | – |
 
 Das Web-Panel zeichnet jedes Modell: die Hardware-Modelle eu, us-l und us-p wie die HMI, dazu web-l und web-p.
 Deshalb kommen die Panel-Bilder aus dem Web-Panel – mit einer Ausnahme: die Übersicht je Icon-Anzahl in der
-Nutzer-Doku (Abschnitt „Die Stufe“) zeigt Tims Aufnahmen der echten EU-HMI aus `hmi/`. Dass die Web-Bilder der HMI
+Nutzer-Doku (Abschnitt „Die Stufe“) zeigt Tims Aufnahmen der echten EU- und us-p-HMI aus `hmi/`. Dass die Web-Bilder der HMI
 entsprechen, zeigt der [Abgleich Web ↔ HMI](#abgleich-web--hmi) gegen Tims echte Aufnahmen.
 
 Entfallen sind `web-cardDevice1.png`, `web-cardDevice1-plain.png`, `web-cardDevice2.png` und `web-cardDevice3.png`
@@ -36,7 +37,7 @@ Icons, die der Adapter von sich aus wählt, und Einheiten ohne Leerzeichen, wie 
 
 | Kürzel | Seite | Belegung |
 |---|---|---|
-| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon nach Füllstand (hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“ (`numeric`), „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (`gesture-tap-button`), „Pause“ (`pause`), „Laden“, „Suchen“ (`gesture-tap-button`), alle cyan. Stufe 1–3 Spalten mit vier Status-Icons (per `devIcons`, spaltenweise): `wifi` (cyan), `trash-can` (grau), `air-filter` (weiß), `alert` (grau) – zwei Spalten, die Info-Zeilen mit kurzem Namen (eu: „Batter“, „Fläche“; us-p: nur Icon und Wert). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
+| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon nach Füllstand (hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“ (`numeric`), „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (`gesture-tap-button`), „Pause“ (`pause`), „Laden“, „Suchen“ (`gesture-tap-button`), alle cyan. Stufe 1–3 Spalten mit vier Status-Icons (per `devIcons`, spaltenweise): `wifi` (cyan), `trash-can` (grau), `air-filter` (weiß), `alert` (grau) – zwei Spalten, die Info-Zeilen mit kurzem Namen (eu: „Batte“, „Fläch“; us-p: nur Icon und Wert). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
 | **R1p** | cardDevice1 ohne Status-Icons | wie R1, Stufe „keine Status-Icons“. |
 | **R2** | cardDevice2 | Überschrift und Gerätename „Waschmaschine“; Haupt-Icon `washing-machine` (cyan). Slot 1 großer Wert „1:23“, Name „Restzeit“, kleines Icon `information-outline`. Slot 2 Balken „Fortschritt“, 62 %, weiß. Slot 3 „Programm“ / „Baumwolle“ (`format-list-bulleted`). Slot 4 „Temperatur“ / „60°C“ (`thermometer`). Slot 5 „Schleudern“ / „1400U/min“ (`numeric`). Slot 6 Knopf „Pause“ (`toggle-switch`, grau). Statuszeile „Schleudern, noch 23 min - Fertig um 14:35“. i-Icon. |
 | **R3** | cardDevice3 | Überschrift und Gerätename „ID.3“; Haupt-Icon `car` (cyan). Slots 1–6: „Batterie“ / „78%“, „Reichweite“ / „312km“, „Temperatur“ / „21,5°C“, „Verriegelt“ / „an“ (`toggle-switch`, cyan), „Ladeleistung“ / „11kW“, „Kilometer“ / „23456km“. Schalter 7 „Klima“ an, Schalter 8 „Laden“ an. Statuszeile „Lädt an Wallbox, 11 kW - voll um 17:40“. i-Icon. |
@@ -119,25 +120,26 @@ nur in den Notizen, nicht im Repo.
 
 „Doku“ = `doc/de/deviceDetails.md` und `doc/en/deviceDetails.md`. Alle Bilder: Screenshot Web-Panel, automatisch
 (Puppeteer), aufgenommen und einzeln angesehen am 2026-11-24; die Bilder mit cardDevice1 neu aufgenommen am
-2026-11-28 (Protokoll `device13`, siehe unten).
+2026-11-28 (Protokoll `device13`, siehe unten) und die Bilder mit Satz B oder C auf eu, us-l und web-l noch einmal
+für `device14` (Satz B/C 6 px weiter rechts, siehe [Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28)).
 
 | Dateiname | Modell | Was zu sehen ist | Verwendet in | erledigt |
 |---|---|---|---|---|
-| `eu-cardDevice1.png` | eu | cardDevice1, **R1** (Stufe 1–3 Spalten: vier Status-Icons in zwei Spalten, Info-Zeilen mit kurzem Namen; neu aufgenommen 2026-11-28) | Doku Einstieg, §6, §8 EU; README; Abgleich 1 (gegen den Stand von 2026-11-24) | ☑ |
+| `eu-cardDevice1.png` | eu | cardDevice1, **R1** (Stufe 1–3 Spalten: vier Status-Icons in zwei Spalten, Info-Zeilen mit kurzem Namen; neu aufgenommen 2026-11-28, für `device14` erneut) | Doku Einstieg, §6, §8 EU; README; Abgleich 1 (gegen den Stand von 2026-11-24) | ☑ |
 | `eu-cardDevice1-plain.png` | eu | cardDevice1, **R1p** (ohne Status-Icons, breite Info-Zeilen) | README; Abgleich 2 | ☑ |
 | `eu-cardDevice2.png` | eu | cardDevice2, **R2**, Balken bei 62 %; der Gerätename unter dem Icon ist an der Feldgrenze abgeschnitten | Doku §6, §8 EU, §10; README; Abgleich 3 | ☑ |
 | `eu-cardDevice3.png` | eu | cardDevice3, **R3**, beide Schalter an | Doku §6, §8 EU; README; Abgleich 4 | ☑ |
 | `eu-detail-page.png` | eu | Detailseite, **R4** | Doku §3; README; Abgleich 5 | ☑ |
-| `us-l-cardDevice1.png` | us-l | cardDevice1, **R1**, Inhalt 15 px weiter rechts (neu aufgenommen 2026-11-28) | Doku §8 US-Querformat; README | ☑ |
+| `us-l-cardDevice1.png` | us-l | cardDevice1, **R1**, Inhalt 15 px weiter rechts (neu aufgenommen 2026-11-28, für `device14` erneut) | Doku §8 US-Querformat; README | ☑ |
 | `us-l-cardDevice2.png` | us-l | cardDevice2, **R2** | Doku §8 US-Querformat; README | ☑ |
 | `us-l-cardDevice3.png` | us-l | cardDevice3, **R3** | Doku §8 US-Querformat; README | ☑ |
 | `us-p-cardDevice1.png` | us-p | cardDevice1 hochkant, **R1**: Haupt-Icon oben links, Info-Zeilen (Satz C) daneben, darunter vier Status-Icons in zwei Spalten, Knöpfe 2×2 (neu aufgenommen 2026-11-28) | Doku §8 US-Hochformat; README | ☑ |
 | `us-p-cardDevice2.png` | us-p | cardDevice2 hochkant, **R2**: Infos als Zeilen, Knopf über die volle Breite | Doku §8 US-Hochformat; README | ☑ |
 | `us-p-cardDevice3.png` | us-p | cardDevice3 hochkant, **R3**: Haupt-Icon mittig, Schalter als Zeilen | Doku §8 US-Hochformat; README | ☑ |
-| `web-l-cardDevice1-plain.png` | web-l | cardDevice1, **R1**, ohne Web-Panel-Elemente: vier Knöpfe über 640 px (neu aufgenommen 2026-11-28) | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice1-plain.png` | web-l | cardDevice1, **R1**, ohne Web-Panel-Elemente: vier Knöpfe über 640 px (neu aufgenommen 2026-11-28, für `device14` erneut) | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice2-plain.png` | web-l | cardDevice2, **R2**, ohne Web-Panel-Elemente | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice3-plain.png` | web-l | cardDevice3, **R3**, ohne Web-Panel-Elemente | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
-| `web-l-cardDevice1.png` | web-l | cardDevice1, **R1 +X**: sechs Knöpfe in einer Reihe (neu aufgenommen 2026-11-28) | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice1.png` | web-l | cardDevice1, **R1 +X**: sechs Knöpfe in einer Reihe (neu aufgenommen 2026-11-28, für `device14` erneut) | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice2.png` | web-l | cardDevice2, **R2 +X**: drei Knöpfe oben rechts, vier Info-Kacheln | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice3.png` | web-l | cardDevice3, **R3 +X**: acht Info-Kacheln in drei Spalten, drei Schalter | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-p-cardDevice1-plain.png` | web-p | cardDevice1, **R1**, ohne Web-Panel-Elemente: zwei Knopfreihen (neu aufgenommen 2026-11-28) | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
@@ -154,6 +156,17 @@ sind Zahlen. Alle Eingabedateien unter `src-web/scripts/examples/` sind auf dies
 ohne die Slots 7–10; wo die alte Datei Status-Icons hatte, folgt eine `devIcons`-Zeile, Stufe 1). Die Bilder mit
 cardDevice1 (`eu-`, `us-l-`, `us-p-cardDevice1.png`, `web-l-` und `web-p-cardDevice1[-plain].png`) sind damit neu
 aufgenommen; `eu-cardDevice1-plain.png` ist unverändert (gleiche Pixel). Die übrigen Bilder sind gleich geblieben.
+
+**`device14` (2026-11-28):** Die Info-Sätze B und C von cardDevice1 beginnen 6 px weiter rechts (eu Icon B x 247,
+C x 321; us-l 262 / 336; Name B 43 px, Wert C 81 px breit; web-l ebenso, us-p unverändert). Neu aufgenommen sind
+deshalb die acht Bilder, die cardDevice1 mit Satz B oder C auf eu, us-l oder web-l zeigen: `eu-cardDevice1.png`,
+`us-l-cardDevice1.png`, `web-l-cardDevice1-plain.png` (alle aus `ref-cardDevice1.txt`, Stufe 1), `web-l-cardDevice1.png`
+(`ref-cardDevice1-extras.txt`), `eu-` und `web-l-cardDevice1-stage1.png` / `-stage2.png`
+(`ref-cardDevice1-stage1/2.txt`). Vorher/nachher per Pixelvergleich: die Unterschiede liegen nur in den Info-Zeilen
+(eu y 83–144, x 248–327 in Satz B bzw. 322–350 in Satz C; us-l 15 px weiter rechts; web-l Satz B bis x 351). Zur
+Gegenprobe mit aufgenommen und pixelgleich geblieben: `eu-cardDevice1-plain.png`, `eu-`/`web-l-cardDevice1-stage0.png`
+und `-stage3.png`, `eu-cardDevice2.png`, `eu-cardDevice3-stage1.png` – damit ist auch die Schrift (Noto Sans) dieselbe
+wie bei den bisherigen Aufnahmen. us-p und web-p sind nicht neu aufgenommen.
 
 **Belegung je Stufe** (Eingabedateien `ref-cardDevice<n>-stage<s>.txt` für eu und web-l,
 `ref-portrait-cardDevice<n>-stage<s>.txt` für us-p; erzeugt aus **R1p** bzw. **R3**):
@@ -173,26 +186,34 @@ dass nur die belegten Spalten erscheinen.
 
 **Aufnahme:** wie oben mit `scripts/screenshot.mjs --scale 1 --buttons 0`, Vite mit eigener Konfiguration
 (`server.fs.strict: false`, Port 4374, nicht im Repo); vorher geprüft: `document.fonts.check("24px 'Noto Sans'")`
-ist `true` nach dem Laden der Schrift, keine Antwort 403.
+ist `true` nach dem Laden der Schrift, keine Antwort 403. Für `device14` (2026-11-28): Vite mit der Konfiguration des
+Repos auf Port 4374 (`node_modules` von `src-web` ist ein echtes Verzeichnis, kein Symlink), ebenso geprüft –
+`document.fonts.check` `true` nach dem Laden, keine Antwort 403 außer `favicon.ico` (404) – und durch die pixelgleichen
+Gegenproben oben bestätigt.
 
 | Dateiname | Modell | Was zu sehen ist | Verwendet in | erledigt |
 |---|---|---|---|---|
-| `eu-cardDevice1-stage0.png` … `-stage3.png` | eu | cardDevice1 in den Stufen 0–3 | README; Abgleich device13. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/cardDevice1-icons-*.png`) | ☑ |
-| `eu-cardDevice3-stage0.png` … `-stage2.png` | eu | cardDevice3 in den Stufen 0–2 | README; Abgleich device13. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/cardDevice3-icons-*.png`) | ☑ |
-| `us-p-cardDevice1-stage0.png` … `-stage3.png` | us-p | cardDevice1 hochkant (Variante P2): Raster unter dem Haupt-Icon, Satz C rechts daneben | Doku §5 Status-Icons; README | ☑ |
-| `us-p-cardDevice3-stage0.png` … `-stage2.png` | us-p | cardDevice3 hochkant, Raster in der ersten Kachelreihe | Doku §5 Status-Icons; README | ☑ |
-| `web-l-cardDevice1-stage0.png` … `-stage3.png` | web-l | cardDevice1 auf Smartphone quer: Raster wie eu, Info-Zeilen bis zum rechten Rand | Doku §5 Status-Icons; README | ☑ |
+| `eu-cardDevice1-stage0.png` … `-stage3.png` | eu | cardDevice1 in den Stufen 0–3 (`-stage1`/`-stage2` für `device14` neu aufgenommen) | README; Abgleich device14. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/cardDevice1-icons-*.png`) | ☑ |
+| `eu-cardDevice3-stage0.png` … `-stage2.png` | eu | cardDevice3 in den Stufen 0–2 | README; Abgleich device14. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/cardDevice3-icons-*.png`) | ☑ |
+| `us-p-cardDevice1-stage0.png` … `-stage3.png` | us-p | cardDevice1 hochkant (Variante P2): Raster unter dem Haupt-Icon, Satz C rechts daneben | README; Abgleich device14. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/us-p-cardDevice1-icons-*.png`) | ☑ |
+| `us-p-cardDevice3-stage0.png` … `-stage2.png` | us-p | cardDevice3 hochkant, Raster in der ersten Kachelreihe | README; Abgleich device14. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/us-p-cardDevice3-icons-*.png`) | ☑ |
+| `web-l-cardDevice1-stage0.png` … `-stage3.png` | web-l | cardDevice1 auf Smartphone quer: Raster wie eu, Info-Zeilen bis zum rechten Rand (`-stage1`/`-stage2` für `device14` neu aufgenommen) | Doku §5 Status-Icons; README | ☑ |
 | `web-l-cardDevice3-stage0.png` … `-stage2.png` | web-l | cardDevice3 auf Smartphone quer | Doku §5 Status-Icons; README | ☑ |
 
 Abgleich mit den HMI-Vorschauen `next/hmi-[<modell>-]cardDevice1-stage0..3.png` und `…cardDevice3-stage0..2.png`
 (Beispieldaten des Werkzeugs): Raster, Sätze A/B/C und ausgeblendete Kacheln liegen an denselben Stellen. Für eu
-zusätzlich gegen die echte HMI geprüft: [device13: Stufen gegen die echte HMI](#device13-stufen-gegen-die-echte-hmi-2026-11-28).
+und us-p zusätzlich gegen die echte HMI geprüft: [device14: Stufen gegen die echte HMI](#device14-stufen-gegen-die-echte-hmi-2026-11-28).
 
-## Aufnahmen der echten HMI (device13, 2026-11-28)
+## Aufnahmen der echten HMI (device14, 2026-11-28)
 
-Tim hat die EU-HMI mit dem TFT-Stand `device13` (480 × 320) im Nextion-Simulator laufen lassen und je Icon-Anzahl
-eine Aufnahme gemacht (Quelle `/mnt/projekte/nextion-vm/screenshots/hmi-robbi-icons-NN.png` und
-`hmi-id3-icons-N.png`, hierher kopiert und umbenannt). Belegung wie die Referenz: Grundbelegung aus
+Tim hat die HMI mit dem TFT-Stand `device14` im Nextion-Simulator laufen lassen, als EU (480 × 320) und als
+US-Hochformat (320 × 480), und je Icon-Anzahl eine Aufnahme gemacht (Quelle
+`/mnt/projekte/nextion-vm/screenshots/device14-eu-robbi-icons-NN.png`, `device14-eu-id3-icons-N.png`,
+`device14-us-p-robbi-icons-NN.png`, `device14-us-p-id3-icons-N.png`, hierher kopiert und umbenannt; die Übersichten
+`device14-*-uebersicht-*.png` dort zeigen alle Bilder einer Reihe nebeneinander). Sie ersetzen die EU-Aufnahmen von
+`device13` (Quelle damals `hmi-robbi-icons-NN.png`, `hmi-id3-icons-N.png`): geändert haben sich nur
+`cardDevice1-icons-02.png` … `-10.png` (Satz B/C 6 px weiter rechts); `cardDevice1-icons-00.png`, `-12.png` … `-16.png`
+und alle `cardDevice3-icons-*.png` sind byte-gleich mit den `device13`-Aufnahmen. Die us-p-Bilder sind neu. Belegung wie die Referenz: Grundbelegung aus
 `src-web/scripts/examples/ref-cardDevice1-stage0.txt` (**R1p**) bzw. `ref-cardDevice3-stage0.txt` (**R3**), die
 Status-Icons in der Reihenfolge der stage3- bzw. stage2-Referenz (siehe [Belegung je Stufe](#stufen-der-status-icons-2026-11-28)),
 spaltenweise im Raster. Wo die Referenz weniger Icons hat, beginnt die Liste von vorn bzw. geht weiter:
@@ -202,12 +223,19 @@ cardDevice3 mit 8 Icons auf Platz 8 `wifi` (cyan).
 | Dateiname | Seite | Icons | Stufe | Was zu sehen ist | Verwendet in | erledigt |
 |---|---|---|---|---|---|---|
 | `hmi/cardDevice1-icons-00.png` | cardDevice1 | 0 | keine | Satz A: Info-Zeilen mit Icon, Name und Wert in voller Breite | Doku §5 „Die Stufe“; README | ☑ |
-| `hmi/cardDevice1-icons-02.png`, `-04.png`, `-06.png` | cardDevice1 | 2 / 4 / 6 | 1–3 Spalten | 1 / 2 / 3 Spalten; Satz B: Icon, Name an der Feldgrenze abgeschnitten („Batter“, „Fläche“ bis zur Kante), Wert | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/cardDevice1-icons-02.png`, `-04.png`, `-06.png` | cardDevice1 | 2 / 4 / 6 | 1–3 Spalten | 1 / 2 / 3 Spalten; Satz B: Icon, Name an der Feldgrenze abgeschnitten („Batte“, „Fläch“), Wert | Doku §5 „Die Stufe“; README | ☑ |
 | `hmi/cardDevice1-icons-08.png`, `-10.png` | cardDevice1 | 8 / 10 | 4–5 Spalten | 4 / 5 Spalten; Satz C: nur Icon und Wert | Doku §5 „Die Stufe“; README | ☑ |
 | `hmi/cardDevice1-icons-12.png`, `-14.png`, `-16.png` | cardDevice1 | 12 / 14 / 16 | 6–8 Spalten | 6 / 7 / 8 Spalten, keine Info-Zeilen | Doku §5 „Die Stufe“; README | ☑ |
 | `hmi/cardDevice3-icons-0.png` | cardDevice3 | 0 | keine | sechs Info-Kacheln | Doku §5 „Die Stufe“; README | ☑ |
 | `hmi/cardDevice3-icons-1.png` … `-4.png` | cardDevice3 | 1–4 | 1–4 | 1–4 Zellen an der Stelle von Kachel 1 (Batterie), Kachel 2 (Reichweite) bleibt | Doku §5 „Die Stufe“; README | ☑ |
 | `hmi/cardDevice3-icons-5.png` … `-8.png` | cardDevice3 | 5–8 | 5–8 | 5–8 Zellen an der Stelle der Kacheln 1 und 2 | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/us-p-cardDevice1-icons-00.png` | cardDevice1 us-p | 0 | keine | Satz A unter dem Haupt-Icon: Icon, Name und Wert in voller Breite | Doku §5 „Die Stufe“ (eingeklappt); README | ☑ |
+| `hmi/us-p-cardDevice1-icons-02.png`, `-04.png`, `-06.png` | cardDevice1 us-p | 2 / 4 / 6 | 1–3 Spalten | Raster unter dem Haupt-Icon (1 / 2 / 3 Spalten); Info-Zeilen rechts neben dem Haupt-Icon nur mit Icon und Wert | Doku §5 „Die Stufe“ (eingeklappt); README | ☑ |
+| `hmi/us-p-cardDevice1-icons-08.png`, `-10.png` | cardDevice1 us-p | 8 / 10 | 4–5 Spalten | 4 / 5 Spalten unter dem Haupt-Icon; Info-Zeilen wie bei 1–3 Spalten | Doku §5 „Die Stufe“ (eingeklappt); README | ☑ |
+| `hmi/us-p-cardDevice1-icons-12.png`, `-14.png`, `-16.png` | cardDevice1 us-p | 12 / 14 / 16 | 6–8 Spalten | 6 / 7 / 8 Spalten über die volle Breite, keine Info-Zeilen | Doku §5 „Die Stufe“ (eingeklappt); README | ☑ |
+| `hmi/us-p-cardDevice3-icons-0.png` | cardDevice3 us-p | 0 | keine | sechs Info-Kacheln in drei Reihen | Doku §5 „Die Stufe“ (eingeklappt); README | ☑ |
+| `hmi/us-p-cardDevice3-icons-1.png` … `-4.png` | cardDevice3 us-p | 1–4 | 1–4 | 1–4 Zellen an der Stelle von Kachel 1 (Batterie), Kachel 2 (Reichweite) bleibt | Doku §5 „Die Stufe“ (eingeklappt); README | ☑ |
+| `hmi/us-p-cardDevice3-icons-5.png` … `-8.png` | cardDevice3 us-p | 5–8 | 5–8 | 5–8 Zellen über die erste Kachelreihe (Kacheln 1 und 2) | Doku §5 „Die Stufe“ (eingeklappt); README | ☑ |
 
 In jeder Aufnahme erscheinen nur die belegten Spalten bzw. Zellen, jede mit Rahmen, und die rechte Rahmenkante der
 letzten Spalte ist geschlossen. Eine halb belegte letzte Spalte zeigen diese Aufnahmen nicht (cardDevice1 nur mit
@@ -290,29 +318,61 @@ HMI einen zu langen **mittig** ausgerichteten Text ebenso am Anfang beginnen lä
 auf Layout 3 eine Reihe mit bis zu 8 Status-Icons an der Stelle der Kacheln 1 und 2 (siehe
 [Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28)).
 
-Der Abgleich oben stammt vom 2026-11-24 (TFT `device10`/`device12`, 2×2-Raster auf cardDevice1). Für `device13`
-(Raster bis 8×2, Stufen) folgt der Abgleich gegen die echte HMI im nächsten Abschnitt; us-l und us-p `device13` haben
-noch keine Aufnahme der echten HMI.
+Der Abgleich oben stammt vom 2026-11-24 (TFT `device10`/`device12`, 2×2-Raster auf cardDevice1). Für
+`device13`/`device14` (Raster bis 8×2, Stufen) folgt der Abgleich gegen die echte HMI im nächsten Abschnitt, für eu
+und us-p; us-l hat noch keine Aufnahme der echten HMI.
 
-### device13: Stufen gegen die echte HMI (2026-11-28)
+### device14: Stufen gegen die echte HMI (2026-11-28)
 
-Verglichen: die eu-Web-Bilder je Stufe mit Tims Aufnahmen aus `hmi/` (beide 480 × 320, ohne Versatz). Gleiche
-Icon-Anzahl gibt es für 0 und 14 Icons (cardDevice1) und für alle Stufen von cardDevice3. Die Web-Bilder mit 5 und 9
-Icons sind gegen die HMI-Aufnahme mit derselben Spaltenzahl verglichen (6 bzw. 10 Icons): dort ist die letzte Zelle
-belegt (`water` bzw. `map-marker`), im Web-Bild leer mit Rahmen. Gemessen wie oben: Rechteck der hellen Pixel je
-Element (x links–rechts / y oben, Web / HMI), Rahmenlinien als Spalten bzw. Zeilen mit grauen Pixeln.
+Verglichen: die Web-Bilder je Stufe mit Tims Aufnahmen aus `hmi/` (eu 480 × 320, us-p 320 × 480, ohne Versatz).
+Gemessen per Skript (Node, `pngjs`): Rechteck der hellen Pixel je Element (x links–rechts / y oben, Web / HMI),
+Rahmenlinien als Spalten bzw. Zeilen mit grauen Pixeln, dazu je Paar ein Differenzbild der hellen Pixel
+(nur angesehen, nicht im Repo).
+
+Gleiche Icon-Anzahl gibt es für 0 und 14 Icons (cardDevice1), für 4 Icons (`eu-cardDevice1.png` gegen
+`hmi/cardDevice1-icons-04.png`) und für alle Stufen von cardDevice3. Die Web-Bilder mit 5 und 9 Icons sind gegen die
+HMI-Aufnahme mit derselben Spaltenzahl verglichen (6 bzw. 10 Icons): dort ist die letzte Zelle belegt (`water` bzw.
+`map-marker`), im Web-Bild leer mit Rahmen. Für eu sind Satz B und C zusätzlich mit Web-Aufnahmen von genau 6 und 10
+Icons gemessen (wie die Stufen-Eingaben, um das 6. bzw. 10. Icon der stage3-Reihenfolge ergänzt; nicht im Repo) – sie
+ergeben in den Info-Zeilen dieselben Werte wie die Stufenbilder.
+
+**eu** – die `device14`-Aufnahmen 00, 12–16 und alle von cardDevice3 sind byte-gleich mit denen von `device13`, die
+Web-Bilder dazu (`eu-cardDevice1-stage0/3.png`, `eu-cardDevice3-stage*.png`) sind nicht neu aufgenommen (`device14`
+ändert nur Satz B/C; die Gegenproben `eu-cardDevice1-stage0/3.png` und `eu-cardDevice3-stage1.png` sind pixelgleich);
+das Ergebnis des `device13`-Abgleichs gilt für sie weiter. Neu gemessen sind die Paare mit Satz B und C:
 
 | Web | HMI | Icons Web / HMI | Ergebnis |
 |---|---|---|---|
-| `eu-cardDevice1-stage0.png` | `hmi/cardDevice1-icons-00.png` | 0 / 0 | **deckt sich.** Kein Raster, Satz A: Name ab x 165 / 166, Wert endet bei x 438 / 437. |
-| `eu-cardDevice1-stage1.png` | `hmi/cardDevice1-icons-06.png` | 5 / 6 | **deckt sich.** Rahmen deckungsgleich: Linien x 124, 161, 198, 235, y 71, 115, 159. Satz B: Icon x 253–265 / 251–264, Name x 280–327 / 281–327 – beide an derselben Feldgrenze abgeschnitten („Batter“, „Fläche“ bis zur Kante); Wert endet 438 / 437. |
-| `eu-cardDevice1-stage2.png` | `hmi/cardDevice1-icons-10.png` | 9 / 10 | **deckt sich.** Rahmen bis x 309 deckungsgleich. Satz C: Icon x 327–339 / 325–338, Wert endet 438 / 437, kein Name. |
-| `eu-cardDevice1-stage3.png` | `hmi/cardDevice1-icons-14.png` | 14 / 14 | **deckt sich.** Sieben Spalten, Rahmen bis x 383 deckungsgleich, keine Info-Zeilen. |
-| `eu-cardDevice3-stage0.png` | `hmi/cardDevice3-icons-0.png` | 0 / 0 | **deckt sich.** Sechs Kacheln: Namen beginnen ±1, Werte enden ±0…1. |
-| `eu-cardDevice3-stage1.png` | `hmi/cardDevice3-icons-4.png` | 4 / 4 | **deckt sich.** Rahmen deckungsgleich: Linien x 114, 151, 188, 225, 262, y 67, 118; Kachel 1 fehlt in beiden, Kachel 2 („Reichweite“) steht. |
-| `eu-cardDevice3-stage2.png` | `hmi/cardDevice3-icons-7.png` | 7 / 7 | **deckt sich.** Rahmen bis x 373 deckungsgleich; Kacheln 1 und 2 fehlen in beiden. |
+| `eu-cardDevice1-stage0.png` | `hmi/cardDevice1-icons-00.png` | 0 / 0 | **deckt sich** (unverändert seit `device13`). Kein Raster, Satz A: Name ab x 165 / 166, Wert endet bei x 438 / 437. |
+| `eu-cardDevice1.png` | `hmi/cardDevice1-icons-04.png` | 4 / 4 | **deckt sich.** Rahmen deckungsgleich: Linien x 124, 161, 198, y 71, 115, 159. Satz B: Icon Zeile 1 x 259–271 / 257–270, Zeile 2 („123“) 254–276 / 253–274; Name x 287–327 / 287–326 – beide an derselben Feldgrenze abgeschnitten („Batte“, „Fläch“); Wert endet 438 / 437 bzw. 438 / 438. |
+| `eu-cardDevice1-stage1.png` | `hmi/cardDevice1-icons-06.png` | 5 / 6 | **deckt sich.** Rahmen deckungsgleich: Linien x 124, 161, 198, 235, y 71, 115, 159. Satz B wie bei 4 Icons (Icon 259–271 / 257–270, Name 287–327 / 287–326, Wert endet 438 / 437). |
+| `eu-cardDevice1-stage2.png` | `hmi/cardDevice1-icons-10.png` | 9 / 10 | **deckt sich.** Rahmen deckungsgleich: Linien x 124 … 309 im Abstand 37, y 71, 115, 159. Satz C: Icon Zeile 1 x 333–345 / 331–344, Zeile 2 328–350 / 327–348; Wert endet 438 / 437 bzw. 438 / 438, kein Name. |
+| `eu-cardDevice1-stage3.png` | `hmi/cardDevice1-icons-14.png` | 14 / 14 | **deckt sich** (unverändert seit `device13`). Sieben Spalten, Rahmen bis x 383 deckungsgleich, keine Info-Zeilen. |
+| `eu-cardDevice3-stage0.png` … `-stage2.png` | `hmi/cardDevice3-icons-0.png`, `-4.png`, `-7.png` | 0 / 4 / 7 | **deckt sich** (unverändert seit `device13`). Rahmen deckungsgleich (Linien x 114, 151, 188, 225, 262 … 373, y 67, 118); Kachel 1 bzw. 1 und 2 fehlen in beiden. |
 
-**Abweichungen** (in allen Paaren gleich, sichtbar, aber klein):
+Gegenüber `device13` liegen Satz B und C in Web und HMI gleichermaßen 6 px weiter rechts (Icon B vorher
+253–265 / 251–264, Icon C 327–339 / 325–338); der Name von Satz B beginnt jetzt bei x 287 (vorher 280 / 281) und
+endet weiter an x 327, ist also schmaler – „Batte“ statt „Batter“, „Fläch“ statt „Fläche“. Zwischen Raster und
+Info-Icon sind damit 22 px Abstand (3 Spalten: Linie x 235, Icon ab 257 HMI) statt vorher 16 px.
+
+**us-p** (erstmals gegen die echte HMI):
+
+| Web | HMI | Icons Web / HMI | Ergebnis |
+|---|---|---|---|
+| `us-p-cardDevice1-stage0.png` | `hmi/us-p-cardDevice1-icons-00.png` | 0 / 0 | **deckt sich.** Satz A unter dem Haupt-Icon: Icon x 22–34 / 20–33 bzw. 19–39 / 18–37, Name ab x 50 / 50, Wert endet 308 / 308. |
+| `us-p-cardDevice1-stage1.png` | `hmi/us-p-cardDevice1-icons-06.png` | 5 / 6 | **deckt sich.** Rahmen deckungsgleich: Linien x 10, 47, 84, 121, y 188, 228, 268. Info-Zeilen rechts neben dem Haupt-Icon, nur Icon und Wert: Icon x 178–190 / 176–189 bzw. 173–195 / 172–193, Wert endet 308 / 307 bzw. 308 / 308. |
+| `us-p-cardDevice1-stage2.png` | `hmi/us-p-cardDevice1-icons-10.png` | 9 / 10 | **deckt sich.** Rahmen deckungsgleich: Linien x 10 … 195 im Abstand 37, y 188, 228, 268; Info-Zeilen wie bei 1–3 Spalten (gleiche Messwerte). |
+| `us-p-cardDevice1-stage3.png` | `hmi/us-p-cardDevice1-icons-14.png` | 14 / 14 | **deckt sich.** Sieben Spalten, Linien x 10 … 269, y 188, 228, 268 deckungsgleich, keine Info-Zeilen. |
+| `us-p-cardDevice3-stage0.png` | `hmi/us-p-cardDevice3-icons-0.png` | 0 / 0 | **deckt sich.** Sechs Kacheln in drei Reihen; im Differenzbild nur Kanten von 1–2 px. |
+| `us-p-cardDevice3-stage1.png` | `hmi/us-p-cardDevice3-icons-4.png` | 4 / 4 | **deckt sich.** Rahmen deckungsgleich: Linien x 10, 46, 82, 118, 154, y 182, 232; Kachel 1 fehlt in beiden, Kachel 2 („Reichweite“) steht. |
+| `us-p-cardDevice3-stage2.png` | `hmi/us-p-cardDevice3-icons-7.png` | 7 / 7 | **deckt sich.** Rahmen deckungsgleich: Linien x 10 … 262 im Abstand 36, y 182, 232; Kacheln 1 und 2 fehlen in beiden. |
+
+Auf us-p sind die Status-Icons im Raster, die Info-Icons und die Knopf-Icons im Web 1–2 px weiter rechts, die
+Knopfbeschriftungen 1–2 px – wie auf eu.
+
+**Abweichungen** (sichtbar, aber klein; gemessen auf eu beim `device13`-Abgleich; in den neu gemessenen eu- und
+us-p-Paaren bestätigt: Icons 1–2 px weiter rechts, „34m²“ beginnt bei x 397 / 399 (us-p 267 / 269); i-Icon und Schalter
+auf us-p nur im Differenzbild angesehen, nicht vermessen):
 
 | Abweichung | Größe | Bemerkung |
 |---|---|---|
@@ -325,8 +385,8 @@ Element (x links–rechts / y oben, Web / HMI), Rahmenlinien als Spalten bzw. Ze
 | Texte im Web oft 1 px höher (Oberkante, z. B. Knopfbeschriftungen y 250 / 251) | 1 px | Kantenglättung |
 
 Keine Abweichung: Rahmen des Rasters (Lage und Farbe (58, 61, 58) / (57, 60, 57), Rundung), Spaltenzahl je
-Icon-Anzahl, welche Info-Sätze bzw. Kacheln erscheinen, Abschneiden des Namens in Satz B an x 327, Statuszeile in
-beiden mittig (cardDevice1 x 19–391 / 18–392, cardDevice3 x 45–365 / 45–365), Überschrift, Pfeil, Haupt-Icon und
+Icon-Anzahl, welche Info-Sätze bzw. Kacheln erscheinen, Abschneiden des Namens in Satz B an x 327 (eu), Statuszeile in
+beiden mittig (eu: cardDevice1 x 19–391 / 18–392, cardDevice3 x 45–365 / 45–365), Überschrift, Pfeil, Haupt-Icon und
 Gerätename unter dem Haupt-Icon ±1.
 
 ## Bilder, die nur Entwickler-Dokumente verwenden

@@ -321,6 +321,26 @@ How many status icons the page can show is set by the **stage** – the choice *
 </tr>
 </table>
 
+<details>
+<summary>US portrait (pictures of the real display software)</summary>
+
+<table>
+<tr>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait without status icons: two info lines with icon, name and value across the full width below the big icon" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-00.png" width="100%"/><br/>0 icons · no status icons</td>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with two status icons in one column below the big icon, the info lines right of the big icon only with icon and value" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-02.png" width="100%"/><br/>2 icons · stage 1–3 columns</td>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with four status icons in two columns below the big icon, the info lines right of the big icon only with icon and value" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-04.png" width="100%"/><br/>4 icons · stage 1–3 columns</td>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with six status icons in three columns below the big icon, the info lines right of the big icon only with icon and value" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-06.png" width="100%"/><br/>6 icons · stage 1–3 columns</td>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with eight status icons in four columns below the big icon, the info lines right of the big icon only with icon and value" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-08.png" width="100%"/><br/>8 icons · stage 4–5 columns</td>
+</tr>
+<tr>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with ten status icons in five columns below the big icon, the info lines right of the big icon only with icon and value" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-10.png" width="100%"/><br/>10 icons · stage 4–5 columns</td>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with twelve status icons in six columns below the big icon, without info lines" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-12.png" width="100%"/><br/>12 icons · stage 6–8 columns</td>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with fourteen status icons in seven columns below the big icon, without info lines" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-14.png" width="100%"/><br/>14 icons · stage 6–8 columns</td>
+<td align="center" width="20%"><img alt="Layout 1 in US portrait with sixteen status icons in eight columns below the big icon, without info lines" src="../Pictures/device-page/hmi/us-p-cardDevice1-icons-16.png" width="100%"/><br/>16 icons · stage 6–8 columns</td>
+</tr>
+</table>
+</details>
+
 **Layout 3 – Values:** the grid has one row and stands in the first row of info tiles.
 
 | Stage | Status icons | What is left out |
@@ -349,6 +369,26 @@ How many status icons the page can show is set by the **stage** – the choice *
 </tr>
 </table>
 
+<details>
+<summary>US portrait (pictures of the real display software)</summary>
+
+<table>
+<tr>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait without status icons: six info tiles" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-0.png" width="100%"/><br/>0 icons · no status icons</td>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with one status icon in the place of the first info tile" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-1.png" width="100%"/><br/>1 icon · stage 1–4</td>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with two status icons in the place of the first info tile" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-2.png" width="100%"/><br/>2 icons · stage 1–4</td>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with three status icons in the place of the first info tile" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-3.png" width="100%"/><br/>3 icons · stage 1–4</td>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with four status icons in the place of the first info tile" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-4.png" width="100%"/><br/>4 icons · stage 1–4</td>
+</tr>
+<tr>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with five status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-5.png" width="100%"/><br/>5 icons · stage 5–8</td>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with six status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-6.png" width="100%"/><br/>6 icons · stage 5–8</td>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with seven status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-7.png" width="100%"/><br/>7 icons · stage 5–8</td>
+<td align="center" width="20%"><img alt="Layout 3 in US portrait with eight status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/us-p-cardDevice3-icons-8.png" width="100%"/><br/>8 icons · stage 5–8</td>
+</tr>
+</table>
+</details>
+
 Layout 2 has no status icons.
 
 **What you see on the panel:**
@@ -375,16 +415,14 @@ A status icon is an element like the others of the page, only smaller. What tapp
 
 On the hardware panel the box turns grey while you touch it and blinks when held, like the other elements. A popup from a status icon has no heading. An empty box does not react.
 
-This is how it looks in the other formats:
+This is how it looks on Smartphone landscape (US portrait is shown by the collapsed pictures above):
 
 | | no status icons | 1–3 columns | 4–5 columns | 6–8 columns |
 |---|---|---|---|---|
-| **US portrait** | <img alt="US portrait, layout 1 without status icons: info lines below the big icon" src="../Pictures/device-page/us-p-cardDevice1-stage0.png" width="100%"/> | <img alt="US portrait, layout 1 with five status icons below the big icon, the info lines right of it only with icon and value" src="../Pictures/device-page/us-p-cardDevice1-stage1.png" width="100%"/> | <img alt="US portrait, layout 1 with nine status icons, the info lines right of the big icon" src="../Pictures/device-page/us-p-cardDevice1-stage2.png" width="100%"/> | <img alt="US portrait, layout 1 with fourteen status icons, without info lines" src="../Pictures/device-page/us-p-cardDevice1-stage3.png" width="100%"/> |
 | **Smartphone landscape** | <img alt="Smartphone landscape, layout 1 without status icons" src="../Pictures/device-page/web-l-cardDevice1-stage0.png" width="100%"/> | <img alt="Smartphone landscape, layout 1 with five status icons, the info lines with a wider short name" src="../Pictures/device-page/web-l-cardDevice1-stage1.png" width="100%"/> | <img alt="Smartphone landscape, layout 1 with nine status icons, the info lines only with icon and value" src="../Pictures/device-page/web-l-cardDevice1-stage2.png" width="100%"/> | <img alt="Smartphone landscape, layout 1 with fourteen status icons, without info lines" src="../Pictures/device-page/web-l-cardDevice1-stage3.png" width="100%"/> |
 
 | | no status icons | 1–4 | 5–8 |
 |---|---|---|---|
-| **US portrait** | <img alt="US portrait, layout 3 without status icons" src="../Pictures/device-page/us-p-cardDevice3-stage0.png" width="100%"/> | <img alt="US portrait, layout 3 with four status icons in the place of the first info tile" src="../Pictures/device-page/us-p-cardDevice3-stage1.png" width="100%"/> | <img alt="US portrait, layout 3 with seven status icons in the place of the first two info tiles" src="../Pictures/device-page/us-p-cardDevice3-stage2.png" width="100%"/> |
 | **Smartphone landscape** | <img alt="Smartphone landscape, layout 3 without status icons" src="../Pictures/device-page/web-l-cardDevice3-stage0.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 with four status icons" src="../Pictures/device-page/web-l-cardDevice3-stage1.png" width="100%"/> | <img alt="Smartphone landscape, layout 3 with seven status icons" src="../Pictures/device-page/web-l-cardDevice3-stage2.png" width="100%"/> |
 
 - **US portrait** and **Smartphone portrait:** the grid of layout 1 stands below the big icon, where the info lines are otherwise; in the stages 1–3 and 4–5 the info lines move right of the big icon (only icon and value). On Smartphone portrait the big icon stands in the middle as long as nothing stands next to it (no status icons, 6–8 columns).
