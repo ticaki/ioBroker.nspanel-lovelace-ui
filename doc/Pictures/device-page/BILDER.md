@@ -1,10 +1,12 @@
 # Bildliste: Gerät mit Details und Geräteseite
 
 Alle Bilder, die die Nutzer-Doku ([doc/de/deviceDetails.md](../../de/deviceDetails.md),
-[doc/en/deviceDetails.md](../../en/deviceDetails.md)) und die [README dieses Ordners](README.md) verwenden.
+[doc/en/deviceDetails.md](../../en/deviceDetails.md)) und die [README dieses Ordners](README.md) verwenden. Die
+Admin-Bilder der Status-Icon-Stufen liegen in [../device-page-stages/](../device-page-stages/README.md).
 
-Stand: 2026-11-24, nach der Integration (Geräteseite auf allen fünf Modellen). Ergänzt 2026-11-28: Status-Icons
-und Stufen (TFT `device13`), siehe [Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28).
+Stand: 2026-11-28 – Geräteseite auf allen fünf Modellen, Status-Icons in Stufen (TFT `device13`, siehe
+[Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28)); die Nutzer-Doku zeigt die Admin-Bedienung der Stufen
+mit den Bildern aus `../device-page-stages/`.
 
 ## Überblick
 
@@ -12,7 +14,8 @@ und Stufen (TFT `device13`), siehe [Stufen der Status-Icons](#stufen-der-status-
 |---|---|---|---|
 | automatisch (Puppeteer, Web-Panel) | Geräteseiten je Modell und die Detailseite | 23 (eu 5, us-l 3, us-p 3, web-l 6, web-p 6) | **aufgenommen und angesehen** |
 | automatisch (Puppeteer, Web-Panel) | Stufen der Status-Icons (cardDevice1 4, cardDevice3 3 je Modell) | 21 (eu 7, us-p 7, web-l 7) | **aufgenommen und angesehen** (2026-11-28) |
-| automatisch (Puppeteer, Admin) | Dialoge | 9 (2 vorhanden, 3 neu aufgenommen, 4 neu) | **aufgenommen und angesehen** |
+| automatisch (Puppeteer, Admin) | Dialoge | 9 (2 vorhanden, 3 neu aufgenommen, 4 neu); `admin-overview.png` ist veraltet und nicht mehr verwendet | **aufgenommen und angesehen** |
+| automatisch (Puppeteer, Admin) | Stufen der Status-Icons im Dialog (`../device-page-stages/`) | 11 | **aufgenommen und angesehen** (2026-11-28), Prüftabelle in [../device-page-stages/README.md](../device-page-stages/README.md) |
 | **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) | – |
 
 Das Web-Panel zeichnet jedes Modell: die Hardware-Modelle eu, us-l und us-p wie die HMI, dazu web-l und web-p.
@@ -30,7 +33,7 @@ Icons, die der Adapter von sich aus wählt, und Einheiten ohne Leerzeichen, wie 
 
 | Kürzel | Seite | Belegung |
 |---|---|---|
-| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon nach Füllstand (hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“ (`numeric`), „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (`gesture-tap-button`), „Pause“ (`pause`), „Laden“, „Suchen“ (`gesture-tap-button`), alle cyan. Vier Status-Icons (Stufe 1–3 Spalten, per `devIcons`): `wifi` (cyan), `trash-can` (grau), `air-filter` (weiß), `alert` (grau). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
+| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon nach Füllstand (hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“ (`numeric`), „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (`gesture-tap-button`), „Pause“ (`pause`), „Laden“, „Suchen“ (`gesture-tap-button`), alle cyan. Stufe 1–3 Spalten mit vier Status-Icons (per `devIcons`, spaltenweise): `wifi` (cyan), `trash-can` (grau), `air-filter` (weiß), `alert` (grau) – zwei Spalten, die Info-Zeilen mit kurzem Namen (eu: „Batter“, „Fläche“; us-p: nur Icon und Wert). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
 | **R1p** | cardDevice1 ohne Status-Icons | wie R1, Stufe „keine Status-Icons“. |
 | **R2** | cardDevice2 | Überschrift und Gerätename „Waschmaschine“; Haupt-Icon `washing-machine` (cyan). Slot 1 großer Wert „1:23“, Name „Restzeit“, kleines Icon `information-outline`. Slot 2 Balken „Fortschritt“, 62 %, weiß. Slot 3 „Programm“ / „Baumwolle“ (`format-list-bulleted`). Slot 4 „Temperatur“ / „60°C“ (`thermometer`). Slot 5 „Schleudern“ / „1400U/min“ (`numeric`). Slot 6 Knopf „Pause“ (`toggle-switch`, grau). Statuszeile „Schleudern, noch 23 min - Fertig um 14:35“. i-Icon. |
 | **R3** | cardDevice3 | Überschrift und Gerätename „ID.3“; Haupt-Icon `car` (cyan). Slots 1–6: „Batterie“ / „78%“, „Reichweite“ / „312km“, „Temperatur“ / „21,5°C“, „Verriegelt“ / „an“ (`toggle-switch`, cyan), „Ladeleistung“ / „11kW“, „Kilometer“ / „23456km“. Schalter 7 „Klima“ an, Schalter 8 „Laden“ an. Statuszeile „Lädt an Wallbox, 11 kW - voll um 17:40“. i-Icon. |
@@ -112,31 +115,32 @@ nur in den Notizen, nicht im Repo.
 ## Web-Panel-Aufnahmen
 
 „Doku“ = `doc/de/deviceDetails.md` und `doc/en/deviceDetails.md`. Alle Bilder: Screenshot Web-Panel, automatisch
-(Puppeteer), aufgenommen und einzeln angesehen am 2026-11-24.
+(Puppeteer), aufgenommen und einzeln angesehen am 2026-11-24; die Bilder mit cardDevice1 neu aufgenommen am
+2026-11-28 (Protokoll `device13`, siehe unten).
 
 | Dateiname | Modell | Was zu sehen ist | Verwendet in | erledigt |
 |---|---|---|---|---|
-| `eu-cardDevice1.png` | eu | cardDevice1, **R1** (vier Status-Icons, schmale Info-Zeilen) | Doku Einstieg, §5 Status-Icons, §6, §8 EU; README; Abgleich 1 | ☑ |
-| `eu-cardDevice1-plain.png` | eu | cardDevice1, **R1p** (ohne Status-Icons, breite Info-Zeilen) | Doku §5 Status-Icons; README; Abgleich 2 | ☑ |
+| `eu-cardDevice1.png` | eu | cardDevice1, **R1** (Stufe 1–3 Spalten: vier Status-Icons in zwei Spalten, Info-Zeilen mit kurzem Namen; neu aufgenommen 2026-11-28) | Doku Einstieg, §6, §8 EU; README; Abgleich 1 (gegen den Stand von 2026-11-24) | ☑ |
+| `eu-cardDevice1-plain.png` | eu | cardDevice1, **R1p** (ohne Status-Icons, breite Info-Zeilen) | README; Abgleich 2 | ☑ |
 | `eu-cardDevice2.png` | eu | cardDevice2, **R2**, Balken bei 62 %; der Gerätename unter dem Icon ist an der Feldgrenze abgeschnitten | Doku §6, §8 EU, §10; README; Abgleich 3 | ☑ |
 | `eu-cardDevice3.png` | eu | cardDevice3, **R3**, beide Schalter an | Doku §6, §8 EU; README; Abgleich 4 | ☑ |
 | `eu-detail-page.png` | eu | Detailseite, **R4** | Doku §3; README; Abgleich 5 | ☑ |
-| `us-l-cardDevice1.png` | us-l | cardDevice1, **R1**, Inhalt 15 px weiter rechts | Doku §8 US-Querformat; README | ☑ |
+| `us-l-cardDevice1.png` | us-l | cardDevice1, **R1**, Inhalt 15 px weiter rechts (neu aufgenommen 2026-11-28) | Doku §8 US-Querformat; README | ☑ |
 | `us-l-cardDevice2.png` | us-l | cardDevice2, **R2** | Doku §8 US-Querformat; README | ☑ |
 | `us-l-cardDevice3.png` | us-l | cardDevice3, **R3** | Doku §8 US-Querformat; README | ☑ |
 | `us-p-cardDevice1.png` | us-p | cardDevice1 hochkant, **R1**: Haupt-Icon oben links, Info-Zeilen (Satz C) daneben, darunter vier Status-Icons in zwei Spalten, Knöpfe 2×2 (neu aufgenommen 2026-11-28) | Doku §8 US-Hochformat; README | ☑ |
 | `us-p-cardDevice2.png` | us-p | cardDevice2 hochkant, **R2**: Infos als Zeilen, Knopf über die volle Breite | Doku §8 US-Hochformat; README | ☑ |
 | `us-p-cardDevice3.png` | us-p | cardDevice3 hochkant, **R3**: Haupt-Icon mittig, Schalter als Zeilen | Doku §8 US-Hochformat; README | ☑ |
-| `web-l-cardDevice1-plain.png` | web-l | cardDevice1, **R1**, ohne Web-Panel-Elemente: vier Knöpfe über 640 px | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice1-plain.png` | web-l | cardDevice1, **R1**, ohne Web-Panel-Elemente: vier Knöpfe über 640 px (neu aufgenommen 2026-11-28) | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice2-plain.png` | web-l | cardDevice2, **R2**, ohne Web-Panel-Elemente | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice3-plain.png` | web-l | cardDevice3, **R3**, ohne Web-Panel-Elemente | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
-| `web-l-cardDevice1.png` | web-l | cardDevice1, **R1 +X**: sechs Knöpfe in einer Reihe | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
+| `web-l-cardDevice1.png` | web-l | cardDevice1, **R1 +X**: sechs Knöpfe in einer Reihe (neu aufgenommen 2026-11-28) | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice2.png` | web-l | cardDevice2, **R2 +X**: drei Knöpfe oben rechts, vier Info-Kacheln | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
 | `web-l-cardDevice3.png` | web-l | cardDevice3, **R3 +X**: acht Info-Kacheln in drei Spalten, drei Schalter | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
-| `web-p-cardDevice1-plain.png` | web-p | cardDevice1, **R1**, ohne Web-Panel-Elemente: zwei Knopfreihen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice1-plain.png` | web-p | cardDevice1, **R1**, ohne Web-Panel-Elemente: zwei Knopfreihen (neu aufgenommen 2026-11-28) | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 | `web-p-cardDevice2-plain.png` | web-p | cardDevice2, **R2**, ohne Web-Panel-Elemente | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 | `web-p-cardDevice3-plain.png` | web-p | cardDevice3, **R3**, ohne Web-Panel-Elemente | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
-| `web-p-cardDevice1.png` | web-p | cardDevice1, **R1 +X**: drei Knopfreihen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+| `web-p-cardDevice1.png` | web-p | cardDevice1, **R1 +X**: Raster unter dem Haupt-Icon, drei Knopfreihen (neu aufgenommen 2026-11-28) | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 | `web-p-cardDevice2.png` | web-p | cardDevice2, **R2 +X**: vier Info-Zeilen, drei Knöpfe in einer Reihe | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 | `web-p-cardDevice3.png` | web-p | cardDevice3, **R3 +X**: vier Kachelreihen, drei Schalterzeilen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 
@@ -170,12 +174,12 @@ ist `true` nach dem Laden der Schrift, keine Antwort 403.
 
 | Dateiname | Modell | Was zu sehen ist | Verwendet in | erledigt |
 |---|---|---|---|---|
-| `eu-cardDevice1-stage0.png` … `-stage3.png` | eu | cardDevice1 in den Stufen 0–3 | Doku §5 Status-Icons | ☑ |
-| `eu-cardDevice3-stage0.png` … `-stage2.png` | eu | cardDevice3 in den Stufen 0–2 | Doku §5 Status-Icons | ☑ |
-| `us-p-cardDevice1-stage0.png` … `-stage3.png` | us-p | cardDevice1 hochkant (Variante P2): Raster unter dem Haupt-Icon, Satz C rechts daneben | Doku §5 Status-Icons | ☑ |
-| `us-p-cardDevice3-stage0.png` … `-stage2.png` | us-p | cardDevice3 hochkant, Raster in der ersten Kachelreihe | Doku §5 Status-Icons | ☑ |
-| `web-l-cardDevice1-stage0.png` … `-stage3.png` | web-l | cardDevice1 auf Smartphone quer: Raster wie eu, Info-Zeilen bis zum rechten Rand | Doku §5 Status-Icons | ☑ |
-| `web-l-cardDevice3-stage0.png` … `-stage2.png` | web-l | cardDevice3 auf Smartphone quer | Doku §5 Status-Icons | ☑ |
+| `eu-cardDevice1-stage0.png` … `-stage3.png` | eu | cardDevice1 in den Stufen 0–3 | Doku §5 Status-Icons; README | ☑ |
+| `eu-cardDevice3-stage0.png` … `-stage2.png` | eu | cardDevice3 in den Stufen 0–2 | Doku §5 Status-Icons; README | ☑ |
+| `us-p-cardDevice1-stage0.png` … `-stage3.png` | us-p | cardDevice1 hochkant (Variante P2): Raster unter dem Haupt-Icon, Satz C rechts daneben | Doku §5 Status-Icons; README | ☑ |
+| `us-p-cardDevice3-stage0.png` … `-stage2.png` | us-p | cardDevice3 hochkant, Raster in der ersten Kachelreihe | Doku §5 Status-Icons; README | ☑ |
+| `web-l-cardDevice1-stage0.png` … `-stage3.png` | web-l | cardDevice1 auf Smartphone quer: Raster wie eu, Info-Zeilen bis zum rechten Rand | Doku §5 Status-Icons; README | ☑ |
+| `web-l-cardDevice3-stage0.png` … `-stage2.png` | web-l | cardDevice3 auf Smartphone quer | Doku §5 Status-Icons; README | ☑ |
 
 Abgleich mit den HMI-Vorschauen `next/hmi-[<modell>-]cardDevice1-stage0..3.png` und `…cardDevice3-stage0..2.png`
 (Beispieldaten des Werkzeugs): Raster, Sätze A/B/C und ausgeblendete Kacheln liegen an denselben Stellen.
@@ -192,11 +196,11 @@ ein. `admin-filterlist.png` zeigt ein nachgebautes Shelly 2.5 („Wohnzimmer-Rol
 | `admin-device-item.png` | Pageitem-Konfiguration, Art **Gerät mit Details**, Gerät `0_userdata.0.devicepage.robot` („Robbi – … Einträge angehakt“), Kurzer Tipp, Knopf Filterliste, **Long-Press öffnet: Detailseite** (kein Geräteseiten-Bereich) | Doku Schnellstart 1 | ☑ |
 | `admin-filterlist.png` | Dialog **Filterliste** eines Geräts mit Maske und gleichnamigen Zeilen (z. B. Shelly mit mehreren Temperaturen): angehakte oben, Spalten Eintrag/State, Feld **2. Zeile** sichtbar | Doku §3 | ☑ |
 | `admin-shortpress.png` | **vorhanden, bleibt:** Kurzer Tipp mit „Geräteseite öffnen“, Filterliste-Knopf, Long-Press öffnet: Geräteseite | Doku §2; README | ☑ |
-| `admin-overview.png` | **vorhanden, neu aufnehmen:** ganzer Dialog mit Geräteseite Layout 1, alle zehn Slots belegt, Haupt-Icon, Statuszeile, darunter das Häkchen „Web-Panel-Elemente (web-l / web-p)“ (aus) und „i-Icon anzeigen“. Das alte Bild zeigt noch den Hinweis „nur auf EU-Panels und Web-Panels im Querformat“ | Doku Schnellstart 2, §5; README | ☑ |
+| `admin-overview.png` | **veraltet, nicht mehr verwendet:** ganzer Dialog mit Geräteseite Layout 1 und den früheren Status-Slots 7–10 (2×2-Raster, Hinweis „… werden die beiden Info-Zeilen schmaler“). Doku und README zeigen stattdessen `../device-page-stages/layout3-stage0.png`. Neu aufnehmen (ganzer Dialog mit der Auswahl „Status-Icons“) oder löschen | – | ☐ |
 | `admin-status-custom.png` | **vorhanden, bleibt:** Statuszeile „Benutzerdefinierter Datenpunkt“ mit ID-Feld | Doku §5 Statuszeile; README | ☑ |
 | `admin-slot-custom.png` | **vorhanden, neu aufnehmen** (die Wahl heißt jetzt „Kanal“, dazu „Navigation“): Slots mit Benutzerdefiniert → Datenpunkt, → Kanal, → **Navigation** mit Zielseite und ein Datenpunkt mit „passt nicht zu diesem Slot“ | Doku §5 Benutzerdefiniert; README | ☑ |
 | `admin-slot-dialog.png` | **vorhanden, neu aufnehmen** (zeigt noch den früheren kleinen Dialog): „…“ eines **Knopf**-Slots = Pageitem-Konfiguration ohne Kanalauswahl, Titel mit „4 Knopf“, Name, Icon `pause`/`play` und Farben für wahr/unwahr, Langer Druck | Doku §5 Einstellungen des Elements; README | ☑ |
-| `admin-slot-dialog-status.png` | „…“ eines **Status-Icon**-Slots: kleiner Dialog „Einstellungen des Elements“ mit Icon/Farbe, „Farbverlauf …“ und „Kurzer Tipp“ | Doku §5 Einstellungen des Elements | ☑ |
+| `admin-slot-dialog-status.png` | „…“ eines **Platzes der Status-Icons** (Titel „8 Status-Icon“): kleiner Dialog „Einstellungen des Elements“ mit Icon/Farbe, „Farbverlauf …“ und „Kurzer Tipp“ | Doku §5 Einstellungen des Elements; README | ☑ |
 | `admin-web-extra.png` | Bereich der Geräteseite mit **gesetztem Häkchen** „Web-Panel-Elemente (web-l / web-p)“: darunter die zusätzlichen Slots (am besten Layout 2: 7 Info-Zeile, 8–9 Knopf) | Doku §5 Zusätzliche Elemente | ☑ |
 
 Die Kommentare `<!-- BILD FOLGT … -->` / `<!-- BILD NEU AUFNEHMEN … -->` in der Doku sind entfernt.
@@ -253,12 +257,26 @@ HMI einen zu langen **mittig** ausgerichteten Text ebenso am Anfang beginnen lä
 (Pfeile, Überschrift) zeichnet es wie auf eu; auf der echten us-l-HMI sitzt auch sie 15 px weiter rechts
 (`doc/web-panel/SMARTPHONE.md`, „Geräteseiten“). Das gilt für alle Karten des Web-Panels.
 
-`/mnt/projekte/nspanel emu/cardDevice3-neu.png` (Status-Icon-Spalte auf Layout 3) ist ein Entwurf und kein
-Zielstand: Status-Icons gibt es nur auf Layout 1.
+`/mnt/projekte/nspanel emu/cardDevice3-neu.png` (Status-Icon-Spalte auf Layout 3) war ein Entwurf. Umgesetzt ist
+auf Layout 3 eine Reihe mit bis zu 8 Status-Icons an der Stelle der Kacheln 1 und 2 (siehe
+[Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28)).
+
+Der Abgleich oben stammt vom 2026-11-24 (TFT `device10`/`device12`, 2×2-Raster auf cardDevice1). Für `device13`
+(Raster bis 8×2, Stufen) gibt es noch keine Aufnahme der echten HMI; verglichen sind nur die Web-Bilder mit den
+HMI-Vorschauen des Werkzeugs (siehe oben).
 
 ## Bilder, die nur Entwickler-Dokumente verwenden
 
 `hmi-cardDevice*.png`, `hmi-us-l-cardDevice*.png`, `hmi-us-p-cardDevice*.png` – Vorschauen des Werkzeugs
-`HMI/tools/card_device.py` (`--preview doc/Pictures/device-page`), eingebunden in
+`HMI/tools/card_device.py` (`--preview doc/Pictures/device-page`) für `device12` (2×2-Raster), eingebunden in
 `doc/ideas/device-details/device-page-hmi.md`. Die Nutzer-Doku verwendet sie nicht (ihre Beispieldaten zeigen
 Einheiten mit Leerzeichen, der Adapter schreibt sie ohne).
+
+`next/` – Vorschauen für `device13` (`--preview doc/Pictures/device-page/next`), je Modell eu (ohne Präfix), us-l und
+us-p, beschrieben in [device-page-hmi.md, „device13“](../../ideas/device-details/device-page-hmi.md#device13-typzahl-status-raster-devicons):
+
+| Modell | cardDevice1 | cardDevice2 | cardDevice3 |
+|---|---|---|---|
+| eu | `next/hmi-cardDevice1-stage0.png`, `-stage1.png`, `-stage2.png`, `-stage3.png` | `next/hmi-cardDevice2.png` | `next/hmi-cardDevice3-stage0.png`, `-stage1.png`, `-stage2.png` |
+| us-l | `next/hmi-us-l-cardDevice1-stage0.png` … `-stage3.png` | `next/hmi-us-l-cardDevice2.png` | `next/hmi-us-l-cardDevice3-stage0.png` … `-stage2.png` |
+| us-p | `next/hmi-us-p-cardDevice1-stage0.png` … `-stage3.png` | `next/hmi-us-p-cardDevice2.png` | `next/hmi-us-p-cardDevice3-stage0.png` … `-stage2.png` |

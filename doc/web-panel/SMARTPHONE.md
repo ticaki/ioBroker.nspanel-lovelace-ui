@@ -62,7 +62,7 @@ Geometrie-Vorgaben Web (Bühnenpixel, TitleBar 62 hoch, Inhalt ab y 62/72):
 
 ## Geräteseiten (cardDevice1–3)
 
-Stand: 2026-11-24. Die Geräteseiten ([device-page-hmi.md](../ideas/device-details/device-page-hmi.md)) haben im
+Stand: 2026-11-28 (Status-Icons in Stufen, TFT `device13`). Die Geräteseiten ([device-page-hmi.md](../ideas/device-details/device-page-hmi.md)) haben im
 Web-Panel eine **Geometrie je Modell** (`src-web/src/cards/cardDevice/`). Sie stehen nicht in `CENTERED_ON_WEB`,
 die Karte sieht also immer das echte Modell.
 
@@ -109,7 +109,7 @@ entityUpd~<heading>~<prev 6>~<next 6>~<main 6>~<slot 1..N je 6>~<info 6>~<extra 
 
 | Seite | N | Zusatz-Slots (E) | damit |
 | --- | --- | --- | --- |
-| cardDevice1 | 10 | button, button | 6 Knöpfe |
+| cardDevice1 | 6 | button, button | 6 Knöpfe |
 | cardDevice2 | 6 | info, button, button | 4 Infos, 3 Knöpfe |
 | cardDevice3 | 8 | info, info, switch | 8 Infos, 3 Schalter |
 

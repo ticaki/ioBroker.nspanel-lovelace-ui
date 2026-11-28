@@ -1,8 +1,17 @@
 # Geräteseite in der HMI: cardDevice1, cardDevice2, cardDevice3 (EU, us-l, us-p)
 
 Drei neue Seiten für **ein** Gerät (Saugroboter, Waschmaschine, Pkw …): großes Geräte-Icon, feste Anzahl Slots mit
-festen Elementarten, Statuszeile unten, info-Icon unten rechts. Gebaut mit `HMI/tools/card_device.py`, Vorschau unter
-`doc/Pictures/device-page/hmi-cardDevice{1,2,3}.png` (cardDevice1 mit Status-Icons, ohne: `hmi-cardDevice1-plain.png`).
+festen Elementarten, Statuszeile unten, info-Icon unten rechts. Gebaut mit `HMI/tools/card_device.py`, Vorschau des
+aktuellen Stands `device13` je Stufe unter `doc/Pictures/device-page/next/`; die älteren Vorschauen
+`doc/Pictures/device-page/hmi-cardDevice{1,2,3}.png` (cardDevice1 mit 2×2-Status-Block, ohne:
+`hmi-cardDevice1-plain.png`) zeigen `device12`.
+
+> **Aktueller Stand ist `device13`** (Abschnitt [„device13“](#device13-typzahl-status-raster-devicons)). Die Abschnitte ab
+> [„Protokoll“](#protokoll) beschreiben `device12`; wo sie dem Abschnitt „device13“ widersprechen, sind sie
+> **überholt** – vor allem: cardDevice1 hat in `entityUpd` 6 Slots (nicht 10), die Status-Icons kommen per `devIcons`
+> in ein Raster bis 8×2 (nicht der 2×2-Block `tStat7–10`), cardDevice3 hat ein Raster bis 8×1, der schmale Satz
+> `bEntityS/tEntityS/tValueS` und `vStatus` sind entfallen, Typen sind Zahlen, `entn` hat txt_maxl 7, `strCommand`
+> 703 / 775 / 959.
 Die Abschnitte bis „Empfang einer zu langen Nachricht“ beschreiben die EU-Seiten; Protokoll, Slots, Puffer und
 Verhalten gelten für alle Modelle. Was bei us-l und us-p anders ist (Bauweg, Geometrie, RAM, Prüfliste), steht in
 [„us-l und us-p“](#us-l-und-us-p). Die Geometrie aller drei Modelle als Daten:
@@ -64,8 +73,13 @@ cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
 
 Stand 2026-11-28. Umsetzung von [../hmi-type-number.md](../hmi-type-number.md) und
 [status-grid-8x2.md](status-grid-8x2.md) mit Tims Entscheidungen vom 2026-11-28. Die Abschnitte weiter unten
-beschreiben `device12`; was hier steht, geht ihnen für `device13` vor. Nur die HMI ist umgesetzt, Adapter, Admin und
-Web-Panel folgen.
+beschreiben `device12`; was hier steht, geht ihnen für `device13` vor. Adapter, Admin und Web-Panel sind ebenfalls
+umgesetzt (Konfiguration `statusStage` / `statusSlots`, siehe [README.md, „Geräteseite“](README.md#geräteseite)).
+
+**Stand der Prüfung:** EU `device13` ist kompiliert (RAM in der Tabelle unten). Am Panel gemessen bzw. bestätigt:
+`covx` liest führende Ziffern (leer oder ohne Ziffer → 0), `x`/`w`/`h` lassen sich zur Laufzeit nicht ändern
+(Zuweisung liefert 0x1C bzw. 0x1A), die Rahmenkante bleibt nach `vis 0` der Nachbarspalte stehen. **us-l und us-p `device13` sind noch nicht kompiliert und
+nicht getestet** – offen.
 
 ```
 for M in "" us-l- us-p-; do
@@ -197,17 +211,20 @@ sichtbaren Bereich, Tippflächen und Überschneidungen je Stufe: keine Meldungen
   `¬<Font>`), Farbe 5, Namen und Werte bis zum Puffer, Stufe 1 Byte. `strCommand` = das Größere aus `entityUpd`
   und `devIcons` + 10 %, 4k−1. Die Begrenzung beim Empfang (`clamp_receive`) bleibt.
 
-RAM (Schätzung des Werkzeugs mit global 436; „Prognose“ = gemessener device10-Wert + Änderung der Schätzung):
+RAM (Schätzung des Werkzeugs mit global 436; „Prognose“ = gemessener device10-Wert + Änderung der Schätzung;
+„gemessen“ = Editor beim Kompilieren von `device13`):
 
-| Seite | Modell | Schätzung device12 → device13 | Prognose (Editor) | frei (Prognose) |
-|---|---|---|---|---|
-| cardDevice1 | EU | 3201 → 3045 | 3176 | 408 |
-| cardDevice1 | us-l | 3201 → 3045 | 3152 | 432 |
-| cardDevice1 | us-p | 3015 → 2969 | 3030 | 554 |
-| cardDevice2 | EU | 2785 → 2456 | 2495 | 1089 |
-| cardDevice2 | us-l / us-p | 2785 → 2456 | 2471 | 1113 |
-| cardDevice3 | EU | 3264 → 3229 | 3317 | 267 |
-| cardDevice3 | us-l / us-p | 3264 → 3229 | 3293 | 291 |
+| Seite | Modell | Schätzung device12 → device13 | Prognose (Editor) | frei (Prognose) | gemessen |
+|---|---|---|---|---|---|
+| cardDevice1 | EU | 3201 → 3045 | 3176 | 408 | **3216 (368 frei)** |
+| cardDevice1 | us-l | 3201 → 3045 | 3152 | 432 | offen |
+| cardDevice1 | us-p | 3015 → 2969 | 3030 | 554 | offen |
+| cardDevice2 | EU | 2785 → 2456 | 2495 | 1089 | **2492 (1092 frei)** |
+| cardDevice2 | us-l / us-p | 2785 → 2456 | 2471 | 1113 | offen |
+| cardDevice3 | EU | 3264 → 3229 | 3317 | 267 | **3328 (256 frei)** |
+| cardDevice3 | us-l / us-p | 3264 → 3229 | 3293 | 291 | offen |
+
+Die Messung liegt bei cardDevice1 40 Byte über der Prognose, bei cardDevice3 11 Byte darüber.
 
 Alle Schätzungen liegen mehr als 150 Byte unter 3584 (größte: cardDevice3 3229). Neu je Seite: Zahlvariablen
 `vLPType` (alle), `vStage`, `vCols` (cardDevice1/3); Typvariablen als Zahl statt Text.
@@ -218,10 +235,14 @@ doppelt so lang (Prüfliste).
 
 ### device13 im Editor und am Panel prüfen
 
+Stand 2026-11-28: EU kompiliert, RAM gemessen (Punkt 2), `covx` gemessen (Punkt 3, Teil „leeres Element und `0`
+ausgeblendet“), Rahmenkanten nach dem Ausblenden von Spalten bestätigt (Punkt 5). Alles andere ist offen; us-l und
+us-p sind noch nicht kompiliert.
+
 1. Alle drei Dateien öffnen (keine Meldung „resource file damaged“), kompilieren: 0 Fehler, keine „Component
    overlap“. Neu im Code: `covx tTmp.txt,type<k>.val,0,0`, `type<k>.val`, `if(type1.val==0||vStage.val>=3)`, `if(sys2<8&&vCols.val>=8)`, `click` in `if/else` (tValue1/2),
    `if(vStage.val>=1&&vStage.val<=2)` (us-p). Der Code der Seiten ist deutlich länger: übersetzt der Editor ihn?
-2. RAM je Seite und Modell melden (Tabelle oben).
+2. RAM je Seite und Modell melden (Tabelle oben). ✅ EU gemessen; us-l und us-p offen.
 3. Typzahl: `entityUpd` mit Zahlen 0–9 in main und Slots: 0 blendet aus, 2–5 Popup sofort, 6–9 nach 500 ms, 1 sendet
    (ohne ID nicht, Knopf-Slot doch); leeres Element und `0` ausgeblendet.
 4. Long-Press während eines `entityUpd`: das Popup eines Typs 6–9 öffnet trotzdem (`vLPType`).
@@ -241,6 +262,9 @@ doppelt so lang (Prüfliste).
 10. us-p cardDevice1: Raster 8 × 2 unter dem Haupt-Icon, Satz C rechts daneben (Stufe 1/2), Stufe 0 volle Zeilen.
 
 ## Protokoll
+
+> **Stand `device12`.** Für `device13` gilt der Abschnitt [„Protokoll device13“](#protokoll-device13): cardDevice1 hat
+> N = 6, info liegt bei 56–61, die Status-Icons kommen per `devIcons`.
 
 ```
 pageType~cardDevice1          (bzw. cardDevice2 / cardDevice3)
@@ -263,6 +287,9 @@ devStatus~<text>              (nur die Statuszeile, siehe „Kurz-Nachricht devS
 
 ### Art je Slot
 
+*(Stand `device12`. Seit `device13` hat cardDevice1 nur die Slots 1–6; die Status-Icons sind keine Slots mehr, sondern
+16 Zellen per `devIcons`, cardDevice3 hat dazu 8 Zellen.)*
+
 | Seite | Slot 1 | Slot 2 | Slot 3 | Slot 4 | Slot 5 | Slot 6 | Slot 7 | Slot 8 | Slot 9 | Slot 10 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | cardDevice1 | info | info | button | button | button | button | status | status | status | status |
@@ -279,7 +306,7 @@ devStatus~<text>              (nur die Statuszeile, siehe „Kurz-Nachricht devS
 | progress | Name Font 0 darüber, Balken über die volle Breite; Feld 6 = ganze Zahl 0–100 (wird begrenzt), Füllung in iconColor, Rahmen in der Textfarbe | Name und Balken |
 | button | Icon Font 3 in iconColor, Name Font 0 darunter | Icon und Name |
 | switch | Icon Font 1, Name Font 0, Schalter `btOnOff` (Kopie von cardEntities, Bilder 1/2 bzw. 10/11 bei schwarzem Hintergrund); Zustand aus Feld 6 `0`/`1` | Icon und Name wie die anderen Plätze; der Schalter selbst sendet `OnOff` |
-| status | nur Icon (Feld 3) Font 1 in iconColor, in einem 2×2-Block mit Raster (nur cardDevice1, siehe unten); Name (Feld 5) und Wert werden nicht gelesen | die Zelle |
+| status | nur Icon (Feld 3) Font 1 in iconColor, in einem 2×2-Block mit Raster (nur cardDevice1, siehe unten; **`device13`:** Zelle eines Rasters bis 8×2 bzw. 8×1 per `devIcons`, nur Typ, ID, Icon, Farbe); Name (Feld 5) und Wert werden nicht gelesen | die Zelle |
 | info-Icon | Icon Font 1 in iconColor unten rechts; Name/Wert werden nicht genutzt | Icon; nur `buttonPress2`, kein Long-Press (das Element hat keinen Typ) |
 
 - **Jeder Platz verhält sich wie eine cardGrid-Zelle** (main und alle Slot-Arten, Code der Zelle der Basis-HMI 6.2.0
@@ -371,7 +398,7 @@ Je Slot-Art:
 | progress | Hotspot `mSlot2` (10/179, 429×42) über `tEntity2` und dem Balken (cardDevice2) | ja (per Code: `tEntity2.bco`) | wie Tabelle oben | wie value; das Popup bekommt kein Icon (leer), Farbe = Textfarbe des Namens |
 | switch: Icon und Name | Hotspot `mSlot7`/`mSlot8` (10 bzw. 226/236, 161×34) über `tIcon<k>`, `tEntity<k>` (cardDevice3) | ja (per Code: `tEntity<k>.bco`) | wie Tabelle oben | wie value |
 | switch: Schalter | `btOnOff<k>` | Bildwechsel | `event,buttonPress2,<intName>,OnOff,<0\|1>` beim Berühren, kein Long-Press (unverändert) | – |
-| status | `tStat7–10` (cardDevice1), Code in der Zelle | ja (per Code: `bco` der Zelle 14823, Rahmen bleibt) | wie Tabelle oben | wie main; leere Zelle (Rahmen sichtbar) sendet nichts; ein Popup aus der Zelle hat **keine Überschrift** (`pageIcons.tTmp1` leer) |
+| status | `tStat7–10` (cardDevice1; `device13`: die 16 bzw. 8 Zellen des Rasters), Code in der Zelle | ja (per Code: `bco` der Zelle 14823, Rahmen bleibt) | wie Tabelle oben | wie main; leere Zelle (Rahmen sichtbar) sendet nichts; ein Popup aus der Zelle hat **keine Überschrift** (`pageIcons.tTmp1` leer) |
 | info-Icon | `bInfo` | ja | immer `event,buttonPress2,<intName>,button` | kein Long-Press, kein Popup (unverändert) |
 | Statuszeile | `tStatus` | nein | – | kein Touch |
 
@@ -503,7 +530,7 @@ Font 0 ist 24 px hoch; die Breite eines Texts liefert `src/lib/const/text-width.
 
 | Seite | main-Name | Statuszeile | Slot-Name | Slot-Wert |
 |---|---|---|---|---|
-| cardDevice1 | 110 px | 390 px, 1 Zeile, links | info: 164 px, **mit Status-Icons 86 px**; button: 104 px | info: 110 px (rechtsbündig, in beiden Varianten) |
+| cardDevice1 | 110 px | 390 px, 1 Zeile, links | info: 164 px, mit Status-Icons 86 px (`device12`; **`device13`:** Satz B 49 px / 15 Byte, Satz C kein Name); button: 104 px | info: 110 px (rechtsbündig; `device13` Satz C 87 px / 19 Byte) |
 | cardDevice2 | 96 px | 390 px, 1 Zeile, mittig | value: 190 px; progress: 429 px; info: 104 px; button: 100 px | value: 190 px **Font 4**; info: 104 px |
 | cardDevice3 | 100 px | 390 px, 1 Zeile, links | info: 125 px; switch: 125 px | info: 125 px |
 
@@ -518,6 +545,10 @@ x 10–439 (die Swipe-Streifen liegen bei x < 9 und x ≥ 440), y 67–287; Stat
 x 404–439 / y 288–319. Ausrichtung: links = xcen 0, mittig = 1, rechts = 2; alle Texte ycen 1, isbr 0.
 
 ### cardDevice1 „Steuern“ (Saugroboter, Rasenmäher)
+
+> **Stand `device12` – überholt.** Seit `device13` gibt es statt des 2×2-Blocks `tStat7–10` und des schmalen Satzes
+> `bEntityS/tEntityS/tValueS` ein Raster bis 8×2 und die Sätze B und C, siehe [„Geometrie device13“](#geometrie-device13).
+> Die Herleitung unten (Maße aus der zi-Tabelle, Raster aus Objekt-Rahmen) gilt für das neue Raster sinngemäß weiter.
 
 Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den Status-Icons):
 
@@ -573,7 +604,8 @@ Mit Status-Icons / ohne (alle vier Status-Slots leer – sieht aus wie vor den S
   alle vier Zellen `vis 0`, sonst `vis 1`.
 - Die info-Zeilen 1–2 gibt es zweimal: breit (`bEntity/tEntity/tValue1–2`) und schmal (`bEntityS/tEntityS/tValueS1–2`).
   Der Parser schreibt in den breiten Satz, kopiert Text, Icon-Schrift und Farbe in den schmalen und schaltet per `vis`
-  den passenden Satz sichtbar. Position/Breite werden zur Laufzeit nie geändert (keine Seite des Projekts tut das).
+  den passenden Satz sichtbar. Position/Breite werden zur Laufzeit nie geändert (keine Seite des Projekts tut das; am
+  Panel gemessen: es geht auch nicht, eine Zuweisung an `x`/`w`/`h` liefert 0x1C bzw. 0x1A).
   Beide Sätze haben den gleichen Tipp-Code (cardGrid-Zelle, auch `text` sendet) mit Typ/ID von Slot 1 bzw. 2.
 - `tValueS1/2` liegen 1 px tiefer als `tValue1/2`, sonst wären die Rechtecke deckungsgleich und der Editor meldet
   „Component overlap“.
@@ -622,6 +654,9 @@ passten unter Icon, Wert und Balken nicht mehr über die Statuszeile.
 Slot-Reihenfolge der info-Kacheln: zeilenweise, Slot 1 links oben, Slot 2 rechts oben, Slot 3 links Mitte …
 
 ## Puffer und RAM
+
+> **Stand `device12`.** Für `device13` gelten [„Puffer, strCommand, RAM device13“](#puffer-strcommand-ram-device13)
+> (`entn` 7, Typen als Zahl, `strCommand` 703 / 775 / 959, RAM EU gemessen).
 
 - IDs (`entn*`, `entnMain`, `entnInfo`) 23 wie cardEntities2 (Adapter-IDs `<Seitenindex>?<n>`), Namen 31, Werte 31,
   Status 63, Icons 10 (cardDevice1: 7), Typen 10, `tSend` 63 (längstes Ereignis
@@ -808,6 +843,8 @@ PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /tmp/$M-4.HMI nspanel
 
 ### Gleich auf allen Modellen
 
+*(Stand `device10`/`device12`; seit `device13`: cardDevice1 N = 6, `strCommand` 703 / 775 / 959, IDs 7, Typen als Zahl.)*
+
 Protokoll und Feldreihenfolge, Anzahl und Art der Slots (cardDevice1 N=10, cardDevice2 N=6, cardDevice3 N=8),
 `devStatus`, Textpuffer (Name/Wert 31 Byte, Statuszeile 63 Byte, IDs 23, Icons 10 bzw. 7 auf cardDevice1),
 `strCommand` (943 / 875 / 1019) samt Begrenzung beim Empfang, Schriften je Rolle (Font-IDs 0, 1, 3, 4 gibt es auf
@@ -846,6 +883,10 @@ Schriften: dieselben Rollen wie EU. Font 1, 3, 4 (Icons, großer Wert) sind dies
 sie je Modell).
 
 #### cardDevice1 „Steuern“
+
+> **Stand `device12` – überholt.** Seit `device13` (Variante P2) liegt das Raster bis 8×2 unter dem Haupt-Icon an der
+> Stelle der Info-Zeilen, die Info-Zeilen stehen in den Stufen 1 und 2 als Satz C rechts neben dem Haupt-Icon, siehe
+> [„Geometrie device13“](#geometrie-device13). us-p `device13` ist noch nicht kompiliert.
 
 ![us-p cardDevice1](../../Pictures/device-page/hmi-us-p-cardDevice1.png)
 ![us-p cardDevice1 ohne Status-Icons](../../Pictures/device-page/hmi-us-p-cardDevice1-plain.png)
@@ -962,6 +1003,9 @@ einer info-Zeile, der statt des breiten gezeigt wird, solange der Status-Block s
 cardDevice1 Slot 1–2). Das Web-Panel baut seine Layouts aus dieser Datei.
 
 ### RAM je Seite und Modell
+
+*(Messung `device10`. `device13` EU: cardDevice1 3216, cardDevice2 2492, cardDevice3 3328 – siehe „Puffer, strCommand,
+RAM device13“; us-l/us-p `device13` offen.)*
 
 **Gemessen** am 2026-11-24: Ausgabe des Nextion-Editors beim Kompilieren der drei `device10`-Projekte (alle
 „Compile Successful! 0 Errors, 0 Warnings“). Global belegt EU 428 Byte, us-l und us-p je 404; die Werte unten sind
@@ -1189,7 +1233,8 @@ Die Schritte gelten für die EU-Datei; für us-l und us-p zusätzlich die Liste 
   0,5 s).
 - Die Statuszeile hat nur eine Zeile (für zwei war kein Platz).
 - Status-Raster: ob die Nextion bei `style` 1 und `borderw` 1 genau 1 px zeichnet und die überlappenden Rahmen sauber
-  aufeinanderliegen, ist nur aus der Vorlage cardPower (2 px) abgeleitet, nicht am Gerät gesehen. Beim Umschalten
+  aufeinanderliegen, ist nur aus der Vorlage cardPower (2 px) abgeleitet, nicht am Gerät gesehen. *(Am Panel bestätigt
+  mit `device13`: die gemeinsame Rahmenkante bleibt stehen, wenn die Nachbarspalte per `vis 0` ausgeblendet wird.)* Beim Umschalten
   der Zeilensätze kann es kurz flackern (der breite Satz wird erst beschrieben, dann ausgeblendet).
 - EU `device10` ist kompiliert: `/mnt/projekte/nspanel-v6.2.0.device10.tft` (2026-11-23 22:25) hat eine Seitentabelle
   mit 40 Seiten, deren Werte zu `device10` passen (siehe „Puffer und RAM“). Die Hinweise „nicht kompiliert“ weiter oben

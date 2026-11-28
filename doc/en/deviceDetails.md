@@ -67,11 +67,12 @@ Requirement: an item of the kind **Device with details** as in the quick start a
 2. Choose the **Layout**: **1 – Control**, **2 – Progress** or **3 – Values**. The small pictures show where which slot sits; the numbers belong to the rows below.
 3. Choose the **Main icon**, e.g. `robot-vacuum`. Empty = the icon of the item.
 4. **Status line**: choose the value that should stand at the bottom as text, e.g. the status of the device.
-5. Fill the **Slots**: pick a value of the device per row. Only what fits the kind of the slot is offered.
-6. **Apply** and then **Save** in the tab. – *Result: the adapter restarts.*
-7. **Try it on the panel:** long press the item. – *Result: the device page appears. The "i" at the bottom right opens the detail page.*
+5. **Status icons** (layouts 1 and 3 only, optional): choose how much room the small status icons get and fill the **Status icon places** below, see [Status icons](#status-icons). Default: **No status icons**.
+6. Fill the **Slots**: pick a value of the device per row. Only what fits the kind of the slot is offered.
+7. **Apply** and then **Save** in the tab. – *Result: the adapter restarts.*
+8. **Try it on the panel:** long press the item. – *Result: the device page appears. The "i" at the bottom right opens the detail page.*
 
-![The dialog Device with details with the device page switched on: layout choice with preview, main icon, status line and the slots](../Pictures/device-page/admin-overview.png)
+![The area of the device page in the dialog (layout 3 – Values): layout choice with preview, main icon, status line, the choice Status icons, the slots, Web panel elements and Show i icon](../Pictures/device-page-stages/layout3-stage0.png)
 
 ## Reference
 
@@ -160,15 +161,15 @@ Here too nothing is lost when switching as long as the dialog is open. The devic
 
 ## 5. Setting up the device page
 
-![The area of the device page in the dialog: layout with preview, main icon, status line, ten slots and Show i icon](../Pictures/device-page/admin-overview.png)
+From top to bottom: **Layout** with preview, **Main icon**, **Status line**, **Status icons** (layouts 1 and 3 only), **Slots**, **Status icon places**, **Web panel elements (web-l / web-p)** and **Show i icon**. The picture under [Quick start: device page](#quick-start-device-page) shows the whole area.
 
-When switched on for the first time, the dialog fills the info places (info line, large value) one after the other with the ticked entries of the filter list. Buttons, switches, progress bar, status icons and the status line stay empty – you choose those yourself.
+When switched on for the first time, the dialog fills the info places (info line, large value) one after the other with the ticked entries of the filter list. Buttons, switches, progress bar and the status line stay empty, status icons are set to **No status icons** – you choose those yourself.
 
 ### Layout
 
 Three layouts are available, see [The three layouts](#6-the-three-layouts). The preview shows the slots with their numbers.
 
-If you change the layout, the slots are kept **by their number** (slot 1 stays slot 1). If a value no longer fits the kind of the slot afterwards, it is shown in red with "does not fit this slot". If the new layout has fewer slots, the surplus ones are lost.
+If you change the layout, the slots are kept **by their number** (slot 1 stays slot 1). If a value no longer fits the kind of the slot afterwards, it is shown in red with "does not fit this slot". If the new layout has fewer slots, the surplus ones are lost. The status icons are not affected: their choice and their places stay saved with every change of layout, see [Status icons](#status-icons).
 
 ### Main icon
 
@@ -186,7 +187,7 @@ A text that does not fit into the line is shown on the panel in parts one after 
 
 ### Filling the slots
 
-Every row below **Slots** stands for one place: first the number from the preview, then the kind, then the selection. The selection offers:
+Every row below **Slots** stands for one place: first the number from the preview, then the kind, then the selection. The **Status icon places** are filled the same way. The selection offers:
 
 - **empty** – the place stays free on the panel,
 - **User defined** – something that need not belong to the device (next section),
@@ -229,7 +230,7 @@ For a **channel** the fields its role also has on a grid page are added.
 
 An example – one button for "running / pause": put an on/off value into a button slot, choose `pause` as icon for true and `play` for false. The tap toggles, the icon changes with it.
 
-**Status icons** have a small dialog of their own, **Settings of the element**: icon and colour for true and false, **Color scale …** and **Short tap** (**Standard** or **Navigation** with a target page).
+**Status icons** have a small dialog of their own, **Settings of the element**: icon and colour for true and false, **Color scale …** and **Short tap** (**Standard** or **Navigation** with a target page). If the place holds an alias channel socket or button, **Long press** is added.
 
 ![The small dialog Settings of the element for a status icon: icon and colour for true and false, colour scale and short tap](../Pictures/device-page/admin-slot-dialog-status.png)
 
@@ -248,16 +249,48 @@ If **target page not found** stands in red below the row, the page does not exis
 
 ### Status icons
 
-Layout 1 and layout 3 can show a row of small **status icons**, e.g. for Wi-Fi, bin full, filter, error. The icons stand in a grid of boxes with a thin grey frame.
+Layout 1 and layout 3 can show a row of small **status icons**, e.g. for Wi-Fi, bin full, filter, error. The icons stand in a grid of boxes with a thin grey frame. Layout 2 has no status icons.
 
 - A status icon shows **only an icon in its colour**, without name and value.
 - The icon comes automatically (the same as in an info line with this value); an own one is chosen through **…**, e.g. `delete-empty` for "empty the bin".
 - The colour comes automatically: on/off values in the colours *activated* / *deactivated* of the [colour theme](colorTheme), other values in the colour of their group.
-- A status icon can be tapped and long pressed like every other element of the page.
+
+#### Setting the status icons
+
+1. At **Status icons** (below the status line) choose how much room the icons get – this is the **stage**:
+
+   | Layout | Choice |
+   |---|---|
+   | 1 – Control | **No status icons** · **1–3 columns (up to 6 icons)** · **4–5 columns (up to 10 icons), info rows without name** · **6–8 columns (up to 16 icons), without info rows** |
+   | 3 – Values | **No status icons** · **1–4 icons, instead of tile 1** · **5–8 icons, instead of tiles 1 and 2** |
+
+   Layout 2 has no such choice.
+2. Below the slots the **Status icon places** appear – as many as the choice holds (layout 1: 6, 10 or 16; layout 3: 4 or 8). Each place is filled like a slot: **empty**, **User defined** (data point, channel or navigation) or a value of the device. **…** opens the [settings of the element](#settings-of-the-element).
+3. The preview at the layout shows the division of the chosen stage: the grid with all columns of the stage and next to it or below it what is left of the info lines and tiles.
+
+What the stage covers is hidden by the dialog: in layout 1 with **6–8 columns** the slots 1 and 2 (the two info lines), in layout 3 slot 1 or the slots 1 and 2 (the first tiles).
+
+| Layout 1, **1–3 columns**: slots 1–6 and six places | Layout 1, **6–8 columns**: slots 1 and 2 hidden, sixteen places |
+|---|---|
+| <img alt="The dialog with layout 1 and the choice 1–3 columns (up to 6 icons): the preview shows the grid next to narrower info lines, below slots 1 to 6 there are six status icon places" src="../Pictures/device-page-stages/layout1-stage1.png" width="100%"/> | <img alt="The dialog with layout 1 and the choice 6–8 columns (up to 16 icons), without info rows: the preview shows the grid without info lines, the list starts with slot 3, below it sixteen status icon places" src="../Pictures/device-page-stages/layout1-stage3.png" width="100%"/> |
+| **Layout 3, 1–4 icons, instead of tile 1**: slot 1 hidden, four places | |
+| <img alt="The dialog with layout 3 and the choice 1–4 icons, instead of tile 1: the preview shows four cells in the place of tile 1, the list starts with slot 2, below it four empty status icon places" src="../Pictures/device-page-stages/layout3-stage1.png" width="100%"/> | |
+
+The pictures were taken from a German admin. The entries marked in red in them ("nicht im Gerät gefunden" = not found in the device, "passt nicht zu diesem Slot" = does not fit this slot) come from the test configuration the pictures were taken with; they have nothing to do with the stage.
+
+**Hiding is not deleting.** What the choice does not show – places above the chosen number and the covered slots – stays saved with what is assigned to it and its settings. If you later choose more room again, everything is back. On the panel none of it appears as long as it is hidden.
+
+| 6–8 columns, place 8 filled | made smaller to 1–3 columns: place 8 hidden, slots 1 and 2 back | 6–8 columns again: place 8 still filled |
+|---|---|---|
+| <img alt="Layout 1 with 6–8 columns: place 8 is filled with bin full" src="../Pictures/device-page-stages/shrink-0-before.png" width="100%"/> | <img alt="The same page with 1–3 columns: only the places 1 to 6, the slots 1 and 2 are back with what was assigned to them" src="../Pictures/device-page-stages/shrink-1-smaller.png" width="100%"/> | <img alt="6–8 columns again: place 8 still shows bin full" src="../Pictures/device-page-stages/shrink-2-back.png" width="100%"/> |
+
+**Change of layout.** The choice and the status icon places stay saved when the layout changes. If the new layout does not have the chosen stage, the largest one it has applies there – e.g. **6–8 columns** becomes **5–8 icons, instead of tiles 1 and 2** on layout 3 with the first eight places. Back on layout 1 all sixteen places are there again. Layout 2 shows no status icons, but does not lose them either.
+
+<img alt="Layout 1 with 6–8 columns changed to layout 3: the choice shows 5–8 icons, instead of tiles 1 and 2, below it eight places, slots 1 and 2 are hidden" src="../Pictures/device-page-stages/layout-change-1to3.png" width="50%"/>
 
 #### The stage: how much room the grid gets
 
-How many status icons the page can show is set by the **stage**. You choose it in the admin while setting up the device page (see [Setting up the device page](#5-setting-up-the-device-page)). The larger the stage, the more icons fit – and the more of the rest has to make room. The stage is fixed for the page: on the panel nothing appears or disappears when a value changes.
+How many status icons the page can show is set by the **stage** – the choice **Status icons** in the dialog. The larger the stage, the more icons fit – and the more of the rest has to make room. The stage is fixed for the page: on the panel nothing appears or disappears when a value changes.
 
 **Layout 1 – Control:** the grid has two rows and stands next to the big icon (in US portrait and on Smartphone portrait below it). It grows to the right into the info lines.
 
@@ -291,10 +324,26 @@ Layout 2 has no status icons.
 **What you see on the panel:**
 
 - Only as many columns appear as are filled – at most as many as the stage allows. If only five icons are filled in the stage 6–8, three columns are shown; the info lines stay away anyway, because that follows the stage, not the number of icons.
-- The icons fill the grid **column by column**: top, bottom, then the next column. Empty places move up, there is no gap. If the last column is only half filled, its empty box keeps its frame.
+- The filled places move up **without gaps**: if you leave place 2 empty and fill place 3, place 3 stands in second position on the panel. The order of the filled places is kept.
+- The icons fill the grid **column by column**: top, bottom, then the next column (layout 3 has only one row). If the last column is only half filled, its empty box keeps its frame.
 - What the stage covers (the info lines of layout 1 in the stage 6–8, the first info tiles of layout 3) is not shown on the panel – even when the slot is filled.
 
 **Nothing is lost when making the stage smaller.** If you choose a smaller stage, what is assigned to the status icons, info lines and info tiles that are then no longer visible stays stored. With a larger stage it is back.
+
+#### Tapping and holding a status icon
+
+A status icon is an element like the others of the page, only smaller. What tapping and holding do depends on what lies on the place:
+
+| What the place holds | short tap | hold (about half a second) |
+|---|---|---|
+| value of the device or own data point | nothing | nothing |
+| … with **Short tap: Navigation** (through **…**) | opens the target page | nothing |
+| **User defined → Navigation** | opens the target page | nothing |
+| **Channel**: socket, button, simple light | switches or presses | for socket and button the data point of **Long press**, if set; otherwise nothing |
+| **Channel**: dimmable/colour light, fan, slider | light and fan switch | opens the popup |
+| **Channel**: blind, gate, lock, selection, timer | opens the popup at once | – |
+
+On the hardware panel the box turns grey while you touch it and blinks when held, like the other elements. A popup from a status icon has no heading. An empty box does not react.
 
 This is how it looks in the other formats:
 
@@ -322,7 +371,7 @@ The models **Smartphone landscape** (`web-l`) and **Smartphone portrait** (`web-
 
 | Layout | on every panel | additionally on smartphone web panels | slot numbers | there in total |
 |---|---|---|---|---|
-| **1 – Control** | 2 info lines, 4 buttons, up to 16 status icons | 2 buttons | 11–12 | 6 buttons |
+| **1 – Control** | 2 info lines, 4 buttons, up to 16 status icons | 2 buttons | 7–8 | 6 buttons |
 | **2 – Progress** | large value, progress bar, 3 info lines, 1 button | 1 info line, 2 buttons | 7 (info line), 8–9 (buttons) | 4 info lines, 3 buttons |
 | **3 – Values** | 6 info lines, 2 switches | 2 info lines, 1 switch | 9–10 (info lines), 11 (switch) | 8 info lines, 3 switches |
 
@@ -368,7 +417,8 @@ For devices with a programme that runs down: washing machine, dryer, dishwasher.
 For devices with many readings: car, sensors.
 
 - 6 **info lines** as tiles in two columns (slots 1–6, row by row: 1 top left, 2 top right, 3 middle left …),
-- 2 **switches** below (slots 7–8).
+- 2 **switches** below (slots 7–8),
+- up to 8 **status icons** in one row in the place of the first tiles, depending on the stage, see [Status icons](#status-icons).
 
 ![Layout 3 – Values: car with six values in two columns and the switches Climate and Charging](../Pictures/device-page/eu-cardDevice3.png)
 
@@ -502,7 +552,9 @@ The technical details (protocol, dimensions) are available for developers in [do
 - **On the entities page nothing happens on a tap on the left.** That needs the new TFT as well. The switch on the right of the row works independently of it.
 - **A slot stays empty on the panel.** The state or channel does not exist (any more) or does not fit the kind of the slot – the row is then red in the dialog. For a channel a warning is written to the log when the adapter starts (*Page '…', page item …: Device page slot …*).
 - **The info lines in layout 1 are shorter or missing.** That is the [stage of the status icons](#status-icons): with 1–3 columns the name is short, with 4–5 columns it is missing, with 6–8 columns the info lines are missing completely. In layout 3 the first info tiles are missing the same way. What is assigned stays stored; with a smaller stage it is visible again.
-- **Slots are missing after a change of layout.** The slots are kept by their number. Of the additional slots of the smartphone web panels the third is lost when changing to layout 1.
+- **Slots or status icon places are missing in the dialog.** The chosen stage of the status icons hides them; what is assigned to them is still saved and back with a larger stage, see [Setting the status icons](#setting-the-status-icons).
+- **A filled status icon is missing on the panel.** Its place lies above the chosen stage (then hidden in the dialog), or the data point or channel does not exist (any more) – the row is red in the dialog then.
+- **Slots are missing after a change of layout.** The slots are kept by their number. Of the additional slots of the smartphone web panels the third is lost when changing to layout 1. The status icons are kept.
 - **The additional elements are missing on the panel.** They only appear on standalone web panels with the models *Smartphone landscape* and *Smartphone portrait* – and only while the tick box **Web panel elements (web-l / web-p)** is set.
 - **Nothing blinks in the web panel on a long press.** Only the hardware panel shows the blinking; the web panel still triggers on release.
 - **A long press on a button of the device page does nothing.** No **Long press** is set for the element. This is intended: a long press is never taken as a short tap.

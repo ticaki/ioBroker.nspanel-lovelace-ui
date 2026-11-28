@@ -1,5 +1,15 @@
 # Elementtyp als Zahl statt Text (HMI-RAM) – Analyse
 
+> **Umgesetzt (2026-11-28)** für die Geräteseiten cardDevice1–3: HMI `device13` (EU, us-l, us-p; gebaut mit
+> `HMI/tools/card_device.py`, siehe [device-details/device-page-hmi.md, „device13“](device-details/device-page-hmi.md#device13-typzahl-status-raster-devicons)),
+> Adapter (`devicePageTypeNumber` / `devicePageNumberedElement` in `src/lib/pages/device-page.ts`) und Web-Panel
+> (`src-web/src/cards/cardDevice/parse.ts` führt die Zahl auf die Typnamen zurück). Typzahl 0–9 wie unten, `entn*`
+> txt_maxl 7, `nent1/2` txt_maxl 11, tmLP liest den Typ aus der neuen Zahlvariable `vLPType`. Am Panel gemessen:
+> `covx` liest die führenden Ziffern, leerer Text und Text ohne führende Ziffer ergeben 0. RAM gemessen (EU
+> `device13`): cardDevice1 3216 (368 frei), cardDevice2 2492, cardDevice3 3328 (256 frei); us-l und us-p `device13`
+> sind noch nicht kompiliert und nicht getestet. Abweichungen von der Analyse sind unten mit **Umsetzung:** markiert.
+> Die anderen Seiten (Abschnitt D) sind nicht umgestellt.
+
 Stand 2026-11-28, Branch `feat/device-page`. Das ist nur eine Analyse, es wurde kein Code und keine HMI geändert.
 Grundlage sind die HMIs `/home/tim/device-page-hmi/nspanel-*v6.2.0.device12.HMI` (gelesen mit `HMI/tools/hmi.py` und
 `pagefile.py`, nur die lebenden Sektionen) und die Editor-Ausgaben `/mnt/projekte/{eu,us-l,us-p}.txt`.
@@ -12,6 +22,9 @@ Grundlage sind die HMIs `/home/tim/device-page-hmi/nspanel-*v6.2.0.device12.HMI`
    veröffentlicht ist und Text-Payloads nicht mehr vorkommen – Tim, 2026-11-28.)
 3. Der Adapter baut die Zahl nur für cardDevice1–3 und erst ab der TFT-Version, die sie versteht. Die Versionsgrenze ist
    nötig, weil die Seite sonst nicht funktioniert.
+   **Umsetzung:** Der Adapter schickt die Zahl auf cardDevice1–3 immer, an jedes Modell (auch web-l/web-p). Eine eigene
+   Versionsgrenze gibt es nicht, weil die Geräteseite noch nicht veröffentlicht ist; Hardware-Panels bekommen die
+   Geräteseite nur ab `CARD_DEVICE_MIN_TFT` (vorläufig 6.2.0, wird zum Release angehoben).
 4. `entn` der Geräteseiten bekommt txt_maxl 7 (Puffer 8). Laut Korrektur gilt die ID-Grenze `999?999`, also höchstens
    7 Zeichen.
 
@@ -101,6 +114,9 @@ also auch während der Finger liegt. Wird der Typ eine Zahl, braucht tmLP einen 
 
 Der heutige `tTmp`-Weg hat dasselbe Überschreib-Risiko schon jetzt. Das ist ein Befund, kein Auftrag.
 
+**Umsetzung:** eine neue Zahlvariable `vLPType` je Seite; `down` schreibt den Typ hinein, tmLP öffnet die Popups 6–9
+daraus.
+
 **covx und leere Elemente:** `covx` ergibt 0 für leeren Text, für `"0"` und für jeden Text ohne führende Ziffer (am
 Panel gemessen). Ein leeres Element (`~~~~~`) und die Zahl 0 sind damit gleichwertig: ausgeblendet.
 
@@ -111,8 +127,11 @@ Panel gemessen). Ein leeres Element (`~~~~~`) und die Zahl 0 sind damit gleichwe
   (`src/lib/classes/Page.ts:411`) und `getPageItemAt()` (`:448`). `page.id` ist `String(a)`, also die Position in
   `options.pages` einschließlich der angehängten Systemseiten (`src/lib/controller/panel.ts:602`).
 - **Geräteseite:** `buildDevicePage()` (`src/lib/pages/device-page.ts:1169`, aufgerufen nur aus `src/main.ts:3911`, also
-  nur aus Admin-Geräte-Items) legt die Items so an:
-  `[main, slot1 … slotN, info, status, extra1 … extraE]`. Jedes davon ist ein normales Page-Item mit `<Seite>?<n>`:
+  nur aus Admin-Geräte-Items; Zeilennummern Stand der Analyse) legt die Items so an:
+  `[main, slot1 … slotN, info, status, extra1 … extraE]`. **Umsetzung:** seit `device13`
+  `[main, slot1 … slotN, info, status, Status-Icon 1 … M, extra1 … extraE]` mit M = 16 (Layout 1), 0 (Layout 2),
+  8 (Layout 3) und N = 6 / 6 / 8 (`devicePageSlotItemIndex`, `devicePageStatusItemIndex`). Jedes davon ist ein normales
+  Page-Item mit `<Seite>?<n>`:
   - main: `devicePageMainItem`
   - Slots mit State: `devicePageSlotItem`
   - Alias-Kanal: das Item aus dem Config-Manager, Feld 2 bleibt unverändert, `devicePageChannelElement` ändert nur Feld 6
@@ -131,6 +150,10 @@ Panel gemessen). Ein leeres Element (`~~~~~`) und die Zahl 0 sind damit gleichwe
   | 3 | 14 | 0–9 | bis 13 |
 
   Die HMI-Modelle bekommen keine Extra-Slots (`devicePageOfModel`). n ist dort also immer höchstens zweistellig.
+
+  **Umsetzung (`device13`):** Layout 1 hat 27 Items (gesendet n 0–7 in `entityUpd`, 9–24 in `devIcons`, auf
+  web-l/web-p dazu 25–26), Layout 2 unverändert, Layout 3 22 Items (0–9 und 11–18, auf web-l/web-p bis 21). Das
+  größte n ist 26, `999?26` hat 6 Zeichen und passt in `entn` mit txt_maxl 7.
 - **Seitenindex > 999?** Das ginge nur mit etwa 975 oder mehr konfigurierten Seiten, einschließlich der erzeugten Geräte-,
   Detail- und Media-Unterseiten und der rund 20 Systemseiten. Der Nutzer mit 240 Seiten liegt weit darunter.
   `999?14` hat 6 Zeichen und passt.
@@ -166,6 +189,8 @@ Panel gemessen). Ein leeres Element (`~~~~~`) und die Zahl 0 sind damit gleichwe
     - web-l/web-p bekommen `1.0.0` und damit weiter Text,
     - Web-Klone von EU/us-l/us-p bekommen die neueste verfügbare TFT und damit die Zahl (siehe F).
 
+    **Umsetzung:** keine Versionsweiche für die Zahl (siehe Entscheidung 3); alle Modelle bekommen sie.
+
 ## C. RAM-Ersparnis
 
 Rechenmodell:
@@ -174,6 +199,10 @@ Rechenmodell:
 - `entn` 23 → 7: Puffer 24 → 8. Ersparnis **16 Byte je Variable**.
 
 Code kostet kein RAM. Ausgang sind die gemessenen Editor-Werte (Limit 3584).
+
+**Gemessen nach der Umsetzung** (EU `device13`, mit Status-Raster und Stufen, nicht nur Typzahl und `entn` 7):
+cardDevice1 3216 (368 frei), cardDevice2 2492 (1092 frei), cardDevice3 3328 (256 frei). us-l und us-p `device13` sind
+noch nicht kompiliert – ihre Werte sind offen.
 
 | Modell | Seite | belegt heute | frei heute | type (Anzahl × 12) | entn (Anzahl × 16) | Ersparnis | frei danach |
 |---|---|---|---|---|---|---|---|
@@ -253,6 +282,10 @@ Die Popups haben keine `type`-Variablen. Für sie bringt die Typ-Zahl nichts.
   Damit ist `if(type1.val>=2&&type1.val<=5)` zulässig, eine Mischung wie `…&&…||…` aber nicht.
   `indicator_long_press_mask.py` hält dazu fest: „if() takes no expressions, hence sys0“.
 
+**Inzwischen am Panel gemessen (2026-11-28):** `covx` liest die führenden Ziffern; leerer Text und Text ohne führende
+Ziffer (`shutter`, `delete`) ergeben 0. Damit sind ein leeres Element und Typ 0 gleichwertig. Der folgende Absatz ist
+der Stand vor der Messung.
+
 **Nicht belegt (Annahme):** was `covx` bei nicht-numerischem Text liefert. Die Nextion-Doku sagt nur „text must be text
 ASCII representation of an integer value“ und nichts zu leerem Text, `shutter` oder `12abc`. Es gibt nur Hinweise:
 
@@ -263,16 +296,17 @@ ASCII representation of an integer value“ und nichts zu leerem Text, `shutter`
 
 **Prüfpunkte für den Simulator:**
 
-1. `covx` mit `"shutter"`, `"delete"`, `""`, `"input_sel"`, `"0"`, `"1"` und `"12abc"` in eine Zahlvariable, die vorher
-   auf 7 stand. Zu klären ist, ob das Ergebnis 0 ist oder der alte Wert bleibt (dann vorher auf 0 setzen) oder ob es
-   eine Fehlermeldung oder einen Absturz gibt.
+1. ~~`covx` mit `"shutter"`, `"delete"`, `""`, `"input_sel"`, `"0"`, `"1"` und `"12abc"` in eine Zahlvariable, die vorher
+   auf 7 stand.~~ **Erledigt (am Panel gemessen):** führende Ziffern werden gelesen, Text ohne führende Ziffer und
+   leerer Text ergeben 0.
 2. `if(type1.val>=2&&type1.val<=5)` ist richtig für 1, 2, 5, 6.
 3. `if(type1.val==0||type1.val==1)` und Vergleiche einer Zahlvariable mit einer Konstanten in down/up/tmLP.
 4. `spstr` in eine Variable, die jetzt Zahl ist, muss wegfallen. Der Weg ist `spstr` → `tTmp` → `covx`, und `tTmp`
    (txt_maxl 10) muss `input_sel` (9 Zeichen) fassen.
 5. entn txt_maxl 7: `999?999` (7 Zeichen) kommt ganz an. Bei 8 Zeichen wird abgeschnitten, was nur für den Test zählt.
 6. Ein langer Druck, während ein `entityUpd` eintrifft, öffnet weiter das richtige Long-Press-Popup (Typ-Träger für tmLP).
-7. Die RAM-Werte der drei Seiten in allen drei Modellen aus dem Editor gegen die Tabelle in C.
+7. Die RAM-Werte der drei Seiten in allen drei Modellen aus dem Editor gegen die Tabelle in C. **EU gemessen** (siehe C),
+   us-l und us-p offen.
 
 ## F. Web-Panel
 
@@ -288,13 +322,15 @@ ASCII representation of an integer value“ und nichts zu leerem Text, `shutter`
 - **Mit einer Typzahl** müsste das Web-Panel beim Parsen von cardDevice die Zahl auf die Namen zurückführen, die es
   braucht: 0 → `""`, 2–9 → die festen Namen, 1 → ein „sendet nur“-Typ. Text muss es weiter verstehen, denn
   web-l/web-p bekommen wegen TFT `1.0.0` Text.
+  **Umsetzung:** `parse.ts` führt die Zahl auf die Namen zurück und versteht weiter Typnamen; der Adapter schickt allen
+  Modellen, auch web-l/web-p, die Zahl.
 - Web-Klone von EU/us-l/us-p melden die neueste verfügbare TFT und bekommen deshalb die Zahl.
 - Für 1 kann das Web-Panel switch, button und text nicht mehr unterscheiden. Auf der Geräteseite braucht es das nicht,
   weil die Darstellung am Slot hängt und der Adapter nie ein Element ohne ID schickt.
 
 ## Anhang: Status-Raster 4×2 auf cardDevice1
 
-Die Rechnung zum Status-Raster mit 0–4 Spalten (Geometrie, Namens- und Wertbreiten, RAM-Varianten, strCommand bei 14
+*(Überholt: umgesetzt ist das Raster bis 8×2.)* Die Rechnung zum Status-Raster mit 0–4 Spalten (Geometrie, Namens- und Wertbreiten, RAM-Varianten, strCommand bei 14
 Slots, Folgearbeiten) steht in [device-details/status-grid-4x2.md](device-details/status-grid-4x2.md). Sie baut auf den
 Einsparungen aus Abschnitt C auf.
 

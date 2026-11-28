@@ -259,7 +259,10 @@ Für unbekannte Adapter gibt es eine allgemeine Maske, die nur nach Rolle zuordn
 
 Stand: 2026-11-23 – Adapter, Admin und Web-Panel im Branch `feat/device-page`. HMI-Seiten und Feldmaße:
 [device-page-hmi.md](device-page-hmi.md) (Branch `feat/device-page-hmi`). Seit 2026-11-24 auf allen fünf Modellen, die
-Web-Modelle mit Zusatz-Slots – siehe „Modelle und Zusatz-Slots“.
+Web-Modelle mit Zusatz-Slots – siehe „Modelle und Zusatz-Slots“. Seit 2026-11-28 (TFT `device13`) Status-Icons in
+Stufen: cardDevice1 bis 16 (8×2), cardDevice3 bis 8 (8×1), Typ als Zahl, Nachricht `devIcons` – siehe „Status-Icons
+und Stufen“, Analyse in [status-grid-8x2.md](status-grid-8x2.md), Nutzersicht in
+[doc/de/deviceDetails.md, „Status-Icons“](../../de/deviceDetails.md#status-icons).
 
 Optional öffnet der Long-Press statt der Detailseite eine **Geräteseite** (cardDevice1/2/3): großes Geräte-Icon
 (main), feste Slots, eine breite Statuszeile und unten rechts ein „i“, das die Detailseite öffnet. Die Seite ist
@@ -279,6 +282,9 @@ devicePage?: {
     showInfo: boolean;                         // „i“ zur Detailseite
     icon?: string;                             // MDI-Name des großen Icons, fehlt = Icon des Items
     status?: DevicePageStatusRef;              // State der Statuszeile, fehlt = leere Zeile
+    statusStage?: 1 | 2 | 3;                   // Stufe der Status-Icons, fehlt = keine (Layout 1: 1–3 / 4–5 / 6–8
+                                               // Spalten, Layout 3: 1–4 / 5–8 Icons; Layout 2: keine)
+    statusSlots?: (DevicePageSlotRef | null)[]; // Plätze der Status-Icons (höchstens 16), eigene Liste neben `slots`
 }
 // DevicePageStateRef = DeviceDetailEntryConfig & { icon?: string }:
 //   { key: Masken-Eintrag ('' = ohne), id: State, subName?: eigener Zusatz, icon?: älteres Icon der status-Slots }
@@ -299,10 +305,11 @@ devicePage?: {
   `id`. Ein Slot darf jeden State des Geräts zeigen, er muss nicht für die Detailseite angehakt sein.
 - Normalisierung `devicePageConfigOf`: unbekanntes Layout → 1, Slots auf die Länge des Layouts gekürzt/mit `null`
   aufgefüllt (ungültige oder ohne State → `null`), `showInfo` nur bei `false` aus, leeres Icon/leerer Status entfällt.
-  Ein gespeichertes Layout 1 von vor den Status-Icons (6 Slots) bekommt so die Status-Slots leer dazu. Das ältere
-  `icon` eines Verweises bleibt nur auf einem `status`-Slot (getrimmt, leer entfällt), Statuszeile und andere Slots
-  verlieren es. Beim Layoutwechsel (`fitDevicePageSlots`) bleiben die Slots nach Position, nichts wird neu geraten
-  (auch dort fällt das ältere Icon weg, wenn der Slot keine `status`-Art mehr ist).
+  `statusStage` bleibt wie gespeichert (0 entfällt), auch wenn das Layout sie nicht hat; `statusSlots` höchstens 16,
+  leere Plätze am Ende und eine leere Liste entfallen. Nach der Stufe gefiltert wird hier **nicht** – der Admin
+  speichert mit dieser Funktion. Das ältere `icon` eines Verweises bleibt nur auf einem Status-Platz (getrimmt, leer
+  entfällt), Statuszeile und Slots verlieren es. Beim Layoutwechsel (`fitDevicePageSlots`) bleiben die Slots nach
+  Position, nichts wird neu geraten; Stufe und Status-Plätze bleiben unverändert.
 - Slots mit `custom`: `id` getrimmt, `key` immer `''`, bleiben auch mit leerer `id` gespeichert; die Laufzeit
   (`deviceDetailsRuntimeOf`) macht daraus einen leeren Slot. Unbekannte Werte von `custom` gelten als State des Geräts.
 - Einstellungen des Elements (`DevicePageSlotLook`): bleiben auf jeder Slot-Art und beim Layoutwechsel erhalten; Icons
@@ -316,7 +323,8 @@ devicePage?: {
 - Laufzeit (`deviceDetailsRuntimeOf` → `DeviceDetailsRuntime.devicePage`, `DevicePageRuntime`): zusätzlich der Kurz-Tipp
   des Items; `showInfo` nur, wenn das Gerät angehakte Detail-Einträge hat.
 - Vorbelegung (`defaultDevicePageConfig` / `defaultDevicePageSlots`): nur die `info`-/`value`-Slots der Reihe nach aus
-  den angehakten Einträgen; `button`, `switch`, `progress`, `status` und die Statuszeile bleiben leer – nicht raten.
+  den angehakten Einträgen; `button`, `switch`, `progress` und die Statuszeile bleiben leer, keine Stufe, keine
+  Status-Plätze – nicht raten.
 
 ### Layouts und Slot-Arten
 
@@ -326,9 +334,9 @@ Zusatz-Slots“.
 
 | Layout | Slots |
 |---|---|
-| 1 „Steuern“ | info, info, button, button, button, button, status, status, status, status |
+| 1 „Steuern“ | info, info, button, button, button, button (+ bis zu 16 Status-Plätze, `DEVICE_PAGE_STATUS_SLOTS`) |
 | 2 „Fortschritt“ | value, progress, info, info, info, button |
-| 3 „Werte“ | info × 6, switch, switch |
+| 3 „Werte“ | info × 6, switch, switch (+ bis zu 8 Status-Plätze) |
 
 | Art | zulässige States (`devicePageSlotAccepts`) | Element | Feld 6 | Tipp |
 |---|---|---|---|---|
@@ -339,13 +347,20 @@ Zusatz-Slots“.
 | switch | schreibbarer boolean | `switch` | `0`/`1` | `OnOff` wie cardEntities |
 | status | alle | `text`, nur Icon (Feld 3) und Farbe (Feld 4) wie die Info-Zeile desselben States (boolean: Farbe aktiviert/deaktiviert), eigenes Icon `icon` ersetzt es; Batterie-Füllstand: Icon nach Wert (siehe „Batterie-Füllstand: Icon nach Wert“); Name (Feld 5) leer | leer | keiner |
 
-- **Status-Icons (Layout 1):** die Anzahl folgt nur aus `DEVICE_PAGE_LAYOUTS[1]` (HMI: 2×2-Raster rechts neben main).
-  Sind alle leer, zeigt die HMI die Seite wie bisher (Info-Zeilen breit); ist mindestens einer belegt
-  (`devicePageHasStatusIcons`), stehen alle Rasterzellen (leere als leere Zelle) und die Info-Zeilen werden schmal.
-  Die Feldbreiten dafür stehen in `DEVICE_PAGE_FIELDS[1].slotsWithStatus` (info: Name 86 px, Wert 110 px; sonst 164/110),
-  `devicePageSlotFields(layout, kind, withStatusIcons)` wählt die passende Angabe.
+- **Status-Icons und Stufen (Layout 1 und 3):** Die Status-Plätze sind keine Slots des Layouts, sondern die eigene Liste
+  `statusSlots`; ihre Art ist immer `status`. Wie viele gezeigt werden, legt die Stufe fest
+  (`DEVICE_PAGE_STAGE_CAPACITY`: Layout 1 0 / 6 / 10 / 16, Layout 3 0 / 4 / 8; `devicePageStageOf` begrenzt eine
+  gespeicherte Stufe auf die größte des Layouts). Was die Stufe verdeckt (`DEVICE_PAGE_STAGE_HIDDEN_SLOTS`,
+  `devicePageSlotHiddenByStage`: Layout 1 Stufe 3 die Slots 1/2, Layout 3 Stufe 1 Slot 1, Stufe 2 die Slots 1/2) und
+  Plätze über der Kapazität baut `buildDevicePage` gar nicht (Leer-Item an ihrer Stelle: kein Objekt-Lesen, kein Abo,
+  keine Warnung). Die Info-Zeilen von Layout 1 haben je Stufe eigene Breiten (`slotsByStage` in `DEVICE_PAGE_FIELDS`:
+  Stufe 1 Name 49 / Wert 110, Stufe 2 nur Wert 87; us-p Stufe 1 und 2 nur Wert 106), `devicePageSlotFields(layout,
+  kind, stage, model)` wählt sie. Die Stufe geht in Feld 6 des info-Elements an die HMI (`devicePageInfoElement`), die
+  Icons per `devIcons` (siehe „Protokoll“).
 - Die Namen der Slots (Dubletten-Zusatz) werden nur unter den Slots mit Namen bestimmt – ein Status-Icon zählt nicht mit.
-- `PageDevice` leert Feld 5/6 jedes `status`-Elements zusätzlich (`devicePageStatusIconElement`), leer → `~~~~~`.
+- `PageDevice` leert Feld 5/6 jedes `status`-Elements zusätzlich (`devicePageStatusIconElement`); `devicePageIconsMessage`
+  nimmt nur Typ, ID, Icon und Farbe, lässt leere Plätze weg (die belegten rücken lückenlos auf, spaltenweise) und füllt
+  hinten mit leeren Zellen `~~~` auf.
 
 Ein State, der nicht (mehr) existiert oder nicht zur Art passt, lässt den Slot leer (Warnung im Log).
 
@@ -412,7 +427,7 @@ Standard-Page-Item und nutzen dessen Bausteine.
   (der ConfigManager erlaubt `longPress` nur für die Typen button/switch).
 - **Alias-Kanäle** bekommen die Felder über die Kette (`trueIcon`/`falseIcon`/`trueColor`/`falseColor`/`scale`/
   `longPress` des Admin-Items) – sie überschreiben die Vorgaben der Rolle.
-- Status-Slots: das ältere Feld `icon` gilt weiter als Icon für beide Zustände, bis im Dialog Icons gesetzt werden.
+- Status-Plätze: das ältere Feld `icon` gilt weiter als Icon für beide Zustände, bis im Dialog Icons gesetzt werden.
 - Andocken weiterer Einstellungen: ein Feld in `DevicePageSlotLook` (+ `DEVICE_PAGE_SLOT_LOOK_FIELDS` für Texte), ein
   Abschnitt in `DevicePageSlotDialog` (`renderLook` / `renderActions`), Anwenden in `withDevicePageSlotLook` (States)
   bzw. `devicePageChannelAdminItem` (Kanäle).
@@ -503,21 +518,32 @@ Geräteseite, wo das Panel sie hat, sonst – bei zu alter TFT – die Detailsei
 pageType~cardDevice<1|2|3>
 entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info>
 entityUpd~<heading>~<navigation wie cardGrid>~<main>~<slot 1>~…~<slot N>~<info>~<extra 1>~…~<extra E>   (nur web-l / web-p)
+devIcons~<typ>~<id>~<icon>~<farbe>~…     (nur cardDevice1: 16 Zellen, cardDevice3: 8 Zellen; direkt nach entityUpd)
+devStatus~<text>                          (nächster Abschnitt der Statuszeile)
 ```
 
-Beispiel Layout 1 (N = 10) mit zwei Status-Icons (Slot 7 Tür als boolean an, Slot 9 mit eigenem Icon), Slots 8/10 leer
-(Zeilenumbrüche nur zur Lesbarkeit):
+Beispiel Layout 1 (N = 6), Stufe 1 (1–3 Spalten), Seite 12, zwei Status-Icons auf den Plätzen 1 und 3 (Tür als
+boolean an, Filter mit eigenem Icon), Platz 2 leer; Typen als Zahl (Zeilenumbrüche nur zur Lesbarkeit):
 
 ```
-entityUpd~Saugroboter~<nav>~button~12?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimmer
-~text~12?1~<icon>~<farbe>~Akku~80 %~text~12?2~<icon>~<farbe>~Fläche~34 m²
-~button~12?3~<icon>~<farbe>~Start~1~…~button~12?6~<icon>~<farbe>~Suchen~1
-~text~12?7~<icon door>~<aktiviert>~~~~~~~~~text~12?9~<icon air-filter>~<farbe der Gruppe>~~~~~~~~
-~button~12?11~<information-outline>~<deviceInfo>~~1
+entityUpd~Saugroboter~<nav>~1~12?0~<icon>~<farbe>~Robbi~Reinigt Wohnzimmer
+~1~12?1~<icon>~<farbe>~Akku~80 %~1~12?2~<icon>~<farbe>~Fläche~34 m²
+~1~12?3~<icon>~<farbe>~Start~1~…~1~12?6~<icon>~<farbe>~Suchen~1
+~1~12?7~<information-outline>~<deviceInfo>~~1
+devIcons~1~12?9~<icon door>~<aktiviert>~1~12?11~<icon air-filter>~<farbe der Gruppe>~~~~~…~~~
 ```
 
 - Jedes Element hat die 6 Felder einer cardGrid-Zelle `type~intName~icon~iconColor~displayName~optionalValue`, leere
   Elemente `~~~~~` (wie leere cardGrid-Zellen, die HMI blendet sie aus). Überschrift = Name des Geräts.
+- **Typ als Zahl** (`devicePageTypeNumber`, letzter Schritt vor dem Senden, `devicePageNumberedElement`): 0 `delete`,
+  1 alles ohne Popup (`text`, `button`, `switch` …), 2 `shutter`, 3 `shutter2`, 4 `input_sel`, 5 `timer`, 6 `light`,
+  7 `light2`, 8 `fan`, 9 `number`; leer bleibt leer (= 0). Alle Modelle bekommen die Zahl, das Web-Panel führt sie auf
+  die Namen zurück. Herleitung: [../hmi-type-number.md](../hmi-type-number.md).
+- **Stufe** in Feld 6 des info-Elements (Layout 1 0–3, Layout 3 0–2, leer = 0; cardDevice2 ohne).
+- **`devIcons`:** je Zelle `typ~id~icon~farbe`, die belegten Plätze lückenlos vorn (Reihenfolge der Plätze), dahinter
+  leere Zellen. Die HMI zeigt die Spalten bis zur letzten belegten Zelle, höchstens die der Stufe. `PageDevice` schickt
+  `devIcons` nach jedem gesendeten `entityUpd`; ändert sich nur ein Status-Icon (gleiches `entityUpd`), geht nur
+  `devIcons`.
 - **main** = das Geräte-Item: Icon `devicePage.icon`, sonst das des Items; Farbe wie auf der Ursprungsseite. Name
   immer der des Geräts (dieselbe Quelle wie die Überschrift), bei jeder Kurz-Tipp-Art – die Kachel auf der
   Ursprungsseite behält ihren Namen. Kurz-Tipp „State des Geräts“ → das Item selbst (Tipp schaltet / drückt), „Keine“
@@ -578,8 +604,8 @@ Nextion-Objekt beginnt leer rechts außerhalb, läuft ganz hinaus und ruckelt.)
   dem letzten `entityUpd`.
 
 **Länge der Nachricht** (`devicePagePayload`): Das `entityUpd` darf höchstens so lang sein wie der Empfangspuffer der
-Seite (`DEVICE_PAGE_RECEIVE_BYTES`: Layout 1 = 943, Layout 2 = 875, Layout 3 = 1019 Byte) und nie länger als die
-1017 Byte, die das Display annimmt (`devicePageMaxPayloadBytes`: 943 / 875 / 1017). Ist es länger, gibt nur die
+Seite (`DEVICE_PAGE_RECEIVE_BYTES`: Layout 1 = 703, Layout 2 = 775, Layout 3 = 959 Byte, TFT `device13`) und nie länger
+als die 1017 Byte, die das Display annimmt (`devicePageMaxPayloadBytes`: 703 / 775 / 959). Ist es länger, gibt nur die
 Statuszeile nach: der gezeigte Abschnitt wird um den Überhang kürzer (mit „...“), notfalls bis leer. Weil Namen und
 Werte auf 31 Byte begrenzt sind, reicht das für jede Nachricht, die der Adapter baut (Test „the longest message“).
 Eine Versionsweiche gibt es nicht: was `CARD_DEVICE_MIN_TFT` erfüllt, kennt `devStatus`. Die Web-Modelle web-l und web-p
@@ -642,12 +668,16 @@ eigenen Layouts auf voller Bühne und den Zusatz-Elementen hinter dem info-Icon.
   Page-Items) und – wo möglich – der Long-Press-Datenpunkt. Der Knopf ist grün, wenn etwas gesetzt ist
   (`devicePageSlotHasLook`). Übernehmen ersetzt alle Einstellungen des Slots (`withDevicePageSlotLook`); wählt man
   danach etwas anderes für den Slot, bleiben sie, ein geleerter Slot verliert sie (`withDevicePageSlot`).
-- Status-Slots (Layout 1): Art „Status-Icon“; das eigene Icon steht jetzt im „…“-Dialog (kein eigener Icon-Wähler
-  mehr in der Zeile). Hinweis unter den Slots, dass die Info-Zeilen schmaler werden. Die Vorschau zeichnet das Raster
-  (2 Spalten, Zeilen = Anzahl/2) und die schmalen Info-Zeilen nur, wenn mindestens ein Status-Slot belegt ist.
+- **Status-Icons** (Layout 1 und 3): Auswahl „Status-Icons“ unter der Statuszeile (`devicePageStatusStages`, Texte
+  `deviceDetailsDialog_pageStage1_*` / `pageStage3_*`, Hinweis `pageStageHint`), darunter nach den Slots die Liste
+  „Plätze der Status-Icons“ mit so vielen Plätzen, wie die Stufe fasst (Art „Status-Icon“, Auswahl und „…“ wie bei
+  einem Slot; Hinweis `pageStatusIconsHint`). Slots, die die Stufe verdeckt, und Plätze über der Kapazität blendet die
+  Section aus und lässt sie gespeichert (`withStatusSlots` u. a. in `devicePageConfig.ts`). Die Vorschau zeichnet das
+  Raster und die Info-Zeilen bzw. Kacheln der gewählten Stufe, unabhängig von der Belegung. Bilder und Prüftabelle:
+  `doc/Pictures/device-page-stages/README.md`.
 - Häkchen **„Web-Panel-Elemente (web-l / web-p)“** unter den Slots (Vorgabe aus, Erklärung im Tooltip): nur wenn es
   gesetzt ist, erscheinen darunter die Zusatz-Slots des Layouts (`devicePageExtraSlots`), weiter nummeriert (Layout 1:
-  11–12, Layout 2: 7–9, Layout 3: 9–11). Jeder verhält sich wie ein normaler Slot seiner Art (gleiche Auswahl, gleicher
+  7–8, Layout 2: 7–9, Layout 3: 9–11). Jeder verhält sich wie ein normaler Slot seiner Art (gleiche Auswahl, gleicher
   „…“-Dialog), Vorbelegung leer. Abwählen blendet sie aus und lässt die Einträge gespeichert
   (`withDevicePageWebExtras`). Die Vorschau zeigt weiter nur die Geometrie der HMI; zu us-l/us-p gibt es im Admin
   nichts.
@@ -665,8 +695,9 @@ eigenen Layouts auf voller Bühne und den Zusatz-Elementen hinter dem info-Icon.
   hängt sie wie `media-<id>` als erzeugte Unterseite an (`addGeneratedPages`, Knoten mit parent = Seite des Items,
   `generatedPageIds` → im Flow schreibgeschützt mit Schloss), das Panel legt sie beim Start an. Objekte, Namen und
   Dubletten werden dabei einmal gelesen, nicht beim Öffnen. States sind nur abonniert, solange sie sichtbar ist.
-- Ihre Page-Items sind die Elemente `[main, Slot 1 … Slot N, info, status]`, ein leerer Platz ist ein Item
-  `type: 'empty'`; mit Zusatz-Slots folgen deren Items dahinter (`[…, status, extra 1 … extra E]`). Alias-Kanäle baut der ConfigManager, Navigation steht als `setNavi` am Item; States der Maske, eigene
+- Ihre Page-Items sind die Elemente `[main, Slot 1 … Slot N, info, status, Status-Icon 1 … M]` (M = 16 / 0 / 8 je
+  Layout, fest, unabhängig von der Stufe), ein leerer oder von der Stufe verdeckter Platz ist ein Item
+  `type: 'empty'`; mit Zusatz-Slots folgen deren Items dahinter (`[…, Status-Icon M, extra 1 … extra E]`). Alias-Kanäle baut der ConfigManager, Navigation steht als `setNavi` am Item; States der Maske, eigene
   Datenpunkte und Navigations-Plätze baut `devicePageSlotItem` / `devicePageNavigationSlotItem` als fertiges Item.
 - Long-Press auf das Item → `navigation.setTargetPageByName(<Geräteseite>)`. Zurück (parent) → Seite des Items.
 - „i“ → Detailseite `dd_<id der Geräteseite>` unter der Geräteseite (zur Laufzeit erzeugt wie bisher). Zurück →
@@ -700,9 +731,9 @@ eu/us-l/us-p nichts; das Web-Panel hält seine eigene Kopie in `src-web`):
 
 | Layout | N | Zusatz-Slots (E) | damit insgesamt | Slot-Nr. in der Konfiguration | Page-Item / `intName` `<Seite>?<n>` | Felder der Nachricht |
 |---|---|---|---|---|---|---|
-| 1 „Steuern“ | 10 | button, button (2) | 6 Knöpfe | 11–12 (`slots[10..11]`) | 13, 14 | 86–97 |
+| 1 „Steuern“ | 6 | button, button (2) | 6 Knöpfe | 7–8 (`slots[6..7]`) | 25, 26 | 62–73 |
 | 2 „Fortschritt“ | 6 | info, button, button (3) | 4 Infos, 3 Knöpfe | 7–9 (`slots[6..8]`) | 9, 10, 11 | 62–79 |
-| 3 „Werte“ | 8 | info, info, switch (3) | 8 Infos, 3 Schalter | 9–11 (`slots[8..10]`) | 11, 12, 13 | 74–91 |
+| 3 „Werte“ | 8 | info, info, switch (3) | 8 Infos, 3 Schalter | 9–11 (`slots[8..10]`) | 19, 20, 21 | 74–91 |
 
 Beispiel web-l, Layout 2 (N = 6, E = 3), Seite 12, Zusatz-Slot 2 leer (Zeilenumbrüche nur zur Lesbarkeit):
 
@@ -732,8 +763,8 @@ Long-Press senden `12?11`. Leere Slots des Layouts (Slot 1 … N) bleiben dagege
   Slots des Layouts weiter (ebenso, wenn kein Zusatz-Slot etwas zeigt) – die Seite wird gebaut wie ohne sie.
   Das Häkchen schaltet nur die Zusatz-Elemente, nicht die Seite: web-l / web-p zeigen die Geräteseite immer.
 - Layoutwechsel (`fitDevicePageSlots(slots, layout, from)`): die Slots des Layouts bleiben nach Position unter sich,
-  die Zusatz-Slots nach Position unter sich (Zusatz-Slot 1 bleibt Zusatz-Slot 1). Ein Status-Icon von Layout 1 wird
-  nie ein Zusatz-Slot von Layout 2, ein Zusatz-Slot nie ein Status-Icon.
+  die Zusatz-Slots nach Position unter sich (Zusatz-Slot 1 bleibt Zusatz-Slot 1). Status-Plätze stehen in der eigenen
+  Liste `statusSlots` und werden nie ein Zusatz-Slot und umgekehrt.
 - Vorbelegung leer (`defaultDevicePageSlots` füllt nur die Slots des Layouts).
 
 **Adapter:**
@@ -742,9 +773,10 @@ Long-Press senden `12?11`. Leere Slots des Layouts (Slot 1 … N) bleiben dagege
   gebaut wie ein Slot des Layouts derselben Art (State, eigener Datenpunkt, Alias-Kanal, Navigation, Einstellungen des
   Elements, Kurz-Tipp-Navigation, Long-Press).
 - **Die Nummern der bestehenden Elemente verschieben sich nicht:** Page-Items
-  `[main, Slot 1 … Slot N, info, status, extra 1 … extra E]` – die Zusatz-Items hängen hinter dem (nie gesendeten)
-  Status-Item (`devicePageSlotItemIndex(layout, slot)`: Slot-Index s < N → Item s + 1, sonst s + 3). `channelSlots`
-  zählt in Slot-Indizes der Konfiguration (0 = Slot 1, N = Zusatz-Slot 1).
+  `[main, Slot 1 … Slot N, info, status, Status-Icon 1 … M, extra 1 … extra E]` – die Zusatz-Items hängen hinter den
+  Status-Icons (`devicePageSlotItemIndex(layout, slot)`: Slot-Index s < N → Item s + 1, sonst s + 3 + M;
+  `devicePageStatusItemIndex(layout, platz)` = N + 3 + Platz). `channelSlots` zählt in Slot-Indizes der Konfiguration
+  (0 = Slot 1, N = Zusatz-Slot 1).
 - Die Namen der Slots des Layouts (Dubletten-Zusatz) werden nur unter diesen Slots bestimmt – sie hängen nicht davon
   ab, ob es Zusatz-Slots gibt. Ein Zusatz-Slot wird unter allen Slots unterschieden.
 - `PageDevice` hängt auf einem Web-Modell die Zusatz-Elemente an (`devicePageExtraSlotKinds`), Feld 6 eines
@@ -753,7 +785,7 @@ Long-Press senden `12?11`. Leere Slots des Layouts (Slot 1 … N) bleiben dagege
 - Auf eu, us-l und us-p (auch Web-Klone davon) gibt es die Zusatz-Items gar nicht: `devicePageOfModel` nimmt sie im
   Konstruktor von `PageDevice` aus der Seitenkonfiguration (und ihre Indizes aus `channelSlots`), es wird nichts
   dafür angelegt oder abonniert.
-- **Länge:** Für die HMI-Modelle gilt weiter der Empfangspuffer der Seite (943 / 875 / 1017 Byte, die Statuszeile gibt
+- **Länge:** Für die HMI-Modelle gilt weiter der Empfangspuffer der Seite (703 / 775 / 959 Byte, die Statuszeile gibt
   nach). Ein Web-Panel hat keine HMI-Seite und der Web-Transport keine Grenze (`PanelSend.isTooLong` begrenzt ein
   Web-Panel nie): `devicePageMaxPayloadBytes(layout, 'web-l' | 'web-p')` ist unbegrenzt, die Zusatz-Elemente kürzen
   dort weder die Statuszeile, noch werden sie abgeschnitten. Ein Web-Klon eines Hardware-Panels (Modell eu/us-l/us-p)
@@ -779,10 +811,10 @@ Knöpfe, die ohne Zwischenraum nebeneinander stehen, haben ein 4 px schmaleres N
 
 | Modell | Layout 1 | Layout 2 | Layout 3 |
 |---|---|---|---|
-| eu, us-l | main 110 · Info 164 / 110, mit Status-Icons 86 / 110 · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 429 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
-| us-p | main 150 · Info 156 / 104 (auch mit Status-Icons) · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 300 | main 300 · Info 112 / 112 · Schalter 212 |
-| web-l | main 110 · Info 354 / 110, mit Status-Icons 276 / 110 · Knopf 100 (sechs in einer Reihe; vier oder fünf 104) | main 96 · Wert 190 / 190 (Font 4) · Balken 620 · Info 104 / 104 · Knopf 96 (zwei oder drei nebeneinander; einer 100) | main 100 · Info 125 / 125 · Schalter 125 |
-| web-p | main 150 (ohne Status-Icons 300) · Info 156 / 104 · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 96 (drei in einer Reihe; zwei 148, einer 300) | main 300 · Info 112 / 112 · Schalter 212 |
+| eu, us-l | main 110 · Info 164 / 110, Stufe 1: 49 / 110, Stufe 2: – / 87, Stufe 3: keine · Knopf 104 | main 96 · Wert 190 / 190 (Font 4) · Balken 429 · Info 104 / 104 · Knopf 100 | main 100 · Info 125 / 125 · Schalter 125 |
+| us-p | main 150 · Info 156 / 104, Stufe 1 und 2: – / 106, Stufe 3: keine · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 300 | main 300 · Info 112 / 112 · Schalter 212 |
+| web-l | main 110 · Info 354 / 110, Stufe 1: 239 / 110, Stufe 2: – / 277, Stufe 3: keine · Knopf 100 (sechs in einer Reihe; vier oder fünf 104) | main 96 · Wert 190 / 190 (Font 4) · Balken 620 · Info 104 / 104 · Knopf 96 (zwei oder drei nebeneinander; einer 100) | main 100 · Info 125 / 125 · Schalter 125 |
+| web-p | main 150 (in Stufe 0 und 3 300) · Info 156 / 104, Stufe 1 und 2: – / 106, Stufe 3: keine · Knopf 148 | main 90 · Wert 172 / 172 (Font 4) · Balken 300 · Info 156 / 104 · Knopf 96 (drei in einer Reihe; zwei 148, einer 300) | main 300 · Info 112 / 112 · Schalter 212 |
 
 Layouts der Web-Modelle: [SMARTPHONE.md, „Geräteseiten“](../../web-panel/SMARTPHONE.md#geräteseiten-carddevice13).
 

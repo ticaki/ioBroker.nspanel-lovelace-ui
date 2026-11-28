@@ -3,30 +3,39 @@
 Die Geräteseiten „Steuern“ (Layout 1) und „Werte“ (Layout 3) können eine Reihe kleiner Status-Icons zeigen, z. B.
 Tür offen, Akku leer oder Verbindung. Wie viele Plätze es dafür gibt, stellst du je Geräteseite ein.
 
+Die ausführliche Anleitung mit den Bildern am Panel steht in der Nutzer-Doku:
+[doc/de/deviceDetails.md, „Status-Icons“](../../de/deviceDetails.md#status-icons) (englisch:
+[doc/en/deviceDetails.md, „Status icons“](../../en/deviceDetails.md#status-icons)). Die übrigen Bilder und die
+Prüftabelle der Geräteseite: [../device-page/README.md](../device-page/README.md).
+
 ## So geht's
 
-1. Öffne im Tab **Seitenkonfiguration** das Gerät, wähle bei **Long-Press öffnet** die **Geräteseite** und ein Layout.
-2. Unter **Status-Icons** wählst du, wie viel Platz die Icons bekommen:
+1. Öffne im Tab **PageConfig** das Item „Gerät mit Details“, wähle bei **Long-Press öffnet** die **Geräteseite** und
+   ein Layout.
+2. Unter **Status-Icons** wählst du, wie viel Platz die Icons bekommen (die **Stufe**):
 
    | Layout | Auswahl | Was du auf dem Panel bekommst |
    |---|---|---|
    | 1 – Steuern | Keine Status-Icons | die beiden Info-Zeilen in voller Breite |
    | | 1–3 Spalten (bis 6 Icons) | Icons links, die Info-Zeilen mit kurzem Namen daneben |
-   | | 4–5 Spalten (bis 10 Icons) | Icons links, die Info-Zeilen nur noch mit Icon und Wert |
-   | | 6–8 Spalten (bis 16 Icons) | nur Icons, die Info-Zeilen entfallen |
+   | | 4–5 Spalten (bis 10 Icons), Info-Zeilen ohne Namen | Icons links, die Info-Zeilen nur noch mit Icon und Wert |
+   | | 6–8 Spalten (bis 16 Icons), ohne Info-Zeilen | nur Icons, die Info-Zeilen entfallen |
    | 3 – Werte | Keine Status-Icons | alle sechs Kacheln |
-   | | 1–4 Icons | die Icons stehen statt Kachel 1 |
-   | | 5–8 Icons | die Icons stehen statt Kachel 1 und 2 |
+   | | 1–4 Icons, statt Kachel 1 | die Icons stehen statt Kachel 1 |
+   | | 5–8 Icons, statt Kachel 1 und 2 | die Icons stehen statt Kachel 1 und 2 |
 
    Das Layout „Fortschritt“ (2) hat keine Status-Icons, dort gibt es keine Auswahl.
 3. Darunter erscheinen unter **Plätze der Status-Icons** so viele Plätze, wie die Auswahl fasst. Jeden Platz belegst du
-   wie einen Slot: einen Datenpunkt des Geräts oder „Benutzerdefiniert“. Über **…** stellst du Icon, Farben, Tippen
-   und Long-Press ein.
+   wie einen Slot: einen Datenpunkt des Geräts oder „Benutzerdefiniert“ (Datenpunkt, Kanal, Navigation). Über **…**
+   stellst du Icon und Farbe, Farbverlauf und den kurzen Tipp ein; liegt ein Alias-Kanal Steckdose oder Taster auf dem
+   Platz, auch den langen Druck.
 4. Die kleine Vorschau oben beim Layout zeigt, wie die Seite mit deiner Auswahl aufgeteilt ist.
 
 ![Steuern, 1–3 Spalten](layout1-stage1.png)
 
-Auf dem Panel rücken die belegten Plätze lückenlos auf. Lässt du einen Platz leer, entsteht dort keine Lücke.
+Auf dem Panel rücken die belegten Plätze lückenlos auf. Lässt du einen Platz leer, entsteht dort keine Lücke. Es
+erscheinen nur so viele Spalten, wie belegt sind, höchstens die der Stufe; Info-Zeilen und Kacheln richten sich
+trotzdem nur nach der Stufe.
 
 ### Nichts geht verloren
 
@@ -38,10 +47,10 @@ die alte Belegung zurück.
 ![Auf 1–3 Spalten verkleinert: Platz 8 ist ausgeblendet, die Info-Zeilen sind wieder da](shrink-1-smaller.png)
 ![Wieder 6–8 Spalten: Platz 8 ist noch belegt](shrink-2-back.png)
 
-Wechselst du das Layout, bleibt deine Auswahl gespeichert. Passt sie nicht zum neuen Layout (z. B. 6–8 Spalten auf
-„Werte“), nimmt die Seite die größte Auswahl, die das Layout hat.
+Wechselst du das Layout, bleiben deine Auswahl und die Plätze gespeichert. Passt die Auswahl nicht zum neuen Layout
+(z. B. 6–8 Spalten auf „Werte“), nimmt die Seite die größte Auswahl, die das Layout hat.
 
-![6–8 Spalten auf Layout „Werte“: angezeigt wird „5–8 Icons“](layout-change-1to3.png)
+![6–8 Spalten auf Layout „Werte“: angezeigt wird „5–8 Icons, statt Kachel 1 und 2“](layout-change-1to3.png)
 
 ## Bilder zum Prüfen
 

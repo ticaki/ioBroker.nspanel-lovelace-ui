@@ -1,6 +1,7 @@
 # cardDevice1: Status-Raster bis 8×2 (16 Icons) – Analyse
 
-Stand 2026-11-28. Das ist nur Analyse: kein Code, keine HMI, kein Commit. Es baut auf zwei Dokumenten auf:
+Stand 2026-11-28. **Umgesetzt** in HMI (`device13`), Adapter, Admin und Web-Panel – siehe „Umsetzung“ direkt unten;
+die Abschnitte 1–10 sind die Analyse davor und an den markierten Stellen überholt. Es baut auf zwei Dokumenten auf:
 [../hmi-type-number.md](../hmi-type-number.md) (Typzahl 0–9, `entn` txt_maxl 7) und
 [status-grid-4x2.md](status-grid-4x2.md) (Vorstufe 4×2).
 
@@ -10,15 +11,27 @@ Stand 2026-11-28. Das ist nur Analyse: kein Code, keine HMI, kein Commit. Es bau
 - Die RAM-Werte stammen aus `/mnt/projekte/{eu,us-l,us-p}.txt`.
 - Die Textbreiten stammen aus `src/lib/const/font-widths.ts` (zi-Tabellen, Font 0, in EU/us-l/us-p gleich).
 
-**Am Panel gemessen (ns_panel4, 2026-11-28):** `x`, `w` und `h` lassen sich zur Laufzeit nicht ändern. Zuweisungen
-liefern 0x1C bzw. 0x1A, Lesen per `get` geht. Jede Geometrie braucht daher eigene Objekte, umgeschaltet wird per `vis`.
-Ein Text wird exakt an der Feldkante abgeschnitten.
+**Am Panel gemessen (ns_panel4, 2026-11-28):**
+
+- `x`, `w` und `h` lassen sich zur Laufzeit nicht ändern. Zuweisungen liefern 0x1C bzw. 0x1A, Lesen per `get` geht.
+  Jede Geometrie braucht daher eigene Objekte, umgeschaltet wird per `vis`.
+- Ein Text wird exakt an der Feldkante abgeschnitten.
+- `covx` liest die führenden Ziffern; leerer Text und Text ohne führende Ziffer ergeben 0.
+- Die gemeinsame Rahmenkante zweier Zellen bleibt stehen, wenn die rechte Nachbarspalte per `vis 0` ausgeblendet wird
+  (Abschnitt 5: die Annahme, dass sie verschwindet, ist widerlegt).
+- RAM EU `device13` (Editor): cardDevice1 **3216** (368 frei), cardDevice2 **2492** (1092 frei), cardDevice3 **3328**
+  (256 frei). us-l und us-p `device13` sind noch **nicht kompiliert und nicht getestet**.
 
 ## Umsetzung in der HMI: device13 (2026-11-28)
 
 Umgesetzt mit `HMI/tools/card_device.py` in `/home/tim/device-page-hmi/nspanel-*v6.2.0.device13.HMI` (EU, us-l, us-p),
 beschrieben in [device-page-hmi.md, „device13“](device-page-hmi.md#device13-typzahl-status-raster-devicons). Adapter,
-Admin und Web-Panel (Abschnitte 7, 9 „Folgearbeiten“ und 10) sind **nicht** umgesetzt.
+Admin und Web-Panel (Abschnitte 7, 9 „Folgearbeiten“ und 10) sind ebenfalls umgesetzt (Commits `d8e972acd`,
+`47e906c74`, `7ce3a53fb`): Konfiguration `statusStage` und `statusSlots` (eigene Liste, übersteht den Layoutwechsel),
+Admin-Auswahl „Status-Icons“ und „Plätze der Status-Icons“ mit Vorschau je Stufe, Ausblenden statt Löschen im Admin
+und im Config-Manager (`buildDevicePage`), `devIcons` und Typzahl im Adapter (`PageDevice` schickt `devIcons` nach
+jedem `entityUpd`, bei reiner Status-Änderung nur `devIcons`) und im Web-Panel für alle fünf Modelle. Nutzer-Doku:
+[doc/de/deviceDetails.md, „Status-Icons“](../../de/deviceDetails.md#status-icons).
 
 **Umgesetzt:** ✅
 
@@ -54,7 +67,13 @@ Admin und Web-Panel (Abschnitte 7, 9 „Folgearbeiten“ und 10) sind **nicht** 
 8. **Wert in Stufe B:** `tValue1/2` leitet in Stufe 1 an das Icon von Satz B weiter (`if(vStage.val==1) click
    bEntityB1` …), sonst an `bEntity1/2` (Abschnitt 6 ließ das offen).
 9. **RAM** (Schätzung des Werkzeugs, global 436): cardDevice1 EU/us-l 3045, us-p 2969, cardDevice3 3229,
-   cardDevice2 2456. Abschnitt 3 rechnete für EU ≈ 324 frei, die Prognose aus der device10-Messung ist ≈ 408.
+   cardDevice2 2456. Abschnitt 3 rechnete für EU ≈ 324 frei, die Prognose aus der device10-Messung war ≈ 408.
+   **Gemessen** (EU `device13`): cardDevice1 3216 (**368 frei**), cardDevice2 2492, cardDevice3 3328 (**256 frei**,
+   Abschnitt 9 rechnete ≈ 212). us-l und us-p: offen (nicht kompiliert).
+10. **Ignorierte Slots im Adapter, Layoutwechsel** (Abschnitt 10): umgesetzt wie beschrieben – übersprungene Slots
+    werden Leer-Items an ihrer Stelle; die Status-Plätze sind eine eigene Liste `statusSlots` (höchstens 16) neben
+    `slots` und überstehen jeden Layoutwechsel. Die gespeicherte Stufe bleibt beim Layoutwechsel; ein Layout, das sie
+    nicht hat, nimmt seine größte (`devicePageStageOf`: 6–8 Spalten auf Layout 3 = 5–8).
 
 ## Entscheidungen Tim 2026-11-28
 
@@ -96,9 +115,11 @@ spricht, ist durch die feste Stufe ersetzt.
      gibt kein kurzes Aufblitzen der Stufe A.
    - **Leer:** Ein leeres Feld ergibt per `covx` 0, das ist Stufe A bzw. keine Icons.
    - **Kosten:** 1 Byte je `entityUpd`, kein zusätzliches RAM. Die Stufe steht in `vStatus` (cardDevice1, gibt es schon)
-     bzw. in der einen neuen Zahlvariable von cardDevice3.
+     bzw. in der einen neuen Zahlvariable von cardDevice3. *(Umsetzung: auf beiden Seiten in `vStage`, `vStatus`
+     ist entfallen.)*
    - **Die HMI rät nicht.** Sie zählt keine belegten Zellen. Die Spaltenzahl folgt aus der Stufe (B → 3, C → 5, D → 8
-     Spalten; cardDevice3 → 4 bzw. 8).
+     Spalten; cardDevice3 → 4 bzw. 8). *(Überholt: Die Info-Zeilen und Kacheln folgen nur der Stufe, die **gezeigten
+     Spalten** aber der höchsten belegten Zelle, höchstens die der Stufe – „Umsetzung“ Punkt 1.)*
    - **Die Alternative wäre** ein erstes Feld in `devIcons`. Dann müsste `devIcons` vor `entityUpd` kommen, oder
      `entityUpd` würde zuerst mit der falschen Stufe zeichnen. Außerdem gäbe es ohne Icons (Stufe „keine“) gar kein
      `devIcons`.
@@ -118,8 +139,8 @@ spricht, ist durch die feste Stufe ersetzt.
 - **Raster:** 16 feste Zellen, 0–8 Spalten in 1×2-Schritten, die Spalten werden per `vis` gezeigt.
   - Der Adapter füllt spaltenweise und lückenlos: oben, unten, dann die nächste Spalte.
   - Spaltenzahl = ⌈n/2⌉.
-  - Vorschlag, von Tim noch nicht bestätigt: Leere Spalten werden ausgeblendet. Eine leere Zelle in der letzten Spalte
-    behält ihren Rahmen.
+  - ~~Vorschlag, von Tim noch nicht bestätigt:~~ **Entschieden und umgesetzt:** Leere Spalten werden ausgeblendet. Eine
+    leere Zelle in der letzten Spalte behält ihren Rahmen.
 - **Info-Zeilen 1–2 in vier Stufen:**
 
   | Stufe | Spalten | Info-Zeilen |
@@ -191,9 +212,9 @@ Breiten in Font 0 (EU = us-l):
   Luft. Das sind etwa 9 Zeichen.
 - **Frühere Stufe C mit 50/53 px (entfallen):** Dort passten `21,5°C` und `-61dBm` nicht.
 - **Abschneiden:** Ein zu langer Wert wird an der Feldkante abgeschnitten (am Panel bestätigt). Bei rechtsbündigem Wert
-  (`xcen 2`) ist noch zu prüfen, welche Seite fehlt (Prüfliste).
+  (`xcen 2`) ist noch zu prüfen, welche Seite fehlt (Prüfliste, offen).
 
-## 2. us-p (Vorschlag)
+## 2. us-p (Vorschlag – umgesetzt ist P2, siehe „Umsetzung“ Punkt 6)
 
 Heute liegt das Raster rechts vom Haupt-Icon (bMain x 10–160, y 70–156):
 
@@ -227,6 +248,8 @@ Rechts vom Haupt-Icon sind 144 px Platz. Dort gibt es keine Stufen für die Info
   hinweisen oder die Stufen begrenzen. Dieser Punkt spricht für P2.
 
 ## 3. RAM
+
+*(Prognose; gemessen ist EU `device13` cardDevice1 3216, also 368 frei – siehe oben. us-l/us-p offen.)*
 
 Rechenmodell:
 
@@ -306,15 +329,17 @@ devIcons~<type1>~<id1>~<icon1>~<color1>~<type2>~<id2>~…~<type16>~<id16>~<icon1
 2. `spstr` ID → `entnK`.
 3. `typeK.val==0`: dann `tStatK.txt=""` (die Zelle behält ihren Rahmen). Sonst `spstr` Icon → `tStatK.txt`, dazu das
    `¬`-Font-Suffix wie heute (`icon_lines`), dann `spstr` Farbe → `tTmp`, `covx` → `tStatK.pco`.
-4. Werden leere Zellen ausgeblendet (offene Frage an Tim), schaltet jede Zelle per `vis` nach ihrem Typ. Behalten sie
-   ihren Rahmen, ist hier nichts weiter zu tun.
+4. ~~Werden leere Zellen ausgeblendet (offene Frage an Tim), schaltet jede Zelle per `vis` nach ihrem Typ.~~
+   **Umgesetzt:** einzelne Zellen werden nicht ausgeblendet, sondern ganze Spalten (siehe unten).
 
-Nach Entscheidung 3 kommt die Stufe nicht aus `devIcons`. Es gibt deshalb weder einen höchsten belegten Index noch eine
-Spaltenrechnung. Die früher beschriebene Spaltenzahl über `sys0=k+1` und `sys0=sys0/2` entfällt.
+Nach Entscheidung 3 kommt die Stufe nicht aus `devIcons`. ~~Es gibt deshalb weder einen höchsten belegten Index noch eine
+Spaltenrechnung.~~ **Umgesetzt:** Weil nur belegte Spalten erscheinen, rechnet `devIcons` doch den höchsten belegten
+Index (`sys2`, cardDevice1 `sys2=(sys2+1)/2`) und zeigt höchstens die Spalten der Stufe (`vCols`, nur Spalten, die sich
+ändern). Der Adapter schickt die belegten Plätze lückenlos vorn, leere hinten.
 
 **`entityUpd`:**
 
-- Es liest die Stufe aus Feld 6 des Info-Elements (`spstr` → `tTmp`, `covx` → `vStatus`). Leer
+- Es liest die Stufe aus Feld 6 des Info-Elements (`spstr` → `tTmp`, `covx` → `vStatus`, *umgesetzt: `vStage`*). Leer
   ergibt 0.
 - Daraus folgen die Spalten des Rasters. Für Spalte c gilt: `vis` 1, wenn c ≤ 3 / 5 / 8 in Stufe 1 / 2 / 3, sonst
   `vis` 0. Erst alle aus, dann alle an, siehe Abschnitt 5.
@@ -331,6 +356,8 @@ Spaltenrechnung. Die früher beschriebene Spaltenzahl über `sys0=k+1` und `sys0
   Nachrichten, jede wird einzeln mit `event,ack,<crc>` quittiert.
 - Ändert sich nur ein Status-State, reicht `devIcons` allein. Dafür müsste `PageDevice` die zuletzt gesendeten Texte
   beider Nachrichten vergleichen. Heute baut `update()` bei jedem Trigger alles neu, das ist eine Umsetzungsfrage.
+  **Umgesetzt:** `PageDevice.update()` schickt `devIcons` nach jedem gesendeten `entityUpd`; ist das `entityUpd`
+  unverändert, nur `devIcons`, und das nur, wenn es sich geändert hat.
 - `devStatus` (Statuszeile) bleibt unverändert.
 
 ## 5. Rahmen beim Ausblenden
@@ -346,6 +373,10 @@ Spaltenrechnung. Die früher beschriebene Spaltenzahl über `sys0=k+1` und `sys0
 gehört die gemeinsame Kante bei x = 124 + 37·c. Der rechte Rahmen der letzten sichtbaren Spalte fehlt dann, bis diese
 Zelle neu gezeichnet wird.
 
+**Am Panel bestätigt (2026-11-28): Die Annahme trifft nicht zu** – die Rahmenkante bleibt nach `vis 0` der Nachbarspalte
+stehen. Die Reihenfolge „erst ausblenden, dann einblenden“ und `vCols` (nur Spalten schalten, die sich ändern) sind
+trotzdem umgesetzt, damit kein `vis 0` die Sätze B/C übermalt.
+
 **Mögliche Abhilfe im Code:** Erst alle zu versteckenden Spalten `vis` 0 schalten, dann die sichtbaren `vis` 1. Ob
 `vis` 1 auf ein schon sichtbares Objekt neu zeichnet, ist offen, sonst `ref tStatK` der letzten Spalte. Ob das nötig
 ist, gehört auf die Prüfliste.
@@ -354,7 +385,8 @@ Mit der festen Stufe (Entscheidung 2) ändern sich die Spalten nur beim Laden de
 in zwei Fällen:
 
 - beim ersten `entityUpd`,
-- falls leere Zellen einzeln ausgeblendet werden (offene Frage).
+- falls leere Zellen einzeln ausgeblendet werden (offene Frage). *(Entschieden: es werden ganze Spalten nach der
+  Belegung ausgeblendet; die Spalten ändern sich also auch, wenn sich die Belegung ändert.)*
 
 Das Icon von Satz C (x 315) liegt hinter Spalte 5 (bis 310), Spalte 6 ab 309 ist in C immer aus. Trotzdem erst die
 Spalten schalten, dann die Info-Sätze.
@@ -374,7 +406,7 @@ Alles läuft wie heute bei tStat7–10, nur mit der Typzahl:
 - **up:** Blinken und Feedback zurücksetzen, dann bei `typeK.val!=0` `buttonPress2/3,<entnK>,button` senden.
 - **tc0 up:** setzt bco aller Zellen und den `vaLPCell`-Zustand zurück, wie heute.
 
-**vaLPCell-Nummern** (nur intern, Vorschlag):
+**vaLPCell-Nummern** (nur intern, Vorschlag – so umgesetzt, us-p: Satz C auf 24/25; Tabelle in device-page-hmi.md):
 
 | Nummer | Objekt |
 |---|---|
@@ -395,7 +427,11 @@ Die heutigen Nummern 12/13 (S-Satz) entfallen.
   prüfen.
 - Der Wert-Text des Satzes C leitet wie heute tValue1 per `click` an sein Icon weiter.
 
-## 7. Folgearbeiten (nur Liste)
+## 7. Folgearbeiten (nur Liste) – umgesetzt
+
+Alle Punkte sind umgesetzt bis auf: die eigene **Versionsgrenze** für `devIcons` und die Typzahl (entfällt, die
+Geräteseite ist unveröffentlicht; `CARD_DEVICE_MIN_TFT` wird zum Release angehoben) und `HMI/Readme.md` (enthält
+`devIcons` noch nicht). Ob leere Plätze aufrücken, ist entschieden: ja, lückenlos.
 
 - **Adapter**
   - `src/lib/types/deviceDetails.ts`:
@@ -442,27 +478,35 @@ Die heutigen Nummern 12/13 (S-Satz) entfallen.
 
 ## 8. Simulator-Prüfliste für Tim
 
-1. **Rahmen:** Spalte c+1 per `vis` 0 ausblenden. Bleibt die rechte 1-px-Kante der Spalte c stehen? Wenn nicht: Hilft
-   die Reihenfolge erst `vis` 0, dann `vis` 1, und zeichnet `vis` 1 auf ein schon sichtbares Objekt neu? Sonst `ref`.
+Stand 2026-11-28: Punkte 1, 4 und 9 (EU) sind am Panel bestätigt, Punkt 5 entfällt; die übrigen sind offen. Für us-l
+und us-p ist noch nichts kompiliert oder geprüft.
+
+1. ✅ **Rahmen:** Spalte c+1 per `vis` 0 ausblenden. Bleibt die rechte 1-px-Kante der Spalte c stehen? **Ja, am Panel
+   bestätigt.** (Wenn nicht: Hilft die Reihenfolge erst `vis` 0, dann `vis` 1, und zeichnet `vis` 1 auf ein schon
+   sichtbares Objekt neu? Sonst `ref`.)
 2. **Info-Satz C bei 7→6 Spalten:** Wird das Icon (x 352) angeschnitten, wenn Spalte 7 nach dem Satz C umgeschaltet wird?
 3. **Breiten:** `21,5°C` in 50, 53 und 59 px. `80%`, `-61dBm` und `Strom` im Namensfeld B (49 px). Welche Seite fehlt
    bei rechtsbündigem Wert?
-4. **`covx`:** `"0"`, `""` und `"1"` in die Zahlvariable `typeK` (siehe hmi-type-number.md E).
-5. **Spaltenzahl:** `sys0=k+1` und `sys0=sys0/2` ergeben die richtige Spaltenzahl (Ganzzahldivision) für k = 0, 1, 2,
-   15, 16.
-6. **Stufen:** `vStatus` bleibt zwischen `entityUpd` und `devIcons` erhalten. Ein `entityUpd` danach zeigt die richtige
-   Stufe. Ohne `devIcons` bleibt Stufe A.
+4. ✅ **`covx`:** `"0"`, `""` und `"1"` in die Zahlvariable `typeK` (siehe hmi-type-number.md E). **Am Panel gemessen:**
+   führende Ziffern, ohne Ziffer bzw. leer → 0.
+5. ~~**Spaltenzahl:** `sys0=k+1` und `sys0=sys0/2` ergeben die richtige Spaltenzahl (Ganzzahldivision) für k = 0, 1, 2,
+   15, 16.~~ Entfällt in dieser Form; umgesetzt ist `sys2=(sys2+1)/2` aus dem höchsten belegten Index (Prüfpunkt 5 in
+   device-page-hmi.md, „device13 im Editor und am Panel prüfen“).
+6. **Stufen:** `vStage` (statt `vStatus`) bleibt zwischen `entityUpd` und `devIcons` erhalten. Ein `entityUpd` danach
+   zeigt die richtige Stufe. Ohne `devIcons` bleibt das Raster leer.
 7. **`click`:** Löst `click bEntity1,1` bei `vis` 0 den down-Code aus (für die Icons von B/C)?
 8. **Tippen und Long-Press:** für alle 16 Zellen, mit Feedback, Blinken (vaLPCell 8–23), Popups der Typen 2–9 und
    Senden mit `entnK`.
 9. **Kompilat:** RAM von cardDevice1 in EU, us-l und us-p gegen Abschnitt 3. Größe des Codes (Rücksetzketten mit 27
-   Einträgen in jedem `up`).
+   Einträgen in jedem `up`). ✅ **EU kompiliert:** cardDevice1 3216 (368 frei). us-l und us-p offen.
 10. **Zwei Nachrichten:** `entityUpd` und `devIcons` direkt nacheinander. Beide werden quittiert, kein Puffer läuft
     über, `devIcons` mit 392 Byte kommt ganz an.
 
 ## 9. cardDevice3 „Werte“: Status-Icons x×1 in der ersten Kachelreihe
 
-Das ist optional und nur Analyse. Die Geometrie stammt aus den device12-HMIs. cardDevice3 hat 6 info-Kacheln im Raster
+**Umgesetzt** (`device13`, Adapter, Admin, Web-Panel). Die Abschnitte unten sind die Analyse davor; was dort als
+offene Frage steht, ist entschieden (nur belegte Spalten, siehe „Umsetzung“ Punkt 1). Die Geometrie stammt aus den
+device12-HMIs. cardDevice3 hat 6 info-Kacheln im Raster
 2×3 und darunter die Schalter 7 und 8.
 
 ### Prüfung „nichts muss verschoben werden“
@@ -511,8 +555,9 @@ Erläuterungen:
 
   Ein durchgehendes Raster mit Abstand 37 bzw. 36 braucht nur **einen** Satz mit 8 Zellen.
 - **Wachstum (entschieden):** Die Flächenwahl ist die Admin-Stufe (Entscheidung 2), nicht die Zahl der Icons. Die Stufe
-  „1–4“ zeigt die Spalten 1–4, „5–8“ die Spalten 1–8. Ob leere Zellen darin mit Rahmen stehen bleiben oder ausgeblendet
-  werden, ist die offene Frage an Tim. Für das Ausblenden einzelner Zellen gilt der Rahmen-Prüfpunkt aus Abschnitt 5.
+  „1–4“ zeigt höchstens die Spalten 1–4, „5–8“ höchstens die Spalten 1–8. ~~Ob leere Zellen darin mit Rahmen stehen
+  bleiben oder ausgeblendet werden, ist die offene Frage an Tim.~~ Entschieden: es erscheinen nur die Spalten bis zur
+  höchsten belegten Zelle. Der Rahmen-Prüfpunkt aus Abschnitt 5 ist am Panel bestätigt.
 - **Flächenwahl:**
 
   | Stufe (Admin) | Kacheln aus | Raster |
@@ -545,6 +590,7 @@ frei**.
 | strCommand 1019 → 955 (siehe unten) | +64 | +64 | +64 |
 | **frei danach** | **≈ 212** | **≈ 236** | **≈ 236** |
 | ohne Verkleinerung von strCommand | ≈ 148 | ≈ 172 | ≈ 172 |
+| **gemessen** (`device13`, strCommand 959) | **3328, 256 frei** | offen | offen |
 
 **strCommand:**
 
@@ -564,7 +610,8 @@ Zellen N, Zeilen je Spalte R (cardDevice1 2, cardDevice3 1) und Zellnamen:
 
 1. Je Element k = 1…N: `spstr` Typ → `tTmp`, `covx` → `typeK.val`, `spstr` ID → `entnK`. Bei Typ 0 wird
    `cellK.txt=""` gesetzt. Sonst folgen Icon mit `¬`-Font-Suffix (`icon_lines`) und die Farbe per `covx` → `cellK.pco`.
-   Werden leere Zellen ausgeblendet (offene Frage), folgt `vis` je Zelle nach dem Typ.
+   ~~Werden leere Zellen ausgeblendet (offene Frage), folgt `vis` je Zelle nach dem Typ.~~ Umgesetzt: Spalten bis zur
+   höchsten belegten Zelle (cardDevice3 eine Zelle je Spalte).
 
 **Im `entityUpd`-Parser (gemeinsamer Baustein, Stufe aus Feld 6 von Info):**
 
@@ -576,7 +623,8 @@ Zellen N, Zeilen je Spalte R (cardDevice1 2, cardDevice3 1) und Zellnamen:
    - cardDevice1 wählt den Info-Satz A–D.
    - cardDevice3 schaltet Kachel 1 bzw. die Kacheln 1 und 2 aus und blendet sie bei Stufe > 0 nicht wieder ein.
 
-Einen höchsten belegten Index oder eine Spaltenrechnung gibt es nicht mehr.
+~~Einen höchsten belegten Index oder eine Spaltenrechnung gibt es nicht mehr.~~ Überholt: `devIcons` rechnet den höchsten
+belegten Index (siehe Abschnitt 4).
 
 **Tippen und Long-Press:** wie auf cardDevice1 (Abschnitt 6). Die vaLPCell-Nummern auf cardDevice3 sind heute 1–9, die
 Zellen bekommen **10–17**.
@@ -587,13 +635,13 @@ Zellen bekommen **10–17**.
    (y 118/119). Ist das Icon in h 52 bzw. 51 vertikal mittig?
 2. Stufen „keine“, 1–4 und 5–8 nacheinander (Konfigurationswechsel, Seite neu laden): Kachel 1 und 2 verschwinden und
    kommen zurück, ohne Reste. Ein `entityUpd` mit einer gefüllten Kachel 1 blendet sie bei Stufe > 0 nicht wieder ein.
-3. Ausblenden der Nachbarzelle: bleibt der rechte Rahmen stehen (wie Abschnitt 5, Punkt 1)?
+3. ✅ Ausblenden der Nachbarzelle: bleibt der rechte Rahmen stehen (wie Abschnitt 5, Punkt 1)? **Ja, am Panel bestätigt.**
 4. Tippen und Long-Press der Zellen 10–17 mit Feedback, Blinken und Popups. Unter einer ausgeblendeten Kachel löst nichts
    aus.
 5. RAM von cardDevice3 in allen drei Modellen gegen die Tabelle oben. Kommt `strCommand` mit 955 bei der längsten
-   Nachricht ganz an?
+   Nachricht ganz an? (**EU gemessen:** 3328, 256 frei, `strCommand` umgesetzt mit 959; us-l/us-p offen.)
 
-### Folgearbeiten (cardDevice3)
+### Folgearbeiten (cardDevice3) – umgesetzt (ohne eigene Versionsgrenze, ohne `HMI/Readme.md`)
 
 - **Adapter**
   - `deviceDetails.ts` (Layout 3: 8 optionale Status-Plätze, `DEVICE_PAGE_RECEIVE_BYTES[3]` = 955)
@@ -614,6 +662,9 @@ Zellen bekommen **10–17**.
 - **Geometrie-Datei und Doku:** `device-page-geometry.json`, `device-page-hmi.md`, `HMI/Readme.md`, Changelog.
 
 ## 10. Ignorierte Slots im Adapter (Entscheidung 4)
+
+*Umgesetzt wie beschrieben (`buildDevicePage`, `devicePageSlotHiddenByStage`, Status-Plätze als eigene Liste
+`statusSlots`). Zeilennummern Stand der Analyse.*
 
 Tim legt fest: Nicht angezeigte Slots überspringt schon der Config-Manager beim Bauen der Geräteseite, auf demselben Weg,
 auf dem die Media-Unterseiten `media-<id>` entstehen (`generatedPageIds`). Sie werden gar nicht erst ausgewertet: kein
@@ -702,3 +753,8 @@ Ob der Export Geräteseiten vorher normalisiert, habe ich nicht im Detail geprü
   einen Layoutwechsel. Layout 3 zeigt dann die ersten 8, Layout 2 keine.
 - Zwischen Layout 1 und 3 ist offen, ob die Stufe übernommen oder zurückgesetzt wird (1–3/4–5/6–8 gegenüber 1–4/5–8).
 - Das ist nur beschrieben, nicht entschieden.
+
+**Entschieden und umgesetzt:** Die Status-Plätze sind eine eigene Liste `statusSlots` (höchstens 16) und überleben jeden
+Layoutwechsel; Layout 3 zeigt die ersten 8, Layout 2 keine. Die gespeicherte Stufe `statusStage` bleibt; ein Layout,
+das sie nicht hat, nimmt seine größte (`devicePageStageOf`). Zurück auf Layout 1 gelten wieder Stufe und Plätze wie
+gespeichert.

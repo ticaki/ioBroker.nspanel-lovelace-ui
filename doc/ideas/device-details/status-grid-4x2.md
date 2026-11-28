@@ -1,5 +1,26 @@
 # cardDevice1: Status-Raster 0×2 bis 4×2 – Rechnung
 
+> **Überholt (2026-11-28).** Dieses Dokument ist die Vorstufe. Umgesetzt wurde stattdessen das Raster bis **8×2**
+> (cardDevice1) bzw. **8×1** (cardDevice3) mit eigener Nachricht `devIcons`, siehe
+> [status-grid-8x2.md](status-grid-8x2.md) und [device-page-hmi.md, „device13“](device-page-hmi.md#device13-typzahl-status-raster-devicons).
+> Insbesondere gilt nicht mehr:
+>
+> - **Stufe aus der Belegung** (Spalten = ⌈belegt / 2⌉): Die Stufe ist eine Admin-Einstellung (keine / 1–3 / 4–5 / 6–8
+>   Spalten), die HMI bekommt sie in Feld 6 des info-Elements. Nur die Zahl der **gezeigten** Spalten folgt der
+>   Belegung (höchstens die der Stufe).
+> - **Status-Slots 7–10 in `entityUpd`, 14 Slots:** `entityUpd` von cardDevice1 hat nur noch 6 Slots, die Status-Icons
+>   kommen per `devIcons`.
+> - **Sätze und Varianten V1–V4, Stufe 4 mit Name:** Umgesetzt sind die Sätze A (breit), B (1–3 Spalten, Name 49 px),
+>   C (4–5 Spalten, nur Icon und Wert 87 px) und keine Info-Zeilen bei 6–8 Spalten; der schmale Satz `bEntityS/tEntityS/tValueS`
+>   und `vStatus` sind entfallen.
+> - **us-p rechts vom Haupt-Icon:** Umgesetzt ist Variante P2 (Raster 8×2 unter dem Haupt-Icon).
+> - **RAM-Rechnung:** Gemessen (EU `device13`): cardDevice1 3216 (368 frei), cardDevice2 2492, cardDevice3 3328
+>   (256 frei). us-l und us-p `device13` sind noch nicht kompiliert.
+> - **`x`/`w`/`h` zur Laufzeit:** lassen sich nicht ändern (am Panel gemessen, 0x1C/0x1A); jede Geometrie braucht eigene
+>   Objekte.
+>
+> Der Rest bleibt als Herleitung stehen.
+
 Stand 2026-11-28. Das ist nur Rechnung und Beschreibung, es wurde nichts gebaut. Die RAM-Ausgangswerte und die
 Einsparung durch Typ-Zahl und `entn` 7 stehen in [../hmi-type-number.md](../hmi-type-number.md) (Abschnitt C).
 
@@ -23,7 +44,8 @@ Einsparung durch Typ-Zahl und `entn` 7 stehen in [../hmi-type-number.md](../hmi-
 
 ## Stufen
 
-Die Stufe ergibt sich aus den belegten Status-Slots: Spalten = ⌈belegt / 2⌉.
+*(Überholt: die Stufe ist eine Admin-Einstellung, siehe oben.)* Die Stufe ergibt sich aus den belegten Status-Slots:
+Spalten = ⌈belegt / 2⌉.
 
 | belegte Slots | Spalten |
 |---|---|
@@ -103,7 +125,8 @@ tiefer (y 81/125), wohl wegen der Editor-Warnung „Component overlap“ bei gle
   - Stufe 4 bekommt ein eigenes Wertpaar.
   - Alle Stufen nutzen das schmale Feld. Das kürzt den Wert auch dort, wo Platz wäre.
 - **Prüfpunkt am Panel:** Wie schneidet die HMI einen rechtsbündigen Text ab, der zu breit ist (`xcen 2`, `isbr 0`)?
-  Fällt der Anfang weg oder das Ende?
+  Fällt der Anfang weg oder das Ende? (Am Panel bestätigt ist bisher nur, dass ein Text exakt an der Feldkante
+  abgeschnitten wird; welche Seite bei rechtsbündigem Text fehlt, ist weiter offen.)
 
 ## RAM
 

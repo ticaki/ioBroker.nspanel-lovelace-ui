@@ -67,11 +67,12 @@ Voraussetzung: ein Item der Art **Gerät mit Details** wie im Schnellstart oben.
 2. **Layout** wählen: **1 – Steuern**, **2 – Fortschritt** oder **3 – Werte**. Die kleinen Bilder zeigen, wo welcher Slot sitzt; die Nummern gehören zu den Zeilen darunter.
 3. **Haupt-Icon** wählen, z. B. `robot-vacuum`. Leer = das Icon des Items.
 4. **Statuszeile**: den Wert wählen, der unten als Text stehen soll, z. B. den Status des Geräts.
-5. **Slots** belegen: je Zeile einen Wert des Geräts aussuchen. Angeboten wird nur, was zur Art des Slots passt.
-6. **Übernehmen** und danach im Tab **Speichern**. – *Ergebnis: der Adapter startet neu.*
-7. **Am Panel ausprobieren:** das Item lange drücken. – *Ergebnis: die Geräteseite erscheint. Das „i“ unten rechts öffnet die Detailseite.*
+5. **Status-Icons** (nur Layout 1 und 3, freiwillig): wählen, wie viel Platz die kleinen Status-Icons bekommen, und darunter die **Plätze der Status-Icons** belegen, siehe [Status-Icons](#status-icons). Vorgabe: **Keine Status-Icons**.
+6. **Slots** belegen: je Zeile einen Wert des Geräts aussuchen. Angeboten wird nur, was zur Art des Slots passt.
+7. **Übernehmen** und danach im Tab **Speichern**. – *Ergebnis: der Adapter startet neu.*
+8. **Am Panel ausprobieren:** das Item lange drücken. – *Ergebnis: die Geräteseite erscheint. Das „i“ unten rechts öffnet die Detailseite.*
 
-![Der Dialog Gerät mit Details mit eingeschalteter Geräteseite: Layout-Auswahl mit Vorschau, Haupt-Icon, Statuszeile und die Slots](../Pictures/device-page/admin-overview.png)
+![Der Bereich der Geräteseite im Dialog (Layout 3 – Werte): Layout-Auswahl mit Vorschau, Haupt-Icon, Statuszeile, Auswahl Status-Icons, die Slots, Web-Panel-Elemente und i-Icon anzeigen](../Pictures/device-page-stages/layout3-stage0.png)
 
 ## Nachschlagen
 
@@ -160,15 +161,15 @@ Auch hier geht beim Umschalten nichts verloren, solange der Dialog offen ist. Di
 
 ## 5. Die Geräteseite einrichten
 
-![Der Bereich der Geräteseite im Dialog: Layout mit Vorschau, Haupt-Icon, Statuszeile, zehn Slots und i-Icon anzeigen](../Pictures/device-page/admin-overview.png)
+Von oben nach unten: **Layout** mit Vorschau, **Haupt-Icon**, **Statuszeile**, **Status-Icons** (nur Layout 1 und 3), **Slots**, **Plätze der Status-Icons**, **Web-Panel-Elemente (web-l / web-p)** und **i-Icon anzeigen**. Das Bild unter [Schnellstart: Geräteseite](#schnellstart-geräteseite) zeigt den ganzen Bereich.
 
-Beim ersten Einschalten belegt der Dialog die Info-Plätze (Info-Zeile, großer Wert) der Reihe nach mit den angehakten Einträgen der Filterliste. Knöpfe, Schalter, Fortschrittsbalken, Status-Icons und die Statuszeile bleiben leer – die wählst du selbst.
+Beim ersten Einschalten belegt der Dialog die Info-Plätze (Info-Zeile, großer Wert) der Reihe nach mit den angehakten Einträgen der Filterliste. Knöpfe, Schalter, Fortschrittsbalken und die Statuszeile bleiben leer, Status-Icons stehen auf **Keine Status-Icons** – das wählst du selbst.
 
 ### Layout
 
 Drei Layouts stehen zur Wahl, siehe [Die drei Layouts](#6-die-drei-layouts). Die Vorschau zeigt die Slots mit ihren Nummern.
 
-Wechselst du das Layout, bleiben die Slots **nach ihrer Nummer** erhalten (Slot 1 bleibt Slot 1). Passt ein Wert danach nicht mehr zur Art des Slots, steht er rot mit „passt nicht zu diesem Slot“ da. Hat das neue Layout weniger Slots, gehen die überzähligen verloren.
+Wechselst du das Layout, bleiben die Slots **nach ihrer Nummer** erhalten (Slot 1 bleibt Slot 1). Passt ein Wert danach nicht mehr zur Art des Slots, steht er rot mit „passt nicht zu diesem Slot“ da. Hat das neue Layout weniger Slots, gehen die überzähligen verloren. Die Status-Icons sind davon nicht betroffen: Ihre Auswahl und ihre Plätze bleiben bei jedem Layoutwechsel gespeichert, siehe [Status-Icons](#status-icons).
 
 ### Haupt-Icon
 
@@ -186,7 +187,7 @@ Ein Text, der nicht in die Zeile passt, wird am Panel in Abschnitten nacheinande
 
 ### Slots belegen
 
-Jede Zeile unter **Slots** steht für einen Platz: vorn die Nummer aus der Vorschau, dann die Art, dann die Auswahl. Die Auswahl bietet:
+Jede Zeile unter **Slots** steht für einen Platz: vorn die Nummer aus der Vorschau, dann die Art, dann die Auswahl. Die **Plätze der Status-Icons** belegst du genauso. Die Auswahl bietet:
 
 - **leer** – der Platz bleibt am Panel frei,
 - **Benutzerdefiniert** – etwas, das nicht zum Gerät gehören muss (nächster Abschnitt),
@@ -229,7 +230,7 @@ Bei einem **Kanal** kommen die Felder dazu, die seine Rolle auch auf einer Grid-
 
 Ein Beispiel – ein Knopf für „läuft / Pause“: einen An/Aus-Wert in einen Knopf-Slot legen, als Icon bei wahr `pause` und bei unwahr `play` wählen. Der Tipp schaltet um, das Icon wechselt mit.
 
-**Status-Icons** haben einen eigenen kleinen Dialog **Einstellungen des Elements**: Icon und Farbe für wahr und unwahr, **Farbverlauf …** und **Kurzer Tipp** (**Standard** oder **Navigation** mit Zielseite).
+**Status-Icons** haben einen eigenen kleinen Dialog **Einstellungen des Elements**: Icon und Farbe für wahr und unwahr, **Farbverlauf …** und **Kurzer Tipp** (**Standard** oder **Navigation** mit Zielseite). Liegt auf dem Platz ein Alias-Kanal Steckdose oder Taster, kommt **Langer Druck** dazu.
 
 ![Der kleine Dialog Einstellungen des Elements für ein Status-Icon: Icon und Farbe für wahr und unwahr, Farbverlauf und Kurzer Tipp](../Pictures/device-page/admin-slot-dialog-status.png)
 
@@ -248,16 +249,48 @@ Steht unter der Zeile rot **Zielseite nicht gefunden**, gibt es die Seite nicht 
 
 ### Status-Icons
 
-Layout 1 und Layout 3 können eine Reihe kleiner **Status-Icons** zeigen, z. B. für WLAN, Behälter voll, Filter, Fehler. Die Icons stehen in einem Raster aus Kästchen mit dünnem grauem Rahmen.
+Layout 1 und Layout 3 können eine Reihe kleiner **Status-Icons** zeigen, z. B. für WLAN, Behälter voll, Filter, Fehler. Die Icons stehen in einem Raster aus Kästchen mit dünnem grauem Rahmen. Layout 2 hat keine Status-Icons.
 
 - Ein Status-Icon zeigt **nur ein Icon in seiner Farbe**, ohne Name und Wert.
 - Das Icon kommt automatisch (dasselbe wie in einer Info-Zeile mit diesem Wert); ein eigenes wählst du über **…**, z. B. `delete-empty` für „Behälter leeren“.
 - Die Farbe kommt automatisch: An/Aus-Werte in den Farben *aktiviert* / *deaktiviert* des [Farbthemas](colorTheme), andere Werte in der Farbe ihrer Gruppe.
-- Ein Status-Icon lässt sich antippen und lange drücken wie jedes andere Element der Seite.
+
+#### Status-Icons einstellen
+
+1. Bei **Status-Icons** (unter der Statuszeile) wählen, wie viel Platz die Icons bekommen – das ist die **Stufe**:
+
+   | Layout | Auswahl |
+   |---|---|
+   | 1 – Steuern | **Keine Status-Icons** · **1–3 Spalten (bis 6 Icons)** · **4–5 Spalten (bis 10 Icons), Info-Zeilen ohne Namen** · **6–8 Spalten (bis 16 Icons), ohne Info-Zeilen** |
+   | 3 – Werte | **Keine Status-Icons** · **1–4 Icons, statt Kachel 1** · **5–8 Icons, statt Kachel 1 und 2** |
+
+   Bei Layout 2 gibt es die Auswahl nicht.
+2. Unter den Slots erscheinen die **Plätze der Status-Icons** – so viele, wie die Auswahl fasst (Layout 1: 6, 10 oder 16; Layout 3: 4 oder 8). Jeden Platz belegst du wie einen Slot: **leer**, **Benutzerdefiniert** (Datenpunkt, Kanal oder Navigation) oder ein Wert des Geräts. **…** öffnet die [Einstellungen des Elements](#einstellungen-des-elements).
+3. Die Vorschau beim Layout zeigt die Aufteilung der gewählten Stufe: das Raster mit allen Spalten der Stufe und daneben bzw. darunter, was von den Info-Zeilen und Kacheln bleibt.
+
+Was die Stufe verdeckt, blendet der Dialog aus: bei Layout 1 mit **6–8 Spalten** die Slots 1 und 2 (die beiden Info-Zeilen), bei Layout 3 Slot 1 bzw. die Slots 1 und 2 (die ersten Kacheln).
+
+| Layout 1, **1–3 Spalten**: Slots 1–6 und sechs Plätze | Layout 1, **6–8 Spalten**: Slots 1 und 2 ausgeblendet, sechzehn Plätze |
+|---|---|
+| <img alt="Der Dialog mit Layout 1 und der Auswahl 1–3 Spalten (bis 6 Icons): die Vorschau zeigt das Raster neben schmaleren Info-Zeilen, unter den Slots 1 bis 6 stehen sechs Plätze der Status-Icons" src="../Pictures/device-page-stages/layout1-stage1.png" width="100%"/> | <img alt="Der Dialog mit Layout 1 und der Auswahl 6–8 Spalten (bis 16 Icons), ohne Info-Zeilen: die Vorschau zeigt das Raster ohne Info-Zeilen, die Liste beginnt mit Slot 3, darunter sechzehn Plätze der Status-Icons" src="../Pictures/device-page-stages/layout1-stage3.png" width="100%"/> |
+| **Layout 3, 1–4 Icons, statt Kachel 1**: Slot 1 ausgeblendet, vier Plätze | |
+| <img alt="Der Dialog mit Layout 3 und der Auswahl 1–4 Icons, statt Kachel 1: die Vorschau zeigt vier Zellen an der Stelle von Kachel 1, die Liste beginnt mit Slot 2, darunter vier leere Plätze der Status-Icons" src="../Pictures/device-page-stages/layout3-stage1.png" width="100%"/> | |
+
+Die rot markierten Einträge in diesen Bildern („nicht im Gerät gefunden“, „passt nicht zu diesem Slot“) stammen aus der Testkonfiguration, mit der die Bilder aufgenommen sind; mit der Stufe haben sie nichts zu tun.
+
+**Ausblenden ist nicht löschen.** Was die Auswahl nicht zeigt – Plätze über der gewählten Anzahl und die verdeckten Slots –, bleibt mit seiner Belegung und seinen Einstellungen gespeichert. Wählst du später wieder mehr Platz, ist alles wieder da. Am Panel erscheint davon nichts, solange es ausgeblendet ist.
+
+| 6–8 Spalten, Platz 8 belegt | auf 1–3 Spalten verkleinert: Platz 8 ausgeblendet, Slots 1 und 2 wieder da | wieder 6–8 Spalten: Platz 8 unverändert belegt |
+|---|---|---|
+| <img alt="Layout 1 mit 6–8 Spalten: Platz 8 ist mit Behälter voll belegt" src="../Pictures/device-page-stages/shrink-0-before.png" width="100%"/> | <img alt="Dieselbe Seite mit 1–3 Spalten: nur die Plätze 1 bis 6, die Slots 1 und 2 stehen wieder mit ihrer Belegung da" src="../Pictures/device-page-stages/shrink-1-smaller.png" width="100%"/> | <img alt="Wieder 6–8 Spalten: Platz 8 zeigt weiter Behälter voll" src="../Pictures/device-page-stages/shrink-2-back.png" width="100%"/> |
+
+**Layoutwechsel.** Die Auswahl und die Plätze der Status-Icons bleiben beim Wechsel des Layouts gespeichert. Hat das neue Layout die gewählte Stufe nicht, gilt dort die größte, die es hat – z. B. wird **6–8 Spalten** auf Layout 3 zu **5–8 Icons, statt Kachel 1 und 2** mit den ersten acht Plätzen. Zurück auf Layout 1 sind wieder alle sechzehn Plätze da. Layout 2 zeigt keine Status-Icons, verliert sie aber auch nicht.
+
+<img alt="Layout 1 mit 6–8 Spalten auf Layout 3 umgestellt: die Auswahl zeigt 5–8 Icons, statt Kachel 1 und 2, darunter acht Plätze, Slots 1 und 2 sind ausgeblendet" src="../Pictures/device-page-stages/layout-change-1to3.png" width="50%"/>
 
 #### Die Stufe: wie viel Platz das Raster bekommt
 
-Wie viele Status-Icons die Seite zeigen kann, legt die **Stufe** fest. Du wählst sie im Admin beim Einrichten der Geräteseite (siehe [Die Geräteseite einrichten](#5-die-geräteseite-einrichten)). Je größer die Stufe, desto mehr Icons passen hinein – und desto mehr anderes muss Platz machen. Die Stufe gilt fest für die Seite: Am Panel taucht dabei nichts auf und verschwindet nichts, wenn sich ein Wert ändert.
+Wie viele Status-Icons die Seite zeigen kann, legt die **Stufe** fest – die Auswahl **Status-Icons** im Dialog. Je größer die Stufe, desto mehr Icons passen hinein – und desto mehr anderes muss Platz machen. Die Stufe gilt fest für die Seite: Am Panel taucht dabei nichts auf und verschwindet nichts, wenn sich ein Wert ändert.
 
 **Layout 1 – Steuern:** Das Raster hat zwei Zeilen und steht neben dem großen Icon (im US-Hochformat und bei Smartphone hochkant darunter). Es wächst nach rechts in die Info-Zeilen hinein.
 
@@ -291,10 +324,26 @@ Layout 2 hat keine Status-Icons.
 **Was du am Panel siehst:**
 
 - Es erscheinen nur so viele Spalten, wie belegt sind – höchstens so viele, wie die Stufe erlaubt. Sind in der Stufe 6–8 nur fünf Icons belegt, stehen drei Spalten da; die Info-Zeilen bleiben trotzdem weg, denn das richtet sich nach der Stufe, nicht nach der Zahl der Icons.
-- Die Icons füllen das Raster **spaltenweise**: oben, unten, dann die nächste Spalte. Leere Plätze rücken auf, es entsteht keine Lücke. Ist die letzte Spalte nur halb belegt, bleibt ihr leeres Kästchen mit Rahmen stehen.
+- Die belegten Plätze rücken **lückenlos** auf: Lässt du Platz 2 leer und belegst Platz 3, steht Platz 3 am Panel an zweiter Stelle. Die Reihenfolge der belegten Plätze bleibt.
+- Die Icons füllen das Raster **spaltenweise**: oben, unten, dann die nächste Spalte (Layout 3 hat nur eine Zeile). Ist die letzte Spalte nur halb belegt, bleibt ihr leeres Kästchen mit Rahmen stehen.
 - Was die Stufe verdeckt (die Info-Zeilen von Layout 1 in der Stufe 6–8, die ersten Info-Kacheln von Layout 3), zeigt das Panel nicht – auch wenn der Slot belegt ist.
 
 **Beim Verkleinern geht nichts verloren.** Stellst du eine kleinere Stufe ein, bleiben die Belegungen der Status-Icons, Info-Zeilen und Info-Kacheln, die dann nicht mehr zu sehen sind, gespeichert. Mit einer größeren Stufe sind sie wieder da.
+
+#### Tippen und Halten auf ein Status-Icon
+
+Ein Status-Icon ist ein Element wie die anderen der Seite, nur kleiner. Was Tippen und Halten tun, hängt davon ab, was auf dem Platz liegt:
+
+| Belegung des Platzes | kurzer Tipp | Halten (etwa eine halbe Sekunde) |
+|---|---|---|
+| Wert des Geräts oder eigener Datenpunkt | nichts | nichts |
+| … mit **Kurzer Tipp: Navigation** (über **…**) | öffnet die Zielseite | nichts |
+| **Benutzerdefiniert → Navigation** | öffnet die Zielseite | nichts |
+| **Kanal**: Steckdose, Taster, einfaches Licht | schaltet bzw. drückt | bei Steckdose und Taster der Datenpunkt aus **Langer Druck**, falls eingestellt; sonst nichts |
+| **Kanal**: dimmbares/farbiges Licht, Ventilator, Regler | Licht und Ventilator schalten | öffnet das Popup |
+| **Kanal**: Rollladen, Tor, Schloss, Auswahl, Timer | öffnet sofort das Popup | – |
+
+Am Hardware-Panel wird das Kästchen grau, solange du es berührst, und blinkt beim Halten wie die anderen Elemente. Ein Popup aus einem Status-Icon hat keine Überschrift. Ein leeres Kästchen reagiert nicht.
 
 So sieht es in den anderen Formaten aus:
 
@@ -322,7 +371,7 @@ Die Modelle **Smartphone quer** (`web-l`) und **Smartphone hochkant** (`web-p`) 
 
 | Layout | auf jedem Panel | zusätzlich auf Smartphone-Web-Panels | Slot-Nummern | dort zusammen |
 |---|---|---|---|---|
-| **1 – Steuern** | 2 Info-Zeilen, 4 Knöpfe, bis zu 16 Status-Icons | 2 Knöpfe | 11–12 | 6 Knöpfe |
+| **1 – Steuern** | 2 Info-Zeilen, 4 Knöpfe, bis zu 16 Status-Icons | 2 Knöpfe | 7–8 | 6 Knöpfe |
 | **2 – Fortschritt** | großer Wert, Fortschrittsbalken, 3 Info-Zeilen, 1 Knopf | 1 Info-Zeile, 2 Knöpfe | 7 (Info-Zeile), 8–9 (Knöpfe) | 4 Info-Zeilen, 3 Knöpfe |
 | **3 – Werte** | 6 Info-Zeilen, 2 Schalter | 2 Info-Zeilen, 1 Schalter | 9–10 (Info-Zeilen), 11 (Schalter) | 8 Info-Zeilen, 3 Schalter |
 
@@ -368,7 +417,8 @@ Für Geräte mit einem Programm, das abläuft: Waschmaschine, Trockner, Geschirr
 Für Geräte mit vielen Messwerten: Auto, Sensoren.
 
 - 6 **Info-Zeilen** als Kacheln in zwei Spalten (Slots 1–6, zeilenweise: 1 links oben, 2 rechts oben, 3 links Mitte …),
-- 2 **Schalter** darunter (Slots 7–8).
+- 2 **Schalter** darunter (Slots 7–8),
+- bis zu 8 **Status-Icons** in einer Reihe an der Stelle der ersten Kacheln, je nach Stufe, siehe [Status-Icons](#status-icons).
 
 ![Layout 3 – Werte: Auto mit sechs Werten in zwei Spalten und den Schaltern Klima und Laden](../Pictures/device-page/eu-cardDevice3.png)
 
@@ -502,7 +552,9 @@ Die technischen Einzelheiten (Protokoll, Maße) stehen für Entwickler in [doc/i
 - **Auf der Entities-Seite passiert beim Tipp links nichts.** Auch das braucht die neue TFT. Der Schalter rechts in der Zeile funktioniert unabhängig davon.
 - **Ein Slot bleibt am Panel leer.** Der Datenpunkt oder Kanal existiert nicht (mehr) oder passt nicht zur Art des Slots – im Dialog ist die Zeile dann rot. Bei einem Kanal steht beim Start des Adapters eine Warnung im Log (*Page '…', page item …: Device page slot …*).
 - **Die Info-Zeilen in Layout 1 sind kürzer oder fehlen.** Das macht die [Stufe der Status-Icons](#status-icons): Mit 1–3 Spalten ist der Name kurz, mit 4–5 Spalten fehlt er, mit 6–8 Spalten fehlen die Info-Zeilen ganz. In Layout 3 fehlen ebenso die ersten Info-Kacheln. Die Belegung bleibt gespeichert; mit einer kleineren Stufe ist sie wieder zu sehen.
-- **Nach einem Layoutwechsel fehlen Slots.** Die Slots bleiben nach ihrer Nummer. Von den zusätzlichen Slots der Smartphone-Web-Panels geht beim Wechsel auf Layout 1 der dritte verloren.
+- **Im Dialog fehlen Slots oder Plätze der Status-Icons.** Die gewählte Stufe der Status-Icons blendet sie aus; ihre Belegung ist noch gespeichert und mit einer größeren Stufe wieder da, siehe [Status-Icons einstellen](#status-icons-einstellen).
+- **Ein belegtes Status-Icon fehlt am Panel.** Sein Platz liegt über der gewählten Stufe (im Dialog dann ausgeblendet), oder der Datenpunkt bzw. Kanal existiert nicht (mehr) – im Dialog ist die Zeile dann rot.
+- **Nach einem Layoutwechsel fehlen Slots.** Die Slots bleiben nach ihrer Nummer. Von den zusätzlichen Slots der Smartphone-Web-Panels geht beim Wechsel auf Layout 1 der dritte verloren. Die Status-Icons bleiben erhalten.
 - **Die zusätzlichen Elemente fehlen am Panel.** Sie erscheinen nur auf eigenständigen Web-Panels mit den Modellen *Smartphone quer* und *Smartphone hochkant* – und nur, solange das Häkchen **Web-Panel-Elemente (web-l / web-p)** gesetzt ist.
 - **Im Web-Panel blinkt beim langen Druck nichts.** Das Blinken zeigt nur das Hardware-Panel; ausgelöst wird im Web-Panel trotzdem beim Loslassen.
 - **Ein langer Druck auf einen Knopf der Geräteseite tut nichts.** Für das Element ist kein **Langer Druck** eingestellt. Das ist Absicht: Ein langer Druck wird nie als kurzer Tipp gewertet.
