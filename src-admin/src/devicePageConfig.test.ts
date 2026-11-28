@@ -3,7 +3,16 @@ import {
     DEVICE_PAGE_CUSTOM_STATUS,
     PREVIEW_INFO,
     PREVIEW_MAIN,
+    PREVIEW_STATUS_CELL,
     PREVIEW_STATUS_LINE,
+    devicePageShownStage,
+    devicePageStatusPlaceCount,
+    devicePageStatusStages,
+    devicePageVisibleSlotIndexes,
+    withDevicePageStatusSlot,
+    withDevicePageStatusSlotLook,
+    withDevicePageStatusSlotNavigation,
+    withDevicePageStatusStage,
     devicePagePreviewAreas,
     devicePageRefOf,
     devicePageStateOptions,
@@ -51,7 +60,6 @@ import {
 import { channelIdOf, channelRolesOf, isInChannels, roleOfObject } from './channelSelection';
 
 const DEV = 'shelly.0.dev1';
-
 
 function state(rest: string, extra: Partial<DeviceStateInfo> = {}): DeviceStateInfo {
     return { id: `${DEV}.${rest}`, name: rest, role: 'state', type: 'number', read: true, write: false, ...extra };
@@ -591,19 +599,136 @@ describe('devicePageConfig - device page of the page item dialog', () => {
         expect(shortPressToSave({})).to.equal('state');
     });
 
-    it('preview: narrow info rows while status icons are shown (provisional: no grid until the admin has the stages)', () => {
-        const plain = devicePagePreviewAreas(1, false);
-        expect(plain.find(a => a.slot === 1)).to.deep.include({ x: 126, w: 314 });
-        const grid = devicePagePreviewAreas(1, true);
-        expect(grid.find(a => a.slot === 1)).to.deep.include({ x: 204, w: 236 });
+    it('preview: the layout of the stage - grid columns, info rows of layout 1, replaced tiles of layout 3', () => {
+        const cells = (layout: 1 | 2 | 3, stage: unknown): { x: number; y: number }[] =>
+            devicePagePreviewAreas(layout, stage)
+                .filter(a => a.slot === PREVIEW_STATUS_CELL)
+                .map(a => ({ x: a.x, y: a.y }));
+        const slotsOf = (layout: 1 | 2 | 3, stage: unknown): number[] =>
+            devicePagePreviewAreas(layout, stage)
+                .filter(a => a.slot > 0)
+                .map(a => a.slot)
+                .sort((a, b) => a - b);
+        // layout 1: the info rows wide / set B / set C / none, the grid 0 / 3 / 5 / 8 columns of 2 cells
+        expect(devicePagePreviewAreas(1, 0).find(a => a.slot === 1)).to.deep.include({ x: 126, w: 314 });
+        expect(devicePagePreviewAreas(1, 1).find(a => a.slot === 1)).to.deep.include({ x: 241, w: 199 });
+        expect(devicePagePreviewAreas(1, 2).find(a => a.slot === 2)).to.deep.include({ x: 315, y: 120, w: 125 });
+        expect(slotsOf(1, 3)).to.deep.equal([3, 4, 5, 6]);
+        expect(cells(1, 0)).to.have.length(0);
+        expect(cells(1, 1)).to.have.length(6);
+        expect(cells(1, 2)).to.have.length(10);
+        expect(cells(1, 3)).to.have.length(16);
+        expect(cells(1, 3).slice(0, 3)).to.deep.equal([
+            { x: 124, y: 71 },
+            { x: 124, y: 115 },
+            { x: 161, y: 71 },
+        ]);
+        expect(cells(1, 3)[15]).to.deep.equal({ x: 383, y: 115 });
+        // layout 3: tile 1 / tiles 1 and 2 replaced by one row of 4 / 8 cells
+        expect(slotsOf(3, 0)).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
+        expect(slotsOf(3, 1)).to.deep.equal([2, 3, 4, 5, 6, 7, 8]);
+        expect(slotsOf(3, 2)).to.deep.equal([3, 4, 5, 6, 7, 8]);
+        expect(cells(3, 1)).to.deep.equal([0, 1, 2, 3].map(c => ({ x: 114 + 37 * c, y: 67 })));
+        expect(cells(3, 2)).to.have.length(8);
+        // a stage too large for the layout is shown as its largest one, layout 2 has none
+        expect(cells(3, 3)).to.have.length(8);
+        expect(cells(2, 3)).to.have.length(0);
+        expect(slotsOf(2, 3)).to.deep.equal([1, 2, 3, 4, 5, 6]);
         for (const layout of [1, 2, 3] as const) {
-            const areas = devicePagePreviewAreas(layout, layout === 1);
-            const slots = areas.filter(a => a.slot > 0).map(a => a.slot);
-            expect(slots.sort((a, b) => a - b)).to.deep.equal(DEVICE_PAGE_LAYOUTS[layout].map((_, i) => i + 1));
+            const areas = devicePagePreviewAreas(layout, undefined);
+            expect(slotsOf(layout, undefined)).to.deep.equal(DEVICE_PAGE_LAYOUTS[layout].map((_, i) => i + 1));
             expect(areas.some(a => a.slot === PREVIEW_MAIN)).to.equal(true);
             expect(areas.some(a => a.slot === PREVIEW_INFO)).to.equal(true);
             expect(areas.some(a => a.slot === PREVIEW_STATUS_LINE)).to.equal(true);
         }
+    });
+
+    describe('stage of the status icon grid', () => {
+        const ref = (id: string): { key: string; id: string } => ({ key: '', id: `${DEV}.${id}` });
+
+        it('offers the stages of the layout, layout 2 none', () => {
+            expect(devicePageStatusStages(1)).to.deep.equal([0, 1, 2, 3]);
+            expect(devicePageStatusStages(2)).to.deep.equal([0]);
+            expect(devicePageStatusStages(3)).to.deep.equal([0, 1, 2]);
+        });
+
+        it('stores the chosen stage, 0 left out, the places stay', () => {
+            const page: DevicePageConfig = { layout: 1, slots: [], showInfo: true, statusSlots: [ref('a')] };
+            const three = withDevicePageStatusStage(page, 3);
+            expect(three.statusStage).to.equal(3);
+            expect(three.statusSlots).to.deep.equal(page.statusSlots);
+            expect(withDevicePageStatusStage(three, 0)).to.not.have.property('statusStage');
+        });
+
+        it('shows as many places as the stage holds and hides the covered slots without deleting them', () => {
+            const base: DevicePageConfig = { layout: 1, slots: [], showInfo: true };
+            expect([0, 1, 2, 3].map(s => devicePageStatusPlaceCount({ ...base, statusStage: s as 0 }))).to.deep.equal([
+                0, 6, 10, 16,
+            ]);
+            expect(devicePageVisibleSlotIndexes({ layout: 1, statusStage: 2 })).to.deep.equal([0, 1, 2, 3, 4, 5]);
+            expect(devicePageVisibleSlotIndexes({ layout: 1, statusStage: 3 })).to.deep.equal([2, 3, 4, 5]);
+            expect(devicePageVisibleSlotIndexes({ layout: 3, statusStage: 1 })).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
+            expect(devicePageVisibleSlotIndexes({ layout: 3, statusStage: 2 })).to.deep.equal([2, 3, 4, 5, 6, 7]);
+            expect(devicePageVisibleSlotIndexes({ layout: 2, statusStage: 3 })).to.deep.equal([0, 1, 2, 3, 4, 5]);
+        });
+
+        it('a layout change keeps the stage, the admin shows the largest the layout has', () => {
+            const page: DevicePageConfig = {
+                layout: 1,
+                slots: [ref('i1'), ref('i2'), null, null, null, null],
+                showInfo: true,
+                statusStage: 3,
+                statusSlots: Array.from({ length: 16 }, (_v, i) => ref(`s${i}`)),
+            };
+            const three = withDevicePageLayout(page, 3);
+            expect(three.statusStage).to.equal(3);
+            expect(three.statusSlots).to.have.length(16);
+            expect(devicePageShownStage(three)).to.equal(2);
+            expect(devicePageStatusPlaceCount(three)).to.equal(8);
+            expect(devicePageShownStage(withDevicePageLayout(page, 2))).to.equal(0);
+            expect(withDevicePageLayout(three, 1)).to.deep.equal(page);
+        });
+
+        it('a smaller stage keeps the places beyond it and the covered slots, a larger one shows them again', () => {
+            const page: DevicePageConfig = {
+                layout: 1,
+                slots: [ref('i1'), ref('i2'), null, null, null, null],
+                showInfo: true,
+                statusStage: 3,
+                statusSlots: Array.from({ length: 16 }, (_v, i) => ref(`s${i}`)),
+            };
+            const small = withDevicePageStatusStage(page, 1);
+            expect(devicePageStatusPlaceCount(small)).to.equal(6);
+            const saved = devicePageConfigOf(small);
+            expect(saved?.statusSlots).to.have.length(16);
+            expect(saved?.slots.slice(0, 2)).to.deep.equal([ref('i1'), ref('i2')]);
+            expect(devicePageConfigOf(withDevicePageStatusStage(small, 3))).to.deep.equal(devicePageConfigOf(page));
+        });
+
+        it('sets a place, keeps its settings, trims empty places at the end', () => {
+            const page: DevicePageConfig = { layout: 3, slots: [], showInfo: true, statusStage: 2 };
+            const one = withDevicePageStatusSlot(page, 2, ref('door'));
+            expect(one.statusSlots).to.deep.equal([null, null, ref('door')]);
+            const look = withDevicePageStatusSlotLook(one, 2, { trueIcon: 'door-open', trueColor: '#ff0000' });
+            expect(look.statusSlots?.[2]).to.deep.include({ trueIcon: 'door-open', trueColor: '#ff0000' });
+            const other = withDevicePageStatusSlot(look, 2, ref('window'));
+            expect(other.statusSlots?.[2]).to.deep.include({ id: `${DEV}.window`, trueIcon: 'door-open' });
+            expect(withDevicePageStatusSlot(other, 2, null)).to.not.have.property('statusSlots');
+            expect(withDevicePageStatusSlot(page, 16, ref('x'))).to.equal(page);
+            expect(withDevicePageStatusSlotLook(page, 0, {})).to.equal(page);
+        });
+
+        it('sets the target page of a navigation place', () => {
+            const page = withDevicePageStatusSlot(
+                { layout: 1, slots: [], showInfo: true, statusStage: 1 },
+                1,
+                customDevicePageSlot('navigation', ''),
+            );
+            const nav = withDevicePageStatusSlotNavigation(page, 1, 'kitchen');
+            expect(nav.statusSlots?.[1]).to.deep.include({ custom: 'navigation', targetPage: 'kitchen' });
+            expect(withDevicePageStatusSlotNavigation(nav, 1, 'kitchen')).to.equal(nav);
+            expect(withDevicePageStatusSlotNavigation(nav, 0, 'kitchen')).to.equal(nav);
+        });
     });
 
     describe('devicePageStateOptions', () => {

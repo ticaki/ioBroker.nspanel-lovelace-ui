@@ -5,6 +5,8 @@
  * user defined, any data point, an alias channel or a navigation (icon and name, a tap opens a page); its "…" button
  * opens the settings of the element (DevicePageSlotDialog). With the option "web panel elements" ticked the extra
  * slots of the layout follow (DEVICE_PAGE_EXTRA_SLOTS) - each one like a slot of the layout of the same kind.
+ * Layouts 1 and 3 choose the stage of the status icon grid: as many status icon places as the stage holds follow the
+ * slots, the slots the stage covers and the places beyond it are hidden, not deleted; the preview shows the stage.
  */
 import React from 'react';
 import {
@@ -31,7 +33,7 @@ import { CHANNEL_ROLES_LIST, type AdminPageItemConfig } from '../../../src/lib/t
 import {
     DEVICE_PAGE_LAYOUTS,
     deviceDetailNameKey,
-    devicePageHasStatusIcons,
+    isDevicePageStatusStage,
     devicePageSlotAcceptsChannel,
     devicePageSlotHasLook,
     devicePageSlotTakesLongPress,
@@ -50,6 +52,7 @@ import {
     DEVICE_PAGE_CUSTOM_STATUS,
     PREVIEW_INFO,
     PREVIEW_MAIN,
+    PREVIEW_STATUS_CELL,
     customDevicePageSlot,
     devicePageCustomProblem,
     devicePageCustomSources,
@@ -57,6 +60,10 @@ import {
     isDevicePageCustomSource,
     withDevicePageSlotNavigation,
     devicePagePreviewAreas,
+    devicePageShownStage,
+    devicePageStatusPlaceCount,
+    devicePageStatusStages,
+    devicePageVisibleSlotIndexes,
     devicePageSlotDialogItem,
     devicePageSlotDialogValue,
     devicePageSlotItemOptions,
@@ -72,6 +79,10 @@ import {
     withDevicePageSlot,
     withDevicePageSlotLook,
     withDevicePageStatus,
+    withDevicePageStatusSlot,
+    withDevicePageStatusSlotLook,
+    withDevicePageStatusSlotNavigation,
+    withDevicePageStatusStage,
     withDevicePageWebExtras,
     type DevicePageCustomObject,
     type DevicePageSlotItemOptions,
@@ -139,6 +150,15 @@ interface DevicePageSectionState {
 
 const LAYOUTS: readonly DevicePageLayout[] = [1, 2, 3];
 
+/**
+ * where a slot of the section is stored: `slots` a slot of the layout or an extra slot ({@link DevicePageConfig.slots}),
+ * `status` a status icon place ({@link DevicePageConfig.statusSlots}); index 0 = the first one
+ */
+interface SlotPlace {
+    list: 'slots' | 'status';
+    index: number;
+}
+
 /** scale of the preview: 480 × 320 → 168 × 112 */
 const PREVIEW_SCALE = 0.35;
 
@@ -154,6 +174,8 @@ const KIND_COLOR: Readonly<Record<DevicePageSlotKind, string>> = {
 
 export default class DevicePageSection extends React.Component<DevicePageSectionProps, DevicePageSectionState> {
     private slotDialogRef = React.createRef<DevicePageSlotDialog>();
+    /** the small dialog of the status icon places */
+    private statusDialogRef = React.createRef<DevicePageSlotDialog>();
     /** ids being read */
     private readonly reading = new Set<string>();
     private unmounted = false;
@@ -191,7 +213,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
 
     /** reads the objects of the user defined slots that are not known yet (for the marks of the slots) */
     private loadCustomObjects(): void {
-        for (const slot of this.props.value.slots) {
+        for (const slot of [...this.props.value.slots, ...(this.props.value.statusSlots ?? [])]) {
             const id = slot?.custom ? slot.id : '';
             if (id && !(id in this.state.objects) && !this.reading.has(id)) {
                 this.reading.add(id);
@@ -266,17 +288,15 @@ export default class DevicePageSection extends React.Component<DevicePageSection
     };
 
     /**
-     * The schematic preview of a layout: main icon, numbered slots colored by kind, status line and "i".
+     * The schematic preview of a layout: main icon, numbered slots colored by kind, the status icon grid of the chosen
+     * stage (cut to the layout), status line and "i".
      *
      * @param layout the layout
      * @returns the preview
      */
     private renderPreview(layout: DevicePageLayout): React.JSX.Element {
         const kinds = DEVICE_PAGE_LAYOUTS[layout];
-        const { showInfo } = this.props.value;
-        // TODO(status grid): provisional until the admin offers the stage and the status icons (TFT device13) - the
-        // preview only narrows the info rows while a stage shows a filled status icon, it draws no grid
-        const withStatusIcons = devicePageHasStatusIcons({ ...this.props.value, layout });
+        const { showInfo, statusStage } = this.props.value;
         return (
             <Box
                 sx={{
@@ -301,13 +321,15 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         bgcolor: '#333',
                     }}
                 />
-                {devicePagePreviewAreas(layout, withStatusIcons).map(area => {
+                {devicePagePreviewAreas(layout, statusStage).map(area => {
                     const kind = area.slot > 0 ? kinds[area.slot - 1] : undefined;
                     let bg = '#424242';
                     let text = '';
                     if (kind) {
                         bg = KIND_COLOR[kind];
                         text = String(area.slot);
+                    } else if (area.slot === PREVIEW_STATUS_CELL) {
+                        bg = KIND_COLOR.status;
                     } else if (area.slot === PREVIEW_MAIN) {
                         bg = '#9e9e9e';
                     } else if (area.slot === PREVIEW_INFO) {
@@ -316,7 +338,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                     }
                     return (
                         <Box
-                            key={`${area.slot}`}
+                            key={`${area.slot}-${area.cell ?? ''}`}
                             sx={{
                                 position: 'absolute',
                                 left: area.x * PREVIEW_SCALE,
@@ -442,11 +464,38 @@ export default class DevicePageSection extends React.Component<DevicePageSection
     }
 
     /**
-     * @param index index of the slot (0 = slot 1; the extra slots follow the slots of the layout)
+     * @param place where the slot is stored
+     * @returns what the slot shows, null = empty
+     */
+    private slotAt(place: SlotPlace): DevicePageSlotRef | null {
+        const { value } = this.props;
+        return (place.list === 'status' ? value.statusSlots?.[place.index] : value.slots[place.index]) ?? null;
+    }
+
+    /**
+     * @param place where the slot is stored (a slot of the layout, an extra slot or a status icon place)
      * @param ref what the slot shows, null = empty
      */
-    private setSlot(index: number, ref: DevicePageSlotRef | null): void {
-        this.props.onChange(withDevicePageSlot(this.props.value, index, ref));
+    private setSlot(place: SlotPlace, ref: DevicePageSlotRef | null): void {
+        const { value } = this.props;
+        this.props.onChange(
+            place.list === 'status'
+                ? withDevicePageStatusSlot(value, place.index, ref)
+                : withDevicePageSlot(value, place.index, ref),
+        );
+    }
+
+    /**
+     * @param place where the navigation slot is stored
+     * @param page the target page, '' = none
+     */
+    private setSlotNavigation(place: SlotPlace, page: string): void {
+        const { value } = this.props;
+        this.props.onChange(
+            place.list === 'status'
+                ? withDevicePageStatusSlotNavigation(value, place.index, page)
+                : withDevicePageSlotNavigation(value, place.index, page),
+        );
     }
 
     /**
@@ -454,10 +503,11 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      * shows a name, the small dialog (icons, colors, tap, long press) for a status icon.
      *
      * @param kind the kind of the slot
-     * @param index index of the slot (0 = slot 1)
+     * @param place where the slot is stored
      * @param slot the slot
      */
-    private openSlotSettings(kind: DevicePageSlotKind, index: number, slot: DevicePageSlotRef): void {
+    private openSlotSettings(kind: DevicePageSlotKind, place: SlotPlace, slot: DevicePageSlotRef): void {
+        const { index } = place;
         const role = slot.custom === 'channel' ? this.state.objects[slot.id]?.role : undefined;
         const title = `${index + 1} ${DevicePageSection.kindLabel(kind)}`;
         if (kind !== 'status') {
@@ -472,7 +522,8 @@ export default class DevicePageSection extends React.Component<DevicePageSection
             return;
         }
         const navigationSlot = slot.custom === 'navigation';
-        this.slotDialogRef.current?.openWith(index, title, devicePageSlotDialogValue(slot), {
+        const dialog = place.list === 'status' ? this.statusDialogRef : this.slotDialogRef;
+        dialog.current?.openWith(index, title, devicePageSlotDialogValue(slot), {
             // a navigation slot has no state: one icon and color, its tap is fixed
             longPress: !navigationSlot && devicePageSlotTakesLongPress(kind, slot, role),
             tap: !navigationSlot && devicePageSlotTakesNavigation(slot, role),
@@ -486,14 +537,14 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      * and color in the settings of the element) - the navigation only where icon and name are enough.
      *
      * @param kind the kind of the slot
-     * @param index index of the slot (0 = slot 1)
+     * @param place where the slot is stored
      * @param slot the slot
      * @param problem why it is marked
      * @returns the fields
      */
     private renderCustomSlot(
         kind: DevicePageSlotKind,
-        index: number,
+        place: SlotPlace,
         slot: DevicePageSlotRef,
         problem: DevicePageStateProblem | undefined,
     ): React.JSX.Element {
@@ -512,7 +563,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                     value={source}
                     onChange={e => {
                         if (isDevicePageCustomSource(e.target.value)) {
-                            this.setSlot(index, customDevicePageSlot(e.target.value, ''));
+                            this.setSlot(place, customDevicePageSlot(e.target.value, ''));
                         }
                     }}
                 >
@@ -542,16 +593,14 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
                         data-dd="device-page-slot-navigation"
                     >
-                        {this.props.targetSelect(slot, page =>
-                            this.props.onChange(withDevicePageSlotNavigation(this.props.value, index, page)),
-                        )}
+                        {this.props.targetSelect(slot, page => this.setSlotNavigation(place, page))}
                     </Box>
                 ) : source === 'channel' ? (
                     <EntitySelector
                         key="channel"
                         label={I18n.t('deviceDetailsDialog_slotCustomChannelId')}
                         value={slot.id}
-                        onChange={(id: string) => this.setSlot(index, customDevicePageSlot('channel', id.trim()))}
+                        onChange={(id: string) => this.setSlot(place, customDevicePageSlot('channel', id.trim()))}
                         onTransformSelectedId={(id: string) => channelIdOf(channelIds, id)}
                         socket={socket}
                         theme={theme}
@@ -564,7 +613,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         key="state"
                         label={I18n.t('deviceDetailsDialog_slotCustomStateId')}
                         value={slot.id}
-                        onChange={(id: string) => this.setSlot(index, customDevicePageSlot('state', id.trim()))}
+                        onChange={(id: string) => this.setSlot(place, customDevicePageSlot('state', id.trim()))}
                         socket={socket}
                         theme={theme}
                         themeType={themeType}
@@ -594,12 +643,12 @@ export default class DevicePageSection extends React.Component<DevicePageSection
      * chosen the "…" button opens the settings of the element.
      *
      * @param kind the kind of the slot
-     * @param index index of the slot (0 = slot 1)
+     * @param place where the slot is stored
      * @returns the row
      */
-    private renderSlot(kind: DevicePageSlotKind, index: number): React.JSX.Element {
+    private renderSlot(kind: DevicePageSlotKind, place: SlotPlace): React.JSX.Element {
         const { deviceId, states, entries, value } = this.props;
-        const slot = value.slots[index] ?? null;
+        const slot = this.slotAt(place);
         const custom = !!slot?.custom;
         const options = devicePageStateOptions(deviceId, states, kind, custom ? null : slot);
         const selected = devicePageSlotSelectValue(slot);
@@ -610,7 +659,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
         const targetProblem = !!slot && slot.custom !== 'navigation' && this.props.targetProblem(slot);
         return (
             <Box
-                key={`${value.layout}-${index}`}
+                key={`${place.list}-${value.layout}-${place.index}`}
                 sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -628,7 +677,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                             justifyContent: 'center',
                         }}
                     >
-                        {index + 1}
+                        {place.index + 1}
                     </Box>
                     <Typography
                         variant="body2"
@@ -650,7 +699,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                             displayEmpty
                             sx={{ '& .MuiSelect-select': { overflow: 'hidden', textOverflow: 'ellipsis' } }}
                             onChange={e =>
-                                this.setSlot(index, devicePageSlotOf(String(e.target.value), options, entries, slot))
+                                this.setSlot(place, devicePageSlotOf(String(e.target.value), options, entries, slot))
                             }
                         >
                             <MenuItem value="">
@@ -674,7 +723,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                                 size="small"
                                 disabled={!slot || (slot.id === '' && slot.custom !== 'navigation')}
                                 color={devicePageSlotHasLook(slot) ? 'success' : 'default'}
-                                onClick={() => slot && this.openSlotSettings(kind, index, slot)}
+                                onClick={() => slot && this.openSlotSettings(kind, place, slot)}
                                 data-dd="device-page-slot-settings"
                                 data-set={devicePageSlotHasLook(slot) ? '1' : '0'}
                             >
@@ -683,7 +732,7 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         </span>
                     </Tooltip>
                 </Box>
-                {slot && custom ? this.renderCustomSlot(kind, index, slot, problem) : null}
+                {slot && custom ? this.renderCustomSlot(kind, place, slot, problem) : null}
                 {targetProblem ? (
                     <FormHelperText
                         error
@@ -728,7 +777,73 @@ export default class DevicePageSection extends React.Component<DevicePageSection
                         label={I18n.t('deviceDetailsDialog_pageWebExtras')}
                     />
                 </Tooltip>
-                {extras.map(extra => this.renderSlot(extra.kind, extra.index))}
+                {extras.map(extra => this.renderSlot(extra.kind, { list: 'slots', index: extra.index }))}
+            </Box>
+        );
+    }
+
+    /**
+     * The choice of the stage of the status icon grid (layouts 1 and 3). It shows the stage the layout uses: a stored
+     * stage too large for the layout is shown as its largest one, the stored value stays until another is chosen.
+     *
+     * @returns the selection, null for a layout without status icons
+     */
+    private renderStageChoice(): React.JSX.Element | null {
+        const { value, onChange } = this.props;
+        const stages = devicePageStatusStages(value.layout);
+        if (stages.length < 2) {
+            return null;
+        }
+        return (
+            <FormControl
+                variant="standard"
+                size="small"
+                sx={{ minWidth: 0 }}
+                data-dd="device-page-stage"
+            >
+                <InputLabel shrink>{I18n.t('deviceDetailsDialog_pageStage')}</InputLabel>
+                <Select
+                    value={String(devicePageShownStage(value))}
+                    onChange={e => {
+                        const stage = Number(e.target.value);
+                        if (isDevicePageStatusStage(stage)) {
+                            onChange(withDevicePageStatusStage(value, stage));
+                        }
+                    }}
+                >
+                    {stages.map(stage => (
+                        <MenuItem
+                            key={stage}
+                            value={String(stage)}
+                        >
+                            {I18n.t(`deviceDetailsDialog_pageStage${value.layout}_${stage}`)}
+                        </MenuItem>
+                    ))}
+                </Select>
+                <FormHelperText>{I18n.t('deviceDetailsDialog_pageStageHint')}</FormHelperText>
+            </FormControl>
+        );
+    }
+
+    /**
+     * The status icon places: as many as the shown stage holds, in the order of the list (the panel moves the filled
+     * ones up without gaps). The places beyond stay stored and come back with a larger stage.
+     *
+     * @returns the places, null when the stage shows none
+     */
+    private renderStatusSlots(): React.JSX.Element | null {
+        const count = devicePageStatusPlaceCount(this.props.value);
+        if (count === 0) {
+            return null;
+        }
+        return (
+            <Box
+                sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}
+                data-dd="device-page-status-slots"
+            >
+                <FormLabel sx={{ fontSize: '0.875rem' }}>{I18n.t('deviceDetailsDialog_pageStatusSlots')}</FormLabel>
+                {Array.from({ length: count }, (_v, index) => this.renderSlot('status', { list: 'status', index }))}
+                <FormHelperText sx={{ mt: 0 }}>{I18n.t('deviceDetailsDialog_pageStatusIconsHint')}</FormHelperText>
             </Box>
         );
     }
@@ -737,24 +852,26 @@ export default class DevicePageSection extends React.Component<DevicePageSection
         const { value, onChange, socket, theme, themeType, iconSelect, targetSelect, adapterName, instance } =
             this.props;
         const kinds = DEVICE_PAGE_LAYOUTS[value.layout];
+        const dialogProps = { socket, theme, themeType, adapterName, instance, iconSelect, targetSelect };
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {this.renderStageChoice()}
                 <FormLabel sx={{ fontSize: '0.875rem' }}>{I18n.t('deviceDetailsDialog_pageSlots')}</FormLabel>
-                {kinds.map((kind, index) => this.renderSlot(kind, index))}
-                {kinds.includes('status') ? (
-                    <FormHelperText sx={{ mt: 0 }}>{I18n.t('deviceDetailsDialog_pageStatusIconsHint')}</FormHelperText>
-                ) : null}
+                {/* the slots the stage covers stay stored, they are only not shown */}
+                {devicePageVisibleSlotIndexes(value).map(index =>
+                    this.renderSlot(kinds[index], { list: 'slots', index }),
+                )}
+                {this.renderStatusSlots()}
                 {this.renderWebExtras()}
                 <DevicePageSlotDialog
                     ref={this.slotDialogRef}
-                    socket={socket}
-                    theme={theme}
-                    themeType={themeType}
-                    adapterName={adapterName}
-                    instance={instance}
-                    iconSelect={iconSelect}
-                    targetSelect={targetSelect}
+                    {...dialogProps}
                     onApply={(index, look) => onChange(withDevicePageSlotLook(this.props.value, index, look))}
+                />
+                <DevicePageSlotDialog
+                    ref={this.statusDialogRef}
+                    {...dialogProps}
+                    onApply={(index, look) => onChange(withDevicePageStatusSlotLook(this.props.value, index, look))}
                 />
             </Box>
         );

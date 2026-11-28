@@ -2,7 +2,14 @@ import {
     DEVICE_PAGE_EXTRA_SLOTS,
     DEVICE_PAGE_LAYOUTS,
     DEVICE_PAGE_SLOT_LOOK_FIELDS,
+    DEVICE_PAGE_STAGE_CAPACITY,
+    DEVICE_PAGE_STATUS_SLOTS_MAX,
     defaultDevicePageConfig,
+    devicePageSlotHiddenByStage,
+    devicePageStageOf,
+    devicePageStatusCapacity,
+    isDevicePageStatusStage,
+    type DevicePageStatusStage,
     deviceDetailEntryOfState,
     deviceDetailMaskOf,
     devicePageConfigOf,
@@ -210,15 +217,26 @@ export function withDevicePageSlot(
     if (index < 0 || index >= slots.length) {
         return config;
     }
-    const before = slots[index];
+    slots[index] = slotWithChoice(slots[index], ref);
+    // the older own icon only on a status slot; the extra slots only while one of them is filled
+    return { ...config, slots: fitDevicePageSlots(slots, config.layout, config.layout) };
+}
+
+/**
+ * @param before what the slot showed, null = empty
+ * @param ref what the slot shows now, null = empty
+ * @returns the slot: the own settings of before stay with something chosen, an emptied slot loses them
+ */
+function slotWithChoice(
+    before: DevicePageSlotRef | null | undefined,
+    ref: DevicePageSlotRef | null,
+): DevicePageSlotRef | null {
     const next: DevicePageSlotRef | null = ref ? { ...(before ? slotSettingsOf(before) : {}), ...ref } : null;
     if (next?.custom === 'navigation') {
         // a navigation slot always navigates: no choice of the short tap
         delete next.isNavigation;
     }
-    slots[index] = next;
-    // the older own icon only on a status slot; the extra slots only while one of them is filled
-    return { ...config, slots: fitDevicePageSlots(slots, config.layout, config.layout) };
+    return next;
 }
 
 /**
@@ -239,6 +257,17 @@ export function withDevicePageSlotLook(
     if (!slot) {
         return config;
     }
+    const slots = [...config.slots];
+    slots[index] = slotWithLook(slot, look);
+    return { ...config, slots };
+}
+
+/**
+ * @param slot a filled slot
+ * @param look the own settings, empty fields = not set
+ * @returns the slot with the settings instead of its own ones
+ */
+function slotWithLook(slot: DevicePageSlotRef, look: DevicePageSlotLook): DevicePageSlotRef {
     const next: DevicePageSlotRef = { key: slot.key, id: slot.id };
     if (slot.subName) {
         next.subName = slot.subName;
@@ -271,9 +300,7 @@ export function withDevicePageSlotLook(
     if (look.textSize !== undefined) {
         next.textSize = look.textSize;
     }
-    const slots = [...config.slots];
-    slots[index] = next.custom === 'channel' ? { ...next, ...devicePageChannelItemFieldsOf(look) } : next;
-    return { ...config, slots };
+    return next.custom === 'channel' ? { ...next, ...devicePageChannelItemFieldsOf(look) } : next;
 }
 
 /** what the page item dialog offers for a slot of the device page (ChannelConfigDialog, slot mode) */
@@ -438,12 +465,24 @@ export function withDevicePageSlotNavigation(
     targetPage: string,
 ): DevicePageConfig {
     const slot = config.slots[index];
-    if (slot?.custom !== 'navigation') {
+    const next = slot ? slotWithTarget(slot, targetPage) : null;
+    if (!next) {
         return config;
     }
-    if (targetPage === (slot.targetPage ?? '')) {
-        // nothing new (the selection reports its value again when it is shown)
-        return config;
+    const slots = [...config.slots];
+    slots[index] = next;
+    return { ...config, slots };
+}
+
+/**
+ * @param slot a slot
+ * @param targetPage name of the target page, '' = none
+ * @returns the navigation slot with the target page, null = nothing to change (no navigation slot or the same page -
+ * the selection reports its value again when it is shown)
+ */
+function slotWithTarget(slot: DevicePageSlotRef, targetPage: string): DevicePageSlotRef | null {
+    if (slot.custom !== 'navigation' || targetPage === (slot.targetPage ?? '')) {
+        return null;
     }
     const next: DevicePageSlotRef = { ...slot };
     if (targetPage) {
@@ -451,9 +490,7 @@ export function withDevicePageSlotNavigation(
     } else {
         delete next.targetPage;
     }
-    const slots = [...config.slots];
-    slots[index] = next;
-    return { ...config, slots };
+    return next;
 }
 
 /**
@@ -567,8 +604,10 @@ export interface DevicePagePreviewArea {
     y: number;
     w: number;
     h: number;
-    /** slot number (1 ...), 0 = main icon, -1 = status line, -2 = "i" */
+    /** slot number (1 ...), 0 = main icon, -1 = status line, -2 = "i", -3 = a cell of the status icon grid */
     slot: number;
+    /** with {@link PREVIEW_STATUS_CELL}: index of the status icon place (0 = place 1) */
+    cell?: number;
 }
 
 /** main icon in {@link DevicePagePreviewArea.slot} */
@@ -577,60 +616,92 @@ export const PREVIEW_MAIN = 0;
 export const PREVIEW_STATUS_LINE = -1;
 /** "i" icon in {@link DevicePagePreviewArea.slot} */
 export const PREVIEW_INFO = -2;
-
-/** the status grid of layout 1: two columns of 38 px (1 px overlap), rows of 45 px (1 px overlap), at x 124 / y 71 */
-const STATUS_GRID = { x: 124, y: 71, w: 38, h: 45, columns: 2 };
+/** a cell of the status icon grid in {@link DevicePagePreviewArea.slot} ({@link DevicePagePreviewArea.cell}) */
+export const PREVIEW_STATUS_CELL = -3;
 
 /**
- * The areas of the schematic preview of a layout (geometry of the HMI pages cardDevice1-3; the extra slots of the web
- * panels are not part of it). Layout 1 with at least one
- * status slot filled: the status grid right of the main icon (2 columns, rows = number of status slots / 2, all of
- * them - an empty one stays an empty cell) and the narrow info rows; otherwise the wide rows and no grid.
+ * the status icon grid per layout (EU, doc/ideas/device-details/device-page-geometry.next.json): cells of w 38 at a
+ * distance of 37 (1 px overlap), cardDevice1 2 rows of h 45 at y 71 / 115 from x 124, cardDevice3 1 row of h 52 at
+ * y 67 from x 114; filled column by column (top, bottom, next column). cardDevice2 has none.
+ */
+const STATUS_GRID: Readonly<Record<DevicePageLayout, { x: number; y: number; w: number; h: number; rows: number }>> = {
+    1: { x: 124, y: 71, w: 38, h: 45, rows: 2 },
+    2: { x: 0, y: 0, w: 0, h: 0, rows: 1 },
+    3: { x: 114, y: 67, w: 38, h: 52, rows: 1 },
+};
+
+/**
+ * the info rows of layout 1 per stage (EU): x of the icon, the row reaches to x 440; null = no info rows. Stage 0 the
+ * wide rows (set A), stage 1 set B (behind 3 columns), stage 2 set C (behind 5 columns), stage 3 none.
+ */
+const LAYOUT1_INFO_ROW_X: Readonly<Record<DevicePageStatusStage, number | null>> = {
+    0: 126,
+    1: 241,
+    2: 315,
+    3: null,
+};
+
+/**
+ * @param layout the layout
+ * @param stage the stage the layout shows ({@link devicePageStageOf})
+ * @returns the cells of the status icon grid of the stage: as many as the stage holds, column by column
+ */
+function statusGridAreas(layout: DevicePageLayout, stage: DevicePageStatusStage): DevicePagePreviewArea[] {
+    const grid = STATUS_GRID[layout];
+    const areas: DevicePagePreviewArea[] = [];
+    const capacity = devicePageStatusCapacity(layout, stage);
+    for (let cell = 0; cell < capacity; cell++) {
+        const column = Math.floor(cell / grid.rows);
+        const row = cell % grid.rows;
+        areas.push({
+            x: grid.x + column * (grid.w - 1),
+            y: grid.y + row * (grid.h - 1),
+            w: grid.w,
+            h: grid.h,
+            slot: PREVIEW_STATUS_CELL,
+            cell,
+        });
+    }
+    return areas;
+}
+
+/**
+ * The areas of the schematic preview of a layout in a stage of the status icon grid (geometry of the HMI pages
+ * cardDevice1-3, EU; the extra slots of the web panels are not part of it): the grid in the columns of the stage, the
+ * slots the stage covers left out ({@link devicePageSlotHiddenByStage}). Layout 1 shows the info rows in the form of
+ * the stage (wide, set B, set C or none), layout 3 replaces tile 1 or tiles 1 and 2 by the grid.
  *
  * @param layout the layout
- * @param withStatusIcons at least one status slot is filled (devicePageHasStatusIcons)
+ * @param stage the stored stage, cut to the layout ({@link devicePageStageOf})
  * @returns the areas
  */
-export function devicePagePreviewAreas(layout: DevicePageLayout, withStatusIcons: boolean): DevicePagePreviewArea[] {
+export function devicePagePreviewAreas(layout: DevicePageLayout, stage: unknown): DevicePagePreviewArea[] {
+    const shown = devicePageStageOf(layout, stage);
     const common: DevicePagePreviewArea[] = [
         { x: 10, y: 289, w: 390, h: 30, slot: PREVIEW_STATUS_LINE },
         { x: 404, y: 288, w: 36, h: 32, slot: PREVIEW_INFO },
     ];
+    let areas: DevicePagePreviewArea[];
     switch (layout) {
         case 1: {
-            // narrow rows: icon at 204, name 86 px, value 110 px (the value stays at 330)
-            const rowX = withStatusIcons ? 204 : 126;
-            const areas: DevicePagePreviewArea[] = [
-                { x: 10, y: 68, w: 110, h: 114, slot: PREVIEW_MAIN },
-                { x: rowX, y: 76, w: 440 - rowX, h: 34, slot: 1 },
-                { x: rowX, y: 120, w: 440 - rowX, h: 34, slot: 2 },
+            const rowX = LAYOUT1_INFO_ROW_X[shown];
+            areas = [{ x: 10, y: 68, w: 110, h: 114, slot: PREVIEW_MAIN }];
+            if (rowX !== null) {
+                areas.push(
+                    { x: rowX, y: 76, w: 440 - rowX, h: 34, slot: 1 },
+                    { x: rowX, y: 120, w: 440 - rowX, h: 34, slot: 2 },
+                );
+            }
+            areas.push(
                 { x: 10, y: 190, w: 104, h: 80, slot: 3 },
                 { x: 118, y: 190, w: 104, h: 80, slot: 4 },
                 { x: 226, y: 190, w: 104, h: 80, slot: 5 },
                 { x: 334, y: 190, w: 104, h: 80, slot: 6 },
-            ];
-            if (withStatusIcons) {
-                let cell = 0;
-                DEVICE_PAGE_LAYOUTS[1].forEach((kind, index) => {
-                    if (kind !== 'status') {
-                        return;
-                    }
-                    const column = cell % STATUS_GRID.columns;
-                    const row = Math.floor(cell / STATUS_GRID.columns);
-                    areas.push({
-                        x: STATUS_GRID.x + column * (STATUS_GRID.w - 1),
-                        y: STATUS_GRID.y + row * (STATUS_GRID.h - 1),
-                        w: STATUS_GRID.w,
-                        h: STATUS_GRID.h,
-                        slot: index + 1,
-                    });
-                    cell++;
-                });
-            }
-            return [...areas, ...common];
+            );
+            break;
         }
         case 2:
-            return [
+            areas = [
                 { x: 10, y: 67, w: 96, h: 110, slot: PREVIEW_MAIN },
                 { x: 110, y: 67, w: 226, h: 110, slot: 1 },
                 { x: 10, y: 179, w: 429, h: 42, slot: 2 },
@@ -638,10 +709,10 @@ export function devicePagePreviewAreas(layout: DevicePageLayout, withStatusIcons
                 { x: 154, y: 226, w: 140, h: 51, slot: 4 },
                 { x: 298, y: 226, w: 141, h: 51, slot: 5 },
                 { x: 340, y: 67, w: 100, h: 78, slot: 6 },
-                ...common,
             ];
-        case 3:
-            return [
+            break;
+        case 3: {
+            const tiles: DevicePagePreviewArea[] = [
                 { x: 10, y: 67, w: 100, h: 110, slot: PREVIEW_MAIN },
                 { x: 114, y: 67, w: 161, h: 51, slot: 1 },
                 { x: 277, y: 67, w: 161, h: 51, slot: 2 },
@@ -651,9 +722,146 @@ export function devicePagePreviewAreas(layout: DevicePageLayout, withStatusIcons
                 { x: 277, y: 171, w: 161, h: 51, slot: 6 },
                 { x: 10, y: 228, w: 213, h: 50, slot: 7 },
                 { x: 226, y: 228, w: 213, h: 50, slot: 8 },
-                ...common,
             ];
+            areas = tiles.filter(area => area.slot < 1 || !devicePageSlotHiddenByStage(layout, shown, area.slot - 1));
+            break;
+        }
     }
+    return [...areas, ...statusGridAreas(layout, shown), ...common];
+}
+
+/**
+ * @param layout the layout
+ * @returns the stages of the status icon grid the layout offers (index of {@link DEVICE_PAGE_STAGE_CAPACITY}),
+ * cardDevice2 only 0
+ */
+export function devicePageStatusStages(layout: DevicePageLayout): DevicePageStatusStage[] {
+    return DEVICE_PAGE_STAGE_CAPACITY[layout].map((_capacity, stage) => stage).filter(isDevicePageStatusStage);
+}
+
+/**
+ * @param config the device page
+ * @returns the stage the admin shows: the stored one, cut to the highest stage of the layout - the stored value is
+ * not changed by that ({@link devicePageStageOf})
+ */
+export function devicePageShownStage(config: Pick<DevicePageConfig, 'layout' | 'statusStage'>): DevicePageStatusStage {
+    return devicePageStageOf(config.layout, config.statusStage);
+}
+
+/**
+ * The stage of the status icon grid as chosen, 0 is left out. The status icon places and the slots the stage covers
+ * stay as they are.
+ *
+ * @param config the device page
+ * @param stage the chosen stage
+ * @returns the device page with the stage
+ */
+export function withDevicePageStatusStage(config: DevicePageConfig, stage: DevicePageStatusStage): DevicePageConfig {
+    const { statusStage: _old, ...rest } = config;
+    return stage > 0 ? { ...rest, statusStage: stage } : rest;
+}
+
+/**
+ * @param config the device page
+ * @returns the slots of the layout the admin shows (index, 0 = slot 1): without those the shown stage covers - they
+ * stay stored
+ */
+export function devicePageVisibleSlotIndexes(config: Pick<DevicePageConfig, 'layout' | 'statusStage'>): number[] {
+    const stage = devicePageShownStage(config);
+    return DEVICE_PAGE_LAYOUTS[config.layout]
+        .map((_kind, index) => index)
+        .filter(index => !devicePageSlotHiddenByStage(config.layout, stage, index));
+}
+
+/**
+ * @param config the device page
+ * @returns the number of status icon places the admin shows: as many as the shown stage holds - the places beyond
+ * stay stored
+ */
+export function devicePageStatusPlaceCount(config: Pick<DevicePageConfig, 'layout' | 'statusStage'>): number {
+    return devicePageStatusCapacity(config.layout, devicePageShownStage(config));
+}
+
+/**
+ * @param config the device page
+ * @param statusSlots the status icon places
+ * @returns the device page with the places, empty places at the end left out, no list without a filled place
+ */
+function withStatusSlots(config: DevicePageConfig, statusSlots: (DevicePageSlotRef | null)[]): DevicePageConfig {
+    const places = statusSlots.slice(0, DEVICE_PAGE_STATUS_SLOTS_MAX);
+    while (places.length > 0 && places[places.length - 1] === null) {
+        places.pop();
+    }
+    const { statusSlots: _old, ...rest } = config;
+    return places.length > 0 ? { ...rest, statusSlots: places } : rest;
+}
+
+/**
+ * @param config the device page
+ * @param index index of the status icon place (0 = place 1)
+ * @param ref what the place shows, null = empty
+ * @returns the device page with the place; its own settings stay when something else is chosen for it, an emptied
+ * place loses them (like {@link withDevicePageSlot})
+ */
+export function withDevicePageStatusSlot(
+    config: DevicePageConfig,
+    index: number,
+    ref: DevicePageSlotRef | null,
+): DevicePageConfig {
+    if (index < 0 || index >= DEVICE_PAGE_STATUS_SLOTS_MAX) {
+        return config;
+    }
+    const stored = config.statusSlots ?? [];
+    const places = Array.from({ length: Math.max(index + 1, stored.length) }, (_v, i) =>
+        i === index ? slotWithChoice(stored[i] ?? null, ref) : (stored[i] ?? null),
+    );
+    return withStatusSlots(config, places);
+}
+
+/**
+ * The own settings of a status icon place (dialog "settings of the element", like {@link withDevicePageSlotLook}); an
+ * empty place stays as it is.
+ *
+ * @param config the device page
+ * @param index index of the place (0 = place 1)
+ * @param look the settings, empty fields = not set
+ * @returns the device page with the settings
+ */
+export function withDevicePageStatusSlotLook(
+    config: DevicePageConfig,
+    index: number,
+    look: DevicePageSlotLook,
+): DevicePageConfig {
+    const places = [...(config.statusSlots ?? [])];
+    const slot = places[index];
+    if (!slot) {
+        return config;
+    }
+    places[index] = slotWithLook(slot, look);
+    return { ...config, statusSlots: places };
+}
+
+/**
+ * Target page of a status icon place that is a navigation (like {@link withDevicePageSlotNavigation}).
+ *
+ * @param config the device page
+ * @param index index of the place (0 = place 1)
+ * @param targetPage name of the target page, '' = none
+ * @returns the device page with the change
+ */
+export function withDevicePageStatusSlotNavigation(
+    config: DevicePageConfig,
+    index: number,
+    targetPage: string,
+): DevicePageConfig {
+    const places = [...(config.statusSlots ?? [])];
+    const slot = places[index];
+    const next = slot ? slotWithTarget(slot, targetPage) : null;
+    if (!next) {
+        return config;
+    }
+    places[index] = next;
+    return { ...config, statusSlots: places };
 }
 
 /**
