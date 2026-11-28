@@ -33,14 +33,54 @@ import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
 import PaletteIcon from '@mui/icons-material/Palette';
-import { I18n, type ThemeType } from '@iobroker/gui-components';
+import { I18n, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import { EntitySelector } from './EntitySelector';
 import { dynamicNamePanelText, hasDynamicName, type ValuePreviewParts } from '../channelValueConfig';
 import IconSelect from '../IconSelect';
+import { channelIdOf, channelRolesOf, isInChannels } from '../channelSelection';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
+import DeviceDetailsSection, { isBlockingDeviceError } from './DeviceDetailsSection';
+import TargetPageSelect from './TargetPageSelect';
+import { pageItemSaveState } from '../pageItemSaveState';
+import {
+    freshKindFields,
+    freshShortPressFields,
+    isItemKind,
+    switchOption,
+    type ItemKind,
+    type ItemKindFields,
+    type ItemTapFields,
+    type OptionStash,
+} from '../itemOptionStash';
+import { applyDeviceAnswer } from '../deviceAnswer';
+import {
+    devicePageTargetProblem,
+    devicePageToSave,
+    shortPressToSave,
+    switchLongPressTarget,
+    withDevicePageIcon,
+    type DevicePageSlotItemOptions,
+    type LongPressStash,
+    type LongPressTarget,
+} from '../devicePageConfig';
+import {
+    devicePageConfigOf,
+    devicePageSlotTargetOf,
+    deviceShortPressOf,
+    isDeviceDetailsConfig,
+    updatedDeviceDetailsLearned,
+    type DeviceDetailEntryConfig,
+    type DeviceDetailsConfig,
+    type DeviceDetailsInfo,
+    type DeviceDetailsLearned,
+    type DevicePageConfig,
+    type DevicePageSlotRef,
+    type DeviceSelectionError,
+    type DeviceShortPress,
+} from '../../../src/lib/types/deviceDetails';
 import type {
     AlexaTimerConfig,
     IconScaleElement,
@@ -142,17 +182,6 @@ const ALEXA_TIMER_CARDS: readonly string[] = [
 /** role an item of kind "Alexa timer" is stored with: icons and defaults of a timer */
 const ALEXA_TIMER_ROLE = 'level.timer';
 
-/** the kind of a page item: the radio buttons at the top of the dialog */
-type ItemKind = 'standard' | 'alexaTimer';
-
-/**
- * @param value a value of the radio group
- * @returns true for a kind of a page item
- */
-function isItemKind(value: string): value is ItemKind {
-    return value === 'standard' || value === 'alexaTimer';
-}
-
 /**
  * Channel roles whose page item reads `minValueBrightness` / `maxValueBrightness` and `colormode`
  * (config-manager.ts, case 'dimmer' and the color branch 'rgbSingle' / 'ct' / 'rgb' / 'hue'). Role light does not.
@@ -190,7 +219,23 @@ type ChannelConfigDialogProps = {
     initialChannelId?: string;
     /** Trigger-Button ausblenden; Dialog wird per openWith()-Methode geöffnet */
     hideTriggerButton?: boolean;
+    /** device with details: the learned ticks per adapter (native `deviceDetailsLearned`) */
+    deviceDetailsLearned?: DeviceDetailsLearned;
+    /** device with details: the learned ticks changed with a saved item */
+    onDeviceDetailsLearnedChange?: (learned: DeviceDetailsLearned) => void;
+    /**
+     * the choice of the data point / channel is not shown (with the kind of the item, "custom" and the raw data):
+     * the dialog edits the settings of a slot of the device page, whose source is chosen at the slot
+     * ({@link ChannelConfigDialog.openWith} with slot options)
+     */
+    hideChannelSelection?: boolean;
 };
+
+/** a slot of the device page whose settings the inner dialog edits: what it offers and where the result goes */
+interface SlotEdit {
+    options: DevicePageSlotItemOptions;
+    onApply: (item: AdminPageItemConfig) => void;
+}
 
 interface ChannelConfigDialogState {
     open: boolean;
@@ -285,6 +330,21 @@ interface ChannelConfigDialogState {
     maxValueColorTemp: number | undefined;
     /** Light roles: color mode switched on */
     colormode: boolean;
+    /** device with details (doc/ideas/device-details): null = the item is no device item */
+    device: DeviceDetailsConfig | null;
+    /** the reason of the adapter why the device cannot be used, undefined = ok or no answer (adapter offline) */
+    deviceError: DeviceSelectionError | undefined;
+    /**
+     * the device the entries of the device item belong to; another device gets the learned ticks (deviceAnswer). Kept
+     * in the state next to the entries: two answers of the adapter that come before React renders must see both of
+     * the same moment, else the second takes the first's device but the old (empty) entries.
+     */
+    deviceEntriesId: string;
+    /**
+     * the dialog edits a slot of the device page (opened with slot options): only the fields the slot takes are shown
+     * (DevicePageSlotItemOptions), null = a page item
+     */
+    slot: DevicePageSlotItemOptions | null;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -305,11 +365,20 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private colorDialogRef = React.createRef<ChannelColorDialog>();
     private modeListDialogRef = React.createRef<ChannelModeListDialog>();
     private rawDialogRef = React.createRef<RawItemConfigDialog>();
-    /**
-     * the Echo device of the kind "Alexa timer" while the standard kind is chosen - kept until the dialog closes, so
-     * switching back brings it back (the standard fields stay in the state meanwhile anyway)
-     */
-    private alexaTimerStash: AlexaTimerConfig | undefined = undefined;
+    /** the device configuration of the item when the dialog was opened - the learned ticks change only with its ticks */
+    private deviceBefore: DeviceDetailsConfig | undefined = undefined;
+    /** fields of the kinds not chosen right now (itemOptionStash) - kept while the dialog is open */
+    private kindStash: OptionStash<ItemKind, ItemKindFields<ChannelValueConfig>> = {};
+    /** fields of the short taps of a device item not chosen right now (itemOptionStash) */
+    private shortPressStash: OptionStash<DeviceShortPress, ItemTapFields<ChannelValueConfig>> = {};
+    /** the device page of a device item while its long press opens the detail page (devicePageConfig) */
+    private longPressStash: LongPressStash = {};
+    /** the device whose filter list the user saved in this dialog ('' = none) - only that may change the learned ticks */
+    private deviceEntriesEdited = '';
+    /** the inner dialog for the slots of the device page (only in a dialog that shows the channel selection) */
+    private slotDialogRef = React.createRef<ChannelConfigDialog>();
+    /** the slot the inner dialog is open for */
+    private slotEdit: SlotEdit | null = null;
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -381,6 +450,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             minValueColorTemp: undefined,
             maxValueColorTemp: undefined,
             colormode: false,
+            device: null,
+            deviceError: undefined,
+            deviceEntriesId: '',
+            slot: null,
         };
     }
 
@@ -433,10 +506,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      *
      * @param data
      * @param isGridCard  (optional) true wenn die Daten von einem GridCard-Item stammen – steuert die Sichtbarkeit bestimmter Felder
+     * @param slot (optional) the dialog edits a slot of the device page: the fields it offers
      */
-    public openWith(data?: Partial<AdminPageItemConfig>, isGridCard?: boolean): void {
+    public openWith(data?: Partial<AdminPageItemConfig>, isGridCard?: boolean, slot?: DevicePageSlotItemOptions): void {
         void this.loadTimerSourceTables();
-        this.alexaTimerStash = undefined;
         const isNative = data?.useNative === true;
         const raw: RawItemValue | null =
             data && isNative
@@ -494,7 +567,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             minValueColorTemp: typeof data?.minValueColorTemp === 'number' ? data.minValueColorTemp : undefined,
             maxValueColorTemp: typeof data?.maxValueColorTemp === 'number' ? data.maxValueColorTemp : undefined,
             colormode: data?.colormode === true,
+            device: isDeviceDetailsConfig(data?.device) ? ChannelConfigDialog.deviceOfStored(data.device) : null,
+            deviceError: undefined,
+            deviceEntriesId: isDeviceDetailsConfig(data?.device) ? data.device.deviceId.trim() : '',
+            slot: slot ?? null,
         });
+        this.deviceBefore = isDeviceDetailsConfig(data?.device) ? structuredClone(data.device) : undefined;
+        this.kindStash = {};
+        this.shortPressStash = {};
+        this.longPressStash = {};
+        this.deviceEntriesEdited = '';
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
         } else if (!this.state.loadingPages && this.state.availablePages.length === 0) {
@@ -632,6 +714,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         return isNavigation ? getPageNaviItemDefaultsByRole(role) : getPageItemDefaultsByRole(role);
     }
 
+    /**
+     * The item is a navigation item (other defaults and fields of the role). The navigation of a slot of the device
+     * page is no navigation item: the item of the slot stays the item of its role, the device page handles the tap.
+     */
+    private itemIsNavigation(): boolean {
+        return this.state.slot === null && this.state.isNavigation;
+    }
+
     private handleColorSave = (config: ChannelColorConfig): void => {
         this.setState({
             trueColor: config.trueColor ?? '',
@@ -651,8 +741,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /** the item takes a target page without navigation (role button) - independent of the raw mode */
     private isButtonTargetPageAllowed(): boolean {
-        const { channelRole, isCustom, isNavigation } = this.state;
-        return !isNavigation && !isCustom && channelRole === 'button';
+        const { channelRole, isCustom, isNavigation, slot } = this.state;
+        // a slot of the device page: its own navigation of the short tap stands for it
+        return slot === null && !isNavigation && !isCustom && channelRole === 'button';
     }
 
     /**
@@ -664,10 +755,33 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         return !this.state.raw && this.isLongPressAllowed();
     }
 
-    /** the item takes a long press (page type and kind of item) - independent of the raw mode */
+    /**
+     * the item takes a long press (page type and kind of item) - independent of the raw mode; the long press of a
+     * device item opens its detail page
+     */
     private isLongPressAllowed(): boolean {
-        const { channelRole, isCustom, isNavigation } = this.state;
-        return isLongPressCard(this.props.currentPageCard) && (channelRole === 'button' || isCustom || isNavigation);
+        const { channelRole, isCustom, isNavigation, device, slot } = this.state;
+        if (slot !== null) {
+            return slot.longPress;
+        }
+        return (
+            device === null &&
+            isLongPressCard(this.props.currentPageCard) &&
+            (channelRole === 'button' || isCustom || isNavigation)
+        );
+    }
+
+    /**
+     * The kind "device with details" is offered where a long press (grid pages) or a tap on the left part of an item
+     * (cardEntities) reaches the item ({@link isLongPressCard}) - a device item keeps it everywhere, also while the
+     * dialog shows the standard kind.
+     */
+    private isDeviceAllowed(): boolean {
+        return (
+            this.state.device !== null ||
+            this.kindStash.device !== undefined ||
+            isLongPressCard(this.props.currentPageCard)
+        );
     }
 
     /**
@@ -675,6 +789,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * there. cardThermo2 is checked explicitly, independent of the isGridCard flag of openWith().
      */
     private isTextSizeVisible(): boolean {
+        const { slot } = this.state;
+        if (slot !== null) {
+            return slot.textSize;
+        }
         return this.state.isGridCard || this.props.currentPageCard === 'cardThermo2';
     }
 
@@ -694,7 +812,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /** Helper text below the Name field: name suggestion / default, plus the popup note where it applies */
     private nameHelperText(): string | undefined {
-        const { name, channelNameSuggestion, valueEntry, valueEntryParts } = this.state;
+        const { name, channelNameSuggestion, slot, valueEntry, valueEntryParts } = this.state;
+        if (slot !== null && slot.source !== 'channel') {
+            // a state slot: the name of the mask entry / state, a navigation slot: the name of the target page
+            return name === ''
+                ? I18n.t(
+                      slot.source === 'navigation'
+                          ? 'deviceDetailsDialog_slotNameNavigationHint'
+                          : 'deviceDetailsDialog_slotNameHint',
+                  )
+                : undefined;
+        }
         const dynamicName = hasDynamicName(valueEntry);
         // a fixed name with prefix / suffix of the dynamic name: show what the panel will show
         const panelText =
@@ -757,7 +885,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. Im Rohdaten-Modus bleiben die
      * Standardfelder erhalten (für „Zurück zum Standard“), zur Laufzeit gilt nur `native`.
      */
-    private buildSaveConfig(): AdminPageItemConfig | null {
+    private buildSaveConfig(): AdminPageItemConfig {
         const standard = this.buildStandardConfig();
         const { raw } = this.state;
         if (raw) {
@@ -804,7 +932,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         // the adapter reads the light ranges only when they are truthy - 0 is stored as "not set"
         // hidden long press fieldset: store nothing, so no stale value reaches the adapter
         const longPressAllowed = this.isLongPressAllowed();
-        const targetPageLongPressOut = longPressAllowed ? targetPageLongPress || null : null;
+        // a slot of the device page has no navigation by long press
+        const targetPageLongPressOut =
+            longPressAllowed && this.state.slot === null ? targetPageLongPress || null : null;
         const longPressOut = longPressAllowed ? longPress || null : null;
         // navigation items keep their target page, otherwise only a button item stores one
         const targetPageOut = isNavigation || this.isButtonTargetPageAllowed() ? targetPage : '';
@@ -828,11 +958,21 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             maxValueColorTemp: lightRange(this.state.maxValueColorTemp),
             colormode: colormode ? true : undefined,
         };
+        const { device } = this.state;
         return {
             channelId: channelId,
             role: channelRole ?? undefined,
             name,
             isNavigation,
+            device:
+                device !== null
+                    ? {
+                          deviceId: device.deviceId.trim(),
+                          shortPress: shortPressToSave(device),
+                          entries: device.entries,
+                          devicePage: devicePageToSave(device),
+                      }
+                    : undefined,
             type: isCustom ? 'custom' : undefined,
             targetPage: targetPageOut,
             targetPageLongPress: targetPageLongPressOut,
@@ -889,63 +1029,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /** the dialog offers the kind "Alexa timer": pages with timer items, or an item that is one already */
     private isAlexaTimerAllowed(): boolean {
-        return this.state.alexaTimer !== null || ALEXA_TIMER_CARDS.includes(this.props.currentPageCard ?? '');
-    }
-
-    /**
-     * Switches the kind of the item. The Echo device of the kind left is kept until the dialog closes.
-     *
-     * @param value the value of the radio group
-     */
-    private handleKindChange = (value: string): void => {
-        if (!isItemKind(value)) {
-            return;
-        }
-        const { alexaTimer } = this.state;
-        if (value === 'alexaTimer' && alexaTimer === null) {
-            this.setState({ alexaTimer: this.alexaTimerStash ?? { instance: '', serial: '' } });
-        } else if (value === 'standard' && alexaTimer !== null) {
-            this.alexaTimerStash = alexaTimer;
-            this.setState({ alexaTimer: null });
-        }
-    };
-
-    /** the kind of the item at the top of the dialog: standard or Alexa timer (not for navigation items) */
-    private renderKindSwitch(): React.JSX.Element | null {
-        if (!this.isAlexaTimerAllowed()) {
-            return null;
-        }
-        const isAlexa = this.state.alexaTimer !== null;
-        // the "?" inside a radio label is a link: activating it does not toggle the radio, DocHelp stops the click
         return (
-            <FormControl>
-                <FormLabel sx={{ fontSize: 12 }}>
-                    {I18n.t('channelConfigDialog_kind')}
-                    <DocHelp topic="pageitems.dialog" />
-                </FormLabel>
-                <RadioGroup
-                    row
-                    value={isAlexa ? 'alexaTimer' : 'standard'}
-                    onChange={e => this.handleKindChange(e.target.value)}
-                >
-                    <FormControlLabel
-                        value="standard"
-                        control={<Radio size="small" />}
-                        label={I18n.t('channelConfigDialog_kindStandard')}
-                    />
-                    <FormControlLabel
-                        value="alexaTimer"
-                        control={<Radio size="small" />}
-                        disabled={!isAlexa && this.state.isNavigation}
-                        label={
-                            <>
-                                {I18n.t('channelConfigDialog_kindAlexaTimer')}
-                                <DocHelp topic="pageitems.alexaTimer" />
-                            </>
-                        }
-                    />
-                </RadioGroup>
-            </FormControl>
+            this.state.alexaTimer !== null ||
+            this.kindStash.alexaTimer !== undefined ||
+            ALEXA_TIMER_CARDS.includes(this.props.currentPageCard ?? '')
         );
     }
 
@@ -1026,6 +1113,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (this.props.onSave) {
             this.props.onSave(config);
         }
+        if (config.device && !config.useNative && this.props.onDeviceDetailsLearnedChange) {
+            const learned = updatedDeviceDetailsLearned(
+                this.props.deviceDetailsLearned ?? {},
+                this.deviceBefore,
+                config.device,
+                this.deviceEntriesEdited !== '' && this.deviceEntriesEdited === config.device.deviceId.trim(),
+            );
+            if (learned) {
+                this.props.onDeviceDetailsLearnedChange(learned);
+            }
+        }
         this.handleClose();
     }
 
@@ -1035,7 +1133,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     private handleSaveAsync = async (): Promise<void> => {
         const configToSave = this.buildSaveConfig();
-        if (!configToSave) {
+        if (this.state.slot !== null) {
+            // a slot of the device page: the page item check is the one of the device item when it is saved
+            this.commitSave(configToSave);
             return;
         }
 
@@ -1148,14 +1248,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         try {
             const objects: Record<string, ioBroker.Object> | null | undefined =
                 await socket.getObjectViewSystem('channel');
-            const validIds: string[] = [];
-            for (const [id, obj] of Object.entries(objects ?? {})) {
-                const role = (obj as any)?.common?.role;
-                if (typeof role === 'string' && (CHANNEL_ROLES_LIST as readonly string[]).includes(role)) {
-                    validIds.push(id);
-                }
-            }
-            this.setState({ validChannelIds: validIds });
+            this.setState({ validChannelIds: Object.keys(channelRolesOf(objects, CHANNEL_ROLES_LIST)) });
         } catch (e) {
             console.warn('[ChannelConfigDialog] loadValidChannels failed', e);
         }
@@ -1177,7 +1270,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             if (!id) {
                 return false;
             }
-            return validChannelIds.some(chId => id === chId || id.startsWith(`${chId}.`));
+            return isInChannels(validChannelIds, id);
         };
     }
 
@@ -1191,13 +1284,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (isCustom) {
             return id;
         }
-        let best = '';
-        for (const chId of validChannelIds) {
-            if ((id === chId || id.startsWith(`${chId}.`)) && chId.length > best.length) {
-                best = chId;
-            }
-        }
-        return best || id;
+        return channelIdOf(validChannelIds, id);
     };
 
     private handleChannelIdChange = (id: string): void => {
@@ -1350,7 +1437,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 return;
             }
 
-            if (this.state.isNavigation) {
+            if (this.itemIsNavigation()) {
                 const defaults = getPageNaviItemDefaultsByRole(role);
                 colorFieldDisabled = defaults?.type !== 'number' && defaults?.type !== 'mixed';
             } else {
@@ -1508,6 +1595,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             isNavigation: checked,
             targetPage: checked ? this.state.targetPage : '',
             isCustom: dropCustom ? false : this.state.isCustom,
+            device: checked ? null : this.state.device,
         });
         if (dropCustom) {
             void this.checkChannelExists(this.state.channelId.valueStateId, false);
@@ -1515,7 +1603,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private handleCustomChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        const checked = event.target.checked;
+        this.setCustom(event.target.checked);
+    };
+
+    /**
+     * Custom item (a state switched on/off) or alias channel.
+     *
+     * @param checked true = custom item
+     */
+    private setCustom(checked: boolean): void {
+        if (checked === this.state.isCustom) {
+            return;
+        }
         const dropNavigation = checked && this.state.isNavigation;
         this.setState({
             isCustom: checked,
@@ -1524,7 +1623,585 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             targetPage: dropNavigation ? '' : this.state.targetPage,
         });
         void this.checkChannelExists(this.state.channelId.valueStateId, checked);
+    }
+
+    /**
+     * The fields that belong to the chosen channel / state and are computed from it - reset when the option changes,
+     * {@link recheckChannel} computes them again.
+     */
+    private resetChannelChecks(): Pick<
+        ChannelConfigDialogState,
+        | 'channelExists'
+        | 'channelRole'
+        | 'stateIsWriteable'
+        | 'roleIsValid'
+        | 'datapointErrors'
+        | 'datapointDuplicates'
+        | 'checkingChannel'
+        | 'checkingDatapoints'
+        | 'hasProblems'
+    > {
+        if (this.datapointCheckTimer !== null) {
+            clearTimeout(this.datapointCheckTimer);
+            this.datapointCheckTimer = null;
+        }
+        return {
+            channelExists: null,
+            channelRole: null,
+            stateIsWriteable: null,
+            roleIsValid: null,
+            datapointErrors: [],
+            datapointDuplicates: [],
+            checkingChannel: false,
+            checkingDatapoints: false,
+            hasProblems: false,
+        };
+    }
+
+    /**
+     * Checks the channel / state an option brought back (the checks are not kept with it).
+     *
+     * @param fields the fields of the option
+     */
+    private recheckChannel(fields: ItemTapFields<ChannelValueConfig>): void {
+        const id = fields.channelId.valueStateId.trim();
+        if (id) {
+            void this.checkChannelExists(id, fields.isCustom);
+        }
+    }
+
+    /** the kind of the item the dialog shows */
+    private currentKind(): ItemKind {
+        return this.state.alexaTimer !== null ? 'alexaTimer' : this.state.device !== null ? 'device' : 'standard';
+    }
+
+    /**
+     * The kind of the item: standard (channel, custom button, navigation), device with details or Alexa timer. The
+     * fields of the kind left are kept until the dialog closes and come back with it ({@link switchOption}); a kind
+     * chosen for the first time starts empty - a new device item switches a state of the device on a short tap.
+     *
+     * @param value the value of the radio group
+     */
+    private handleKindChange = (value: string): void => {
+        if (!isItemKind(value)) {
+            return;
+        }
+        const { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId } = this.state;
+        const from = this.currentKind();
+        if (value === from) {
+            return;
+        }
+        const { stash, fields } = switchOption(
+            this.kindStash,
+            from,
+            { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId },
+            value,
+            kind => freshKindFields(kind, emptyChannelValueConfig('')),
+        );
+        this.kindStash = stash;
+        this.setState({ ...fields, ...this.resetChannelChecks() });
+        this.recheckChannel(fields);
     };
+
+    /**
+     * The device configuration of a stored item for the dialog: a copy, the device page normalized.
+     *
+     * @param stored the stored device configuration
+     * @returns the copy
+     */
+    private static deviceOfStored(stored: DeviceDetailsConfig): DeviceDetailsConfig {
+        const { devicePage: rawPage, ...rest } = stored;
+        const devicePage = devicePageConfigOf(rawPage);
+        const device: DeviceDetailsConfig = { ...rest, entries: [...stored.entries] };
+        return devicePage ? { ...device, devicePage } : device;
+    }
+
+    /**
+     * What the long press of a device item opens. The device page left is kept until the dialog closes and comes back
+     * with it; the first device page is suggested from the ticked rows ({@link switchLongPressTarget}).
+     *
+     * @param target the new target
+     */
+    private handleLongPressTargetChange = (target: LongPressTarget): void => {
+        const { device } = this.state;
+        if (!device) {
+            return;
+        }
+        const switched = switchLongPressTarget(device, this.longPressStash, target);
+        this.longPressStash = switched.stash;
+        // the short tap "open the device page" needs the device page: without it the tap does nothing
+        this.setState({ device: { ...switched.device, shortPress: shortPressToSave(switched.device) } });
+    };
+
+    /**
+     * @param devicePage the changed device page of the device item
+     */
+    private handleDevicePageChange = (devicePage: DevicePageConfig): void => {
+        this.setState(prev => (prev.device ? { device: { ...prev.device, devicePage } } : null));
+    };
+
+    private handleDeviceDetailsChange = (
+        device: DeviceDetailsConfig,
+        error: DeviceSelectionError | undefined,
+    ): void => {
+        this.setState({ device, deviceError: error });
+    };
+
+    /**
+     * The filter list was saved: its entries belong to the device now.
+     *
+     * @param entries the ticked rows in their order
+     */
+    private handleDeviceEntriesChange = (entries: DeviceDetailEntryConfig[]): void => {
+        const { device } = this.state;
+        if (!device) {
+            return;
+        }
+        const id = device.deviceId.trim();
+        this.deviceEntriesEdited = id;
+        this.setState({ device: { ...device, entries }, deviceEntriesId: id });
+    };
+
+    /**
+     * The answer of the adapter for the device of the item. It may come after the short tap or the kind was switched:
+     * it goes into the fields of the device and of the short tap `state` wherever they are now - shown or stashed
+     * ({@link applyDeviceAnswer}).
+     *
+     * @param id the device the answer is for
+     * @param answer the answer
+     */
+    private handleDeviceAnswer = (id: string, answer: DeviceDetailsInfo): void => {
+        const learned = this.props.deviceDetailsLearned ?? {};
+        // the short tap the answer changed - its channel checks run once the state is set
+        let recheck: ItemTapFields<ChannelValueConfig> | null = null;
+        // an updater, not this.state: two answers before React renders must not apply the second to the old fields
+        this.setState(
+            (prev): ChannelConfigDialogState | null => {
+                if (!prev.open) {
+                    return null;
+                }
+                const { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId } = prev;
+                const shown = device !== null;
+                const kind = shown
+                    ? { device, deviceError, alexaTimer, isNavigation, targetPage, isCustom, channelId }
+                    : this.kindStash.device;
+                if (!kind) {
+                    return null;
+                }
+                const result = applyDeviceAnswer(
+                    { kind, shortPressStash: this.shortPressStash, entriesDeviceId: prev.deviceEntriesId },
+                    id,
+                    answer,
+                    learned,
+                );
+                if (!result) {
+                    return null;
+                }
+                this.shortPressStash = result.shortPressStash;
+                if (!shown) {
+                    this.kindStash = { ...this.kindStash, device: result.kind };
+                    return { ...prev, deviceEntriesId: result.entriesDeviceId };
+                }
+                const tapChanged =
+                    result.kind.channelId.valueStateId !== channelId.valueStateId ||
+                    (result.kind.device !== null &&
+                        deviceShortPressOf(result.kind.device) !== deviceShortPressOf(device));
+                if (!tapChanged) {
+                    return { ...prev, ...result.kind, deviceEntriesId: result.entriesDeviceId };
+                }
+                recheck = result.kind;
+                return {
+                    ...prev,
+                    ...result.kind,
+                    ...this.resetChannelChecks(),
+                    deviceEntriesId: result.entriesDeviceId,
+                };
+            },
+            () => {
+                if (recheck) {
+                    this.recheckChannel(recheck);
+                    recheck = null;
+                }
+            },
+        );
+    };
+
+    /**
+     * Short tap of a device item: a state of the device (custom item), nothing, a navigation or the popup of an alias
+     * channel. The state / channel / target page of the short tap left is kept until the dialog closes and comes back
+     * with it ({@link switchOption}).
+     *
+     * @param shortPress the new short tap
+     */
+    private handleDeviceShortPressChange = (shortPress: DeviceShortPress): void => {
+        const { device, isNavigation, targetPage, isCustom, channelId } = this.state;
+        if (!device) {
+            return;
+        }
+        const from = deviceShortPressOf(device);
+        if (from === shortPress) {
+            return;
+        }
+        const { stash, fields } = switchOption(
+            this.shortPressStash,
+            from,
+            { isNavigation, targetPage, isCustom, channelId },
+            shortPress,
+            tap => freshShortPressFields(tap, emptyChannelValueConfig('')),
+        );
+        this.shortPressStash = stash;
+        this.setState({ device: { ...device, shortPress }, ...fields, ...this.resetChannelChecks() });
+        this.recheckChannel(fields);
+    };
+
+    /**
+     * Short tap `state`: the chosen state of the device is the id of the custom item.
+     *
+     * @param id the state, '' = none
+     */
+    private handleDeviceStateChange = (id: string): void => {
+        if (id === this.state.channelId.valueStateId) {
+            return;
+        }
+        this.setState({
+            channelId: { ...this.state.channelId, valueStateId: id },
+            channelExists: null,
+            hasProblems: false,
+        });
+        if (id) {
+            void this.checkChannelExists(id, true);
+        }
+    };
+
+    /** the target page of a navigation (standard item with navigation, device item with short tap navigation) */
+    private renderTargetPageSelect(): React.JSX.Element {
+        const { loadingPages, availablePages, targetPage } = this.state;
+        return (
+            <TargetPageSelect
+                pages={availablePages}
+                loading={loadingPages}
+                value={targetPage}
+                onChange={(value: string): void => this.setState({ targetPage: value })}
+                docTopic="pageitems.targetPage"
+            />
+        );
+    }
+
+    /**
+     * The target page of a slot of the device page (short tap "navigation", navigation slot): the same selection, a
+     * page that cannot be chosen is marked.
+     *
+     * @param slot the slot
+     * @param onPick the chosen page
+     */
+    private renderSlotTargetSelect = (slot: DevicePageSlotRef, onPick: (page: string) => void): React.JSX.Element => {
+        const { loadingPages, availablePages } = this.state;
+        const problem = this.isSlotTargetProblem(slot);
+        return (
+            <TargetPageSelect
+                pages={availablePages}
+                loading={loadingPages}
+                value={devicePageSlotTargetOf(slot)}
+                onChange={onPick}
+                error={problem}
+                helperText={problem ? I18n.t('deviceDetailsDialog_slotTargetMissing') : undefined}
+            />
+        );
+    };
+
+    /**
+     * Opens the inner dialog for the settings of a slot of the device page (DevicePageSection).
+     *
+     * @param item the settings of the slot as page item
+     * @param options what the dialog offers for the slot
+     * @param onApply the saved settings
+     */
+    private openSlotItemDialog = (
+        item: AdminPageItemConfig,
+        options: DevicePageSlotItemOptions,
+        onApply: (saved: AdminPageItemConfig) => void,
+    ): void => {
+        this.slotEdit = { options, onApply };
+        // a slot is a cardGrid cell (main.ts builds the item of a channel slot for cardGrid)
+        this.slotDialogRef.current?.openWith(item, true, options);
+    };
+
+    /**
+     * @param item the settings the inner dialog saved for a slot
+     */
+    private handleSlotItemSave = (item: AdminPageItemConfig): void => {
+        this.slotEdit?.onApply(item);
+        this.slotEdit = null;
+    };
+
+    /**
+     * @param slot a slot of the device page
+     * @returns true when its target page is not among the pages that can be chosen
+     */
+    private isSlotTargetProblem = (slot: DevicePageSlotRef | null): boolean =>
+        devicePageTargetProblem(
+            slot,
+            this.state.loadingPages ? null : this.state.availablePages,
+            this.props.currentPageName,
+        );
+
+    /**
+     * the kind of the item at the top of the dialog: standard, device with details (grid pages, cardEntities) or
+     * Alexa timer (pages with timer items; not for navigation items)
+     */
+    private renderKindSwitch(): React.JSX.Element | null {
+        if (this.props.hideChannelSelection) {
+            return null;
+        }
+        const deviceAllowed = this.isDeviceAllowed();
+        const alexaAllowed = this.isAlexaTimerAllowed();
+        if (!deviceAllowed && !alexaAllowed) {
+            return null;
+        }
+        const kind = this.currentKind();
+        // the "?" inside a radio label is a link: activating it does not toggle the radio, DocHelp stops the click
+        return (
+            <FormControl>
+                <FormLabel sx={{ fontSize: 12 }}>
+                    {I18n.t('channelConfigDialog_kind')}
+                    <DocHelp topic="pageitems.dialog" />
+                </FormLabel>
+                <RadioGroup
+                    row
+                    value={kind}
+                    onChange={e => this.handleKindChange(e.target.value)}
+                >
+                    <FormControlLabel
+                        value="standard"
+                        control={<Radio size="small" />}
+                        label={I18n.t('channelConfigDialog_kindStandard')}
+                    />
+                    {deviceAllowed && (
+                        <FormControlLabel
+                            value="device"
+                            control={<Radio size="small" />}
+                            label={I18n.t('channelConfigDialog_isDevice')}
+                        />
+                    )}
+                    {alexaAllowed && (
+                        <FormControlLabel
+                            value="alexaTimer"
+                            control={<Radio size="small" />}
+                            disabled={kind === 'standard' && this.state.isNavigation}
+                            label={
+                                <>
+                                    {I18n.t('channelConfigDialog_kindAlexaTimer')}
+                                    <DocHelp topic="pageitems.alexaTimer" />
+                                </>
+                            }
+                        />
+                    )}
+                </RadioGroup>
+            </FormControl>
+        );
+    }
+
+    /**
+     * The page item of kind "device with details": device, short tap, filter list and the name.
+     *
+     * @param device the device configuration
+     * @param panelBoxStyle style of the box
+     */
+    private renderDeviceItem(device: DeviceDetailsConfig, panelBoxStyle: object): React.JSX.Element {
+        const { socket, theme, themeType } = this.props;
+        const { channelId, name, checkingChannel, channelExists } = this.state;
+        const popupSelector = (
+            <Box>
+                <EntitySelector
+                    label={I18n.t('channelConfigDialog_channelId')}
+                    value={channelId.valueStateId}
+                    onChange={this.handleChannelIdChange}
+                    onCommit={this.handleChannelIdCommit}
+                    onTransformSelectedId={this.transformChannelId}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType ?? 'light'}
+                    dialogName="channelConfigDialog"
+                    filterFunc={this.buildChannelFilterFunc()}
+                />
+                {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
+                    <Typography
+                        variant="caption"
+                        color="error"
+                    >
+                        {I18n.t('channelConfigDialog_channelNotFound')}
+                    </Typography>
+                )}
+            </Box>
+        );
+        return (
+            <Box sx={panelBoxStyle}>
+                {this.renderKindSwitch()}
+                <DeviceDetailsSection
+                    socket={this.props.oContext?.socket ?? socket}
+                    theme={theme}
+                    themeType={themeType ?? 'light'}
+                    instance={this.props.oContext?.instance ?? this.props.instance ?? 0}
+                    value={device}
+                    stateId={deviceShortPressOf(device) === 'state' ? channelId.valueStateId : ''}
+                    onStateChange={this.handleDeviceStateChange}
+                    onShortPressChange={this.handleDeviceShortPressChange}
+                    popupChannelSelector={popupSelector}
+                    navigationTargetSelector={this.renderTargetPageSelect()}
+                    onChange={this.handleDeviceDetailsChange}
+                    onAnswer={this.handleDeviceAnswer}
+                    onEntriesChange={this.handleDeviceEntriesChange}
+                    onLongPressTargetChange={this.handleLongPressTargetChange}
+                    onDevicePageChange={this.handleDevicePageChange}
+                    devicePageIconSelector={device.devicePage ? this.renderDevicePageIcon(device.devicePage) : null}
+                    devicePageIconSelect={this.renderSlotIconSelect}
+                    devicePageTargetSelect={this.renderSlotTargetSelect}
+                    devicePageTargetProblem={this.isSlotTargetProblem}
+                    devicePageSlotItemDialog={this.openSlotItemDialog}
+                    adapterName={this.props.adapterName}
+                />
+                <TextField
+                    label={I18n.t('channelConfigDialog_name')}
+                    value={name}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({ name: e.target.value })}
+                    variant="standard"
+                    helperText={name === '' ? I18n.t('deviceDetailsDialog_nameHint') : undefined}
+                    slotProps={{ formHelperText: { sx: { color: 'text.disabled' } } }}
+                />
+            </Box>
+        );
+    }
+
+    /**
+     * The big icon of the device page: the icon selector of the admin, empty = the icon of the item.
+     *
+     * @param devicePage the device page
+     */
+    private renderDevicePageIcon(devicePage: DevicePageConfig): React.JSX.Element {
+        return this.renderDevicePageIconSelect(
+            'device-page-icon',
+            devicePage.icon ?? '',
+            'deviceDetailsDialog_pageIcon',
+            'deviceDetailsDialog_pageIconHint',
+            (page, icon) => withDevicePageIcon(page, icon),
+        );
+    }
+
+    /**
+     * An icon selector for the settings of a slot of the device page (DevicePageSlotDialog): the icon selector of the
+     * page item dialog, the value lives in the dialog of the slot.
+     *
+     * @param label translation key of the label
+     * @param iconValue the chosen icon, '' = none
+     * @param onPick the picked icon
+     */
+    private renderSlotIconSelect = (
+        label: string,
+        iconValue: string,
+        onPick: (icon: string) => void,
+    ): React.JSX.Element => {
+        const themeName: ThemeName = this.props.themeType === 'dark' ? 'dark' : 'light';
+        return (
+            <IconSelect
+                oContext={this.buildOContext()}
+                alive={true}
+                changed={false}
+                themeName={themeName}
+                common={EMPTY_COMMON}
+                attr="devicePageSlotIcon"
+                data={{ devicePageSlotIcon: iconValue }}
+                originalData={{ devicePageSlotIcon: iconValue }}
+                onError={() => {}}
+                schema={{ type: 'custom', name: 'IconSelect', url: '', label, i18n: true }}
+                custom
+                onChange={(attrOrData, val, cb): void => {
+                    let icon = '';
+                    if (typeof attrOrData === 'object') {
+                        const picked: unknown = attrOrData.devicePageSlotIcon;
+                        icon = typeof picked === 'string' ? picked : '';
+                    } else if (typeof val === 'string') {
+                        icon = val;
+                    }
+                    onPick(icon);
+                    if (cb) {
+                        cb();
+                    }
+                }}
+                theme={this.props.theme}
+            />
+        );
+    };
+
+    /**
+     * An icon selector of the device page.
+     *
+     * @param dataDd test marker
+     * @param iconValue the saved icon, '' = none
+     * @param label translation key of the label
+     * @param hint translation key of the hint below
+     * @param apply puts the picked icon into the device page
+     */
+    private renderDevicePageIconSelect(
+        dataDd: string,
+        iconValue: string,
+        label: string,
+        hint: string,
+        apply: (devicePage: DevicePageConfig, icon: string) => DevicePageConfig,
+    ): React.JSX.Element {
+        const themeName: ThemeName = this.props.themeType === 'dark' ? 'dark' : 'light';
+        return (
+            <Box data-dd={dataDd}>
+                <IconSelect
+                    oContext={this.buildOContext()}
+                    alive={true}
+                    changed={false}
+                    themeName={themeName}
+                    common={EMPTY_COMMON}
+                    attr="devicePageIcon"
+                    data={{ devicePageIcon: iconValue }}
+                    originalData={{ devicePageIcon: iconValue }}
+                    onError={() => {}}
+                    schema={{
+                        type: 'custom',
+                        name: 'IconSelect',
+                        url: '',
+                        label,
+                        i18n: true,
+                    }}
+                    custom
+                    onChange={(attrOrData, val, cb): void => {
+                        let icon = '';
+                        if (typeof attrOrData === 'object') {
+                            const picked: unknown = attrOrData.devicePageIcon;
+                            icon = typeof picked === 'string' ? picked : '';
+                        } else if (typeof val === 'string') {
+                            icon = val;
+                        }
+                        this.setState(prev =>
+                            prev.device?.devicePage
+                                ? {
+                                      device: {
+                                          ...prev.device,
+                                          devicePage: apply(prev.device.devicePage, icon),
+                                      },
+                                  }
+                                : null,
+                        );
+                        if (cb) {
+                            cb();
+                        }
+                    }}
+                    theme={this.props.theme}
+                />
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                >
+                    {I18n.t(hint)}
+                </Typography>
+            </Box>
+        );
+    }
 
     /**
      * Number of a range field; empty or not a number = not set.
@@ -1792,7 +2469,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const roleDefaults =
             this.state.alexaTimer !== null
                 ? this.getDefaultsForRole(ALEXA_TIMER_ROLE, false)
-                : this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation);
+                : this.getDefaultsForRole(this.state.channelRole, this.itemIsNavigation());
         // an Alexa alarm shows the alarm icons of the adapter (config-manager getAlexaTimerItemConfig)
         const defaults =
             roleDefaults && this.state.alexaTimer?.show === 'alarm'
@@ -1988,34 +2665,50 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         } = this.state;
 
         const rawMode = raw !== null;
+        const channelIdValid = channelId.valueStateId !== '';
+        const { device, deviceError } = this.state;
         const alexaTimer = this.state.alexaTimer;
         /** kind "Alexa timer": no channel, none of its checks apply */
         const alexaMode = !rawMode && alexaTimer !== null;
-        const hasDatapointProblems =
-            !rawMode &&
-            !alexaMode &&
-            !this.state.checkingDatapoints &&
-            (this.state.datapointErrors.length > 0 ||
-                this.state.datapointDuplicates.length > 0 ||
-                this.state.hasProblems);
-
-        const channelIdValid = channelId.valueStateId !== '';
-        const standardCanSave =
-            (isNavigation && targetPage !== '') ||
-            (!isNavigation && channelIdValid && channelExists === true && !checkingChannel);
-        // raw mode: the item needs no channel, the raw data are complete in themselves
-        const canSave = rawMode || (alexaMode ? isAlexaTimerComplete(alexaTimer) : standardCanSave);
-
+        // a device item is checked by its short tap - the channel checks apply to the popup of an alias channel only;
+        // no answer of the adapter (offline) or a device that is gone keeps a stored item savable
+        const saveState = pageItemSaveState({
+            rawMode,
+            device: device !== null ? { deviceId: device.deviceId, shortPress: deviceShortPressOf(device) } : null,
+            deviceErrorBlocks: isBlockingDeviceError(deviceError),
+            alexaTimerComplete: alexaTimer !== null ? isAlexaTimerComplete(alexaTimer) : null,
+            isNavigation,
+            isCustom,
+            targetPage,
+            channelId: channelId.valueStateId,
+            channelExists,
+            checkingChannel,
+            checkingDatapoints: this.state.checkingDatapoints,
+            roleIsValid,
+            hasProblems: this.state.hasProblems,
+            datapointErrors: this.state.datapointErrors.length,
+            datapointDuplicates: this.state.datapointDuplicates.length,
+        });
+        const { slot } = this.state;
+        // a slot of the device page: its source is chosen and checked at the slot, the settings can always be saved
+        const hasDatapointProblems = slot === null && saveState.datapointProblems;
+        const canSave = slot !== null || saveState.canSave;
         // raw mode: role and datapoint checks do not apply - the raw data are saved as they are
-        const errorSaveDetails =
-            !rawMode &&
-            !alexaMode &&
-            !(isNavigation && !channelIdValid) &&
-            ((!roleIsValid && !isCustom) || this.state.hasProblems);
+        const errorSaveDetails = slot === null && saveState.roleProblem;
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
-        const fieldsDisabled = !standardCanSave;
+        const fieldsDisabled = slot === null && !saveState.standardCanSave;
+        const itemIsNavigation = this.itemIsNavigation();
 
-        const internColorFieldsDisabled = !channelIdValid || isCustom || rawMode || colorFieldDisabled;
+        // a state slot takes colors and a color scale whatever its role, a navigation slot has one color only
+        const internColorFieldsDisabled =
+            slot?.source === 'state'
+                ? false
+                : slot?.source === 'navigation' ||
+                  !channelIdValid ||
+                  isCustom ||
+                  rawMode ||
+                  colorFieldDisabled ||
+                  device !== null;
         /**
          * Modusliste nur für die Licht-Rollen, die der Adapter dafür auswertet. Bewusst OHNE `colorFieldDisabled`:
          * diese Rollen haben `type: 'boolean'` in den Page-Item-Defaults, der Farb-Button ist für sie gesperrt.
@@ -2035,14 +2728,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelIdValid &&
             !isCustom &&
             !rawMode &&
-            (isNavigation ? USE_VALUE_CONDITIONS_NAVI_ROLES : USE_VALUE_CONDITIONS_ROLES).includes(channelRole);
+            (slot === null || slot.iconText) &&
+            (itemIsNavigation ? USE_VALUE_CONDITIONS_NAVI_ROLES : USE_VALUE_CONDITIONS_ROLES).includes(channelRole);
         /** Range of the volume slider: the adapter reads minValue / maxValue for page items of role volume only */
         const valueRangeVisible =
             channelRole !== null &&
             channelIdValid &&
             !isCustom &&
             !rawMode &&
-            !isNavigation &&
+            !itemIsNavigation &&
             VALUE_RANGE_ROLES.includes(channelRole);
         /**
          * Fields the adapter reads for page items (not navigation items) of some roles only.
@@ -2054,7 +2748,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelIdValid &&
             !isCustom &&
             !rawMode &&
-            !isNavigation &&
+            !itemIsNavigation &&
             roles.includes(channelRole);
         const secondRowVisible = pageItemOfRole(SECOND_ROW_ROLES);
         const screensaverTimerVisible = pageItemOfRole(SCREENSAVER_TIMER_ROLES);
@@ -2062,15 +2756,17 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const colorTempVisible = pageItemOfRole(COLOR_TEMP_ROLES);
 
         // Untertitel neben dem Titel
-        const titleSuffix = alexaMode
-            ? I18n.t('channelConfigDialog_kindAlexaTimer')
-            : channelId.valueStateId === ''
-              ? I18n.t('channelConfigDialog_noChannelSelected')
-              : channelRole !== null
-                ? `${channelRole}${roleIsValid === false ? ` (${I18n.t('channelConfigDialog_unknownRole')})` : ''}`
-                : channelExists === false
-                  ? I18n.t('channelConfigDialog_channelNotFound')
-                  : '…';
+        const titleSuffix = slot
+            ? `${slot.title}${slot.source === 'channel' && channelRole !== null ? ` – ${channelRole}` : ''}`
+            : alexaMode
+              ? I18n.t('channelConfigDialog_kindAlexaTimer')
+              : channelId.valueStateId === ''
+                ? I18n.t('channelConfigDialog_noChannelSelected')
+                : channelRole !== null
+                  ? `${channelRole}${roleIsValid === false ? ` (${I18n.t('channelConfigDialog_unknownRole')})` : ''}`
+                  : channelExists === false
+                    ? I18n.t('channelConfigDialog_channelNotFound')
+                    : '…';
 
         // Optik analog zu den Panel-Boxen in PagePanelOverview (border: 3, p: 2, borderRadius: 1)
         const panelBoxStyle = {
@@ -2124,7 +2820,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 variant="h6"
                                 sx={{ flex: 1 }}
                             >
-                                {I18n.t('channelConfigDialog_title')}
+                                {I18n.t(slot ? 'deviceDetailsDialog_slotSettings' : 'channelConfigDialog_title')}
                                 <Typography
                                     component="span"
                                     variant="body2"
@@ -2144,10 +2840,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     ))}
                             </Typography>
                             {rawMode && <DocHelp topic="pageitems.rawData" />}
-                            <RawItemButton
-                                active={rawMode}
-                                onClick={this.handleRawOpen}
-                            />
+                            {!this.props.hideChannelSelection && (
+                                <RawItemButton
+                                    active={rawMode}
+                                    onClick={this.handleRawOpen}
+                                />
+                            )}
                         </Box>
                     </DialogTitle>
 
@@ -2157,6 +2855,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 value={raw}
                                 onEdit={this.handleRawOpen}
                             />
+                        ) : device !== null ? (
+                            this.renderDeviceItem(device, panelBoxStyle)
                         ) : alexaTimer !== null ? (
                             <Box sx={panelBoxStyle}>
                                 {this.renderKindSwitch()}
@@ -2172,237 +2872,212 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         flexWrap: 'wrap',
                                     }}
                                 >
-                                    {/* Navigation-Checkbox */}
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={isNavigation}
-                                                onChange={this.handleNavigationChange}
-                                            />
-                                        }
-                                        label={
-                                            <Typography variant="body1">
-                                                {I18n.t('channelConfigDialog_isNavigation')}
-                                            </Typography>
-                                        }
-                                    />
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={isCustom}
-                                                onChange={this.handleCustomChange}
-                                            />
-                                        }
-                                        label={
-                                            <Typography variant="body1">
-                                                {I18n.t('channelConfigDialog_isCustom')}
-                                            </Typography>
-                                        }
-                                    />
-                                    <DocHelp
-                                        topic="pageitems.basicCases"
-                                        sx={{ alignSelf: 'center' }}
-                                    />
+                                    {/* Navigation-Checkbox - a slot: only where its short tap can navigate */}
+                                    {(slot === null || slot.tap) && (
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={isNavigation}
+                                                    onChange={this.handleNavigationChange}
+                                                />
+                                            }
+                                            label={
+                                                <Typography variant="body1">
+                                                    {I18n.t('channelConfigDialog_isNavigation')}
+                                                </Typography>
+                                            }
+                                        />
+                                    )}
+                                    {!this.props.hideChannelSelection && (
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={isCustom}
+                                                    onChange={this.handleCustomChange}
+                                                />
+                                            }
+                                            label={
+                                                <Typography variant="body1">
+                                                    {I18n.t('channelConfigDialog_isCustom')}
+                                                </Typography>
+                                            }
+                                        />
+                                    )}
+                                    {!this.props.hideChannelSelection && (
+                                        <DocHelp
+                                            topic="pageitems.basicCases"
+                                            sx={{ alignSelf: 'center' }}
+                                        />
+                                    )}
                                 </Box>
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
-                                {isNavigation && (
-                                    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                        <Autocomplete
-                                            sx={{ flex: 1 }}
-                                            options={loadingPages ? [] : this.targetPageOptions(availablePages)}
-                                            getOptionLabel={this.targetPageLabel}
-                                            value={targetPage || null}
-                                            onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
-                                            onInputChange={(_e, val) => this.handleTargetPageChange(val)}
-                                            disabled={loadingPages}
-                                            freeSolo
-                                            forcePopupIcon
-                                            renderInput={params => (
-                                                <TextField
-                                                    {...params}
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_targetPage')}
-                                                    slotProps={{
-                                                        ...params.slotProps,
-                                                        input: {
-                                                            ...params.slotProps.input,
-                                                            endAdornment: (
-                                                                <>
-                                                                    {loadingPages && <CircularProgress size={16} />}
-                                                                    {params.slotProps.input.endAdornment}
-                                                                </>
-                                                            ),
-                                                        },
-                                                    }}
-                                                />
-                                            )}
-                                        />
-                                        <DocHelp
-                                            topic="pageitems.targetPage"
-                                            sx={{ flexShrink: 0, mb: 0.5 }}
-                                        />
-                                    </Box>
-                                )}
+                                {isNavigation && this.renderTargetPageSelect()}
 
-                                {/* ioBroker-Channel-Auswahl + Validierungsicons */}
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    {/* Fehler-Icon: fehlende Pflicht-Datenpunkte */}
-                                    {!checkingChannel &&
-                                        !this.state.checkingDatapoints &&
-                                        this.state.datapointErrors.length > 0 && (
-                                            <Tooltip
-                                                title={`${I18n.t('channelConfigDialog_missingDps')}: ${this.state.datapointErrors.join(', ')}`}
-                                            >
-                                                <CancelIcon
-                                                    color="error"
-                                                    sx={{ flexShrink: 0 }}
+                                {/* the channel / state and its checks - not for a slot of the device page */}
+                                {!this.props.hideChannelSelection && (
+                                    <>
+                                        {/* ioBroker-Channel-Auswahl + Validierungsicons */}
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            {/* Fehler-Icon: fehlende Pflicht-Datenpunkte */}
+                                            {!checkingChannel &&
+                                                !this.state.checkingDatapoints &&
+                                                this.state.datapointErrors.length > 0 && (
+                                                    <Tooltip
+                                                        title={`${I18n.t('channelConfigDialog_missingDps')}: ${this.state.datapointErrors.join(', ')}`}
+                                                    >
+                                                        <CancelIcon
+                                                            color="error"
+                                                            sx={{ flexShrink: 0 }}
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                            {/* Duplikat-Icon: mehrere States treffen auf dieselbe Pflicht-Rolle */}
+                                            {!checkingChannel &&
+                                                !this.state.checkingDatapoints &&
+                                                (this.state.datapointDuplicates.length > 0 || errorSaveDetails) && (
+                                                    <Tooltip
+                                                        title={
+                                                            errorSaveDetails
+                                                                ? I18n.t('channelConfigDialog_pressDetails')
+                                                                : `${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`
+                                                        }
+                                                    >
+                                                        <ErrorOutline
+                                                            color="error"
+                                                            sx={{ flexShrink: 0 }}
+                                                        />
+                                                    </Tooltip>
+                                                )}
+                                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                <EntitySelector
+                                                    label={I18n.t(
+                                                        isCustom
+                                                            ? 'channelConfigDialog_stateId'
+                                                            : 'channelConfigDialog_channelId',
+                                                    )}
+                                                    value={channelId.valueStateId}
+                                                    onChange={this.handleChannelIdChange}
+                                                    onCommit={this.handleChannelIdCommit}
+                                                    onTransformSelectedId={this.transformChannelId}
+                                                    socket={socket}
+                                                    theme={theme}
+                                                    themeType={themeType ?? 'light'}
+                                                    dialogName="channelConfigDialog"
+                                                    filterFunc={this.buildChannelFilterFunc()}
                                                 />
-                                            </Tooltip>
-                                        )}
-                                    {/* Duplikat-Icon: mehrere States treffen auf dieselbe Pflicht-Rolle */}
-                                    {!checkingChannel &&
-                                        !this.state.checkingDatapoints &&
-                                        (this.state.datapointDuplicates.length > 0 || errorSaveDetails) && (
-                                            <Tooltip
-                                                title={
-                                                    errorSaveDetails
-                                                        ? I18n.t('channelConfigDialog_pressDetails')
-                                                        : `${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`
-                                                }
-                                            >
-                                                <ErrorOutline
-                                                    color="error"
-                                                    sx={{ flexShrink: 0 }}
-                                                />
-                                            </Tooltip>
-                                        )}
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                        <EntitySelector
-                                            label={I18n.t(
-                                                isCustom
-                                                    ? 'channelConfigDialog_stateId'
-                                                    : 'channelConfigDialog_channelId',
+                                                {hasDatapointProblems && (
+                                                    <Typography
+                                                        variant="caption"
+                                                        color="error"
+                                                        sx={{ display: 'block', mt: 0.25, px: 1.75 }}
+                                                    >
+                                                        {channelId.valueStateId}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                            {/* ... Button für erweiterte Channel-ID Konfiguration */}
+                                            {!isCustom && (
+                                                <Tooltip title={I18n.t('channelConfigDialog_channelIdConfig')}>
+                                                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <Button
+                                                            variant="text"
+                                                            onClick={() =>
+                                                                this.valueEntryDialogMain.current?.openWith(
+                                                                    this.state.channelId,
+                                                                )
+                                                            }
+                                                            sx={{ minWidth: 20, minHeight: 24 }}
+                                                            startIcon={<SettingsIcon />}
+                                                        ></Button>
+                                                    </span>
+                                                </Tooltip>
                                             )}
-                                            value={channelId.valueStateId}
-                                            onChange={this.handleChannelIdChange}
-                                            onCommit={this.handleChannelIdCommit}
-                                            onTransformSelectedId={this.transformChannelId}
-                                            socket={socket}
-                                            theme={theme}
-                                            themeType={themeType ?? 'light'}
-                                            dialogName="channelConfigDialog"
-                                            filterFunc={this.buildChannelFilterFunc()}
-                                        />
-                                        {hasDatapointProblems && (
+                                            {/* Lade-Spinner während Prüfung */}
+                                            {(checkingChannel || this.state.checkingDatapoints) && (
+                                                <CircularProgress
+                                                    size={20}
+                                                    sx={{ flexShrink: 0 }}
+                                                />
+                                            )}
+                                            {/* role-dependent help: the documentation of the chosen channel's role */}
+                                            {pageitemsTopicsOfChannel(
+                                                isCustom ? null : channelRole,
+                                                this.usesScreensaverTimer(),
+                                            ).map(topic => (
+                                                <DocHelp
+                                                    key={topic}
+                                                    topic={topic}
+                                                    sx={{ ml: 0, flexShrink: 0 }}
+                                                />
+                                            ))}
+                                        </Box>
+                                        {/* Validierungshinweis Channel */}
+                                        {channelId.valueStateId !== '' &&
+                                            channelExists === false &&
+                                            !checkingChannel && (
+                                                <Typography
+                                                    variant="caption"
+                                                    color="error"
+                                                    sx={{ mt: -1.5 }}
+                                                >
+                                                    {I18n.t('channelConfigDialog_channelNotFound')}
+                                                </Typography>
+                                            )}
+                                        {(!isNavigation && !channelId.valueStateId && (
                                             <Typography
                                                 variant="caption"
-                                                color="error"
-                                                sx={{ display: 'block', mt: 0.25, px: 1.75 }}
+                                                color="warning.main"
+                                                sx={{ mt: -1.5 }}
                                             >
-                                                {channelId.valueStateId}
+                                                {I18n.t('channelConfigDialog_missingIDForbidden')}
                                             </Typography>
-                                        )}
-                                    </Box>
-                                    {/* ... Button für erweiterte Channel-ID Konfiguration */}
-                                    {!isCustom && (
-                                        <Tooltip title={I18n.t('channelConfigDialog_channelIdConfig')}>
-                                            <span style={{ display: 'flex', alignItems: 'center' }}>
-                                                <Button
-                                                    variant="text"
-                                                    onClick={() =>
-                                                        this.valueEntryDialogMain.current?.openWith(
-                                                            this.state.channelId,
-                                                        )
-                                                    }
-                                                    sx={{ minWidth: 20, minHeight: 24 }}
-                                                    startIcon={<SettingsIcon />}
-                                                ></Button>
-                                            </span>
-                                        </Tooltip>
-                                    )}
-                                    {/* Lade-Spinner während Prüfung */}
-                                    {(checkingChannel || this.state.checkingDatapoints) && (
-                                        <CircularProgress
-                                            size={20}
-                                            sx={{ flexShrink: 0 }}
-                                        />
-                                    )}
-                                    {/* role-dependent help: the documentation of the chosen channel's role */}
-                                    {pageitemsTopicsOfChannel(
-                                        isCustom ? null : channelRole,
-                                        this.usesScreensaverTimer(),
-                                    ).map(topic => (
-                                        <DocHelp
-                                            key={topic}
-                                            topic={topic}
-                                            sx={{ ml: 0, flexShrink: 0 }}
-                                        />
-                                    ))}
-                                </Box>
-                                {/* Validierungshinweis Channel */}
-                                {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
-                                    <Typography
-                                        variant="caption"
-                                        color="error"
-                                        sx={{ mt: -1.5 }}
-                                    >
-                                        {I18n.t('channelConfigDialog_channelNotFound')}
-                                    </Typography>
+                                        )) ||
+                                            (isCustom && (
+                                                <Typography
+                                                    variant="caption"
+                                                    color={stateIsWriteable != null ? 'text.disabled' : 'warning.main'}
+                                                    sx={{ mt: -1.5 }}
+                                                >
+                                                    {`${
+                                                        I18n.t('channelConfigDialog_isCustomHint') +
+                                                        (stateIsWriteable === false
+                                                            ? I18n.t('read-only')
+                                                            : stateIsWriteable === true
+                                                              ? I18n.t('writeable')
+                                                              : stateIsWriteable === undefined
+                                                                ? I18n.t('not_a_boolean_state')
+                                                                : I18n.t('not_a_state'))
+                                                    }.`}
+                                                </Typography>
+                                            )) ||
+                                            (roleIsValid === false && !checkingChannel && (
+                                                <Typography
+                                                    variant="caption"
+                                                    color="warning.main"
+                                                    sx={{ mt: -1.5 }}
+                                                >
+                                                    {I18n.t('channelConfigDialog_unknownRoleHint')}
+                                                </Typography>
+                                            )) ||
+                                            (channelId.valueStateId && (
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.disabled"
+                                                    sx={{ mt: -1.5 }}
+                                                >
+                                                    {I18n.t(`ok ${channelRole ? `(role=${channelRole})` : ''}`)}
+                                                </Typography>
+                                            )) || (
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.disabled"
+                                                    sx={{ mt: -1.5 }}
+                                                >
+                                                    {I18n.t('channelConfigDialog_emptyIDAllowed')}
+                                                </Typography>
+                                            )}
+                                    </>
                                 )}
-                                {(!isNavigation && !channelId.valueStateId && (
-                                    <Typography
-                                        variant="caption"
-                                        color="warning.main"
-                                        sx={{ mt: -1.5 }}
-                                    >
-                                        {I18n.t('channelConfigDialog_missingIDForbidden')}
-                                    </Typography>
-                                )) ||
-                                    (isCustom && (
-                                        <Typography
-                                            variant="caption"
-                                            color={stateIsWriteable != null ? 'text.disabled' : 'warning.main'}
-                                            sx={{ mt: -1.5 }}
-                                        >
-                                            {`${
-                                                I18n.t('channelConfigDialog_isCustomHint') +
-                                                (stateIsWriteable === false
-                                                    ? I18n.t('read-only')
-                                                    : stateIsWriteable === true
-                                                      ? I18n.t('writeable')
-                                                      : stateIsWriteable === undefined
-                                                        ? I18n.t('not_a_boolean_state')
-                                                        : I18n.t('not_a_state'))
-                                            }.`}
-                                        </Typography>
-                                    )) ||
-                                    (roleIsValid === false && !checkingChannel && (
-                                        <Typography
-                                            variant="caption"
-                                            color="warning.main"
-                                            sx={{ mt: -1.5 }}
-                                        >
-                                            {I18n.t('channelConfigDialog_unknownRoleHint')}
-                                        </Typography>
-                                    )) ||
-                                    (channelId.valueStateId && (
-                                        <Typography
-                                            variant="caption"
-                                            color="text.disabled"
-                                            sx={{ mt: -1.5 }}
-                                        >
-                                            {I18n.t(`ok ${channelRole ? `(role=${channelRole})` : ''}`)}
-                                        </Typography>
-                                    )) || (
-                                        <Typography
-                                            variant="caption"
-                                            color="text.disabled"
-                                            sx={{ mt: -1.5 }}
-                                        >
-                                            {I18n.t('channelConfigDialog_emptyIDAllowed')}
-                                        </Typography>
-                                    )}
-
                                 {/* Namensfeld + Value-Entry-Konfigurationsbutton */}
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                                     <TextField
@@ -2429,20 +3104,25 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 : undefined
                                         }
                                     />
-                                    <Tooltip title={I18n.t('channelConfigDialog_nameEntryConfig')}>
-                                        <span>
-                                            <Button
-                                                variant="outlined"
-                                                onClick={() =>
-                                                    this.valueEntryDialogRef.current?.openWith(this.state.valueEntry)
-                                                }
-                                                disabled={fieldsDisabled}
-                                                sx={{ minWidth: 48 }}
-                                            >
-                                                ...
-                                            </Button>
-                                        </span>
-                                    </Tooltip>
+                                    {/* the dynamic name: a page item - of the slots only an alias channel builds one */}
+                                    {(slot === null || slot.source === 'channel') && (
+                                        <Tooltip title={I18n.t('channelConfigDialog_nameEntryConfig')}>
+                                            <span>
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={() =>
+                                                        this.valueEntryDialogRef.current?.openWith(
+                                                            this.state.valueEntry,
+                                                        )
+                                                    }
+                                                    disabled={fieldsDisabled}
+                                                    sx={{ minWidth: 48 }}
+                                                >
+                                                    ...
+                                                </Button>
+                                            </span>
+                                        </Tooltip>
+                                    )}
                                     <DocHelp
                                         topic="pageitems.name"
                                         sx={{ ml: 0, flexShrink: 0 }}
@@ -2545,7 +3225,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             sx={{ ml: -1.5 }}
                                         />
                                     )}
-                                    {this.state.isGridCard && !isCustom && (
+                                    {(slot !== null ? slot.iconText : this.state.isGridCard && !isCustom) && (
                                         <FormControl
                                             component="fieldset"
                                             disabled={fieldsDisabled}
@@ -2567,7 +3247,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         </FormControl>
                                     )}
                                     {((this.props.heatCircuits && this.props.heatCircuits.length > 0) ||
-                                        (this.state.isGridCard && !isCustom)) && (
+                                        (slot !== null ? slot.iconText : this.state.isGridCard && !isCustom)) && (
                                         <DocHelp
                                             topic="pageitems.cardFields"
                                             sx={{ ml: -1.5 }}
@@ -2757,7 +3437,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     }}
                                 >
                                     {this.renderBranchColumn('true')}
-                                    {this.renderBranchColumn('false')}
+                                    {/* a navigation slot has no state: one icon and color */}
+                                    {slot?.source !== 'navigation' && this.renderBranchColumn('false')}
                                 </Box>
                                 {/* Langer Druck: bewusst ganz unten im Dialog */}
                                 {longPressVisible && (
@@ -2832,7 +3513,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 }}
                                             />
                                         )}
-                                        {longPress == null && (
+                                        {longPress == null && slot === null && (
                                             <Autocomplete
                                                 options={loadingPages ? [] : this.targetPageOptions(availablePages)}
                                                 getOptionLabel={this.targetPageLabel}
@@ -2964,8 +3645,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     adapterName={this.props.adapterName}
                     instance={this.props.instance}
                     channelRole={this.state.channelRole}
-                    isNavigation={this.state.isNavigation}
-                    roleDefaults={this.getDefaultsForRole(this.state.channelRole, this.state.isNavigation)}
+                    isNavigation={this.itemIsNavigation()}
+                    roleDefaults={this.getDefaultsForRole(this.state.channelRole, this.itemIsNavigation())}
                     trueColor={this.state.trueColor}
                     falseColor={this.state.falseColor}
                     onSave={this.handleColorSave}
@@ -3099,6 +3780,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         )}
                     </DialogActions>
                 </Dialog>
+                {/* the settings of a slot of the device page: this dialog without the channel selection */}
+                {!this.props.hideChannelSelection && (
+                    <ChannelConfigDialog
+                        ref={this.slotDialogRef}
+                        socket={socket}
+                        theme={theme}
+                        themeType={themeType}
+                        adapterName={this.props.adapterName}
+                        instance={this.props.instance}
+                        oContext={this.props.oContext}
+                        pagesList={this.props.pagesList}
+                        panelIds={this.props.panelIds}
+                        currentPageName={this.props.currentPageName}
+                        hideTriggerButton
+                        hideChannelSelection
+                        onSave={this.handleSlotItemSave}
+                    />
+                )}
             </>
         );
     }

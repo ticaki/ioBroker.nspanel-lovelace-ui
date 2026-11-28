@@ -33,6 +33,7 @@ Measured 2026-11-08 (emulator, test HMI):
     - [cardQR](#cardqr)
     - [cardPower](#cardpower)
     - [cardPChart Page](#cardpchart-page)
+    - [cardDevice1, cardDevice2, cardDevice3 (device pages)](#carddevice1-carddevice2-carddevice3-device-pages)
 
 ## Startup
 
@@ -2661,6 +2662,48 @@ Pie chart, part of the HMI since 6.0.5.
 The legend has 5 rows on eu and us-l, further entries are ignored. On us-p the pie is above the legend and the page has room for 6 entries, the adapter sends 5.
 
 The pie chart of `HMI/nspanel-v6.0.7.screensaver5.HMI` and the us-l and us-p files draws the largest slice with lines as well, so all slices end on the same rim.
+
+### cardDevice1, cardDevice2, cardDevice3 (device pages)
+
+Pages for one device (robot vacuum, washing machine, car …), part of the HMI from 6.3.0 on (protocol as in the test
+build `device13`). cardDevice1 "control", cardDevice2 "progress", cardDevice3 "values". Details and geometry:
+[doc/ideas/device-details/device-page-hmi.md](../doc/ideas/device-details/device-page-hmi.md).
+
+The 6.3.0 files are built from the 6.2.0 projects (eu: `nspanel-v6.2.0.entities5.HMI`) with the tools in `HMI/tools` (order and commands in the build
+sections of that document): `swipe_release_fix.py`, `grid_cell_id_fix.py` (us-p cardGrid3), `grid_long_press_feedback.py`,
+`entities_left_tap.py` (us-l/us-p), `schedule_shutter2_fix.py` (us-p cardSchedule: a tap on a `shutter2` row opens
+popupShutter2 like on eu and us-l), `popup_notify3_font.py`, `card_device.py` (device pages, `tRelease` 6.3.0).
+
+`entityUpd~heading~navigation~main~[slot]*~info`
+
+`devIcons~[type~internalName~icon~iconColor]*` (cardDevice1: 16 cells, cardDevice3: 8 cells)
+
+`devStatus~text`
+
+`entityUpd~Robbi~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~1~12?0~A~17299~Robbi~Cleaning~1~12?1~B~17299~Battery~80%~1~12?2~C~17299~Area~34m²~1~12?3~D~17299~Start~1~1~12?4~E~17299~Pause~0~1~12?5~F~17299~Dock~1~1~12?6~G~17299~Locate~1~1~12?7~H~17299~~1`
+
+`devIcons~1~12?9~I~2047~1~12?10~J~33808~~~~~~~~~…`
+
+Every element (main, slots, info) has the 6 fields of a cardGrid cell `type~internalName~icon~iconColor~displayName~optionalValue`.
+
+| Field | Description |
+|---|---|
+| type | **a number** (only on the device pages): 0 or empty = hidden, 1 = only sends (`text`, `button`, `switch` …), 2 shutter, 3 shutter2, 4 input_sel, 5 timer (popup on touch), 6 light, 7 light2, 8 fan, 9 number (popup after 500 ms). Read with `covx`: leading digits count, a text without leading digit is 0. The navigation fields keep type names (`button`) |
+| internalName | at most 7 characters (`<page>?<n>`) |
+| slots | cardDevice1: 6 (info, info, button × 4), cardDevice2: 6 (value, progress, info × 3, button), cardDevice3: 8 (info × 6, switch × 2) |
+| optionalValue of main | text of the status line (at most 63 bytes) |
+| optionalValue of info | **stage of the status icon grid**: cardDevice1 0 = none, 1 = up to 3 columns (info lines with short name), 2 = up to 5 columns (info lines without name), 3 = up to 8 columns (no info lines); cardDevice3 0 = none, 1 = up to 4 icons instead of tile 1, 2 = up to 8 icons instead of tiles 1 and 2; empty = 0 |
+
+`devIcons` fills the cells of the grid column by column (top, bottom, next column; cardDevice3 has one row), 4 fields
+per cell, an empty cell is `~~~`. The page shows the columns up to the last filled cell, at most those of the stage; a
+half filled last column keeps its empty framed cell. It is sent right after `entityUpd` (which carries the stage), alone
+when only a status icon changed. cardDevice2 and all other pages only acknowledge it.
+
+`devStatus` replaces only the text of the status line (the adapter shows a long status text in up to 3 parts, one after
+the other).
+
+Events: `event,buttonPress2,internalName,button` (tap), `event,buttonPress3,internalName,button` (long press, on
+release), `event,buttonPress2,internalName,OnOff,0|1` (switch of a switch slot); popups as on cardGrid.
 
 ### popupLight Page
 

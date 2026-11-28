@@ -230,6 +230,14 @@ Diese Symbole kennt das Panel als großes Symbol (Namen der Material Design Icon
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
 `smoke-detector-alert`, `fire-alert`
 
+Diese Symbole kommen erst mit der TFT 6.3.0 (zusammen mit der Geräteseite) dazu; auf älterer TFT bleibt das
+Symbol leer:
+`garage-variant`, `garage-open-variant`, `chevron-triple-up`, `chevron-triple-down`, `chevron-triple-left`,
+`chevron-triple-right`, `school`, `gate-open`, `door-sliding-open`, `lock-open-alert`, `car-door`,
+`garage-alert-variant`, `gate-alert`, `key-alert`, `molecule-co2`, `thermometer-alert`, `heat-wave`, `fan-alert`,
+`flash-alert`, `car-battery`, `battery-charging-high`, `motion-sensor`, `cctv`, `lightbulb-alert`, `leak`,
+`water-pump-off`, `pill`, `pill-multiple`, `medication`, `bus-school`, `stove`, `pot-steam`
+
 Die [Symbolübersicht](symbolOverview#große-benachrichtigung-popupnotify3) im Admin zeigt genau diese Symbole mit dem
 Knopf **Große Benachrichtigung (popupNotify3)**.
 

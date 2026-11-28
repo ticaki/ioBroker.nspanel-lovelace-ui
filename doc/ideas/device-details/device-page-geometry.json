@@ -1,0 +1,910 @@
+{
+  "eu": {
+    "stage": {"w": 480, "h": 320},
+    "visible": {"x": 0, "w": 450},
+    "layout": "landscape",
+    "shiftX": 0,
+    "pages": {
+      "cardDevice1": {
+        "slotCount": 6,
+        "statusWidth": 390,
+        "strCommand": 703,
+        "header": {
+          "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 65, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 391, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 10, "y": 68, "w": 110, "h": 86, "font": 4, "align": "center", "maxBytes": 7},
+          "name": {"object": "tMainName", "x": 10, "y": 156, "w": 110, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "info",
+            "icon": {"object": "bEntity1", "x": 126, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity1", "x": 164, "y": 80, "w": 164, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 330, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
+            "sets": {
+              "B": {
+                "icon": {"object": "bEntityB1", "x": 247, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB1", "x": 285, "y": 80, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "value": {"object": "tValue1", "x": 330, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
+              },
+              "C": {
+                "icon": {"object": "bEntityC1", "x": 321, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC1", "x": 359, "y": 80, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+              }
+            }
+          },
+          {
+            "slot": 2,
+            "kind": "info",
+            "icon": {"object": "bEntity2", "x": 126, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity2", "x": 164, "y": 124, "w": 164, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue2", "x": 330, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
+            "sets": {
+              "B": {
+                "icon": {"object": "bEntityB2", "x": 247, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB2", "x": 285, "y": 124, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "value": {"object": "tValue2", "x": 330, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
+              },
+              "C": {
+                "icon": {"object": "bEntityC2", "x": 321, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC2", "x": 359, "y": 124, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+              }
+            }
+          },
+          {
+            "slot": 3,
+            "kind": "button",
+            "icon": {"object": "bEntity3", "x": 10, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity3", "x": 10, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "button",
+            "icon": {"object": "bEntity4", "x": 118, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity4", "x": 118, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "button",
+            "icon": {"object": "bEntity5", "x": 226, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity5", "x": 226, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "button",
+            "icon": {"object": "bEntity6", "x": 334, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity6", "x": 334, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 10, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 404, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 7},
+        "grid": {
+          "rows": 2,
+          "columns": 8,
+          "cells": [
+            {"object": "tStat1", "x": 124, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 1, "column": 1, "row": 1, "border": 1},
+            {"object": "tStat2", "x": 124, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 2, "column": 1, "row": 2, "border": 1},
+            {"object": "tStat3", "x": 161, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 3, "column": 2, "row": 1, "border": 1},
+            {"object": "tStat4", "x": 161, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 4, "column": 2, "row": 2, "border": 1},
+            {"object": "tStat5", "x": 198, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 5, "column": 3, "row": 1, "border": 1},
+            {"object": "tStat6", "x": 198, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 6, "column": 3, "row": 2, "border": 1},
+            {"object": "tStat7", "x": 235, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 7, "column": 4, "row": 1, "border": 1},
+            {"object": "tStat8", "x": 235, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 8, "column": 4, "row": 2, "border": 1},
+            {"object": "tStat9", "x": 272, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 9, "column": 5, "row": 1, "border": 1},
+            {"object": "tStat10", "x": 272, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 10, "column": 5, "row": 2, "border": 1},
+            {"object": "tStat11", "x": 309, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 11, "column": 6, "row": 1, "border": 1},
+            {"object": "tStat12", "x": 309, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 12, "column": 6, "row": 2, "border": 1},
+            {"object": "tStat13", "x": 346, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 13, "column": 7, "row": 1, "border": 1},
+            {"object": "tStat14", "x": 346, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 14, "column": 7, "row": 2, "border": 1},
+            {"object": "tStat15", "x": 383, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 15, "column": 8, "row": 1, "border": 1},
+            {"object": "tStat16", "x": 383, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 16, "column": 8, "row": 2, "border": 1}
+          ]
+        },
+        "stages": [
+          {
+            "stage": 0,
+            "columns": 0,
+            "infoSet": "A",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 1,
+            "columns": 3,
+            "infoSet": "B",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 2,
+            "columns": 5,
+            "infoSet": "C",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 3,
+            "columns": 8,
+            "infoSet": null,
+            "hiddenSlots": []
+          }
+        ]
+      },
+      "cardDevice2": {
+        "slotCount": 6,
+        "statusWidth": 390,
+        "strCommand": 775,
+        "header": {
+          "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 65, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 391, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 10, "y": 67, "w": 96, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
+          "name": {"object": "tMainName", "x": 10, "y": 151, "w": 96, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "value",
+            "icon": {"object": "tIcon1", "x": 110, "y": 90, "w": 34, "h": 36, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity1", "x": 146, "y": 151, "w": 190, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 146, "y": 67, "w": 190, "h": 82, "font": 4, "align": "left", "maxBytes": 31},
+            "touch": {"object": "mSlot1", "x": 110, "y": 67, "w": 226, "h": 110}
+          },
+          {
+            "slot": 2,
+            "kind": "progress",
+            "name": {"object": "tEntity2", "x": 10, "y": 179, "w": 429, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "bar": {"x": 10, "y": 207, "w": 429, "h": 14, "border": 1},
+            "touch": {"object": "mSlot2", "x": 10, "y": 179, "w": 429, "h": 42}
+          },
+          {
+            "slot": 3,
+            "kind": "info",
+            "icon": {"object": "bEntity3", "x": 10, "y": 228, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity3", "x": 46, "y": 226, "w": 104, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue3", "x": 46, "y": 252, "w": 104, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "info",
+            "icon": {"object": "bEntity4", "x": 154, "y": 228, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity4", "x": 190, "y": 226, "w": 104, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue4", "x": 190, "y": 252, "w": 104, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "info",
+            "icon": {"object": "bEntity5", "x": 298, "y": 228, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity5", "x": 334, "y": 226, "w": 104, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue5", "x": 334, "y": 252, "w": 104, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "button",
+            "icon": {"object": "bEntity6", "x": 340, "y": 67, "w": 100, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity6", "x": 340, "y": 119, "w": 100, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 10, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 404, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 10}
+      },
+      "cardDevice3": {
+        "slotCount": 8,
+        "statusWidth": 390,
+        "strCommand": 959,
+        "header": {
+          "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 65, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 391, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 10, "y": 67, "w": 100, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
+          "name": {"object": "tMainName", "x": 10, "y": 151, "w": 100, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "info",
+            "icon": {"object": "bEntity1", "x": 114, "y": 69, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity1", "x": 150, "y": 67, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 150, "y": 93, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31},
+            "hiddenFromStage": 1
+          },
+          {
+            "slot": 2,
+            "kind": "info",
+            "icon": {"object": "bEntity2", "x": 277, "y": 69, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity2", "x": 313, "y": 67, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue2", "x": 313, "y": 93, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31},
+            "hiddenFromStage": 2
+          },
+          {
+            "slot": 3,
+            "kind": "info",
+            "icon": {"object": "bEntity3", "x": 114, "y": 121, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity3", "x": 150, "y": 119, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue3", "x": 150, "y": 145, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "info",
+            "icon": {"object": "bEntity4", "x": 277, "y": 121, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity4", "x": 313, "y": 119, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue4", "x": 313, "y": 145, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "info",
+            "icon": {"object": "bEntity5", "x": 114, "y": 173, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity5", "x": 150, "y": 171, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue5", "x": 150, "y": 197, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "info",
+            "icon": {"object": "bEntity6", "x": 277, "y": 173, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity6", "x": 313, "y": 171, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue6", "x": 313, "y": 197, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 7,
+            "kind": "switch",
+            "icon": {"object": "tIcon7", "x": 10, "y": 236, "w": 34, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity7", "x": 46, "y": 240, "w": 125, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "toggle": {"object": "btOnOff7", "x": 173, "y": 228, "w": 50, "h": 50},
+            "touch": {"object": "mSlot7", "x": 10, "y": 236, "w": 161, "h": 34}
+          },
+          {
+            "slot": 8,
+            "kind": "switch",
+            "icon": {"object": "tIcon8", "x": 226, "y": 236, "w": 34, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity8", "x": 262, "y": 240, "w": 125, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "toggle": {"object": "btOnOff8", "x": 389, "y": 228, "w": 50, "h": 50},
+            "touch": {"object": "mSlot8", "x": 226, "y": 236, "w": 161, "h": 34}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 10, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 404, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 10},
+        "grid": {
+          "rows": 1,
+          "columns": 8,
+          "cells": [
+            {"object": "tStat1", "x": 114, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 1, "column": 1, "row": 1, "border": 1},
+            {"object": "tStat2", "x": 151, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 2, "column": 2, "row": 1, "border": 1},
+            {"object": "tStat3", "x": 188, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 3, "column": 3, "row": 1, "border": 1},
+            {"object": "tStat4", "x": 225, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 4, "column": 4, "row": 1, "border": 1},
+            {"object": "tStat5", "x": 262, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 5, "column": 5, "row": 1, "border": 1},
+            {"object": "tStat6", "x": 299, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 6, "column": 6, "row": 1, "border": 1},
+            {"object": "tStat7", "x": 336, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 7, "column": 7, "row": 1, "border": 1},
+            {"object": "tStat8", "x": 373, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 8, "column": 8, "row": 1, "border": 1}
+          ]
+        },
+        "stages": [
+          {
+            "stage": 0,
+            "columns": 0,
+            "infoSet": null,
+            "hiddenSlots": []
+          },
+          {
+            "stage": 1,
+            "columns": 4,
+            "infoSet": null,
+            "hiddenSlots": [1]
+          },
+          {
+            "stage": 2,
+            "columns": 8,
+            "infoSet": null,
+            "hiddenSlots": [1, 2]
+          }
+        ]
+      }
+    }
+  },
+  "us-l": {
+    "stage": {"w": 480, "h": 320},
+    "visible": {"x": 15, "w": 450},
+    "layout": "landscape",
+    "shiftX": 15,
+    "pages": {
+      "cardDevice1": {
+        "slotCount": 6,
+        "statusWidth": 390,
+        "strCommand": 703,
+        "header": {
+          "prev": {"object": "bPrev", "x": 24, "y": 16, "w": 49, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 80, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 406, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 25, "y": 68, "w": 110, "h": 86, "font": 4, "align": "center", "maxBytes": 7},
+          "name": {"object": "tMainName", "x": 25, "y": 156, "w": 110, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "info",
+            "icon": {"object": "bEntity1", "x": 141, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity1", "x": 179, "y": 80, "w": 164, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 345, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
+            "sets": {
+              "B": {
+                "icon": {"object": "bEntityB1", "x": 262, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB1", "x": 300, "y": 80, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "value": {"object": "tValue1", "x": 345, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
+              },
+              "C": {
+                "icon": {"object": "bEntityC1", "x": 336, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC1", "x": 374, "y": 80, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+              }
+            }
+          },
+          {
+            "slot": 2,
+            "kind": "info",
+            "icon": {"object": "bEntity2", "x": 141, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity2", "x": 179, "y": 124, "w": 164, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue2", "x": 345, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
+            "sets": {
+              "B": {
+                "icon": {"object": "bEntityB2", "x": 262, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB2", "x": 300, "y": 124, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "value": {"object": "tValue2", "x": 345, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
+              },
+              "C": {
+                "icon": {"object": "bEntityC2", "x": 336, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC2", "x": 374, "y": 124, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+              }
+            }
+          },
+          {
+            "slot": 3,
+            "kind": "button",
+            "icon": {"object": "bEntity3", "x": 25, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity3", "x": 25, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "button",
+            "icon": {"object": "bEntity4", "x": 133, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity4", "x": 133, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "button",
+            "icon": {"object": "bEntity5", "x": 241, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity5", "x": 241, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "button",
+            "icon": {"object": "bEntity6", "x": 349, "y": 190, "w": 104, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity6", "x": 349, "y": 244, "w": 104, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 25, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 419, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 7},
+        "grid": {
+          "rows": 2,
+          "columns": 8,
+          "cells": [
+            {"object": "tStat1", "x": 139, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 1, "column": 1, "row": 1, "border": 1},
+            {"object": "tStat2", "x": 139, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 2, "column": 1, "row": 2, "border": 1},
+            {"object": "tStat3", "x": 176, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 3, "column": 2, "row": 1, "border": 1},
+            {"object": "tStat4", "x": 176, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 4, "column": 2, "row": 2, "border": 1},
+            {"object": "tStat5", "x": 213, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 5, "column": 3, "row": 1, "border": 1},
+            {"object": "tStat6", "x": 213, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 6, "column": 3, "row": 2, "border": 1},
+            {"object": "tStat7", "x": 250, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 7, "column": 4, "row": 1, "border": 1},
+            {"object": "tStat8", "x": 250, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 8, "column": 4, "row": 2, "border": 1},
+            {"object": "tStat9", "x": 287, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 9, "column": 5, "row": 1, "border": 1},
+            {"object": "tStat10", "x": 287, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 10, "column": 5, "row": 2, "border": 1},
+            {"object": "tStat11", "x": 324, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 11, "column": 6, "row": 1, "border": 1},
+            {"object": "tStat12", "x": 324, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 12, "column": 6, "row": 2, "border": 1},
+            {"object": "tStat13", "x": 361, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 13, "column": 7, "row": 1, "border": 1},
+            {"object": "tStat14", "x": 361, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 14, "column": 7, "row": 2, "border": 1},
+            {"object": "tStat15", "x": 398, "y": 71, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 15, "column": 8, "row": 1, "border": 1},
+            {"object": "tStat16", "x": 398, "y": 115, "w": 38, "h": 45, "font": 1, "align": "center", "maxBytes": 7, "cell": 16, "column": 8, "row": 2, "border": 1}
+          ]
+        },
+        "stages": [
+          {
+            "stage": 0,
+            "columns": 0,
+            "infoSet": "A",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 1,
+            "columns": 3,
+            "infoSet": "B",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 2,
+            "columns": 5,
+            "infoSet": "C",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 3,
+            "columns": 8,
+            "infoSet": null,
+            "hiddenSlots": []
+          }
+        ]
+      },
+      "cardDevice2": {
+        "slotCount": 6,
+        "statusWidth": 390,
+        "strCommand": 775,
+        "header": {
+          "prev": {"object": "bPrev", "x": 24, "y": 16, "w": 49, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 80, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 406, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 25, "y": 67, "w": 96, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
+          "name": {"object": "tMainName", "x": 25, "y": 151, "w": 96, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "value",
+            "icon": {"object": "tIcon1", "x": 125, "y": 90, "w": 34, "h": 36, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity1", "x": 161, "y": 151, "w": 190, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 161, "y": 67, "w": 190, "h": 82, "font": 4, "align": "left", "maxBytes": 31},
+            "touch": {"object": "mSlot1", "x": 125, "y": 67, "w": 226, "h": 110}
+          },
+          {
+            "slot": 2,
+            "kind": "progress",
+            "name": {"object": "tEntity2", "x": 25, "y": 179, "w": 429, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "bar": {"x": 25, "y": 207, "w": 429, "h": 14, "border": 1},
+            "touch": {"object": "mSlot2", "x": 25, "y": 179, "w": 429, "h": 42}
+          },
+          {
+            "slot": 3,
+            "kind": "info",
+            "icon": {"object": "bEntity3", "x": 25, "y": 228, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity3", "x": 61, "y": 226, "w": 104, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue3", "x": 61, "y": 252, "w": 104, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "info",
+            "icon": {"object": "bEntity4", "x": 169, "y": 228, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity4", "x": 205, "y": 226, "w": 104, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue4", "x": 205, "y": 252, "w": 104, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "info",
+            "icon": {"object": "bEntity5", "x": 313, "y": 228, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity5", "x": 349, "y": 226, "w": 104, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue5", "x": 349, "y": 252, "w": 104, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "button",
+            "icon": {"object": "bEntity6", "x": 355, "y": 67, "w": 100, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity6", "x": 355, "y": 119, "w": 100, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 25, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 419, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 10}
+      },
+      "cardDevice3": {
+        "slotCount": 8,
+        "statusWidth": 390,
+        "strCommand": 959,
+        "header": {
+          "prev": {"object": "bPrev", "x": 24, "y": 16, "w": 49, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 80, "y": 26, "w": 320, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 406, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 25, "y": 67, "w": 100, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
+          "name": {"object": "tMainName", "x": 25, "y": 151, "w": 100, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "info",
+            "icon": {"object": "bEntity1", "x": 129, "y": 69, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity1", "x": 165, "y": 67, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 165, "y": 93, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31},
+            "hiddenFromStage": 1
+          },
+          {
+            "slot": 2,
+            "kind": "info",
+            "icon": {"object": "bEntity2", "x": 292, "y": 69, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity2", "x": 328, "y": 67, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue2", "x": 328, "y": 93, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31},
+            "hiddenFromStage": 2
+          },
+          {
+            "slot": 3,
+            "kind": "info",
+            "icon": {"object": "bEntity3", "x": 129, "y": 121, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity3", "x": 165, "y": 119, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue3", "x": 165, "y": 145, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "info",
+            "icon": {"object": "bEntity4", "x": 292, "y": 121, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity4", "x": 328, "y": 119, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue4", "x": 328, "y": 145, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "info",
+            "icon": {"object": "bEntity5", "x": 129, "y": 173, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity5", "x": 165, "y": 171, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue5", "x": 165, "y": 197, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "info",
+            "icon": {"object": "bEntity6", "x": 292, "y": 173, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity6", "x": 328, "y": 171, "w": 125, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue6", "x": 328, "y": 197, "w": 125, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 7,
+            "kind": "switch",
+            "icon": {"object": "tIcon7", "x": 25, "y": 236, "w": 34, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity7", "x": 61, "y": 240, "w": 125, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "toggle": {"object": "btOnOff7", "x": 188, "y": 228, "w": 50, "h": 50},
+            "touch": {"object": "mSlot7", "x": 25, "y": 236, "w": 161, "h": 34}
+          },
+          {
+            "slot": 8,
+            "kind": "switch",
+            "icon": {"object": "tIcon8", "x": 241, "y": 236, "w": 34, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity8", "x": 277, "y": 240, "w": 125, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "toggle": {"object": "btOnOff8", "x": 404, "y": 228, "w": 50, "h": 50},
+            "touch": {"object": "mSlot8", "x": 241, "y": 236, "w": 161, "h": 34}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 25, "y": 289, "w": 390, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 419, "y": 288, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 10},
+        "grid": {
+          "rows": 1,
+          "columns": 8,
+          "cells": [
+            {"object": "tStat1", "x": 129, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 1, "column": 1, "row": 1, "border": 1},
+            {"object": "tStat2", "x": 166, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 2, "column": 2, "row": 1, "border": 1},
+            {"object": "tStat3", "x": 203, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 3, "column": 3, "row": 1, "border": 1},
+            {"object": "tStat4", "x": 240, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 4, "column": 4, "row": 1, "border": 1},
+            {"object": "tStat5", "x": 277, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 5, "column": 5, "row": 1, "border": 1},
+            {"object": "tStat6", "x": 314, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 6, "column": 6, "row": 1, "border": 1},
+            {"object": "tStat7", "x": 351, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 7, "column": 7, "row": 1, "border": 1},
+            {"object": "tStat8", "x": 388, "y": 67, "w": 38, "h": 52, "font": 1, "align": "center", "maxBytes": 7, "cell": 8, "column": 8, "row": 1, "border": 1}
+          ]
+        },
+        "stages": [
+          {
+            "stage": 0,
+            "columns": 0,
+            "infoSet": null,
+            "hiddenSlots": []
+          },
+          {
+            "stage": 1,
+            "columns": 4,
+            "infoSet": null,
+            "hiddenSlots": [1]
+          },
+          {
+            "stage": 2,
+            "columns": 8,
+            "infoSet": null,
+            "hiddenSlots": [1, 2]
+          }
+        ]
+      }
+    }
+  },
+  "us-p": {
+    "stage": {"w": 320, "h": 480},
+    "visible": {"x": 0, "w": 320},
+    "layout": "portrait",
+    "shiftX": 0,
+    "pages": {
+      "cardDevice1": {
+        "slotCount": 6,
+        "statusWidth": 262,
+        "strCommand": 703,
+        "header": {
+          "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 60, "y": 24, "w": 200, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 261, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 10, "y": 70, "w": 150, "h": 86, "font": 4, "align": "center", "maxBytes": 7},
+          "name": {"object": "tMainName", "x": 10, "y": 158, "w": 150, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "info",
+            "icon": {"object": "bEntity1", "x": 10, "y": 190, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity1", "x": 48, "y": 194, "w": 156, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 206, "y": 194, "w": 104, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
+            "sets": {
+              "C": {
+                "icon": {"object": "bEntityC1", "x": 166, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC1", "x": 204, "y": 80, "w": 106, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+              }
+            }
+          },
+          {
+            "slot": 2,
+            "kind": "info",
+            "icon": {"object": "bEntity2", "x": 10, "y": 230, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity2", "x": 48, "y": 234, "w": 156, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue2", "x": 206, "y": 234, "w": 104, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
+            "sets": {
+              "C": {
+                "icon": {"object": "bEntityC2", "x": 166, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC2", "x": 204, "y": 124, "w": 106, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+              }
+            }
+          },
+          {
+            "slot": 3,
+            "kind": "button",
+            "icon": {"object": "bEntity3", "x": 10, "y": 272, "w": 148, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity3", "x": 10, "y": 326, "w": 148, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "button",
+            "icon": {"object": "bEntity4", "x": 162, "y": 272, "w": 148, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity4", "x": 162, "y": 326, "w": 148, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "button",
+            "icon": {"object": "bEntity5", "x": 10, "y": 358, "w": 148, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity5", "x": 10, "y": 412, "w": 148, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "button",
+            "icon": {"object": "bEntity6", "x": 162, "y": 358, "w": 148, "h": 52, "font": 3, "align": "center", "maxBytes": 7},
+            "name": {"object": "tEntity6", "x": 162, "y": 412, "w": 148, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 10, "y": 447, "w": 262, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 274, "y": 446, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 7},
+        "grid": {
+          "rows": 2,
+          "columns": 8,
+          "cells": [
+            {"object": "tStat1", "x": 10, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 1, "column": 1, "row": 1, "border": 1},
+            {"object": "tStat2", "x": 10, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 2, "column": 1, "row": 2, "border": 1},
+            {"object": "tStat3", "x": 47, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 3, "column": 2, "row": 1, "border": 1},
+            {"object": "tStat4", "x": 47, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 4, "column": 2, "row": 2, "border": 1},
+            {"object": "tStat5", "x": 84, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 5, "column": 3, "row": 1, "border": 1},
+            {"object": "tStat6", "x": 84, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 6, "column": 3, "row": 2, "border": 1},
+            {"object": "tStat7", "x": 121, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 7, "column": 4, "row": 1, "border": 1},
+            {"object": "tStat8", "x": 121, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 8, "column": 4, "row": 2, "border": 1},
+            {"object": "tStat9", "x": 158, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 9, "column": 5, "row": 1, "border": 1},
+            {"object": "tStat10", "x": 158, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 10, "column": 5, "row": 2, "border": 1},
+            {"object": "tStat11", "x": 195, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 11, "column": 6, "row": 1, "border": 1},
+            {"object": "tStat12", "x": 195, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 12, "column": 6, "row": 2, "border": 1},
+            {"object": "tStat13", "x": 232, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 13, "column": 7, "row": 1, "border": 1},
+            {"object": "tStat14", "x": 232, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 14, "column": 7, "row": 2, "border": 1},
+            {"object": "tStat15", "x": 269, "y": 188, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 15, "column": 8, "row": 1, "border": 1},
+            {"object": "tStat16", "x": 269, "y": 228, "w": 38, "h": 41, "font": 1, "align": "center", "maxBytes": 7, "cell": 16, "column": 8, "row": 2, "border": 1}
+          ]
+        },
+        "stages": [
+          {
+            "stage": 0,
+            "columns": 0,
+            "infoSet": "A",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 1,
+            "columns": 3,
+            "infoSet": "C",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 2,
+            "columns": 5,
+            "infoSet": "C",
+            "hiddenSlots": []
+          },
+          {
+            "stage": 3,
+            "columns": 8,
+            "infoSet": null,
+            "hiddenSlots": []
+          }
+        ]
+      },
+      "cardDevice2": {
+        "slotCount": 6,
+        "statusWidth": 262,
+        "strCommand": 775,
+        "header": {
+          "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 60, "y": 24, "w": 200, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 261, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 10, "y": 68, "w": 90, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
+          "name": {"object": "tMainName", "x": 10, "y": 152, "w": 90, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "value",
+            "icon": {"object": "tIcon1", "x": 102, "y": 91, "w": 34, "h": 36, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity1", "x": 138, "y": 152, "w": 172, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 138, "y": 68, "w": 172, "h": 82, "font": 4, "align": "left", "maxBytes": 31},
+            "touch": {"object": "mSlot1", "x": 102, "y": 68, "w": 208, "h": 110}
+          },
+          {
+            "slot": 2,
+            "kind": "progress",
+            "name": {"object": "tEntity2", "x": 10, "y": 184, "w": 300, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "bar": {"x": 10, "y": 212, "w": 300, "h": 14, "border": 1},
+            "touch": {"object": "mSlot2", "x": 10, "y": 184, "w": 300, "h": 42}
+          },
+          {
+            "slot": 3,
+            "kind": "info",
+            "icon": {"object": "bEntity3", "x": 10, "y": 234, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity3", "x": 48, "y": 238, "w": 156, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue3", "x": 206, "y": 238, "w": 104, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "info",
+            "icon": {"object": "bEntity4", "x": 10, "y": 274, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity4", "x": 48, "y": 278, "w": 156, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue4", "x": 206, "y": 278, "w": 104, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "info",
+            "icon": {"object": "bEntity5", "x": 10, "y": 314, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity5", "x": 48, "y": 318, "w": 156, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue5", "x": 206, "y": 318, "w": 104, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "button",
+            "icon": {"object": "bEntity6", "x": 10, "y": 356, "w": 300, "h": 52, "font": 3, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity6", "x": 10, "y": 410, "w": 300, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 10, "y": 447, "w": 262, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 274, "y": 446, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 10}
+      },
+      "cardDevice3": {
+        "slotCount": 8,
+        "statusWidth": 262,
+        "strCommand": 959,
+        "header": {
+          "prev": {"object": "bPrev", "x": 9, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10},
+          "heading": {"object": "tHeading", "x": 60, "y": 24, "w": 200, "h": 30, "font": 2, "align": "center", "maxBytes": 40},
+          "next": {"object": "bNext", "x": 261, "y": 16, "w": 50, "h": 50, "font": 3, "align": "center", "maxBytes": 10}
+        },
+        "main": {
+          "icon": {"object": "bMain", "x": 85, "y": 68, "w": 150, "h": 82, "font": 4, "align": "center", "maxBytes": 10},
+          "name": {"object": "tMainName", "x": 10, "y": 152, "w": 300, "h": 26, "font": 0, "align": "center", "maxBytes": 31}
+        },
+        "slots": [
+          {
+            "slot": 1,
+            "kind": "info",
+            "icon": {"object": "bEntity1", "x": 10, "y": 184, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity1", "x": 46, "y": 182, "w": 112, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue1", "x": 46, "y": 208, "w": 112, "h": 25, "font": 0, "align": "right", "maxBytes": 31},
+            "hiddenFromStage": 1
+          },
+          {
+            "slot": 2,
+            "kind": "info",
+            "icon": {"object": "bEntity2", "x": 162, "y": 184, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity2", "x": 198, "y": 182, "w": 112, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue2", "x": 198, "y": 208, "w": 112, "h": 25, "font": 0, "align": "right", "maxBytes": 31},
+            "hiddenFromStage": 2
+          },
+          {
+            "slot": 3,
+            "kind": "info",
+            "icon": {"object": "bEntity3", "x": 10, "y": 236, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity3", "x": 46, "y": 234, "w": 112, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue3", "x": 46, "y": 260, "w": 112, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 4,
+            "kind": "info",
+            "icon": {"object": "bEntity4", "x": 162, "y": 236, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity4", "x": 198, "y": 234, "w": 112, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue4", "x": 198, "y": 260, "w": 112, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 5,
+            "kind": "info",
+            "icon": {"object": "bEntity5", "x": 10, "y": 288, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity5", "x": 46, "y": 286, "w": 112, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue5", "x": 46, "y": 312, "w": 112, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 6,
+            "kind": "info",
+            "icon": {"object": "bEntity6", "x": 162, "y": 288, "w": 34, "h": 48, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity6", "x": 198, "y": 286, "w": 112, "h": 25, "font": 0, "align": "left", "maxBytes": 31},
+            "value": {"object": "tValue6", "x": 198, "y": 312, "w": 112, "h": 25, "font": 0, "align": "right", "maxBytes": 31}
+          },
+          {
+            "slot": 7,
+            "kind": "switch",
+            "icon": {"object": "tIcon7", "x": 10, "y": 350, "w": 34, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity7", "x": 46, "y": 354, "w": 212, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "toggle": {"object": "btOnOff7", "x": 260, "y": 342, "w": 50, "h": 50},
+            "touch": {"object": "mSlot7", "x": 10, "y": 350, "w": 248, "h": 34}
+          },
+          {
+            "slot": 8,
+            "kind": "switch",
+            "icon": {"object": "tIcon8", "x": 10, "y": 402, "w": 34, "h": 34, "font": 1, "align": "center", "maxBytes": 10},
+            "name": {"object": "tEntity8", "x": 46, "y": 406, "w": 212, "h": 26, "font": 0, "align": "left", "maxBytes": 31},
+            "toggle": {"object": "btOnOff8", "x": 260, "y": 394, "w": 50, "h": 50},
+            "touch": {"object": "mSlot8", "x": 10, "y": 402, "w": 248, "h": 34}
+          }
+        ],
+        "status": {"object": "tStatus", "x": 10, "y": 447, "w": 262, "h": 30, "font": 0, "align": "center", "maxBytes": 63},
+        "info": {"object": "bInfo", "x": 274, "y": 446, "w": 36, "h": 32, "font": 1, "align": "center", "maxBytes": 10},
+        "grid": {
+          "rows": 1,
+          "columns": 8,
+          "cells": [
+            {"object": "tStat1", "x": 10, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 1, "column": 1, "row": 1, "border": 1},
+            {"object": "tStat2", "x": 46, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 2, "column": 2, "row": 1, "border": 1},
+            {"object": "tStat3", "x": 82, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 3, "column": 3, "row": 1, "border": 1},
+            {"object": "tStat4", "x": 118, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 4, "column": 4, "row": 1, "border": 1},
+            {"object": "tStat5", "x": 154, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 5, "column": 5, "row": 1, "border": 1},
+            {"object": "tStat6", "x": 190, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 6, "column": 6, "row": 1, "border": 1},
+            {"object": "tStat7", "x": 226, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 7, "column": 7, "row": 1, "border": 1},
+            {"object": "tStat8", "x": 262, "y": 182, "w": 37, "h": 51, "font": 1, "align": "center", "maxBytes": 7, "cell": 8, "column": 8, "row": 1, "border": 1}
+          ]
+        },
+        "stages": [
+          {
+            "stage": 0,
+            "columns": 0,
+            "infoSet": null,
+            "hiddenSlots": []
+          },
+          {
+            "stage": 1,
+            "columns": 4,
+            "infoSet": null,
+            "hiddenSlots": [1]
+          },
+          {
+            "stage": 2,
+            "columns": 8,
+            "infoSet": null,
+            "hiddenSlots": [1, 2]
+          }
+        ]
+      }
+    }
+  }
+}

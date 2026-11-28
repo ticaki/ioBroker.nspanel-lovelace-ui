@@ -82,6 +82,14 @@ import {
     ScriptToAdminRunner,
 } from './lib/configuration/script-to-admin-runner';
 import { adminPageItemToScriptItem } from './lib/configuration/admin-page-item';
+import { deviceDetailsInfo } from './lib/configuration/admin-device-details';
+import { buildDevicePage, devicePageName } from './lib/pages/device-page';
+import { isPageItemWithoutTemplate } from './lib/types/type-pageItem';
+import {
+    deviceDetailsRuntimeOf,
+    deviceShortPressOf,
+    SENDTO_GET_DEVICE_DETAILS_COMMAND,
+} from './lib/types/deviceDetails';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
 import type {
@@ -800,7 +808,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 return;
             }
             await this.onMqttConnect();
-            await this.delay(1000);
+            // 1 ms: only gives the event loop some air, no need to wait longer
+            await this.delay(1);
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
                 if (id.endsWith('.info.isOnline') && !legacyWebPanelTree(id.replace(`${this.namespace}.`, ''))) {
@@ -1579,6 +1588,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const message: unknown = obj.message;
                     const id = message && typeof message === 'object' && 'id' in message ? message.id : undefined;
                     const result = await mediaPlayerInfo(this, id);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, result, obj.callback);
+                    }
+                    break;
+                }
+                case SENDTO_GET_DEVICE_DETAILS_COMMAND: {
+                    const message: unknown = obj.message;
+                    const id = message && typeof message === 'object' && 'id' in message ? message.id : undefined;
+                    const result = await deviceDetailsInfo(this, id);
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
@@ -3825,20 +3843,47 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     async convertAdminPageItemToPageItemConfig(
         preItem: AdminPageItemConfig | undefined,
-        prePage: { card: string; uniqueName: string },
+        /** the page of the item; `alwaysOn` is handed on to the page generated from the item (device page) */
+        prePage: { card: string; uniqueName: string; alwaysOn?: 'none' | 'always' | 'action' | 'ignore' },
         messages: string[],
     ): Promise<{
         pageItem: NSPanel.PageItemDataItemsOptions | undefined;
         messages: string[];
         error: string | undefined;
-        /** page the config manager generated from the item (`media-<id>` behind a media item) - the caller adds it */
+        /**
+         * page the config manager generated from the item (`media-<id>` behind a media item, the device page of a
+         * device item) - the caller adds it
+         */
         pageConfig?: ScriptConfig.PageType;
+        /**
+         * the messages nobody has logged yet (the config manager logs its own): the slots of a device page that were
+         * left out - the admin configuration logs them with page and item
+         */
+        unloggedMessages?: string[];
     }> {
         let error: string | undefined = undefined;
+        const unloggedMessages: string[] = [];
         let pageItem: NSPanel.PageItemDataItemsOptions | undefined = undefined;
         let pageConfig: ScriptConfig.PageType | undefined = undefined;
         if (preItem && prePage) {
             const manager = new ConfigManager(this);
+            // device with details without own state or channel: an item without name shows the name of the device
+            const shortPress = preItem.device && !preItem.useNative ? deviceShortPressOf(preItem.device) : undefined;
+            if (
+                !preItem.name &&
+                preItem.device &&
+                (shortPress === 'none' || shortPress === 'navigation' || shortPress === 'devicePage')
+            ) {
+                const device = await this.getForeignObjectAsync(preItem.device.deviceId);
+                const deviceName = device?.common?.name;
+                const name =
+                    typeof deviceName === 'string'
+                        ? deviceName
+                        : deviceName
+                          ? (deviceName[this.language ?? 'en'] ?? deviceName.en ?? '')
+                          : '';
+                preItem = { ...preItem, name: name || preItem.device.deviceId.split('.').pop() };
+            }
             const item = adminPageItemToScriptItem(preItem, color => this.log.warn(`Invalid color format: ${color}`));
             if (!item) {
                 error = 'Invalid/Empty item native configuration!';
@@ -3856,11 +3901,60 @@ class NspanelLovelaceUi extends utils.Adapter {
                 messages = result.messages;
                 pageItem = result.itemConfig;
                 pageConfig = result.pageConfig;
+                // device with details: a raw item brings all of its fields itself
+                const deviceDetails = preItem.useNative ? undefined : deviceDetailsRuntimeOf(preItem.device);
+                if (pageItem && deviceDetails) {
+                    pageItem.deviceDetails = deviceDetails;
+                    if (deviceDetails.devicePage && !pageConfig) {
+                        // the device page: a page of its own below the page of the item, built here like the media
+                        // page of a media item - the admin configuration adds it as generated page
+                        const uniqueName = devicePageName(prePage.uniqueName, deviceDetails.deviceId);
+                        const built = await buildDevicePage(
+                            uniqueName,
+                            prePage.alwaysOn ?? 'none',
+                            {
+                                deviceId: deviceDetails.deviceId,
+                                entries: deviceDetails.entries,
+                                page: deviceDetails.devicePage,
+                                main: isPageItemWithoutTemplate(pageItem) ? pageItem : undefined,
+                            },
+                            {
+                                getObject: async id => (await this.getForeignObjectAsync(id)) ?? null,
+                                translate: key => this.library.getTranslation(key),
+                                language: this.library.getLocalLanguage(),
+                                pageItemOf: async slotItem => {
+                                    const scriptItem = adminPageItemToScriptItem(slotItem, color =>
+                                        this.log.warn(`Invalid color format: ${color}`),
+                                    );
+                                    return scriptItem
+                                        ? (
+                                              await manager.getPageItemConfig(
+                                                  scriptItem,
+                                                  // a slot is a cardGrid cell
+                                                  {
+                                                      type: 'cardGrid',
+                                                      uniqueName: prePage.uniqueName,
+                                                      heading: '',
+                                                      items: [],
+                                                  },
+                                                  [],
+                                              )
+                                          ).itemConfig
+                                        : undefined;
+                                },
+                            },
+                        );
+                        pageItem.devicePageName = uniqueName;
+                        pageConfig = { type: undefined, uniqueName, native: built.page };
+                        messages.push(...built.messages);
+                        unloggedMessages.push(...built.messages);
+                    }
+                }
             } catch (e: any) {
                 error = `Error in configuration: ${e.message}`;
             }
         }
-        return { pageItem, messages, error, pageConfig };
+        return { pageItem, messages, error, pageConfig, unloggedMessages };
     }
 }
 if (require.main !== module) {

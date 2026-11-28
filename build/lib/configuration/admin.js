@@ -29,11 +29,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
+  ITEM_MESSAGE_REPEAT_MS: () => ITEM_MESSAGE_REPEAT_MS,
   adminScreensaverMessage: () => adminScreensaverMessage,
   alarmButtonData: () => alarmButtonData,
   buildMediaScriptPage: () => buildMediaScriptPage,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage,
   buildThermoScriptPage: () => buildThermoScriptPage,
+  isNewItemMessage: () => isNewItemMessage,
   navigationTargetProblem: () => navigationTargetProblem,
   panelLabel: () => panelLabel,
   qrUsesPassword: () => qrUsesPassword
@@ -109,8 +111,38 @@ function shallowDescribe(value) {
   }
   return JSON.stringify(value);
 }
+const ITEM_MESSAGE_REPEAT_MS = 6e4;
+const loggedItemMessages = /* @__PURE__ */ new Map();
+function isNewItemMessage(text, now, logged = loggedItemMessages) {
+  for (const [key, time] of logged) {
+    if (now - time >= ITEM_MESSAGE_REPEAT_MS) {
+      logged.delete(key);
+    }
+  }
+  if (logged.has(text)) {
+    return false;
+  }
+  logged.set(text, now);
+  return true;
+}
 class AdminConfiguration extends import_library.BaseClass {
   pageConfig = [];
+  /**
+   * Logs the messages of the conversion of a page item that nobody logged yet (e.g. a slot of a device page that
+   * was left out) as warnings with page and item - once, also when the page is assigned to several panels.
+   *
+   * @param page unique name of the page
+   * @param index index of the item on the page
+   * @param messages the messages, undefined = none
+   */
+  logItemMessages(page, index, messages) {
+    for (const message of messages != null ? messages : []) {
+      const text = `Page '${page}', page item ${index}: ${message}`;
+      if (isNewItemMessage(text, Date.now())) {
+        this.log.warn(text);
+      }
+    }
+  }
   constructor(adapter) {
     super(adapter, "AdminConfiguration");
     this.adapter = adapter;
@@ -228,7 +260,7 @@ Stack: ${stack}`
    *
    * @param entry Thermo2 entry as stored by the PageConfig editor.
    * @param alwaysOn Validated always-on mode of the entry.
-   * @param generated Receives the pages generated from the page items (`media-<id>`).
+   * @param generated Receives the pages generated from the page items (`media-<id>`, device pages).
    * @returns The page for the panel configuration; without a usable circuit it has no data.
    */
   async buildThermo2Page(entry, alwaysOn, generated) {
@@ -261,9 +293,10 @@ Stack: ${stack}`
       const item = stored ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) } : { channelId: ShareConfig.emptyChannelValueConfig("empty") };
       const result = await this.adapter.convertAdminPageItemToPageItemConfig(
         item,
-        { card: "cardThermo2", uniqueName: entry.uniqueName },
+        { card: "cardThermo2", uniqueName: entry.uniqueName, alwaysOn },
         []
       );
+      this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
       if (!result.error && result.pageItem) {
         gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
         gridItem.pageItems.push(result.pageItem);
@@ -319,7 +352,7 @@ Stack: ${stack}`
    *
    * @param entry Media entry as stored by the PageConfig editor.
    * @param alwaysOn Validated always-on mode of the entry.
-   * @param generated Receives the pages generated from the page items (`media-<id>`).
+   * @param generated Receives the pages generated from the page items (`media-<id>`, device pages).
    * @returns The page for the panel configuration; with an unusable player it has no items.
    */
   async buildMediaPage(entry, alwaysOn, generated) {
@@ -352,9 +385,10 @@ Stack: ${stack}`
       const item = stored ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) } : { channelId: ShareConfig.emptyChannelValueConfig("empty") };
       const result = await this.adapter.convertAdminPageItemToPageItemConfig(
         item,
-        { card: "cardMedia", uniqueName: entry.uniqueName },
+        { card: "cardMedia", uniqueName: entry.uniqueName, alwaysOn },
         []
       );
+      this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
       if (!result.error && result.pageItem) {
         gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
         gridItem.pageItems.push(result.pageItem);
@@ -566,9 +600,10 @@ Stack: ${stack}`
               }
               const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
-                { card: entry.card, uniqueName: entry.uniqueName },
+                { card: entry.card, uniqueName: entry.uniqueName, alwaysOn: entry.alwaysOn },
                 []
               );
+              this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
               if (!result.error && result.pageItem) {
                 newPage.pageItems = (_c = newPage.pageItems) != null ? _c : [];
                 newPage.pageItems.unshift(result.pageItem);
@@ -618,9 +653,10 @@ Stack: ${stack}`
               }
               const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
-                { card: entry.card, uniqueName: entry.uniqueName },
+                { card: entry.card, uniqueName: entry.uniqueName, alwaysOn: entry.alwaysOn },
                 []
               );
+              this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
               if (!result.error && result.pageItem) {
                 newPage.pageItems = (_d = newPage.pageItems) != null ? _d : [];
                 newPage.pageItems.unshift(result.pageItem);
@@ -748,8 +784,8 @@ Stack: ${stack}`
     return pendingNavs;
   }
   /**
-   * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item)
-   * exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
+   * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item,
+   * the device page of a device item) exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
    * with the admin page as parent (navigation node with the parent on a double press), and the page is
    * recorded as generated - its navigation is read-only in the admin. An existing page of the same name
    * that belongs to this panel is kept (the first one wins, like the deduplication of the script path),
@@ -1344,11 +1380,13 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
+  ITEM_MESSAGE_REPEAT_MS,
   adminScreensaverMessage,
   alarmButtonData,
   buildMediaScriptPage,
   buildThermo2ScriptPage,
   buildThermoScriptPage,
+  isNewItemMessage,
   navigationTargetProblem,
   panelLabel,
   qrUsesPassword

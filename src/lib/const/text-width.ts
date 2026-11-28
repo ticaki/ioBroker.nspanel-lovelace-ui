@@ -26,7 +26,7 @@
  *
  * Font 9 (HMI 6.2.0, all models) = the single big icon of popupNotify3: 255 x 255 px icons, left/right 0, no
  * generated table - every code point of the icon range U+E000..U+FDFF counts as present with the advance 255 (the
- * font only contains the 55 icons listed in doc/ideas/notify-page/README.md). The field always shows exactly ONE
+ * font only contains the icons of templates/popup-notify3-icons.json). The field always shows exactly ONE
  * icon: fitText/wrapText return at most 1 character (no ellipsis), textWidth/charAdvance work as usual.
  * Fonts 6..8 (mono, corners, clock) have no table.
  *

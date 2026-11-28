@@ -1,6 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
+import type { DeviceDetailsLearned } from "./types/deviceDetails";
 import type { AdminButtonFunction, NavigationOverride, PageLinkEntry, PChartEntry, ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
@@ -218,6 +219,9 @@ declare global {
                 colNeutral: string;
                 colHighlight: string;
                 colDisabled: string;
+                colDeviceEnergy: string;
+                colDeviceConnection: string;
+                colDeviceInfo: string;
             }[];
 
             colorNavigation: {
@@ -288,6 +292,8 @@ declare global {
             screensaverConfig: ScreensaverEntry[];
             /** notifications shared by all screensavers, an entry uses them by id (ScreensaverEntry.notify) */
             screensaverNotify: ScreensaverNotifyConfig[];
+            /** device with details: the learned ticks of the filter list per adapter (admin only) */
+            deviceDetailsLearned?: DeviceDetailsLearned;
 
             pageUnlockConfig: any
             pageQRConfig: any[];

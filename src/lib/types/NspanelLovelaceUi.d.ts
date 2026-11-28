@@ -21,7 +21,9 @@ declare class NspanelLovelaceUi extends utils.Adapter {
         pageItem: NSPanel.PageItemDataItemsOptions | undefined;
         messages: string[];
         error: string | undefined;
-        /** page generated from the item (`media-<id>` behind a media item), see main.ts */
+        /** page generated from the item (`media-<id>` behind a media item, the device page of a device item), see main.ts */
         pageConfig?: ScriptConfig.PageType;
+        /** the messages nobody has logged yet, see main.ts */
+        unloggedMessages?: string[];
     }>;
 }

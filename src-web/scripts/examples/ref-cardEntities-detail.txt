@@ -1,0 +1,5 @@
+# detail page "Robbi" of a device with details (cardEntities): reference assignment of the docs (doc/Pictures/device-page/BILDER.md), values as the adapter writes them
+# eu: doc/Pictures/device-page/eu-detail-page.png
+pageType~cardEntities
+entityUpd~Robbi~button~bUp~~17299~~~button~bSubNext~~18~~~text~9?0~~65363~Batterie~80%~text~9?1~~2047~Signal~-58dBm~text~9?2~~65535~Firmware~4.3.2~text~9?3~~65535~Fläche~34m²
+@sleep 300

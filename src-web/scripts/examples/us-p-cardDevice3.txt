@@ -1,0 +1,5 @@
+# cardDevice3 on us-p: the data of doc/Pictures/device-page/hmi-us-p-cardDevice3.png (the status line has 262 px,
+# the adapter sends the first part of the text)
+pageType~cardDevice3
+entityUpd~Auto~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~1~9?0?main~~65535~ID.3~Lädt, voll um 17:40~1~9?0?1~~1760~Akku~78 %~1~9?0?2~~65535~Reichw.~312 km~1~9?0?3~~65535~Innen~21,5 °C~1~9?0?4~~1760~Türen~zu~1~9?0?5~~65248~Laden~11 kW~1~9?0?6~~65535~km-Stand~23.456~1~9?0?7~~65535~Klima~1~1~9?0?8~~65248~Laden~1~1~9?0?info~~65535~~
+@sleep 300

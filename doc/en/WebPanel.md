@@ -193,6 +193,10 @@ chosen".
 
 <img alt="The screensaver editor with the model smartphone portrait: eight indicators above the clock, eight places at the bottom" src="../Pictures/webPanel/webpanel-07-screensaver-web-p.png" width="100%"/>
 
+### Places of the device page
+
+The device page of an item [Device with details](deviceDetails) can show additional elements on *Smartphone landscape* and *Smartphone portrait* (more buttons, info lines and switches). They are switched on in the dialog of the item; which ones there are per layout and how the page looks per model is described under [Additional elements for smartphone web panels](deviceDetails#additional-elements-for-smartphone-web-panels) and [Appearance per panel model](deviceDetails#8-appearance-per-panel-model).
+
 ### Lines of a notification
 
 How many lines a [notification](Screensaver-Notify) shows depends on the text size:

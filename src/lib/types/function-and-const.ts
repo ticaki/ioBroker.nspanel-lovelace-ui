@@ -136,6 +136,14 @@ export function isCardGridType(value: unknown): value is cardGridTypes {
     return typeof value === 'string' && CARD_GRID_TYPES.includes(value as any);
 }
 
+/**
+ * @param value a card
+ * @returns true for the generated device pages (cardDevice1..3)
+ */
+export function isCardDeviceType(value: unknown): value is 'cardDevice1' | 'cardDevice2' | 'cardDevice3' {
+    return value === 'cardDevice1' || value === 'cardDevice2' || value === 'cardDevice3';
+}
+
 export function isCardMenuHalfPageScrollType(value: unknown): value is cardGridTypes {
     return typeof value === 'string' && CARD_MENU_HALF_PAGE_SCROLL_TYPES.includes(value as any);
 }

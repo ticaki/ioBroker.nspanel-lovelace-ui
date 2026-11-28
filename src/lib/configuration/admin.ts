@@ -153,8 +153,53 @@ function shallowDescribe(value: unknown): string {
     return JSON.stringify(value);
 }
 
+/** how long the same message of a page item is not logged again: a page is built once per panel it is assigned to */
+export const ITEM_MESSAGE_REPEAT_MS = 60_000;
+
+/** when a message of a page item was logged last, by its text */
+const loggedItemMessages = new Map<string, number>();
+
+/**
+ * Whether a message of the conversion of a page item is to be logged now: the same text is logged once within
+ * {@link ITEM_MESSAGE_REPEAT_MS} - a page assigned to several panels is converted once per panel.
+ *
+ * @param text the complete log text (with page and item)
+ * @param now the time in ms
+ * @param logged when a text was logged last (default: shared by all panels of the adapter)
+ * @returns true when it was not logged within the time
+ */
+export function isNewItemMessage(text: string, now: number, logged: Map<string, number> = loggedItemMessages): boolean {
+    for (const [key, time] of logged) {
+        if (now - time >= ITEM_MESSAGE_REPEAT_MS) {
+            logged.delete(key);
+        }
+    }
+    if (logged.has(text)) {
+        return false;
+    }
+    logged.set(text, now);
+    return true;
+}
+
 export class AdminConfiguration extends BaseClass {
     private pageConfig: ShareConfig.PageContentEntry[] = [];
+
+    /**
+     * Logs the messages of the conversion of a page item that nobody logged yet (e.g. a slot of a device page that
+     * was left out) as warnings with page and item - once, also when the page is assigned to several panels.
+     *
+     * @param page unique name of the page
+     * @param index index of the item on the page
+     * @param messages the messages, undefined = none
+     */
+    private logItemMessages(page: string, index: number, messages: readonly string[] | undefined): void {
+        for (const message of messages ?? []) {
+            const text = `Page '${page}', page item ${index}: ${message}`;
+            if (isNewItemMessage(text, Date.now())) {
+                this.log.warn(text);
+            }
+        }
+    }
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'AdminConfiguration');
         this.adapter = adapter;
@@ -279,7 +324,7 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Thermo2 entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
-     * @param generated Receives the pages generated from the page items (`media-<id>`).
+     * @param generated Receives the pages generated from the page items (`media-<id>`, device pages).
      * @returns The page for the panel configuration; without a usable circuit it has no data.
      */
     private async buildThermo2Page(
@@ -319,9 +364,10 @@ export class AdminConfiguration extends BaseClass {
                 : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
-                { card: 'cardThermo2', uniqueName: entry.uniqueName },
+                { card: 'cardThermo2', uniqueName: entry.uniqueName, alwaysOn },
                 [],
             );
+            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
@@ -380,7 +426,7 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Media entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
-     * @param generated Receives the pages generated from the page items (`media-<id>`).
+     * @param generated Receives the pages generated from the page items (`media-<id>`, device pages).
      * @returns The page for the panel configuration; with an unusable player it has no items.
      */
     private async buildMediaPage(
@@ -420,9 +466,10 @@ export class AdminConfiguration extends BaseClass {
                 : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                 item,
-                { card: 'cardMedia', uniqueName: entry.uniqueName },
+                { card: 'cardMedia', uniqueName: entry.uniqueName, alwaysOn },
                 [],
             );
+            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
@@ -502,7 +549,7 @@ export class AdminConfiguration extends BaseClass {
 
             // Create page configuration based on card type
             let newPage: PageBase;
-            // pages generated from the page items (`media-<id>`), added once the page itself is in
+            // pages generated from the page items (`media-<id>`, device pages), added once the page itself is in
             const generatedPages: ScriptConfig.PageType[] = [];
 
             switch (entry.card) {
@@ -674,9 +721,10 @@ export class AdminConfiguration extends BaseClass {
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
-                                { card: entry.card, uniqueName: entry.uniqueName },
+                                { card: entry.card, uniqueName: entry.uniqueName, alwaysOn: entry.alwaysOn },
                                 [],
                             );
+                            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
@@ -728,9 +776,10 @@ export class AdminConfiguration extends BaseClass {
                             }
                             const result = await this.adapter.convertAdminPageItemToPageItemConfig(
                                 item,
-                                { card: entry.card, uniqueName: entry.uniqueName },
+                                { card: entry.card, uniqueName: entry.uniqueName, alwaysOn: entry.alwaysOn },
                                 [],
                             );
+                            this.logItemMessages(entry.uniqueName, index, result.unloggedMessages);
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
@@ -905,8 +954,8 @@ export class AdminConfiguration extends BaseClass {
     }
 
     /**
-     * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item)
-     * exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
+     * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item,
+     * the device page of a device item) exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
      * with the admin page as parent (navigation node with the parent on a double press), and the page is
      * recorded as generated - its navigation is read-only in the admin. An existing page of the same name
      * that belongs to this panel is kept (the first one wins, like the deduplication of the script path),

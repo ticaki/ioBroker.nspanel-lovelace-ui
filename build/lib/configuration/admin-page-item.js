@@ -23,6 +23,7 @@ __export(admin_page_item_exports, {
 module.exports = __toCommonJS(admin_page_item_exports);
 var import_Color = require("../const/Color");
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_deviceDetails = require("../types/deviceDetails");
 function hexToScriptColor(color, onInvalidColor) {
   if (!color) {
     return void 0;
@@ -35,9 +36,44 @@ function hexToScriptColor(color, onInvalidColor) {
     return void 0;
   }
 }
+function deviceWithoutShortPressItem(preItem, type) {
+  var _a;
+  let color = import_Color.Color.activated;
+  if (preItem.trueColor) {
+    try {
+      color = import_Color.Color.ConvertHexToRgb(preItem.trueColor);
+    } catch {
+    }
+  }
+  return {
+    native: {
+      type,
+      role: "",
+      itemId: preItem.itemId,
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: preItem.trueIcon || "devices" },
+            color: { type: "const", constVal: color }
+          }
+        },
+        text: { true: { type: "const", constVal: (_a = preItem.name) != null ? _a : "" } },
+        // cardEntities shows the text of a button at the right
+        ...type === "button" ? { text1: { true: { type: "const", constVal: "press" } } } : {}
+      }
+    }
+  };
+}
 function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
-  var _a, _b, _c, _d, _e;
+  var _a, _b, _c, _d, _e, _f;
   let item = void 0;
+  const deviceTap = !preItem.useNative && preItem.device ? (0, import_deviceDetails.deviceShortPressOf)(preItem.device) : void 0;
+  if (deviceTap === "none" || deviceTap === "devicePage" && !((_a = preItem.device) == null ? void 0 : _a.devicePage)) {
+    return deviceWithoutShortPressItem(preItem, "text");
+  }
+  if (deviceTap === "devicePage") {
+    return deviceWithoutShortPressItem(preItem, "button");
+  }
   if (preItem.useNative) {
     const raw = (0, import_adminShareConfig.isRawItemObject)(preItem.native) ? structuredClone(preItem.native) : void 0;
     if (raw) {
@@ -49,7 +85,7 @@ function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
   } else if (preItem.isNavigation) {
     item = {
       navigate: true,
-      targetPage: (_a = preItem.targetPage) != null ? _a : "",
+      targetPage: (_b = preItem.targetPage) != null ? _b : "",
       type: null,
       id: preItem.channelId.valueStateId
     };
@@ -92,12 +128,12 @@ function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
         item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : void 0;
         item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : void 0;
       }
-      item.prefixValue = ((_b = preItem.channelId) == null ? void 0 : _b.prefix) ? preItem.channelId.prefix : void 0;
-      item.suffixValue = ((_c = preItem.channelId) == null ? void 0 : _c.suffix) ? preItem.channelId.suffix : void 0;
-      item.unit = ((_d = preItem.channelId) == null ? void 0 : _d.unit) ? preItem.channelId.unit : void 0;
+      item.prefixValue = ((_c = preItem.channelId) == null ? void 0 : _c.prefix) ? preItem.channelId.prefix : void 0;
+      item.suffixValue = ((_d = preItem.channelId) == null ? void 0 : _d.suffix) ? preItem.channelId.suffix : void 0;
+      item.unit = ((_e = preItem.channelId) == null ? void 0 : _e.unit) ? preItem.channelId.unit : void 0;
       item.useValue = preItem.useValue;
       item.inSel_Alias = preItem.inSel_Alias || void 0;
-      item.modeList = ((_e = preItem.modeList) == null ? void 0 : _e.length) ? preItem.modeList : void 0;
+      item.modeList = ((_f = preItem.modeList) == null ? void 0 : _f.length) ? preItem.modeList : void 0;
       item.filter = typeof preItem.filter === "number" ? preItem.filter : void 0;
       item.useValueConditions = preItem.useValueConditions ? preItem.useValueConditions : void 0;
       item.minValue = typeof preItem.minValue === "number" ? preItem.minValue : void 0;

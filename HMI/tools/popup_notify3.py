@@ -15,7 +15,7 @@ What the script does:
    popupNotify3.
 2. Behind every 'if(tId.txt=="popupNotify")' branch of a pageType switch a branch for popupNotify3 (all 32 pages,
    popupNotify3 itself included).
-3. Font 9.zi replaced: 'mdi-notify-255', utf-8 subset, height 255, the 55 icons of ICONS plus the space. The
+3. Font 9.zi replaced: 'mdi-notify-255', utf-8 subset, height 255, the icons of ICONS (templates/popup-notify3-icons.json) plus the space. The
    codepoints are the ones the adapter sends for these names (src/lib/const/icon_mapping.ts), checked against
    script/icons.json and the icon font 1.zi (font 4). Rendering: MDI path of script/icons.json, the 24 grid fills
    255 x 255 (scale 255/24, no offset), glyph width 255, left/right 0 (like the icon glyphs of 1.zi: width = the

@@ -50,8 +50,9 @@ anstehender Termin, Internet weg.
 - Stil **MDI** (Material Design Icons) wie im übrigen Panel. Google Material Symbols wurden verglichen und verworfen:
   feiner, aber ohne die Warn-Varianten (`-alert`) und ohne Kloschüssel.
 - „Besetzt“ = Parkverbotsschild `cancel` (Ring mit Strich oben links → unten rechts), z. B. rot.
-- Startumfang (55), auf Nutzerwunsch erweiterbar. Maßgebliche Liste (einzige Quelle für Adapter, Admin-Icon-Tab und
-  Generator): `templates/popup-notify3-icons.json`; die Aufzählung hier ist nur die Übersicht:
+- Startumfang 55, um 32 erweitert auf 87 (neue Icons hinten angehängt). Maßgebliche Liste (einzige Quelle für
+  Adapter, Admin-Icon-Tab und Generator): `templates/popup-notify3-icons.json`; die Aufzählung hier ist nur die
+  Übersicht:
   - Allgemein: `alert`, `information-outline`, `doorbell`, `package-variant-closed`, `mailbox-up`, `phone-ring`,
     `shield-alert`, `alarm-light`, `window-open-variant`, `window-open-hinged-variant` (eigenes EU-Fenster),
     `window-shutter-alert`, `door-open`, `garage-open`, `ev-station`, `power-socket-de`, `battery-alert-variant-outline`
@@ -65,12 +66,19 @@ anstehender Termin, Internet weg.
   - Hausgeräte gestört: `washing-machine-alert`, `tumble-dryer-alert`, `dishwasher-alert`, `fridge-alert`,
     `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`
   - Gefahr: `water-alert`, `smoke-detector-alert`, `fire-alert`
+  - Erweiterung (32), erst mit der TFT 6.3.0 (zusammen mit der Geräteseite); auf älterer TFT bleibt das
+    Symbol leer:
+    `garage-variant`, `garage-open-variant`, `chevron-triple-up`, `chevron-triple-down`,
+    `chevron-triple-left`, `chevron-triple-right`, `school`, `gate-open`, `door-sliding-open`, `lock-open-alert`,
+    `car-door`, `garage-alert-variant`, `gate-alert`, `key-alert`, `molecule-co2`, `thermometer-alert`, `heat-wave`,
+    `fan-alert`, `flash-alert`, `car-battery`, `battery-charging-high`, `motion-sensor`, `cctv`, `lightbulb-alert`,
+    `leak`, `water-pump-off`, `pill`, `pill-multiple`, `medication`, `bus-school`, `stove`, `pot-steam`
 - Button-Icons (aus den vorhandenen Fonts, kein zusätzlicher Flash): OK `check-bold`, Bestätigen `check-circle-outline`,
   Später `alarm-snooze`, Öffnen `door-open` / `lock-open-variant-outline`, Ablehnen `close-thick`.
 
 **Speicher**
 - Icon-Font bei 255 px: gemessen ≈ 3,3 KB pro Icon (zum Vergleich 32 px 136 B, 48 px 250 B, 80 px 461 B),
-  55 Icons ≈ 181 KB Flash. Fonts kosten keinen Seiten-RAM.
+  87 Icons ≈ 282 KB Flash (55 waren ≈ 181 KB). Fonts kosten keinen Seiten-RAM.
 
 ## Seite und Protokoll (HMI 6.2.0, Test)
 

@@ -46,6 +46,8 @@ Two checkboxes at the head of the dialog decide which kind of element you get:
 
 On pages with page items the **Kind of item** stands at the very top. **Standard (channel, custom button, navigation)** is everything this section describes. **Alexa timer** turns the item into a timer that shows the timers of an Echo device – instead of the channel field there are **alexa2 instance** and **Echo device**, plus **Show** (**Timer** or **Alarm**, for an alarm also **Which alarm**), name, icons and colours. With **Is a navigation** ticked, **Alexa timer** is locked. Details under [timer popup](popupTimer#7-alexa-timer-alexa2). On a media page with alexa2 there is also the toolbar item **Timer** for this, which follows the Echo the page currently controls, see [Media page – Timer (Alexa only)](cardMedia#timer-alexa-only).
 
+On grid and entities pages there is a third kind, **Device with details**: the item shows any device from the object tree, a long press opens a detail page with its values or a device page of its own. Details under [Device with details and device page](deviceDetails).
+
 #### The target page
 
 With *Is a navigation* ticked, the field **Target page** appears. It lists the pages this panel knows about — the page itself is taken out of the list, `main` comes first, the rest alphabetically. The field also accepts a freely typed name; handy for a page that does not exist yet, and also the place where a typo goes unnoticed.

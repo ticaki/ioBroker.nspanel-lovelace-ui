@@ -436,6 +436,8 @@ src-web/
 export interface ParseContext {
     pageType: string;            // aktiver pageType (z. B. 'cardGrid2')
     pageArgs: string[];          // Argumente hinter pageType~…
+    model?: PanelModel;          // Panel-Modell (hello); fehlt = eu. Für Nachrichten, deren Felder vom Modell
+                                 // abhängen (Zusatz-Slots der Geräteseiten auf web-l/web-p)
 }
 
 export interface CardProps<M> {

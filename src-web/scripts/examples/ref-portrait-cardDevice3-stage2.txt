@@ -1,0 +1,6 @@
+# cardDevice3 "ID.3" in stage 2 with 7 status icons (TFT device13): reference assignment of the docs (doc/Pictures/device-page/BILDER.md)
+# us-p: doc/Pictures/device-page/<model>-cardDevice3-stage2.png
+pageType~cardDevice3
+entityUpd~ID.3~button~bUp~~17299~~~~~~~~~1~9?0~~2047~ID.3~Lädt an Wallbox, 11 kW - voll~~~~~~~~~~~~~1~9?3~~53247~Temperatur~21,5°C~1~9?4~~2047~Verriegelt~an~1~9?5~~65535~Ladeleistung~11kW~1~9?6~~65535~Kilometer~23456km~1~9?7~~2047~Klima~1~1~9?8~~2047~Laden~1~1~9?info~~65535~~2
+devIcons~1~9?c1~~2047~1~9?c2~~2016~1~9?c3~~2047~1~9?c4~~65504~1~9?c5~~35921~1~9?c6~~65535~1~9?c7~~2016~~~~
+@sleep 300

@@ -1,0 +1,5 @@
+# cardDevice2 on web-l: 4 info tiles / rows and 3 buttons: the additional slots info, button, button
+# behind the info icon (doc/Pictures/device-page/web-l-cardDevice2.png)
+pageType~cardDevice2
+entityUpd~Waschküche~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~1~9?0?main~~1311~Waschm.~Schleudern, noch 23 min - Fertig um 14:35~1~9?0?1~~65535~Restzeit~1:23~1~9?0?2~~1311~Fortschritt 62 %~62~1~9?0?3~~65535~Programm~Baumwolle~1~9?0?4~~64608~Temperatur~60 °C~1~9?0?5~~65535~Drehzahl~1400~1~9?0?6~~65535~Pause~~1~9?0?info~~65535~~~1~9?0?9~~1311~Wasser~48 l~1~9?0?10~~63488~Stopp~~1~9?0?11~~65535~Später~
+@sleep 300

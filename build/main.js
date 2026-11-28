@@ -53,6 +53,10 @@ var import_nspanelts_import_runner = require("./lib/configuration/nspanelts-impo
 var import_pageDump = require("./lib/types/pageDump");
 var import_script_to_admin_runner = require("./lib/configuration/script-to-admin-runner");
 var import_admin_page_item = require("./lib/configuration/admin-page-item");
+var import_admin_device_details = require("./lib/configuration/admin-device-details");
+var import_device_page = require("./lib/pages/device-page");
+var import_type_pageItem = require("./lib/types/type-pageItem");
+var import_deviceDetails = require("./lib/types/deviceDetails");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
@@ -633,7 +637,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       }
       await this.onMqttConnect();
-      await this.delay(1e3);
+      await this.delay(1);
       for (const id in states) {
         if (id.endsWith(".info.isOnline") && !(0, import_virtual_panel_manager.legacyWebPanelTree)(id.replace(`${this.namespace}.`, ""))) {
           await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
@@ -1314,6 +1318,15 @@ class NspanelLovelaceUi extends utils.Adapter {
           const message = obj.message;
           const id = message && typeof message === "object" && "id" in message ? message.id : void 0;
           const result = await (0, import_admin_media.mediaPlayerInfo)(this, id);
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, result, obj.callback);
+          }
+          break;
+        }
+        case import_deviceDetails.SENDTO_GET_DEVICE_DETAILS_COMMAND: {
+          const message = obj.message;
+          const id = message && typeof message === "object" && "id" in message ? message.id : void 0;
+          const result = await (0, import_admin_device_details.deviceDetailsInfo)(this, id);
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, result, obj.callback);
           }
@@ -3301,11 +3314,20 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
+    var _a, _b, _c, _d, _e;
     let error = void 0;
+    const unloggedMessages = [];
     let pageItem = void 0;
     let pageConfig = void 0;
     if (preItem && prePage) {
       const manager = new import_config_manager.ConfigManager(this);
+      const shortPress = preItem.device && !preItem.useNative ? (0, import_deviceDetails.deviceShortPressOf)(preItem.device) : void 0;
+      if (!preItem.name && preItem.device && (shortPress === "none" || shortPress === "navigation" || shortPress === "devicePage")) {
+        const device = await this.getForeignObjectAsync(preItem.device.deviceId);
+        const deviceName = (_a = device == null ? void 0 : device.common) == null ? void 0 : _a.name;
+        const name = typeof deviceName === "string" ? deviceName : deviceName ? (_d = (_c = deviceName[(_b = this.language) != null ? _b : "en"]) != null ? _c : deviceName.en) != null ? _d : "" : "";
+        preItem = { ...preItem, name: name || preItem.device.deviceId.split(".").pop() };
+      }
       const item = (0, import_admin_page_item.adminPageItemToScriptItem)(preItem, (color) => this.log.warn(`Invalid color format: ${color}`));
       if (!item) {
         error = "Invalid/Empty item native configuration!";
@@ -3322,11 +3344,57 @@ class NspanelLovelaceUi extends utils.Adapter {
         messages = result.messages;
         pageItem = result.itemConfig;
         pageConfig = result.pageConfig;
+        const deviceDetails = preItem.useNative ? void 0 : (0, import_deviceDetails.deviceDetailsRuntimeOf)(preItem.device);
+        if (pageItem && deviceDetails) {
+          pageItem.deviceDetails = deviceDetails;
+          if (deviceDetails.devicePage && !pageConfig) {
+            const uniqueName = (0, import_device_page.devicePageName)(prePage.uniqueName, deviceDetails.deviceId);
+            const built = await (0, import_device_page.buildDevicePage)(
+              uniqueName,
+              (_e = prePage.alwaysOn) != null ? _e : "none",
+              {
+                deviceId: deviceDetails.deviceId,
+                entries: deviceDetails.entries,
+                page: deviceDetails.devicePage,
+                main: (0, import_type_pageItem.isPageItemWithoutTemplate)(pageItem) ? pageItem : void 0
+              },
+              {
+                getObject: async (id) => {
+                  var _a2;
+                  return (_a2 = await this.getForeignObjectAsync(id)) != null ? _a2 : null;
+                },
+                translate: (key) => this.library.getTranslation(key),
+                language: this.library.getLocalLanguage(),
+                pageItemOf: async (slotItem) => {
+                  const scriptItem = (0, import_admin_page_item.adminPageItemToScriptItem)(
+                    slotItem,
+                    (color) => this.log.warn(`Invalid color format: ${color}`)
+                  );
+                  return scriptItem ? (await manager.getPageItemConfig(
+                    scriptItem,
+                    // a slot is a cardGrid cell
+                    {
+                      type: "cardGrid",
+                      uniqueName: prePage.uniqueName,
+                      heading: "",
+                      items: []
+                    },
+                    []
+                  )).itemConfig : void 0;
+                }
+              }
+            );
+            pageItem.devicePageName = uniqueName;
+            pageConfig = { type: void 0, uniqueName, native: built.page };
+            messages.push(...built.messages);
+            unloggedMessages.push(...built.messages);
+          }
+        }
       } catch (e) {
         error = `Error in configuration: ${e.message}`;
       }
     }
-    return { pageItem, messages, error, pageConfig };
+    return { pageItem, messages, error, pageConfig, unloggedMessages };
   }
 }
 if (require.main !== module) {

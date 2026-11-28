@@ -53,6 +53,13 @@ export class BaseTriggeredPage extends BaseClass {
     resetLastMessage(): void {
         this.lastMessage = '';
     }
+    /**
+     * @param payload a message
+     * @returns true when sendToPanel would drop it: the same as the last message and the duplicate filter is on
+     */
+    protected isLastMessage(payload: string): boolean {
+        return this.filterDuplicateMessages && payload == this.lastMessage;
+    }
 
     constructor(card: BaseTriggeredPageInterface, alwaysOn: AlwaysOnMode = 'none') {
         super(card.adapter, card.name);

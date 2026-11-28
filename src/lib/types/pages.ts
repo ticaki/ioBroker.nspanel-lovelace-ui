@@ -191,6 +191,12 @@ export type DeviceRole =
     | 'textNotIcon'
     /** text item whose value is a name (e.g. a page name): shown as it is, not looked up in the translations */
     | 'textRawValue'
+    /** a generated row of the detail page of a device (device-details.ts): a tap on a button row writes true */
+    | 'deviceDetail'
+    /** the info icon of the device page of a device (device-page.ts): a tap opens the detail page */
+    | 'devicePageInfo'
+    /** a progress slot of the device page (device-page.ts): field 6 is the value scaled to 0-100 */
+    | 'devicePageProgress'
     | 'timer'
     | 'window'
     | 'info'
@@ -238,7 +244,30 @@ export type PageOthersConfigs =
     | cardPopup2DataItemOptions
     | cardQRDataItemOptions
     | cardChartDataItemOptions
-    | cardChartPieDataItemOptions;
+    | cardChartPieDataItemOptions
+    | cardDeviceDataItemOptions;
+
+/** the HMI pages of the device page (device-page.ts) */
+export type cardDeviceTypes = Extract<PageTypeCards, 'cardDevice1' | 'cardDevice2' | 'cardDevice3'>;
+
+/**
+ * device page of a device item (device-page.ts buildDevicePage): its page items are the elements - main, the slots of
+ * the layout (the card says the layout), info, the hidden status item and the places of the status icon grid (an
+ * empty item = empty slot / no info / no status / a place the stage does not show), behind them the extra slots of
+ * the web models when the page has them
+ */
+export type cardDeviceDataItemOptions = {
+    card: cardDeviceTypes;
+    /** name of the device as const headline */
+    data: { headline: NSPanel.DataItemsOptions };
+    /**
+     * index of the slots (0 = slot 1, N = extra slot 1) that show an alias channel: their field 6 is fitted to the
+     * kind of the slot
+     */
+    channelSlots?: number[];
+    /** the stage of the status icon grid (deviceDetails.ts devicePageStageOf), missing = 0: no grid */
+    statusStage?: 0 | 1 | 2 | 3;
+};
 
 type PageBaseTemplate = {
     uniqueID: string;

@@ -9,12 +9,27 @@ import { SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
 import { cycleValueToState, nextCycleIndex } from '../const/screensaver-cycle';
 import { isDataItem, type Dataitem } from '../controller/data-item';
 import { type ChangeTypeOfKeys, type DeviceRole, type PageBase } from '../types/pages';
-import { isCardEntitiesType, isCardGridType } from '../types/function-and-const';
+import { isCardDeviceType, isCardEntitiesType, isCardGridType } from '../types/function-and-const';
 import type { Screensaver } from './screensaver';
 import { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { PageMedia } from './pageMedia';
 import { findAlexaPlaylistState } from '../types/adminShareConfig';
 import type { NSPanel } from '../types/NSPanel';
+import {
+    DEVICE_DETAIL_ROW_ROLE,
+    DEVICE_PAGE_INFO_ROLE,
+    DEVICE_PAGE_PROGRESS_ROLE,
+    devicePageProgressPercent,
+    type DeviceDetailsRuntime,
+} from '../types/deviceDetails';
+import {
+    beginDeviceDetailsRun,
+    DEVICE_DETAIL_PAGE_PREFIX,
+    deviceDetailPageConfig,
+    deviceDetailRows,
+    isLatestDeviceDetailsRun,
+} from './device-details';
+import { reportMissingDevicePageTarget, supportsCardDevice } from './device-page';
 import {
     alarmClockOf,
     isCountdownCommon,
@@ -408,8 +423,10 @@ export class PageItem extends BaseTriggeredPage {
                     if (this.config.role === 'volume.mute') {
                         message.type = 'light';
                     } else {
+                        // a plain light / socket has no popup: on the grid pages and on the device page (where a
+                        // light would open popupLight when held) it is a switch
                         message.type =
-                            isCardGridType(this.parent.card) &&
+                            (isCardGridType(this.parent.card) || isCardDeviceType(this.parent.card)) &&
                             (this.config.role === 'light' || this.config.role === 'socket')
                                 ? 'switch'
                                 : this.parent.basePanel.overrideLightPopup
@@ -715,6 +732,18 @@ export class PageItem extends BaseTriggeredPage {
                                     } else {
                                         message.optionalValue = '';
                                     }
+                                    break;
+                                }
+                                case DEVICE_PAGE_PROGRESS_ROLE: {
+                                    // progress slot of the device page: the value scaled to 0-100
+                                    const progress = item.entity2?.value;
+                                    message.optionalValue = String(
+                                        devicePageProgressPercent(
+                                            progress ? await progress.getNumber() : null,
+                                            progress?.common.min,
+                                            progress?.common.max,
+                                        ),
+                                    );
                                     break;
                                 }
                                 default: {
@@ -2749,6 +2778,12 @@ export class PageItem extends BaseTriggeredPage {
         if (value === undefined || this.dataItems === undefined) {
             return false;
         }
+        // device with details: the long press opens the device page or the detail page, before every other long press
+        // of the item
+        if (action === 'button' && this.config?.deviceDetails) {
+            await this.openDeviceOf(this.config.deviceDetails);
+            return true;
+        }
         const entry = this.dataItems;
         if (action.startsWith('mode-')) {
             action = 'mode';
@@ -2780,6 +2815,154 @@ export class PageItem extends BaseTriggeredPage {
             }
         }
         return done;
+    }
+
+    /**
+     * What the long press of a device item opens (and its short tap `devicePage`): the device page when the item has
+     * one and the panel can show it, else the detail page. The device page is a page of the panel (built at the start
+     * like every other page): the navigation opens it, back leads to the page of the item (its parent).
+     *
+     * @param details the device part of the item
+     */
+    private async openDeviceOf(details: DeviceDetailsRuntime): Promise<void> {
+        const name = this.config?.devicePageName;
+        const navigation = this.parent.basePanel.navigation;
+        if (details.devicePage && name && this.panelHasDevicePage() && navigation.hasTarget(name)) {
+            await navigation.setTargetPageByName(name);
+        } else {
+            await this.openDeviceDetails(details);
+        }
+    }
+
+    /**
+     * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardEntities page
+     * generated from the ticked states, below the page of the item (`directChildPage`, back leads here again). A
+     * detail page opened before by an item of the page is replaced - after the new one is shown, never while it is
+     * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
+     *
+     * The info item of a device page opens it the same way: below the device page.
+     *
+     * @param details the device part of the item
+     */
+    private async openDeviceDetails(details: DeviceDetailsRuntime): Promise<void> {
+        const parent = this.parent;
+        const panel = parent.basePanel;
+        const run = beginDeviceDetailsRun(panel);
+        const { headline, rows } = await deviceDetailRows(
+            details,
+            id => panel.statesControler.getObjectAsync(id),
+            key => this.library.getTranslation(key),
+            this.library.getLocalLanguage(),
+            panel.info.nspanel.model,
+        );
+        if (!isLatestDeviceDetailsRun(panel, run) || panel.getActivePage() !== parent) {
+            return;
+        }
+        if (rows.length === 0) {
+            this.log.warn(`Device details of ${details.deviceId}: none of the chosen states exists (any more)!`);
+        }
+        // short id: the ids of the rows (<page>?<n>) must fit the id buffers of the HMI
+        const id = `${DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
+        await this.showGeneratedPage(
+            run,
+            { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: 'cardEntities' },
+            deviceDetailPageConfig(id, headline, parent.alwaysOn, rows),
+        );
+    }
+
+    /**
+     * @returns true if the panel of this item can show the device page (cardDevice1..3), else the detail page opens
+     */
+    private panelHasDevicePage(): boolean {
+        const panel = this.parent.basePanel;
+        return supportsCardDevice({
+            model: panel.info.nspanel.model,
+            isVirtual: panel.isVirtual,
+            displayVersion: panel.info.nspanel.displayVersion ?? '',
+        });
+    }
+
+    /**
+     * Creates the generated detail page below the page of this item and shows it. The child page opened before is
+     * deleted after the new one is shown, never while it is active.
+     *
+     * @param run the number of this opening (beginDeviceDetailsRun)
+     * @param pageInterface the page
+     * @param pageConfig its configuration
+     */
+    private async showGeneratedPage(run: number, pageInterface: PageInterface, pageConfig: PageBase): Promise<void> {
+        const parent = this.parent;
+        const panel = parent.basePanel;
+        const page = panel.newPage(pageInterface, pageConfig);
+        if (!page) {
+            return;
+        }
+        await page.init();
+        if (!isLatestDeviceDetailsRun(panel, run) || panel.getActivePage() !== parent || this.adapter.unload) {
+            await page.delete();
+            return;
+        }
+        const old = parent.directChildPage;
+        parent.directChildPage = page;
+        page.directParentPage = parent;
+        await panel.setActivePage(page);
+        if (old && old !== page && old !== panel.getActivePage()) {
+            // unlink first: delete() of a child page clears directChildPage of its parent
+            old.directParentPage = undefined;
+            await old.delete();
+        }
+    }
+
+    /**
+     * @returns the target page of the short tap (`setNavi`) of an element of a device page, '' = none
+     */
+    private async devicePageTargetOf(): Promise<string> {
+        const data = this.dataItems?.data;
+        if (!isCardDeviceType(this.parent.card) || !data || !('setNavi' in data) || !data.setNavi) {
+            return '';
+        }
+        return (await data.setNavi.getString()) ?? '';
+    }
+
+    /**
+     * The tap on an element of a device page that navigates (`setNavi`): the normal way of a navigation item - the
+     * navigation of the panel opens the page and takes its position, so the arrows of the target page are those of
+     * its node. Nothing else happens (the state of the slot is not switched). A target that is no node of this panel
+     * does nothing and is reported once per panel and target.
+     *
+     * @param target name of the target page
+     */
+    private async navigateFromDevicePage(target: string): Promise<void> {
+        const panel = this.parent.basePanel;
+        if (!panel.navigation.hasTarget(target)) {
+            if (reportMissingDevicePageTarget(panel, target)) {
+                this.log.warn(
+                    `Device page ${this.parent.name}: the target page "${target}" of element ${this.id} is not assigned to panel ${panel.name} - the tap does nothing!`,
+                );
+            }
+            return;
+        }
+        await panel.navigation.setTargetPageByName(target);
+    }
+
+    /**
+     * A tap (`button`) on a row of the detail page of a device: a button (`read: false`) is written with true; anything
+     * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities.
+     */
+    private async onDeviceDetailTap(): Promise<void> {
+        const entry = this.dataItems;
+        if (entry?.type === 'button') {
+            const set = entry.data.entity1?.set;
+            if (set?.writeable) {
+                await set.setStateTrue();
+                return;
+            }
+            // a button slot of the device page with a writable boolean: switched
+            const value = entry.data.entity1?.value;
+            if (value?.writeable) {
+                await value.setStateFlip();
+            }
+        }
     }
 
     /**
@@ -2835,6 +3018,29 @@ export class PageItem extends BaseTriggeredPage {
                 break;
 
             case 'button': {
+                // an element of a device page whose tap navigates: nothing else happens
+                const devicePageTarget = await this.devicePageTargetOf();
+                if (devicePageTarget) {
+                    await this.navigateFromDevicePage(devicePageTarget);
+                    break;
+                }
+                if (entry.role === DEVICE_DETAIL_ROW_ROLE) {
+                    await this.onDeviceDetailTap();
+                    break;
+                }
+                // device with details, short tap "open the device page": like the long press. The main item of the
+                // device page has no device page of its own - a tap on it does nothing.
+                if (this.config?.deviceDetails?.devicePage?.shortPress === 'devicePage') {
+                    await this.openDeviceOf(this.config.deviceDetails);
+                    break;
+                }
+                // the info icon of a device page: the detail page, back leads to the device page
+                if (entry.role === DEVICE_PAGE_INFO_ROLE) {
+                    if (this.config?.deviceDetails) {
+                        await this.openDeviceDetails(this.config.deviceDetails);
+                    }
+                    break;
+                }
                 if (this.parent.isScreensaver && !(this.parent as Screensaver).isIndicatorKey(this)) {
                     // TFT 6.0.8+ sends the taps as value: the screensaver only passes keys
                     // (Screensaver.onIndicatorTap); an older TFT sends every tap here - an indicator without an
@@ -2975,7 +3181,12 @@ export class PageItem extends BaseTriggeredPage {
                     // writable (shown state, setTrue/setFalse) is never switched (Screensaver.isIndicatorKey)
                     const implicit = !this.parent.isScreensaver;
                     if (implicit && item.entity1 && item.entity1.set && item.entity1.set.writeable) {
-                        await item.entity1.set.setStateFlip();
+                        // device with details: a button of the device (`read: false`) is pressed, not switched
+                        if (this.config?.deviceDetails && item.entity1.set.common.read === false) {
+                            await item.entity1.set.setStateTrue();
+                        } else {
+                            await item.entity1.set.setStateFlip();
+                        }
                         break;
                     }
                     if (

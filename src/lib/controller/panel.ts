@@ -26,6 +26,8 @@ import { PageMedia } from '../pages/pageMedia';
 import type { IClientPublishOptions } from 'mqtt';
 import type { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
+import { PageDevice } from '../pages/pageDevice';
+import { CARD_DEVICE_MODELS, withoutDevicePages } from '../pages/device-page';
 import { Navigation, SCREENSAVER_NAV_INDEX, type NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
@@ -571,6 +573,14 @@ export class Panel extends BaseClass {
             }
             return false;
         });
+        if (!CARD_DEVICE_MODELS.has(this.info.nspanel.model)) {
+            // a model without device pages (today every model has them): its device items open the detail page
+            // (PageItem.openDeviceOf), the page and its node would only be a broken page
+            ({ pages: options.pages, navigation: options.navigation } = withoutDevicePages(
+                options.pages,
+                options.navigation,
+            ));
+        }
         this.info.internal.pageCount = options.pages.length;
         this.info.internal.servicePageCount = systemPages.length;
         // clones: pages and nodes are changed per panel (Page.init() replaces the item configs, Navigation
@@ -645,6 +655,11 @@ export class Panel extends BaseClass {
                 return new PageGrid(pmconfig, pageConfig);
             }
 
+            case 'cardDevice1':
+            case 'cardDevice2':
+            case 'cardDevice3': {
+                return new PageDevice(pmconfig, pageConfig);
+            }
             case 'cardThermo': {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PageThermo(pmconfig, pageConfig);
@@ -1013,7 +1028,8 @@ export class Panel extends BaseClass {
             );
         }
 
-        await this.adapter.delay(100);
+        // 1 ms: only gives the event loop some air, no need to wait longer
+        await this.adapter.delay(1);
 
         const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
 
@@ -2625,8 +2641,10 @@ export class Panel extends BaseClass {
             this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
             this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
             this.sendRules();
-            // wait 0.1s to have tasmota time to be ready
-            await this.adapter.delay(100);
+            // the answers from tasmota (STATUS0, STATUS10, SENSOR, nlui_driver_version, POWER) write their info
+            // themselves when they arrive (writeInfo or their own state), so we don't wait for them here -
+            // 1 ms only gives the event loop some air
+            await this.adapter.delay(1);
         }
         await this.writeInfo();
 
@@ -2793,6 +2811,12 @@ export class Panel extends BaseClass {
                                 event,
                             )
                         ) {
+                            break;
+                        }
+                        // cardEntities: the left part of an item (icon / name) is tapped on purpose - without a long
+                        // press of its own nothing happens there; on the grid pages it may just have been a long
+                        // touch and acts like the short press
+                        if (!Panel.longPressFallsBackToShortPress(this.getActivePage().card)) {
                             break;
                         }
                     }
@@ -3511,6 +3535,18 @@ export class Panel extends BaseClass {
             }
         }
         return null;
+    }
+
+    /**
+     * Whether a `buttonPress3` of an item that has no long press of its own acts like the short press. On the grid
+     * pages a long press may just be a finger that lay too long; on cardEntities the left part of an item is tapped on
+     * purpose (doc/ideas/device-details/README.md) - there nothing happens.
+     *
+     * @param card page type of the active page
+     * @returns false for cardEntities, true otherwise
+     */
+    static longPressFallsBackToShortPress(card: string): boolean {
+        return card !== 'cardEntities';
     }
 
     /**

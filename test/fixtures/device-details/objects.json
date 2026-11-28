@@ -1,0 +1,2899 @@
+{
+ "shelly.0.shellyplus1pm#000000000001#1": {
+  "type": "device",
+  "states": [
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.BLE.Event",
+    "name": "Event",
+    "role": "json",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.BLE.scriptVersion",
+    "name": "scriptVersion",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Cloud.enabled",
+    "name": "enabled",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.humidity100",
+    "name": "humidity100",
+    "role": "value.humidity",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.input100analog",
+    "name": "input100analog",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.input100digital",
+    "name": "input100digital",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.input101analog",
+    "name": "input101analog",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.input101digital",
+    "name": "input101digital",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature100C",
+    "name": "temperature100C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature100F",
+    "name": "temperature100F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature101C",
+    "name": "temperature101C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature101F",
+    "name": "temperature101F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature102C",
+    "name": "temperature102C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature102F",
+    "name": "temperature102F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature103C",
+    "name": "temperature103C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature103F",
+    "name": "temperature103F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature104C",
+    "name": "temperature104C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.temperature104F",
+    "name": "temperature104F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Ext.voltmeter100",
+    "name": "voltmeter100",
+    "role": "value.voltage",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "V"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Input0.ChannelName",
+    "name": "ChannelName",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Input0.Event",
+    "name": "Event",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Input0.InputEnable",
+    "name": "InputEnable",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Input0.InputInverted",
+    "name": "InputInverted",
+    "role": "switch",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Input0.InputType",
+    "name": "InputType",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Input0.Status",
+    "name": "Status",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Mqtt.clientId",
+    "name": "clientId",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Mqtt.rpcNotifications",
+    "name": "rpcNotifications",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Mqtt.statusNotifications",
+    "name": "statusNotifications",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Mqtt.topicPrefix",
+    "name": "topicPrefix",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.AutoTimerOff",
+    "name": "AutoTimerOff",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.AutoTimerOffDelay",
+    "name": "AutoTimerOffDelay",
+    "role": "level.timer",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "s"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.AutoTimerOn",
+    "name": "AutoTimerOn",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.AutoTimerOnDelay",
+    "name": "AutoTimerOnDelay",
+    "role": "level.timer",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "s"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.ChannelName",
+    "name": "ChannelName",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.Current",
+    "name": "Current",
+    "role": "value.current",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "A"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.Energy",
+    "name": "Energy",
+    "role": "value.energy",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "Wh"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.Frequency",
+    "name": "Frequency",
+    "role": "value.frequency",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "Hz"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.InitialState",
+    "name": "InitialState",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.InputMode",
+    "name": "InputMode",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.LimitCurrent",
+    "name": "LimitCurrent",
+    "role": "level.current.max",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "A"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.LimitPower",
+    "name": "LimitPower",
+    "role": "level.max",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "W"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.LimitVoltage",
+    "name": "LimitVoltage",
+    "role": "level.voltage.max",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "V"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.Power",
+    "name": "Power",
+    "role": "value.power",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "W"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.PowerFactor",
+    "name": "PowerFactor",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.ResetCounters",
+    "name": "ResetCounters",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.ReturnedEnergy",
+    "name": "ReturnedEnergy",
+    "role": "value.energy.produced",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "Wh"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.Switch",
+    "name": "Switch",
+    "role": "switch",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.Voltage",
+    "name": "Voltage",
+    "role": "value.voltage",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "V"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.source",
+    "name": "source",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.temperatureC",
+    "name": "temperatureC",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.temperatureF",
+    "name": "temperatureF",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Sys.debugEnabled",
+    "name": "debugEnabled",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Sys.deviceMode",
+    "name": "deviceMode",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Sys.eco",
+    "name": "eco",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Sys.lat",
+    "name": "lat",
+    "role": "value.gps.latitude",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Sys.lon",
+    "name": "lon",
+    "role": "value.gps.longitude",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Sys.sntp",
+    "name": "sntp",
+    "role": "text.url",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Sys.timezone",
+    "name": "timezone",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.WiFi.apEnabled",
+    "name": "apEnabled",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.authEnabled",
+    "name": "authEnabled",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.class",
+    "name": "class",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.firmware",
+    "name": "firmware",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.firmwareupdate",
+    "name": "firmwareupdate",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.firmwareupdateProgress",
+    "name": "firmwareupdateProgress",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.gen",
+    "name": "gen",
+    "role": "state",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.hostname",
+    "name": "hostname",
+    "role": "info.ip",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.id",
+    "name": "id",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.knowledgeBaseUrl",
+    "name": "knowledgeBaseUrl",
+    "role": "url.blank",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.model",
+    "name": "model",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.name",
+    "name": "name",
+    "role": "info.name",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.online",
+    "name": "online",
+    "role": "indicator.reachable",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.protocol",
+    "name": "protocol",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.reboot",
+    "name": "reboot",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.rssi",
+    "name": "rssi",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "dBm"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.type",
+    "name": "type",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.uptime",
+    "name": "uptime",
+    "role": "value.interval",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "sec"
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.version",
+    "name": "version",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.versionShort",
+    "name": "versionShort",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus1pm#000000000001#1.Relay0.Deep.Power",
+    "name": "Power",
+    "role": "value.power",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "W"
+   }
+  ]
+ },
+ "shelly.0.shellyplus2pm#000000000002#1": {
+  "type": "device",
+  "states": [
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.BLE.Event",
+    "name": "Event",
+    "role": "json",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.BLE.scriptVersion",
+    "name": "scriptVersion",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cloud.enabled",
+    "name": "enabled",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Calibrate",
+    "name": "Calibrate",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.ChannelName",
+    "name": "ChannelName",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Close",
+    "name": "Close",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Current",
+    "name": "Current",
+    "role": "value.current",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "A"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Duration",
+    "name": "Duration",
+    "role": "level.timer",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "s"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Energy",
+    "name": "Energy",
+    "role": "value.energy",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "Wh"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.FavoritePos1.GoTo",
+    "name": "GoTo",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.FavoritePos1.Pos",
+    "name": "Pos",
+    "role": "level.blind",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.FavoritePos2.GoTo",
+    "name": "GoTo",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.FavoritePos2.Pos",
+    "name": "Pos",
+    "role": "level.blind",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.FavoritePos3.GoTo",
+    "name": "GoTo",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.FavoritePos3.Pos",
+    "name": "Pos",
+    "role": "level.blind",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.InitialState",
+    "name": "InitialState",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.InputMode",
+    "name": "InputMode",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.InputSwap",
+    "name": "InputSwap",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.LimitCurrent",
+    "name": "LimitCurrent",
+    "role": "level.current.max",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "A"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.LimitPower",
+    "name": "LimitPower",
+    "role": "level.max",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "W"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.LimitVoltage",
+    "name": "LimitVoltage",
+    "role": "level.voltage.max",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "V"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Open",
+    "name": "Open",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.PosControl",
+    "name": "PosControl",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Position",
+    "name": "Position",
+    "role": "level.blind",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Power",
+    "name": "Power",
+    "role": "value.power",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "W"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.SlatPos",
+    "name": "SlatPos",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Status",
+    "name": "Status",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Stop",
+    "name": "Stop",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.TargetPosition",
+    "name": "TargetPosition",
+    "role": "level.blind",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.Voltage",
+    "name": "Voltage",
+    "role": "value.voltage",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "V"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.source",
+    "name": "source",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.temperatureC",
+    "name": "temperatureC",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Cover0.temperatureF",
+    "name": "temperatureF",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.humidity100",
+    "name": "humidity100",
+    "role": "value.humidity",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.input100analog",
+    "name": "input100analog",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.input100digital",
+    "name": "input100digital",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.input101analog",
+    "name": "input101analog",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.input101digital",
+    "name": "input101digital",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature100C",
+    "name": "temperature100C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature100F",
+    "name": "temperature100F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature101C",
+    "name": "temperature101C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature101F",
+    "name": "temperature101F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature102C",
+    "name": "temperature102C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature102F",
+    "name": "temperature102F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature103C",
+    "name": "temperature103C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature103F",
+    "name": "temperature103F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature104C",
+    "name": "temperature104C",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.temperature104F",
+    "name": "temperature104F",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°F"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Ext.voltmeter100",
+    "name": "voltmeter100",
+    "role": "value.voltage",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "V"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input0.ChannelName",
+    "name": "ChannelName",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input0.Event",
+    "name": "Event",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input0.InputEnable",
+    "name": "InputEnable",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input0.InputInverted",
+    "name": "InputInverted",
+    "role": "switch",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input0.InputType",
+    "name": "InputType",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input0.Status",
+    "name": "Status",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input1.ChannelName",
+    "name": "ChannelName",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input1.Event",
+    "name": "Event",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input1.InputEnable",
+    "name": "InputEnable",
+    "role": "switch.enable",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input1.InputInverted",
+    "name": "InputInverted",
+    "role": "switch",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input1.InputType",
+    "name": "InputType",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Input1.Status",
+    "name": "Status",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Mqtt.clientId",
+    "name": "clientId",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Mqtt.rpcNotifications",
+    "name": "rpcNotifications",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Mqtt.statusNotifications",
+    "name": "statusNotifications",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Mqtt.topicPrefix",
+    "name": "topicPrefix",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Sys.debugEnabled",
+    "name": "debugEnabled",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Sys.deviceMode",
+    "name": "deviceMode",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Sys.eco",
+    "name": "eco",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Sys.lat",
+    "name": "lat",
+    "role": "value.gps.latitude",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Sys.lon",
+    "name": "lon",
+    "role": "value.gps.longitude",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Sys.sntp",
+    "name": "sntp",
+    "role": "text.url",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.Sys.timezone",
+    "name": "timezone",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.WiFi.apEnabled",
+    "name": "apEnabled",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.authEnabled",
+    "name": "authEnabled",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.class",
+    "name": "class",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.firmware",
+    "name": "firmware",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.firmwareupdate",
+    "name": "firmwareupdate",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.firmwareupdateProgress",
+    "name": "firmwareupdateProgress",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.gen",
+    "name": "gen",
+    "role": "state",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.hostname",
+    "name": "hostname",
+    "role": "info.ip",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.id",
+    "name": "id",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.knowledgeBaseUrl",
+    "name": "knowledgeBaseUrl",
+    "role": "url.blank",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.model",
+    "name": "model",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.name",
+    "name": "name",
+    "role": "info.name",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.online",
+    "name": "online",
+    "role": "indicator.reachable",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.protocol",
+    "name": "protocol",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.reboot",
+    "name": "reboot",
+    "role": "button",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.rssi",
+    "name": "rssi",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "dBm"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.type",
+    "name": "type",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.uptime",
+    "name": "uptime",
+    "role": "value.interval",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "sec"
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.version",
+    "name": "version",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "shelly.0.shellyplus2pm#000000000002#1.versionShort",
+    "name": "versionShort",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   }
+  ]
+ },
+ "sonoff.0.Plug_01": {
+  "type": "channel",
+  "states": [
+   {
+    "id": "sonoff.0.Plug_01.BASE",
+    "name": "BASE",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Backlog",
+    "name": "Backlog",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.CurrentSetCal",
+    "name": "CurrentSetCal",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.DeviceName",
+    "name": "DeviceName",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_ApparentPower",
+    "name": "ENERGY_ApparentPower",
+    "role": "value.power.apparent",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "VA"
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Current",
+    "name": "ENERGY_Current",
+    "role": "value.current",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "A"
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Factor",
+    "name": "ENERGY_Factor",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Period",
+    "name": "ENERGY_Period",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Power",
+    "name": "ENERGY_Power",
+    "role": "value.power.consumption",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "W"
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_ReactivePower",
+    "name": "ENERGY_ReactivePower",
+    "role": "value.power.reactive",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "var"
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Today",
+    "name": "ENERGY_Today",
+    "role": "value.energy.consumed",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "kWh"
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Total",
+    "name": "ENERGY_Total",
+    "role": "value.power.consumption",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "kWh"
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_TotalStartTime",
+    "name": "ENERGY_TotalStartTime",
+    "role": "value",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Voltage",
+    "name": "ENERGY_Voltage",
+    "role": "value.voltage",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "V"
+   },
+   {
+    "id": "sonoff.0.Plug_01.ENERGY_Yesterday",
+    "name": "ENERGY_Yesterday",
+    "role": "value.energy.consumed",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "kWh"
+   },
+   {
+    "id": "sonoff.0.Plug_01.Emulation",
+    "name": "Emulation",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FLAG",
+    "name": "FLAG",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName1",
+    "name": "FriendlyName1",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName2",
+    "name": "FriendlyName2",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName3",
+    "name": "FriendlyName3",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName4",
+    "name": "FriendlyName4",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName5",
+    "name": "FriendlyName5",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName6",
+    "name": "FriendlyName6",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName7",
+    "name": "FriendlyName7",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.FriendlyName8",
+    "name": "FriendlyName8",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_0",
+    "name": "GPIO_0",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_1",
+    "name": "GPIO_1",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_10",
+    "name": "GPIO_10",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_11",
+    "name": "GPIO_11",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_12",
+    "name": "GPIO_12",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_13",
+    "name": "GPIO_13",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_2",
+    "name": "GPIO_2",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_3",
+    "name": "GPIO_3",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_4",
+    "name": "GPIO_4",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_5",
+    "name": "GPIO_5",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_6",
+    "name": "GPIO_6",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_7",
+    "name": "GPIO_7",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_8",
+    "name": "GPIO_8",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.GPIO_9",
+    "name": "GPIO_9",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Heap",
+    "name": "Heap",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "kB"
+   },
+   {
+    "id": "sonoff.0.Plug_01.Hostname",
+    "name": "Hostname",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.BuildDateTime",
+    "name": "BuildDateTime",
+    "role": "date",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Core",
+    "name": "Core",
+    "role": "info.firmware",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.CpuFrequency",
+    "name": "CpuFrequency",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "MHz"
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.DNSServer1",
+    "name": "DNSServer1",
+    "role": "info.ip",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.DNSServer2",
+    "name": "DNSServer2",
+    "role": "info.ip",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Gateway",
+    "name": "Gateway",
+    "role": "info.ip",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.HTTP_API",
+    "name": "HTTP_API",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Hardware",
+    "name": "Hardware",
+    "role": "info.hardware",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Hostname",
+    "name": "Hostname",
+    "role": "info.name",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.IPAddress",
+    "name": "IPAddress",
+    "role": "info.ip",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Info1_Module",
+    "name": "Info1_Module",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Info1_Version",
+    "name": "Info1_Version",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Info2_Hostname",
+    "name": "Info2_Hostname",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Info2_IPAddress",
+    "name": "Info2_IPAddress",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Info3_RestartReason",
+    "name": "Info3_RestartReason",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Mac",
+    "name": "Mac",
+    "role": "info.mac",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.SDK",
+    "name": "SDK",
+    "role": "info.firmware",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Subnetmask",
+    "name": "Subnetmask",
+    "role": "info.address",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Version",
+    "name": "Version",
+    "role": "info.firmware",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.Webserver",
+    "name": "Webserver",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.WifiConfig",
+    "name": "WifiConfig",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.INFO.WifiPower",
+    "name": "WifiPower",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "dBm"
+   },
+   {
+    "id": "sonoff.0.Plug_01.IPAddress1",
+    "name": "IPAddress1",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.IPAddress2",
+    "name": "IPAddress2",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.IPAddress3",
+    "name": "IPAddress3",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.IPAddress4",
+    "name": "IPAddress4",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.IPAddress5",
+    "name": "IPAddress5",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.LoadAvg",
+    "name": "LoadAvg",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.MqttCount",
+    "name": "MqttCount",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.NAME",
+    "name": "NAME",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.OtaUrl",
+    "name": "OtaUrl",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.POWER",
+    "name": "POWER",
+    "role": "switch",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Password1",
+    "name": "Password1",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Password2",
+    "name": "Password2",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.PowerSetCal",
+    "name": "PowerSetCal",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Restart",
+    "name": "Restart",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.SSId1",
+    "name": "SSId1",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.SSId2",
+    "name": "SSId2",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.SetOption128",
+    "name": "SetOption128",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.SetOption3",
+    "name": "SetOption3",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Sleep",
+    "name": "Sleep",
+    "role": "value.interval",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "ms"
+   },
+   {
+    "id": "sonoff.0.Plug_01.SleepMode",
+    "name": "SleepMode",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Time",
+    "name": "Time",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Upgrade",
+    "name": "Upgrade",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Uptime",
+    "name": "Uptime",
+    "role": "state",
+    "type": "mixed",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.UptimeSec",
+    "name": "UptimeSec",
+    "role": "value.interval",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "s"
+   },
+   {
+    "id": "sonoff.0.Plug_01.VoltageSetCal",
+    "name": "VoltageSetCal",
+    "role": "level",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.WebPassword",
+    "name": "WebPassword",
+    "role": "level",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_AP",
+    "name": "Wifi_AP",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_BSSId",
+    "name": "Wifi_BSSId",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_Channel",
+    "name": "Wifi_Channel",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_Downtime",
+    "name": "Wifi_Downtime",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_LinkCount",
+    "name": "Wifi_LinkCount",
+    "role": "info.status",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_Mode",
+    "name": "Wifi_Mode",
+    "role": "value",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_RSSI",
+    "name": "Wifi_RSSI",
+    "role": "value.rssi",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_SSId",
+    "name": "Wifi_SSId",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "sonoff.0.Plug_01.Wifi_Signal",
+    "name": "Wifi_Signal",
+    "role": "value.rssi",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "dBm"
+   },
+   {
+    "id": "sonoff.0.Plug_01.alive",
+    "name": "alive",
+    "role": "indicator.reachable",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   }
+  ]
+ },
+ "zigbee2mqtt.0.0x0000000000000001": {
+  "type": "device",
+  "states": [
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.available",
+    "name": "available",
+    "role": "indicator.reachable",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.battery",
+    "name": "battery",
+    "role": "value.battery",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "%",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.contact",
+    "name": "contact",
+    "role": "state",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.device_temperature",
+    "name": "device_temperature",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.identify",
+    "name": "identify",
+    "role": "state",
+    "type": "string",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.last_seen",
+    "name": "last_seen",
+    "role": "state",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.link_quality",
+    "name": "link_quality",
+    "role": "state",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "min": 0,
+    "max": 255
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.opened",
+    "name": "opened",
+    "role": "sensor.window",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.power_outage_count",
+    "name": "power_outage_count",
+    "role": "state",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.send_payload",
+    "name": "send_payload",
+    "role": "json",
+    "type": "string",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.trigger_count",
+    "name": "trigger_count",
+    "role": "state",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "zigbee2mqtt.0.0x0000000000000001.voltage",
+    "name": "voltage",
+    "role": "battery.voltage",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "V"
+   }
+  ]
+ },
+ "hm-rpc.1.000000000000A1": {
+  "type": "device",
+  "states": [
+   {
+    "id": "hm-rpc.1.000000000000A1.0.CONFIG_PENDING",
+    "name": "CONFIG_PENDING",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.CONFIG_PENDING_ALARM",
+    "name": "CONFIG_PENDING_ALARM",
+    "role": "indicator.alarm",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.DUTY_CYCLE",
+    "name": "DUTY_CYCLE",
+    "role": "value",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.FIRMWARE_UPDATE_STATE",
+    "name": "FIRMWARE_UPDATE_STATE",
+    "role": "info.status",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.INSTALL_TEST",
+    "name": "INSTALL_TEST",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.LOW_BAT",
+    "name": "LOW_BAT",
+    "role": "indicator.lowbat",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.LOW_BAT_ALARM",
+    "name": "LOW_BAT_ALARM",
+    "role": "indicator.alarm",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.OPERATING_VOLTAGE",
+    "name": "OPERATING_VOLTAGE",
+    "role": "value.voltage",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "V",
+    "min": 0,
+    "max": 25.2
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.OPERATING_VOLTAGE_STATUS",
+    "name": "OPERATING_VOLTAGE_STATUS",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "min": 0,
+    "max": 3
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.RSSI_DEVICE",
+    "name": "RSSI_DEVICE",
+    "role": "value.rssi",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "dBm",
+    "min": -128,
+    "max": 128
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.RSSI_PEER",
+    "name": "RSSI_PEER",
+    "role": "value.rssi",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "dBm",
+    "min": -128,
+    "max": 127
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.UNREACH",
+    "name": "UNREACH",
+    "role": "indicator.unreach",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.UNREACH_ALARM",
+    "name": "UNREACH_ALARM",
+    "role": "indicator.alarm",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.UPDATE_PENDING",
+    "name": "UPDATE_PENDING",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.0.UPDATE_PENDING_ALARM",
+    "name": "UPDATE_PENDING_ALARM",
+    "role": "indicator.alarm",
+    "type": "number",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.ACTIVE_PROFILE",
+    "name": "ACTIVE_PROFILE",
+    "role": "",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "min": 1,
+    "max": 6
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.ACTUAL_TEMPERATURE",
+    "name": "ACTUAL_TEMPERATURE",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C",
+    "min": -3276.8,
+    "max": 3276.7
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.ACTUAL_TEMPERATURE_STATUS",
+    "name": "ACTUAL_TEMPERATURE_STATUS",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "min": 0,
+    "max": 3
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.BOOST_MODE",
+    "name": "BOOST_MODE",
+    "role": "switch.mode.boost",
+    "type": "boolean",
+    "read": false,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.BOOST_TIME",
+    "name": "BOOST_TIME",
+    "role": "",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "min": 0,
+    "max": 2048
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.CONTROL_DIFFERENTIAL_TEMPERATURE",
+    "name": "CONTROL_DIFFERENTIAL_TEMPERATURE",
+    "role": "",
+    "type": "number",
+    "read": false,
+    "write": true,
+    "unit": "°C",
+    "min": -10,
+    "max": 10
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.CONTROL_MODE",
+    "name": "CONTROL_MODE",
+    "role": "indicator",
+    "type": "number",
+    "read": false,
+    "write": true,
+    "min": 0,
+    "max": 3
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.DURATION_UNIT",
+    "name": "DURATION_UNIT",
+    "role": "",
+    "type": "number",
+    "read": false,
+    "write": true,
+    "min": 0,
+    "max": 2
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.DURATION_VALUE",
+    "name": "DURATION_VALUE",
+    "role": "",
+    "type": "number",
+    "read": false,
+    "write": true,
+    "min": 0,
+    "max": 16343
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.FROST_PROTECTION",
+    "name": "FROST_PROTECTION",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.HEATING_COOLING",
+    "name": "HEATING_COOLING",
+    "role": "",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "min": 0,
+    "max": 1
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.HUMIDITY",
+    "name": "HUMIDITY",
+    "role": "value.humidity",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "% rF",
+    "min": 0,
+    "max": 100
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.HUMIDITY_STATUS",
+    "name": "HUMIDITY_STATUS",
+    "role": "",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "min": 0,
+    "max": 3
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.PARTY_MODE",
+    "name": "PARTY_MODE",
+    "role": "switch.mode.party",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.PARTY_SET_POINT_TEMPERATURE",
+    "name": "PARTY_SET_POINT_TEMPERATURE",
+    "role": "",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "min": 4.5,
+    "max": 30.5
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.PARTY_TIME_END",
+    "name": "PARTY_TIME_END",
+    "role": "",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.PARTY_TIME_START",
+    "name": "PARTY_TIME_START",
+    "role": "",
+    "type": "string",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.QUICK_VETO_TIME",
+    "name": "QUICK_VETO_TIME",
+    "role": "",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "min": 0,
+    "max": 2048
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.SET_POINT_MODE",
+    "name": "SET_POINT_MODE",
+    "role": "level.mode.thermostat",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "min": 0,
+    "max": 3
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.SET_POINT_TEMPERATURE",
+    "name": "SET_POINT_TEMPERATURE",
+    "role": "level.temperature",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "°C",
+    "min": 4.5,
+    "max": 30.5
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.SWITCH_POINT_OCCURED",
+    "name": "SWITCH_POINT_OCCURED",
+    "role": "",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hm-rpc.1.000000000000A1.1.WINDOW_STATE",
+    "name": "WINDOW_STATE",
+    "role": "value.window",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "min": 0,
+    "max": 1
+   }
+  ]
+ },
+ "hmip.0.devices.3014F711A000000000000001": {
+  "type": "device",
+  "states": [
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.configPending",
+    "name": "configPending",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.dutyCycle",
+    "name": "dutyCycle",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.functionalChannelType",
+    "name": "functionalChannelType",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.lowBat",
+    "name": "lowBat",
+    "role": "indicator.maintenance.lowbat",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.operationLockActive",
+    "name": "operationLockActive",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.routerModuleEnabled",
+    "name": "routerModuleEnabled",
+    "role": "switch",
+    "type": "boolean",
+    "read": true,
+    "write": true
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.routerModuleSupported",
+    "name": "routerModuleSupported",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.rssiDeviceValue",
+    "name": "rssiDeviceValue",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.rssiPeerValue",
+    "name": "rssiPeerValue",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.0.unreach",
+    "name": "unreach",
+    "role": "indicator",
+    "type": "boolean",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.functionalChannelType",
+    "name": "functionalChannelType",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.setPointTemperature",
+    "name": "setPointTemperature",
+    "role": "level.temperature",
+    "type": "number",
+    "read": true,
+    "write": true,
+    "unit": "°C"
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.temperatureOffset",
+    "name": "temperatureOffset",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.valveActualTemperature",
+    "name": "valveActualTemperature",
+    "role": "value.temperature",
+    "type": "number",
+    "read": true,
+    "write": false,
+    "unit": "°C"
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.valvePosition",
+    "name": "valvePosition",
+    "role": "value",
+    "type": "number",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.channels.1.valveState",
+    "name": "valveState",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.firmwareVersion",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.label",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.modelType",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.type",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   },
+   {
+    "id": "hmip.0.devices.3014F711A000000000000001.info.updateState",
+    "name": "type",
+    "role": "text",
+    "type": "string",
+    "read": true,
+    "write": false
+   }
+  ]
+ }
+}

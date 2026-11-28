@@ -647,7 +647,8 @@ function rawPageItem(item: Dict): { admin: AdminPageItemConfig; format: RawItemF
 
 /**
  * A script item without its long press (`longPress`, `targetPageLongPress` and, for a native item,
- * `setNaviLongPress` / `longPress` in `native.data`) - only the grid pages have one ({@link isLongPressCard}).
+ * `setNaviLongPress` / `longPress` in `native.data`) - only the grid pages and cardEntities have one
+ * ({@link isLongPressCard}).
  *
  * @param item Item of the script.
  * @returns The item without long press (a copy, the input stays unchanged) and whether something was removed.
@@ -687,8 +688,8 @@ function withoutLongPress(item: Dict): { item: Dict; dropped: boolean } {
  * `empty`. An item the editor cannot express is taken over as raw item ({@link rawPageItem}) and listed in
  * `rawItems`.
  *
- * On a page type without long press (`longPressDropped` given, every type except the grid pages, see
- * {@link isLongPressCard}) the long press of every item is dropped ({@link withoutLongPress}) - the item is taken
+ * On a page type without long press (`longPressDropped` given, every type except the grid pages and cardEntities,
+ * see {@link isLongPressCard}) the long press of every item is dropped ({@link withoutLongPress}) - the item is taken
  * over without it, the position is listed in `longPressDropped`.
  *
  * @param items Items of the script page.
@@ -977,7 +978,7 @@ function scrollFields(page: Dict, card: ScrollCard): PageScrollFields {
  * @param common Converted common fields.
  * @param topic Topic of the panel.
  * @param rawItems Collects the items taken over as raw items.
- * @param longPressDropped Collects the items whose long press was dropped (cardEntities / cardSchedule only).
+ * @param longPressDropped Collects the items whose long press was dropped (cardSchedule only).
  */
 function convertMenuPage(
     page: Dict,

@@ -2,6 +2,7 @@ import type * as dataItem from '../controller/data-item';
 import type * as typePageItem from './type-pageItem';
 import type * as pages from './pages';
 import type { PageItemTemplateOption, ScreensaverArea } from './adminShareConfig';
+import type { DeviceDetailsRuntime } from './deviceDetails';
 
 export namespace NSPanel {
     type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
@@ -1584,6 +1585,16 @@ export namespace NSPanel {
          */
         longPressTrigger?: boolean;
         /**
+         * device with details (admin item with `device`): a long press opens a generated detail page (cardEntities)
+         * with these states of the device - it comes before every other long press of the item
+         */
+        deviceDetails?: DeviceDetailsRuntime;
+        /**
+         * device with details: unique name of its device page (device-page.ts devicePageName) - the long press
+         * navigates there when the panel can show it
+         */
+        devicePageName?: string;
+        /**
          * screensaver indicator: the item keeps this slot (index in the admin list `indicator`, empty places
          * included) - hidden it leaves the slot empty, the other items skip it (admin `pinned`, config-manager
          * getScreensaverConfig, screensaver getData)
@@ -1764,6 +1775,10 @@ export namespace NSPanel {
         // Popup Cards
         | 'popupNotify'
         | 'popupNotify2'
+        // device page of a device item (device-page.ts), not selectable in the admin
+        | 'cardDevice1'
+        | 'cardDevice2'
+        | 'cardDevice3'
         | 'cardItemSpecial';
 
     type SerialTypePageElements =

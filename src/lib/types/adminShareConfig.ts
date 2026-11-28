@@ -1,5 +1,6 @@
 import { Color, type RGB } from '../const/Color';
 import mediaPlayersJson from '../../../templates/media-players.json';
+import type { DeviceDetailsConfig } from './deviceDetails';
 
 // Zentrale Definition aller verfügbaren Card-Typen
 export type AdminCardTypes =
@@ -1966,6 +1967,14 @@ export type AdminPageItemConfig = {
      * field is a text (`rgb`, `xy`), but the config manager only asks whether it is set at all.
      */
     colormode?: boolean;
+    /**
+     * Device with details (doc/ideas/device-details/README.md): set = the item is of the kind "device with details".
+     * The short tap is {@link DeviceDetailsConfig.shortPress}: `state` = a writable boolean state of the device,
+     * stored as custom item (`type: 'custom'`, `channelId` = the state); `popup` = the popup of an alias channel,
+     * stored as standard item (`channelId` = the channel). A long press opens a generated detail page with the ticked
+     * states of the device. Admin only, no script way.
+     */
+    device?: DeviceDetailsConfig;
 };
 
 /**
@@ -2031,18 +2040,20 @@ export function isScrollCard(card: string | undefined): card is ScrollCard {
 }
 
 /**
- * Page types whose items take a long press (`longPress`, `targetPageLongPress`). On the HMI (v5.1.1 / v6.0.2)
- * only the items of the grid pages send `event,buttonPress3,<entnN>` on a long press; cardEntities, cardSchedule,
- * cardMedia and cardThermo2 send `buttonPress2` for their items only (there a long press exists on the
- * navigation arrows nent1 / nent2 alone).
+ * Page types whose items take a long press (`longPress`, `targetPageLongPress`, the detail page of a device). On the
+ * grid pages the items send `event,buttonPress3,<entnN>` on a long press (HMI v5.1.1 / v6.0.2); a long press that is
+ * not handled there falls back to the short press. On cardEntities a tap on the left part of an item without popup
+ * (icon / name, `m0`-`m3`) sends `buttonPress3` (HMI change of doc/ideas/device-details, until then nothing comes);
+ * there an unhandled `buttonPress3` does nothing. cardSchedule, cardMedia and cardThermo2 send `buttonPress2` for
+ * their items only (there a long press exists on the navigation arrows nent1 / nent2 alone).
  */
-export const longPressCards: readonly string[] = ['cardGrid', 'cardGrid2', 'cardGrid3'];
+export const longPressCards: readonly string[] = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities'];
 
 /**
- * Whether the items of a page type take a long press: the grid pages only ({@link longPressCards}).
+ * Whether the items of a page type take a long press ({@link longPressCards}).
  *
  * @param card Card of an admin page entry or page type of the script.
- * @returns True for cardGrid, cardGrid2 and cardGrid3.
+ * @returns True for cardGrid, cardGrid2, cardGrid3 and cardEntities.
  */
 export function isLongPressCard(card: string | undefined): boolean {
     return !!card && longPressCards.includes(card);
@@ -4763,7 +4774,7 @@ export type ConvertPagePlan = {
     /** create only: items taken over as raw items, see {@link ConvertRawItem} */
     rawItems?: ConvertRawItem[];
     /**
-     * create only: positions of the items (e.g. `items[2]`) whose long press was dropped - only the grid pages
+     * create only: positions of the items (e.g. `items[2]`) whose long press was dropped - only the grid pages and cardEntities
      * ({@link longPressCards}) have a long press
      */
     longPressDropped?: string[];

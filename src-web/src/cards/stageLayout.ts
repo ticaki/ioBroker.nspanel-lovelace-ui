@@ -10,6 +10,9 @@ import { stageSize } from '../style/theme';
  *
  * A card that gets a real web layout is **removed from this list** - from then on it is drawn
  * on the full stage and sees `web-p` / `web-l` in `global.model`. Nothing else has to change.
+ *
+ * The device pages (cardDevice1-3) are not in the list: they bring a geometry per model
+ * (`cardDevice/layout.ts`) - web-l and web-p layouts of their own with additional slots.
  */
 export const CENTERED_ON_WEB: ReadonlySet<string> = new Set([
     'pageStartup',

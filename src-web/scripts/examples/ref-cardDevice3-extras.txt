@@ -1,0 +1,5 @@
+# cardDevice3 "ID.3" with the 2 additional infos and the switch of the web models: reference assignment of the docs (doc/Pictures/device-page/BILDER.md), values as the adapter writes them
+# web-l: doc/Pictures/device-page/web-l-cardDevice3.png
+pageType~cardDevice3
+entityUpd~ID.3~button~bUp~~17299~~~~~~~~~1~9?0~~2047~ID.3~Lädt an Wallbox, 11 kW - voll um 17:40~1~9?1~~65363~Batterie~78%~1~9?2~~65535~Reichweite~312km~1~9?3~~53247~Temperatur~21,5°C~1~9?4~~2047~Verriegelt~an~1~9?5~~65535~Ladeleistung~11kW~1~9?6~~65535~Kilometer~23456km~1~9?7~~2047~Klima~1~1~9?8~~2047~Laden~1~1~9?info~~65535~~~1~9?11~~65535~Reifen~2,4bar~1~9?12~~53247~Außen~8,5°C~1~9?13~~35921~Heizung~0
+@sleep 300

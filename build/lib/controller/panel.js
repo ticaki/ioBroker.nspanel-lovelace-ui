@@ -42,6 +42,8 @@ var definition = __toESM(require("../const/definition"));
 var adminShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_pageMedia = require("../pages/pageMedia");
 var import_pageGrid = require("../pages/pageGrid");
+var import_pageDevice = require("../pages/pageDevice");
+var import_device_page = require("../pages/device-page");
 var import_navigation = require("../classes/navigation");
 var import_pageThermo = require("../pages/pageThermo");
 var import_pagePower = require("../pages/pagePower");
@@ -449,6 +451,12 @@ class Panel extends import_library.BaseClass {
       }
       return false;
     });
+    if (!import_device_page.CARD_DEVICE_MODELS.has(this.info.nspanel.model)) {
+      ({ pages: options.pages, navigation: options.navigation } = (0, import_device_page.withoutDevicePages)(
+        options.pages,
+        options.navigation
+      ));
+    }
     this.info.internal.pageCount = options.pages.length;
     this.info.internal.servicePageCount = import_system_templates.systemPages.length;
     options.pages = options.pages.concat(structuredClone(import_system_templates.systemPages));
@@ -517,6 +525,11 @@ class Panel extends import_library.BaseClass {
       case "cardGrid": {
         pageConfig = Panel.getPage(pageConfig, this);
         return new import_pageGrid.PageGrid(pmconfig, pageConfig);
+      }
+      case "cardDevice1":
+      case "cardDevice2":
+      case "cardDevice3": {
+        return new import_pageDevice.PageDevice(pmconfig, pageConfig);
       }
       case "cardThermo": {
         pageConfig = Panel.getPage(pageConfig, this);
@@ -845,7 +858,7 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
       );
     }
-    await this.adapter.delay(100);
+    await this.adapter.delay(1);
     const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
     const scs = this.pages.filter((a) => a && globals.isScreenSaverCardType(a.card));
     const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === "admin";
@@ -2276,7 +2289,7 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
       this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
       this.sendRules();
-      await this.adapter.delay(100);
+      await this.adapter.delay(1);
     }
     await this.writeInfo();
     this.sendDimmode();
@@ -2403,6 +2416,9 @@ class Panel extends import_library.BaseClass {
               event.opt,
               event
             )) {
+              break;
+            }
+            if (!Panel.longPressFallsBackToShortPress(this.getActivePage().card)) {
               break;
             }
           }
@@ -3100,6 +3116,17 @@ ${this.info.tasmota.onlineVersion}`;
       }
     }
     return null;
+  }
+  /**
+   * Whether a `buttonPress3` of an item that has no long press of its own acts like the short press. On the grid
+   * pages a long press may just be a finger that lay too long; on cardEntities the left part of an item is tapped on
+   * purpose (doc/ideas/device-details/README.md) - there nothing happens.
+   *
+   * @param card page type of the active page
+   * @returns false for cardEntities, true otherwise
+   */
+  static longPressFallsBackToShortPress(card) {
+    return card !== "cardEntities";
   }
   /**
    * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.

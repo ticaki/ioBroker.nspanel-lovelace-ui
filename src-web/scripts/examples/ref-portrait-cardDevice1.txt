@@ -1,0 +1,6 @@
+# cardDevice1 "Robbi" on us-p / web-p (the status line has 262 px there, the adapter sends the first part of the text): reference assignment of the docs (doc/Pictures/device-page/BILDER.md), values as the adapter writes them
+# us-p: doc/Pictures/device-page/us-p-cardDevice1.png; web-p without additional slots: web-p-cardDevice1-plain.png
+pageType~cardDevice1
+entityUpd~Robbi~button~bUp~~17299~~~~~~~~~1~9?0~~2047~Robbi~Reinigt Wohnzimmer, noch 12~1~9?1~~65363~Batterie~80%~1~9?2~~65535~Fläche~34m²~1~9?3~~2047~Starten~1~1~9?4~~2047~Pause~1~1~9?5~~2047~Laden~1~1~9?6~~2047~Suchen~1~1~9?info~~65535~~1
+devIcons~1~9?7~~2047~1~9?8~~35921~1~9?9~~65535~1~9?10~~35921~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@sleep 300

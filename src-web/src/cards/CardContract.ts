@@ -1,11 +1,16 @@
 import type React from 'react';
-import type { GlobalState } from '../protocol/types';
+import type { GlobalState, PanelModel } from '../protocol/types';
 
 export interface ParseContext {
     /** active pageType, e.g. `cardGrid2` */
     pageType: string;
     /** arguments after `pageType~<type>~…`, e.g. the entity name and id of a popup */
     pageArgs: string[];
+    /**
+     * the panel model (`hello`) - for payloads whose fields depend on it (the additional slots of the device
+     * pages on the web models). Missing (tests, old callers) = `eu`.
+     */
+    model?: PanelModel;
 }
 
 export interface CardProps<M> {

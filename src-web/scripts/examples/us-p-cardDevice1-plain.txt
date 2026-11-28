@@ -1,0 +1,5 @@
+# cardDevice1-plain on us-p: the data of doc/Pictures/device-page/hmi-us-p-cardDevice1-plain.png (the status line has 262 px,
+# the adapter sends the first part of the text)
+pageType~cardDevice1
+entityUpd~Saugroboter~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~1~9?0?main~~1631~Robbi~Reinigt Wohnzimmer~1~9?0?1~~1760~Akku~80 %~1~9?0?2~~65535~Fläche~34 m²~1~9?0?3~~1760~Start~~1~9?0?4~~65535~Pause~~1~9?0?5~~65535~Dock~~1~9?0?6~~65535~Suchen~~1~9?0?info~~65535~~
+@sleep 300

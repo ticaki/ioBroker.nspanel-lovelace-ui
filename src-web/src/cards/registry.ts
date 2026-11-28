@@ -3,6 +3,7 @@ import { pageStartupModule } from './pageStartup';
 import { screensaverModule } from './screensaver';
 import { cardEntitiesModule } from './cardEntities';
 import { cardGridModule } from './cardGrid';
+import { cardDeviceModule } from './cardDevice';
 import { cardScheduleModule } from './cardSchedule';
 import { cardMediaModule } from './cardMedia';
 import { cardThermoModule } from './cardThermo';
@@ -29,6 +30,7 @@ export const modules: readonly AnyCardModule[] = [
     screensaverModule,
     cardEntitiesModule,
     cardGridModule,
+    cardDeviceModule,
     cardScheduleModule,
     cardMediaModule,
     cardThermoModule,

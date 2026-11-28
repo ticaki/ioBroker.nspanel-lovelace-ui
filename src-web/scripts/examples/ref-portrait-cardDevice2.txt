@@ -1,0 +1,5 @@
+# cardDevice2 "Waschmaschine" on us-p / web-p (the status line has 262 px there, the adapter sends the first part of the text): reference assignment of the docs (doc/Pictures/device-page/BILDER.md), values as the adapter writes them
+# us-p: doc/Pictures/device-page/us-p-cardDevice2.png; web-p without additional slots: web-p-cardDevice2-plain.png
+pageType~cardDevice2
+entityUpd~Waschmaschine~button~bUp~~17299~~~~~~~~~1~9?0~~2047~Waschmaschine~Schleudern, noch 23 min -~1~9?1~~65535~Restzeit~1:23~1~9?2~~65535~Fortschritt~62~1~9?3~~65535~Programm~Baumwolle~1~9?4~~53247~Temperatur~60°C~1~9?5~~65535~Schleudern~1400U/min~1~9?6~~35921~Pause~0~1~9?info~~65535~~1
+@sleep 300

@@ -1,4 +1,5 @@
 import React from 'react';
+import type { DeviceDetailsLearned } from '../../../src/lib/types/deviceDetails';
 import {
     Box,
     Button,
@@ -100,6 +101,10 @@ export interface PageMenuEditorProps {
     pagesList?: string[];
     /** Vom übergeordneten PageConfigManager bereitgestellt – navigationNodes pro panelTopic */
     panelPagesMap?: Record<string, string[]>;
+    /** device with details: the learned ticks per adapter (native `deviceDetailsLearned`) */
+    deviceDetailsLearned?: DeviceDetailsLearned;
+    /** device with details: a saved item changed the learned ticks */
+    onDeviceDetailsLearnedChange?: (learned: DeviceDetailsLearned) => void;
 }
 
 interface PageMenuEditorState extends ConfigGenericState {
@@ -1293,6 +1298,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                 {/* ChannelConfigDialog – ohne Trigger-Button, per ref gesteuert */}
                 <ChannelConfigDialog
                     ref={this.dialogRef}
+                    deviceDetailsLearned={this.props.deviceDetailsLearned}
+                    onDeviceDetailsLearnedChange={this.props.onDeviceDetailsLearnedChange}
                     socket={this.props.oContext?.socket}
                     adapterName={this.props.oContext?.adapterName}
                     instance={this.props.oContext?.instance}

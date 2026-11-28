@@ -44,6 +44,7 @@
 - [Thermostat (klassisch)](cardThermo)  
 - [Mediaplayer](cardMedia)  
 - [Verknüpfung](pageLink)  
+- [Gerät mit Details und Geräteseite](deviceDetails)  
 - [Wiederkehrende Dialoge](PageConfig-Dialoge)  
 
 **Screensaver**  

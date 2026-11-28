@@ -102,6 +102,12 @@ export interface ColorThemenInterface {
     gust?: RGB;
     sunrise?: RGB;
     sunset?: RGB;
+    /** detail page of a device (deviceDetails.ts): values of the group energy (V/A/W/Wh, battery) */
+    deviceEnergy?: RGB;
+    /** detail page of a device: values of the group connection (WiFi, reachability, IP) */
+    deviceConnection?: RGB;
+    /** detail page of a device: values of the group info (firmware, version, text) */
+    deviceInfo?: RGB;
     // Neue Media-spezifische Theme-Einträge
     mediaArtistOn?: RGB;
     mediaArtistOff?: RGB;
@@ -185,6 +191,9 @@ class ColorBase {
     static bgNotify: RGB | string = 'default.color.from.start.bgNotify';
     static solar: RGB | string = 'default.color.from.start.solar';
     static temperature: RGB | string = 'default.color.from.start.temperature';
+    static deviceEnergy: RGB | string = 'default.color.from.start.deviceEnergy';
+    static deviceConnection: RGB | string = 'default.color.from.start.deviceConnection';
+    static deviceInfo: RGB | string = 'default.color.from.start.deviceInfo';
     static gust: RGB | string = 'default.color.from.start.gust';
     static sunrise: RGB | string = 'default.color.from.start.sunrise';
     static sunset: RGB | string = 'default.color.from.start.sunset';
@@ -481,6 +490,12 @@ export class Color extends ColorBase {
                     return Color.solar;
                 case 'default.color.from.start.temperature':
                     return Color.temperature;
+                case 'default.color.from.start.deviceEnergy':
+                    return Color.deviceEnergy;
+                case 'default.color.from.start.deviceConnection':
+                    return Color.deviceConnection;
+                case 'default.color.from.start.deviceInfo':
+                    return Color.deviceInfo;
                 case 'default.color.from.start.gust':
                     return Color.gust;
                 case 'default.color.from.start.sunrise':
@@ -559,6 +574,9 @@ export class Color extends ColorBase {
         foreground: Color.White,
         solar: Color.On,
         temperature: Color.Red,
+        deviceEnergy: Color.MSYellow,
+        deviceConnection: Color.Cyan,
+        deviceInfo: Color.White,
         gust: Color.Blue,
         sunrise: Color.Yellow,
         sunset: Color.Orange,
@@ -651,6 +669,9 @@ export class Color extends ColorBase {
         bgNotify: Color.NotifyOcean,
         solar: Color.Sun,
         temperature: Color.Sunset,
+        deviceEnergy: Color.Sun,
+        deviceConnection: Color.Turquoise,
+        deviceInfo: Color.Orchid,
         // Media-spezifisch
         mediaArtistOn: Color.Turquoise,
         mediaArtistOff: Color.Sand,
@@ -716,6 +737,9 @@ export class Color extends ColorBase {
         foreground: Color.TechMint,
         solar: Color.MSYellow,
         temperature: Color.TechMint,
+        deviceEnergy: Color.MSYellow,
+        deviceConnection: Color.Cyan,
+        deviceInfo: Color.White,
 
         // NEW theme keys
         fgTime: Color.TechMint,
@@ -792,6 +816,9 @@ export class Color extends ColorBase {
         foreground: Color.Yellow,
         solar: Color.On,
         temperature: Color.Magenta,
+        deviceEnergy: Color.Yellow,
+        deviceConnection: Color.Orange,
+        deviceInfo: Color.White,
         gust: Color.Orange,
         sunrise: Color.Orange,
         sunset: Color.Magenta,
@@ -877,6 +904,9 @@ export class Color extends ColorBase {
         foreground: Color.FlameYellow,
         solar: Color.FlameYellow,
         temperature: Color.MagmaRed,
+        deviceEnergy: Color.FlameYellow,
+        deviceConnection: Color.FireGlow,
+        deviceInfo: Color.White,
 
         fgTime: Color.FlameYellow, // Uhrzeit sehr strahlend
         fgTimeAmPm: Color.FireGlow, // AM/PM orange

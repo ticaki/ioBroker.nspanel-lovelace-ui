@@ -886,7 +886,7 @@ const scrollAutoTimingDefault = 15;
 function isScrollCard(card) {
   return !!card && scrollCards.includes(card);
 }
-const longPressCards = ["cardGrid", "cardGrid2", "cardGrid3"];
+const longPressCards = ["cardGrid", "cardGrid2", "cardGrid3", "cardEntities"];
 function isLongPressCard(card) {
   return !!card && longPressCards.includes(card);
 }

@@ -42,6 +42,9 @@ var import_data_item = require("../controller/data-item");
 var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_deviceDetails = require("../types/deviceDetails");
+var import_device_details = require("./device-details");
+var import_device_page = require("./device-page");
 var import_screensaver_timer = require("./screensaver-timer");
 var import_alexa_alarm = require("../classes/alexa-alarm");
 const panelsWarnedAboutClockTimer = /* @__PURE__ */ new WeakSet();
@@ -295,7 +298,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return states ? Object.keys(states) : void 0;
   }
   async getPageItemPayload(skipEnabledCheck = false) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -314,7 +317,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (this.config.role === "volume.mute") {
             message.type = "light";
           } else {
-            message.type = (0, import_function_and_const.isCardGridType)(this.parent.card) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.parent.basePanel.overrideLightPopup ? this.parent.basePanel.lightPopupV2 && this.parent.basePanel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
+            message.type = ((0, import_function_and_const.isCardGridType)(this.parent.card) || (0, import_function_and_const.isCardDeviceType)(this.parent.card)) && (this.config.role === "light" || this.config.role === "socket") ? "switch" : this.parent.basePanel.overrideLightPopup ? this.parent.basePanel.lightPopupV2 && this.parent.basePanel.meetsVersion("4.7.5") ? "light2" : "light" : entry.type;
           }
           const v = await tools.getValueEntryBoolean(item.entity1);
           const dimmer = (_a = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber()) != null ? _a : null;
@@ -557,8 +560,19 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   }
                   break;
                 }
+                case import_deviceDetails.DEVICE_PAGE_PROGRESS_ROLE: {
+                  const progress = (_F = item.entity2) == null ? void 0 : _F.value;
+                  message.optionalValue = String(
+                    (0, import_deviceDetails.devicePageProgressPercent)(
+                      progress ? await progress.getNumber() : null,
+                      progress == null ? void 0 : progress.common.min,
+                      progress == null ? void 0 : progress.common.max
+                    )
+                  );
+                  break;
+                }
                 default: {
-                  const optionalValue = (_G = (_F = await tools.getValueEntryString(item.entity2)) != null ? _F : await tools.getEntryTextOnOff(item.text1, value)) != null ? _G : "";
+                  const optionalValue = (_H = (_G = await tools.getValueEntryString(item.entity2)) != null ? _G : await tools.getEntryTextOnOff(item.text1, value)) != null ? _H : "";
                   message.optionalValue = entry.role === "textRawValue" ? optionalValue : this.library.getTranslation(optionalValue);
                 }
               }
@@ -566,51 +580,51 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             message.icon = await tools.getIconEntryValue(item.icon, showIcon, "home");
             switch (entry.role) {
               case "textNotIcon": {
-                message.icon = (_H = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _H : "";
+                message.icon = (_I = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _I : "";
                 break;
               }
               case "iconNotText": {
-                message.icon = (_I = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _I : "";
+                message.icon = (_J = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _J : "";
                 break;
               }
               case "battery": {
-                const val = (_J = await tools.getValueEntryBoolean(item.entity3)) != null ? _J : false;
-                message.icon = (_K = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _K : "";
+                const val = (_K = await tools.getValueEntryBoolean(item.entity3)) != null ? _K : false;
+                message.icon = (_L = await tools.getIconEntryValue(item.icon, val, "", "", false)) != null ? _L : "";
                 break;
               }
               case "battery.power": {
                 const power = await tools.getValueEntryNumber(item.entity3);
-                message.icon = (_L = await tools.getIconEntryValue(
+                message.icon = (_M = await tools.getIconEntryValue(
                   item.icon,
                   power !== null && power < 0,
                   "",
                   "",
                   false
-                )) != null ? _L : "";
+                )) != null ? _M : "";
                 message.iconColor = await tools.getBatteryPowerColor(item.icon, power);
                 break;
               }
               case "combined": {
-                message.icon = (_M = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _M : "";
-                message.icon += (_N = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _N : "";
+                message.icon = (_N = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _N : "";
+                message.icon += (_O = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _O : "";
                 break;
               }
               default: {
-                const positionIcon = typeof showIcon === "number" && await ((_Q = (_P = (_O = item.icon) == null ? void 0 : _O.true) == null ? void 0 : _P.value) == null ? void 0 : _Q.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
-                message.icon = (_S = await tools.getIconEntryValue(
+                const positionIcon = typeof showIcon === "number" && await ((_R = (_Q = (_P = item.icon) == null ? void 0 : _P.true) == null ? void 0 : _Q.value) == null ? void 0 : _R.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
+                message.icon = (_T = await tools.getIconEntryValue(
                   item.icon,
                   positionIcon ? showIcon : !!showIcon,
                   "",
                   null,
-                  (_R = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _R : false
-                )) != null ? _S : "";
+                  (_S = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _S : false
+                )) != null ? _T : "";
               }
             }
             const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
-            (_T = message.iconColor) != null ? _T : message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
+            (_U = message.iconColor) != null ? _U : message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                const newValue = (_U = await entry.data.confirm.getObject()) != null ? _U : await entry.data.confirm.getString();
+                const newValue = (_V = await entry.data.confirm.getObject()) != null ? _V : await entry.data.confirm.getString();
                 if (newValue) {
                   const text = typeof newValue === "object" ? newValue.text : newValue;
                   if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
@@ -648,7 +662,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.intNameEntity + additionalId,
               message.icon,
               message.iconColor,
-              (_V = message.displayName) != null ? _V : "",
+              (_W = message.displayName) != null ? _W : "",
               message.optionalValue
             );
           }
@@ -657,19 +671,19 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          let value = (_W = await tools.getValueEntryNumber(item.entityInSel)) != null ? _W : await tools.getValueEntryBoolean(item.entityInSel);
+          let value = (_X = await tools.getValueEntryNumber(item.entityInSel)) != null ? _X : await tools.getValueEntryBoolean(item.entityInSel);
           if (entry.role === "alexa-speaker") {
             value = this.parent.currentItem === this.parent.items[0];
           }
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_X = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _X : import_Color.Color.HMIOn;
+          message.iconColor = (_Y = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _Y : import_Color.Color.HMIOn;
           message.displayName = await tools.getHeadlineText(
             item,
-            (_Y = message.displayName) != null ? _Y : "",
+            (_Z = message.displayName) != null ? _Z : "",
             (text) => this.library.getTranslation(text)
           );
           message.optionalValue = this.library.getTranslation(
-            (_Z = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _Z : "PRESS"
+            (__ = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? __ : "PRESS"
           );
           return tools.getItemMesssage(message);
           break;
@@ -679,14 +693,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (entry.type === "fan") {
               const item = entry.data;
               message.type = "fan";
-              const value = (__ = await tools.getValueEntryBoolean(item.entity1)) != null ? __ : null;
+              const value = (_$ = await tools.getValueEntryBoolean(item.entity1)) != null ? _$ : null;
               message.displayName = await tools.getHeadlineText(
                 item,
-                (_$ = message.displayName) != null ? _$ : "",
+                (_aa = message.displayName) != null ? _aa : "",
                 (text) => this.library.getTranslation(text)
               );
-              message.icon = (_aa = await tools.getIconEntryValue(item.icon, value, "")) != null ? _aa : "";
-              message.iconColor = (_ba = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ba : "";
+              message.icon = (_ba = await tools.getIconEntryValue(item.icon, value, "")) != null ? _ba : "";
+              message.iconColor = (_ca = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ca : "";
               return tools.getPayloadRemoveTilde(
                 message.type,
                 message.intNameEntity,
@@ -709,7 +723,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             const item = entry.data;
             message.type = "timer";
             const { opt, on } = await this.getTimerListValue(item);
-            const s = ((_ca = this.tempData) == null ? void 0 : _ca.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
+            const s = ((_da = this.tempData) == null ? void 0 : _da.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
             const v = typeof s === "number" ? s > 1 : on;
             {
               message.iconColor = await tools.getIconEntryColor(item.icon, v, import_Color.Color.White);
@@ -721,11 +735,11 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 }
               }
               message.optionalValue = this.library.getTranslation(
-                (_da = await tools.getEntryTextOnOff(item.text, on)) != null ? _da : opt
+                (_ea = await tools.getEntryTextOnOff(item.text, on)) != null ? _ea : opt
               );
               message.displayName = await tools.getHeadlineText(
                 item,
-                (_ea = message.displayName) != null ? _ea : "",
+                (_fa = message.displayName) != null ? _fa : "",
                 (text) => this.library.getTranslation(text)
               );
               return tools.getPayloadRemoveTilde(
@@ -2361,9 +2375,13 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     await super.delete();
   }
   async onCommandLongPress(action, value) {
-    var _a;
+    var _a, _b;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
+    }
+    if (action === "button" && ((_a = this.config) == null ? void 0 : _a.deviceDetails)) {
+      await this.openDeviceOf(this.config.deviceDetails);
+      return true;
     }
     const entry = this.dataItems;
     if (action.startsWith("mode-")) {
@@ -2375,7 +2393,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         if (entry.type === "button" || entry.type === "switch") {
           this.log.debug(`Button ${this.id} was long pressed!`);
           const item = entry.data;
-          const value2 = (_a = item.setNaviLongPress && await item.setNaviLongPress.getString()) != null ? _a : null;
+          const value2 = (_b = item.setNaviLongPress && await item.setNaviLongPress.getString()) != null ? _b : null;
           if (value2 !== null) {
             await this.parent.basePanel.navigation.setTargetPageByName(value2);
             done = true;
@@ -2394,6 +2412,148 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       }
     }
     return done;
+  }
+  /**
+   * What the long press of a device item opens (and its short tap `devicePage`): the device page when the item has
+   * one and the panel can show it, else the detail page. The device page is a page of the panel (built at the start
+   * like every other page): the navigation opens it, back leads to the page of the item (its parent).
+   *
+   * @param details the device part of the item
+   */
+  async openDeviceOf(details) {
+    var _a;
+    const name = (_a = this.config) == null ? void 0 : _a.devicePageName;
+    const navigation = this.parent.basePanel.navigation;
+    if (details.devicePage && name && this.panelHasDevicePage() && navigation.hasTarget(name)) {
+      await navigation.setTargetPageByName(name);
+    } else {
+      await this.openDeviceDetails(details);
+    }
+  }
+  /**
+   * Opens the detail page of the device of this item (doc/ideas/device-details/README.md): a cardEntities page
+   * generated from the ticked states, below the page of the item (`directChildPage`, back leads here again). A
+   * detail page opened before by an item of the page is replaced - after the new one is shown, never while it is
+   * active. Of two long presses that overlap (two items, a quick double press) only the last one opens its page.
+   *
+   * The info item of a device page opens it the same way: below the device page.
+   *
+   * @param details the device part of the item
+   */
+  async openDeviceDetails(details) {
+    const parent = this.parent;
+    const panel = parent.basePanel;
+    const run = (0, import_device_details.beginDeviceDetailsRun)(panel);
+    const { headline, rows } = await (0, import_device_details.deviceDetailRows)(
+      details,
+      (id2) => panel.statesControler.getObjectAsync(id2),
+      (key) => this.library.getTranslation(key),
+      this.library.getLocalLanguage(),
+      panel.info.nspanel.model
+    );
+    if (!(0, import_device_details.isLatestDeviceDetailsRun)(panel, run) || panel.getActivePage() !== parent) {
+      return;
+    }
+    if (rows.length === 0) {
+      this.log.warn(`Device details of ${details.deviceId}: none of the chosen states exists (any more)!`);
+    }
+    const id = `${import_device_details.DEVICE_DETAIL_PAGE_PREFIX}${parent.id}`;
+    await this.showGeneratedPage(
+      run,
+      { id, name: `${parent.name}-details`, adapter: this.adapter, panel, card: "cardEntities" },
+      (0, import_device_details.deviceDetailPageConfig)(id, headline, parent.alwaysOn, rows)
+    );
+  }
+  /**
+   * @returns true if the panel of this item can show the device page (cardDevice1..3), else the detail page opens
+   */
+  panelHasDevicePage() {
+    var _a;
+    const panel = this.parent.basePanel;
+    return (0, import_device_page.supportsCardDevice)({
+      model: panel.info.nspanel.model,
+      isVirtual: panel.isVirtual,
+      displayVersion: (_a = panel.info.nspanel.displayVersion) != null ? _a : ""
+    });
+  }
+  /**
+   * Creates the generated detail page below the page of this item and shows it. The child page opened before is
+   * deleted after the new one is shown, never while it is active.
+   *
+   * @param run the number of this opening (beginDeviceDetailsRun)
+   * @param pageInterface the page
+   * @param pageConfig its configuration
+   */
+  async showGeneratedPage(run, pageInterface, pageConfig) {
+    const parent = this.parent;
+    const panel = parent.basePanel;
+    const page = panel.newPage(pageInterface, pageConfig);
+    if (!page) {
+      return;
+    }
+    await page.init();
+    if (!(0, import_device_details.isLatestDeviceDetailsRun)(panel, run) || panel.getActivePage() !== parent || this.adapter.unload) {
+      await page.delete();
+      return;
+    }
+    const old = parent.directChildPage;
+    parent.directChildPage = page;
+    page.directParentPage = parent;
+    await panel.setActivePage(page);
+    if (old && old !== page && old !== panel.getActivePage()) {
+      old.directParentPage = void 0;
+      await old.delete();
+    }
+  }
+  /**
+   * @returns the target page of the short tap (`setNavi`) of an element of a device page, '' = none
+   */
+  async devicePageTargetOf() {
+    var _a, _b;
+    const data = (_a = this.dataItems) == null ? void 0 : _a.data;
+    if (!(0, import_function_and_const.isCardDeviceType)(this.parent.card) || !data || !("setNavi" in data) || !data.setNavi) {
+      return "";
+    }
+    return (_b = await data.setNavi.getString()) != null ? _b : "";
+  }
+  /**
+   * The tap on an element of a device page that navigates (`setNavi`): the normal way of a navigation item - the
+   * navigation of the panel opens the page and takes its position, so the arrows of the target page are those of
+   * its node. Nothing else happens (the state of the slot is not switched). A target that is no node of this panel
+   * does nothing and is reported once per panel and target.
+   *
+   * @param target name of the target page
+   */
+  async navigateFromDevicePage(target) {
+    const panel = this.parent.basePanel;
+    if (!panel.navigation.hasTarget(target)) {
+      if ((0, import_device_page.reportMissingDevicePageTarget)(panel, target)) {
+        this.log.warn(
+          `Device page ${this.parent.name}: the target page "${target}" of element ${this.id} is not assigned to panel ${panel.name} - the tap does nothing!`
+        );
+      }
+      return;
+    }
+    await panel.navigation.setTargetPageByName(target);
+  }
+  /**
+   * A tap (`button`) on a row of the detail page of a device: a button (`read: false`) is written with true; anything
+   * else does nothing - a switch (`OnOff`) and a number (`number-set`) use the normal events of cardEntities.
+   */
+  async onDeviceDetailTap() {
+    var _a, _b;
+    const entry = this.dataItems;
+    if ((entry == null ? void 0 : entry.type) === "button") {
+      const set = (_a = entry.data.entity1) == null ? void 0 : _a.set;
+      if (set == null ? void 0 : set.writeable) {
+        await set.setStateTrue();
+        return;
+      }
+      const value = (_b = entry.data.entity1) == null ? void 0 : _b.value;
+      if (value == null ? void 0 : value.writeable) {
+        await value.setStateFlip();
+      }
+    }
   }
   /**
    * A button with a value list (screensaver indicator): writes the next value of the list to the state, also when
@@ -2425,7 +2585,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return true;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -2445,6 +2605,25 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
         break;
       case "button": {
+        const devicePageTarget = await this.devicePageTargetOf();
+        if (devicePageTarget) {
+          await this.navigateFromDevicePage(devicePageTarget);
+          break;
+        }
+        if (entry.role === import_deviceDetails.DEVICE_DETAIL_ROW_ROLE) {
+          await this.onDeviceDetailTap();
+          break;
+        }
+        if (((_c = (_b = (_a = this.config) == null ? void 0 : _a.deviceDetails) == null ? void 0 : _b.devicePage) == null ? void 0 : _c.shortPress) === "devicePage") {
+          await this.openDeviceOf(this.config.deviceDetails);
+          break;
+        }
+        if (entry.role === import_deviceDetails.DEVICE_PAGE_INFO_ROLE) {
+          if ((_d = this.config) == null ? void 0 : _d.deviceDetails) {
+            await this.openDeviceDetails(this.config.deviceDetails);
+          }
+          break;
+        }
         if (this.parent.isScreensaver && !this.parent.isIndicatorKey(this)) {
           if (eventValue === "") {
             this.parent.basePanel.navigation.resetPosition();
@@ -2465,16 +2644,16 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             break;
           }
           if (entry.role === "repeatValue") {
-            const v = await ((_b = (_a = entry.data.entity1) == null ? void 0 : _a.value) == null ? void 0 : _b.getString());
-            if (v != null && ((_d = (_c = entry.data.entity1) == null ? void 0 : _c.set) == null ? void 0 : _d.writeable)) {
+            const v = await ((_f = (_e = entry.data.entity1) == null ? void 0 : _e.value) == null ? void 0 : _f.getString());
+            if (v != null && ((_h = (_g = entry.data.entity1) == null ? void 0 : _g.set) == null ? void 0 : _h.writeable)) {
               await entry.data.entity1.set.setState(v);
-            } else if (v != null && ((_f = (_e = entry.data.entity1) == null ? void 0 : _e.value) == null ? void 0 : _f.writeable)) {
+            } else if (v != null && ((_j = (_i = entry.data.entity1) == null ? void 0 : _i.value) == null ? void 0 : _j.writeable)) {
               await entry.data.entity1.value.setState(v);
             }
             break;
           }
           if (entry.role === "SonosSpeaker" || entry.role === "SqueezeboxSpeaker") {
-            if (!this.parent || !(((_g = this.parent.config) == null ? void 0 : _g.card) === "cardMedia")) {
+            if (!this.parent || !(((_k = this.parent.config) == null ? void 0 : _k.card) === "cardMedia")) {
               break;
             }
             if (this.parent.directChildPage) {
@@ -2484,7 +2663,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               await this.parent.basePanel.setActivePage(this.parent.directChildPage);
             } else if (this.parent.config) {
               this.log.debug(`Create temp page for Button with role:selectGrid id:${this.id}`);
-              const list = await ((_i = (_h = entry.data.entity3) == null ? void 0 : _h.value) == null ? void 0 : _i.getObject());
+              const list = await ((_m = (_l = entry.data.entity3) == null ? void 0 : _l.value) == null ? void 0 : _m.getObject());
               const tempConfig = {
                 id: `temp253451_${this.parent.id}`,
                 name: `sub_${this.parent.name}`,
@@ -2542,10 +2721,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             await this.parent.update();
           }
           if (item.popup) {
-            const test = (_j = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _j : true;
+            const test = (_n = item.popup.isActive && await item.popup.isActive.getBoolean()) != null ? _n : true;
             if (test && item.popup.getMessage && item.popup.setMessage) {
               const message = await item.popup.getMessage.getString();
-              const headline = (_k = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _k : "";
+              const headline = (_o = item.popup.getHeadline && await item.popup.getHeadline.getString()) != null ? _o : "";
               if (message) {
                 await item.popup.setMessage.setState(
                   JSON.stringify({ headline, message })
@@ -2554,7 +2733,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
             break;
           }
-          let value2 = (_l = item.setNavi && await item.setNavi.getString()) != null ? _l : null;
+          let value2 = (_p = item.setNavi && await item.setNavi.getString()) != null ? _p : null;
           let nav = false;
           if (value2 !== null) {
             await this.parent.basePanel.navigation.setTargetPageByName(value2);
@@ -2562,11 +2741,15 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
           const implicit = !this.parent.isScreensaver;
           if (implicit && item.entity1 && item.entity1.set && item.entity1.set.writeable) {
-            await item.entity1.set.setStateFlip();
+            if (((_q = this.config) == null ? void 0 : _q.deviceDetails) && item.entity1.set.common.read === false) {
+              await item.entity1.set.setStateTrue();
+            } else {
+              await item.entity1.set.setStateFlip();
+            }
             break;
           }
           if (implicit && item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
-            value2 = (_n = item.entity1 && await ((_m = item.entity1.value) == null ? void 0 : _m.getBoolean())) != null ? _n : false;
+            value2 = (_s = item.entity1 && await ((_r = item.entity1.value) == null ? void 0 : _r.getBoolean())) != null ? _s : false;
             if (value2) {
               await item.setFalse.setStateTrue();
             } else {
@@ -2585,17 +2768,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (nav || !implicit || entry.role === "blind") {
             break;
           }
-          if ((_p = (_o = item.entity1) == null ? void 0 : _o.value) == null ? void 0 : _p.writeable) {
+          if ((_u = (_t = item.entity1) == null ? void 0 : _t.value) == null ? void 0 : _u.writeable) {
             await item.entity1.value.setStateFlip();
             break;
           }
         } else if (entry.type === "light" || entry.type === "light2") {
           if (entry.role === "volume.mute") {
-            const value2 = (_r = ((_q = entry.data.entity1) == null ? void 0 : _q.value) && await entry.data.entity1.value.getBoolean()) != null ? _r : null;
+            const value2 = (_w = ((_v = entry.data.entity1) == null ? void 0 : _v.value) && await entry.data.entity1.value.getBoolean()) != null ? _w : null;
             if (value2) {
-              await ((_s = entry.data.setValue2) == null ? void 0 : _s.setStateTrue());
+              await ((_x = entry.data.setValue2) == null ? void 0 : _x.setStateTrue());
             } else {
-              await ((_t = entry.data.setValue1) == null ? void 0 : _t.setStateTrue());
+              await ((_y = entry.data.setValue1) == null ? void 0 : _y.setStateTrue());
             }
             break;
           }
@@ -2609,9 +2792,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         } else if (entry.type === "fan") {
           const item = entry.data;
-          if ((_u = item.entity1) == null ? void 0 : _u.set) {
+          if ((_z = item.entity1) == null ? void 0 : _z.set) {
             await item.entity1.set.setStateFlip();
-          } else if ((_w = (_v = item.entity1) == null ? void 0 : _v.value) == null ? void 0 : _w.writeable) {
+          } else if ((_B = (_A = item.entity1) == null ? void 0 : _A.value) == null ? void 0 : _B.writeable) {
             await item.entity1.value.setStateFlip();
           }
         }
@@ -2654,9 +2837,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             entity = item.entity3;
           }
           if (entity && entity.set && entity.set.writeable) {
-            if (!Array.isArray(entity.set.options.role) && ((_x = entity.set.options.role) == null ? void 0 : _x.startsWith("button"))) {
+            if (!Array.isArray(entity.set.options.role) && ((_C = entity.set.options.role) == null ? void 0 : _C.startsWith("button"))) {
               await entity.set.setStateTrue();
-            } else if (!Array.isArray(entity.set.options.role) && ((_y = entity.set.options.role) == null ? void 0 : _y.startsWith("switch"))) {
+            } else if (!Array.isArray(entity.set.options.role) && ((_D = entity.set.options.role) == null ? void 0 : _D.startsWith("switch"))) {
               await entity.set.setStateFlip();
             }
           }
@@ -2699,9 +2882,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         if (entry.type === "light" || entry.type === "light2" || entry.type === "button" || entry.type === "switch" || entry.type === "fan") {
           if (entry.type === "light" && entry.role === "volume.mute") {
             if (value !== "1") {
-              await ((_z = entry.data.setValue2) == null ? void 0 : _z.setStateTrue());
+              await ((_E = entry.data.setValue2) == null ? void 0 : _E.setStateTrue());
             } else {
-              await ((_A = entry.data.setValue1) == null ? void 0 : _A.setStateTrue());
+              await ((_F = entry.data.setValue1) == null ? void 0 : _F.setStateTrue());
             }
             break;
           }
@@ -2734,7 +2917,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               }
               case "rgbSingle": {
                 const rgb = import_Color.Color.resultToRgb(value);
-                if (import_Color.Color.isRGB(rgb) && ((_B = item == null ? void 0 : item.color) == null ? void 0 : _B.true) && item.color.true.options.role !== "level.color.rgb") {
+                if (import_Color.Color.isRGB(rgb) && ((_G = item == null ? void 0 : item.color) == null ? void 0 : _G.true) && item.color.true.options.role !== "level.color.rgb") {
                   await item.color.true.setState(JSON.stringify(rgb));
                   break;
                 }
@@ -2979,14 +3162,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 const minValue = item[`minValue${b}`];
                 let min = 0;
                 if (minValue) {
-                  min = (_C = await minValue.getNumber()) != null ? _C : 0;
+                  min = (_H = await minValue.getNumber()) != null ? _H : 0;
                 } else if (entity && entity.value && entity.value.common.min != void 0) {
                   min = entity.value.common.min;
                 }
                 const maxValue = item[`maxValue${b}`];
                 let max = 100;
                 if (maxValue) {
-                  max = (_D = await maxValue.getNumber()) != null ? _D : 100;
+                  max = (_I = await maxValue.getNumber()) != null ? _I : 100;
                 } else if (entity && entity.value && entity.value.common.max != void 0) {
                   max = entity.value.common.max;
                 }
@@ -3025,24 +3208,24 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         break;
       }
       case "timer-begin": {
-        if (((_E = this.tempData) == null ? void 0 : _E.role) === "ss-timer") {
-          await ((_F = this.parent.basePanel.screenSaver) == null ? void 0 : _F.startClockTimer(this.tempData.editSeconds));
+        if (((_J = this.tempData) == null ? void 0 : _J.role) === "ss-timer") {
+          await ((_K = this.parent.basePanel.screenSaver) == null ? void 0 : _K.startClockTimer(this.tempData.editSeconds));
           break;
         }
-        if (((_G = this.tempData) == null ? void 0 : _G.role) === "alexa-alarm") {
+        if (((_L = this.tempData) == null ? void 0 : _L.role) === "alexa-alarm") {
           const view = await this.getAlexaAlarmView();
           if (view.entry && view.status === 0 && view.canStatus) {
-            await ((_H = this.alexaAlarms) == null ? void 0 : _H.setEnabled(view.entry.id, true));
+            await ((_M = this.alexaAlarms) == null ? void 0 : _M.setEnabled(view.entry.id, true));
           }
           break;
         }
-        if (((_I = this.tempData) == null ? void 0 : _I.role) === "alexa-timer") {
-          if ((_J = await this.getAlexaTimerAccess()) == null ? void 0 : _J.canStart) {
-            await ((_K = this.alexaTimer) == null ? void 0 : _K.start(Number(this.tempData.editSeconds) || 0));
+        if (((_N = this.tempData) == null ? void 0 : _N.role) === "alexa-timer") {
+          if ((_O = await this.getAlexaTimerAccess()) == null ? void 0 : _O.canStart) {
+            await ((_P = this.alexaTimer) == null ? void 0 : _P.start(Number(this.tempData.editSeconds) || 0));
           }
           break;
         }
-        if (((_L = this.tempData) == null ? void 0 : _L.role) === "timer") {
+        if (((_Q = this.tempData) == null ? void 0 : _Q.role) === "timer") {
           await this.startInternalTimer();
           break;
         }
@@ -3057,7 +3240,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           break;
         }
         const seconds = input[0] * 3600 + input[1] * 60 + input[2];
-        const data = ((_M = this.dataItems) == null ? void 0 : _M.type) === "timer" ? this.dataItems.data : void 0;
+        const data = ((_R = this.dataItems) == null ? void 0 : _R.type) === "timer" ? this.dataItems.data : void 0;
         const set = data && this.getTimerWriteState(data);
         switch (this.tempData.role) {
           case "alexa-timer":
@@ -3075,7 +3258,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           case "alexa-alarm": {
             const view = await this.getAlexaAlarmView();
             if (view.entry && view.canSet) {
-              await ((_N = this.alexaAlarms) == null ? void 0 : _N.setTime(view.entry.id, input[1], input[2]));
+              await ((_S = this.alexaAlarms) == null ? void 0 : _S.setTime(view.entry.id, input[1], input[2]));
             }
             break;
           }
@@ -3100,30 +3283,30 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       }
       case "timer-finish":
       case "timer-clear": {
-        if (((_O = this.tempData) == null ? void 0 : _O.role) === "ss-timer") {
-          await ((_P = this.parent.basePanel.screenSaver) == null ? void 0 : _P.stopClockTimer());
+        if (((_T = this.tempData) == null ? void 0 : _T.role) === "ss-timer") {
+          await ((_U = this.parent.basePanel.screenSaver) == null ? void 0 : _U.stopClockTimer());
           break;
         }
-        if (((_Q = this.tempData) == null ? void 0 : _Q.role) === "alexa-timer") {
-          const config = ((_R = this.dataItems) == null ? void 0 : _R.type) === "timer" ? this.dataItems.alexaTimer : void 0;
+        if (((_V = this.tempData) == null ? void 0 : _V.role) === "alexa-timer") {
+          const config = ((_W = this.dataItems) == null ? void 0 : _W.type) === "timer" ? this.dataItems.alexaTimer : void 0;
           if (config == null ? void 0 : config.followMedia) {
             await this.useAlexaTimer(config);
           }
-          await ((_S = this.alexaTimer) == null ? void 0 : _S.stop());
+          await ((_X = this.alexaTimer) == null ? void 0 : _X.stop());
           break;
         }
-        if (((_T = this.tempData) == null ? void 0 : _T.role) === "alexa-alarm") {
+        if (((_Y = this.tempData) == null ? void 0 : _Y.role) === "alexa-alarm") {
           break;
         }
-        const data = ((_U = this.dataItems) == null ? void 0 : _U.type) === "timer" ? this.dataItems.data : void 0;
-        const reported = ((_V = this.tempData) == null ? void 0 : _V.status) === "expired";
-        if (((_W = this.tempData) == null ? void 0 : _W.role) !== "timer") {
-          await ((_X = data == null ? void 0 : data.setValue2) == null ? void 0 : _X.setState(0));
+        const data = ((_Z = this.dataItems) == null ? void 0 : _Z.type) === "timer" ? this.dataItems.data : void 0;
+        const reported = ((__ = this.tempData) == null ? void 0 : __.status) === "expired";
+        if (((_$ = this.tempData) == null ? void 0 : _$.role) !== "timer") {
+          await ((_aa = data == null ? void 0 : data.setValue2) == null ? void 0 : _aa.setState(0));
         }
-        switch ((_Y = this.tempData) == null ? void 0 : _Y.role) {
+        switch ((_ba = this.tempData) == null ? void 0 : _ba.role) {
           case "ex-timer": {
-            const set = (_Z = data == null ? void 0 : data.entity1) == null ? void 0 : _Z.set;
-            const actual = (__ = data == null ? void 0 : data.entity1) == null ? void 0 : __.value;
+            const set = (_ca = data == null ? void 0 : data.entity1) == null ? void 0 : _ca.set;
+            const actual = (_da = data == null ? void 0 : data.entity1) == null ? void 0 : _da.value;
             if (set == null ? void 0 : set.writeable) {
               await set.setState(0);
             }
@@ -3140,9 +3323,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         }
         if (action === "timer-finish" && !reported) {
-          await ((_$ = data == null ? void 0 : data.setValue1) == null ? void 0 : _$.setStateTrue());
+          await ((_ea = data == null ? void 0 : data.setValue1) == null ? void 0 : _ea.setStateTrue());
         }
-        if (((_aa = this.tempData) == null ? void 0 : _aa.role) === "timer") {
+        if (((_fa = this.tempData) == null ? void 0 : _fa.role) === "timer") {
           await this.onInternalTimerChanged();
         } else {
           this.notifyClockSource();
@@ -3150,17 +3333,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         break;
       }
       case "timer-pause": {
-        if (((_ba = this.tempData) == null ? void 0 : _ba.role) === "ss-timer" || ((_ca = this.tempData) == null ? void 0 : _ca.role) === "alexa-timer") {
+        if (((_ga = this.tempData) == null ? void 0 : _ga.role) === "ss-timer" || ((_ha = this.tempData) == null ? void 0 : _ha.role) === "alexa-timer") {
           break;
         }
-        if (((_da = this.tempData) == null ? void 0 : _da.role) === "alexa-alarm") {
+        if (((_ia = this.tempData) == null ? void 0 : _ia.role) === "alexa-alarm") {
           const view = await this.getAlexaAlarmView();
           if (view.entry && view.status === 2 && view.canStatus) {
-            await ((_ea = this.alexaAlarms) == null ? void 0 : _ea.setEnabled(view.entry.id, false));
+            await ((_ja = this.alexaAlarms) == null ? void 0 : _ja.setEnabled(view.entry.id, false));
           }
           break;
         }
-        if (((_fa = this.tempData) == null ? void 0 : _fa.role) === "timer") {
+        if (((_ka = this.tempData) == null ? void 0 : _ka.role) === "timer") {
           this.clearInternalEnd();
           this.tempData.value = this.internalSeconds();
           this.tempData.status = "pause";
