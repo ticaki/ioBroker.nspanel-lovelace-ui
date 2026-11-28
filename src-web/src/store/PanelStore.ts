@@ -63,7 +63,7 @@ const ADAPTER_POPUPS: Readonly<Record<string, string>> = {
     popupTimer: 'popupTimer',
 };
 
-export function initialGlobalState(model: PanelModel = 'eu'): GlobalState {
+export function initialGlobalState(model: PanelModel = 'eu', extensions = false): GlobalState {
     return {
         model,
         time: '',
@@ -73,6 +73,7 @@ export function initialGlobalState(model: PanelModel = 'eu'): GlobalState {
         dim: { standby: 20, active: 100, background: 0, text: 65535 },
         sleeping: false,
         awake: false,
+        extensions,
     };
 }
 
@@ -110,10 +111,11 @@ export class PanelStore {
      *
      * @param model panel model
      * @param tftVersion version reported in `event,startup`, may be `1.0.0`
+     * @param extensions the web panel may use extensions over the hardware panel (`extensions` of the hello)
      */
-    reset(model: PanelModel, tftVersion = this.tftVersion): void {
+    reset(model: PanelModel, tftVersion = this.tftVersion, extensions = false): void {
         this.tftVersion = tftVersion;
-        this.global = { ...initialGlobalState(model), dim: this.global.dim };
+        this.global = { ...initialGlobalState(model, extensions), dim: this.global.dim };
         this.enterPage('pageStartup', []);
         this.commit();
         this.sendStartupEvent();

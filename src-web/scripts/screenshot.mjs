@@ -6,10 +6,11 @@
  * screenshot of the stage (native size of the model) at 2x.
  *
  *   node scripts/screenshot.mjs --in commands.txt --out shot.png [--port 4174] [--wait 300] [--model eu|us-l|us-p|web-p|web-l]
- *       [--frame] [--buttons 0]
+ *       [--frame] [--buttons 0] [--extensions 1]
  *
  * `--frame` saves the whole device (stage plus the two hardware buttons below it) instead of
- * the stage alone; `--buttons 0` opens the mock with `?buttons=0` (no hardware buttons).
+ * the stage alone; `--buttons 0` opens the mock with `?buttons=0` (no hardware buttons);
+ * `--extensions 1` opens it with `?extensions=1` (web panel extensions allowed, e.g. the controls of cardSchedule).
  *
  * Needs a running `npm start` (vite dev server) or `vite preview` on the port and the
  * globally installed puppeteer (`npm i -g puppeteer`). One payload per line, empty lines
@@ -47,6 +48,7 @@ const STAGES = {
 const stage = STAGES[model] ?? STAGES.eu;
 const frame = process.argv.includes('--frame');
 const showButtons = arg('buttons', '1') !== '0';
+const extensions = arg('extensions', '0') === '1';
 // theme.hardwareButtonsHeight
 const HARDWARE_BUTTONS_HEIGHT = 68;
 if (!input) {
@@ -78,9 +80,12 @@ try {
         deviceScaleFactor: scale,
     });
     page.on('pageerror', err => console.error(`page error: ${err.message}`));
-    await page.goto(`http://localhost:${port}/demo?mock=1&model=${model}${showButtons ? '' : '&buttons=0'}`, {
-        waitUntil: 'networkidle0',
-    });
+    await page.goto(
+        `http://localhost:${port}/demo?mock=1&model=${model}${showButtons ? '' : '&buttons=0'}${extensions ? '&extensions=1' : ''}`,
+        {
+            waitUntil: 'networkidle0',
+        },
+    );
     await page.waitForFunction(() => window.__panel !== undefined, { timeout: 10_000 });
     // icons are fetched after mount - wait until the page renders
     await page.waitForSelector('[data-stage] [data-page]', { timeout: 10_000 });
