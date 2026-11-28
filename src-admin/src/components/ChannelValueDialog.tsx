@@ -16,7 +16,7 @@ import { EntitySelector } from './EntitySelector';
 import { DocHelp } from './DocHelp';
 import type { DocTopicRef } from '../docTopics';
 import { emptyChannelValueConfig, type ChannelValueConfig } from '../../../src/lib/types/adminShareConfig';
-import { visibleValueConfig } from '../channelValueConfig';
+import { visibleValueConfig, type ValuePreviewParts } from '../channelValueConfig';
 
 /** Feature flags passed by the parent to show/hide optional sections. */
 type ChannelValueDialogFeatures = {
@@ -58,8 +58,8 @@ type ChannelValueDialogProps = {
     onSave?: (config: ChannelValueConfig) => void;
     /** Called when the user clicks the delete button – parent should clear valueEntry */
     onDelete?: () => void;
-    /** Called whenever the preview text is recomputed while the dialog is open */
-    onPreviewUpdate?: (text: string) => void;
+    /** Called whenever the preview text is recomputed, with the resolved parts it is built from */
+    onPreviewUpdate?: (text: string, parts: ValuePreviewParts) => void;
     /** Controls which optional fields are visible. Defaults to all enabled. */
     features?: ChannelValueDialogFeatures;
     /**
@@ -405,9 +405,15 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
 
         // without the unit field the unit of the state object is used - the adapter does the same
         // (getValueEntryString() falls back to common.unit)
-        const newPreviewText = `${prefixResolved}${mainResolved}${valueStateType === 'number' ? unit : ''}${suffixResolved}`;
+        const parts: ValuePreviewParts = {
+            prefix: prefixResolved,
+            value: `${mainResolved}${valueStateType === 'number' ? unit : ''}`,
+            suffix: suffixResolved,
+        };
+        // joined without an automatic space, like the adapter - a space belongs into prefix or suffix
+        const newPreviewText = `${parts.prefix}${parts.value}${parts.suffix}`;
         this.setState({ previewLoading: false, previewText: newPreviewText }, () => {
-            this.props.onPreviewUpdate?.(newPreviewText);
+            this.props.onPreviewUpdate?.(newPreviewText, parts);
         });
     }
 

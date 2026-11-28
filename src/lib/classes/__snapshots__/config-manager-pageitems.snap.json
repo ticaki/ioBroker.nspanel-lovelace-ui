@@ -90,8 +90,18 @@
         },
         "text": {
           "true": {
-            "type": "triggered",
-            "dp": "alias.0.helper.text"
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
           }
         }
       }
@@ -305,8 +315,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "Kitchen"
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
           }
         }
       }
@@ -828,8 +848,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "Kitchen"
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
           }
         }
       }
@@ -982,8 +1012,18 @@
         },
         "text": {
           "true": {
-            "type": "triggered",
-            "dp": "alias.0.helper.text"
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
           }
         }
       }
@@ -54172,6 +54212,14 @@
           "type": "const",
           "constVal": "Kitchen"
         },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
+        },
         "text": {
           "true": {
             "type": "const",
@@ -54502,6 +54550,14 @@
         "headline": {
           "type": "const",
           "constVal": "Kitchen"
+        },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
         },
         "text": {
           "true": {
@@ -54927,6 +54983,14 @@
           "type": "const",
           "constVal": "Kitchen"
         },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
+        },
         "text": {
           "true": {
             "type": "const",
@@ -55117,8 +55181,16 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "alias.0.helper.text"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
+        },
+        "headlinePrefix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
+        },
+        "headlineSuffix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
         },
         "text": {
           "true": {
@@ -55593,8 +55665,16 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "alias.0.helper.text"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
+        },
+        "headlinePrefix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
+        },
+        "headlineSuffix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
         },
         "text": {
           "true": {
@@ -55859,6 +55939,14 @@
         "headline": {
           "type": "const",
           "constVal": "Kitchen"
+        },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
         },
         "text": {
           "true": {
@@ -56544,8 +56632,16 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "alias.0.helper.text"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
+        },
+        "headlinePrefix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
+        },
+        "headlineSuffix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
         },
         "text": {
           "true": {
@@ -88849,6 +88945,14 @@
         "headline": {
           "type": "const",
           "constVal": "Kitchen"
+        },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
         }
       },
       "filter": 2
@@ -89144,6 +89248,14 @@
         "headline": {
           "type": "const",
           "constVal": "Kitchen"
+        },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
         },
         "enabled": {
           "type": "triggered",
@@ -89527,6 +89639,14 @@
         "headline": {
           "type": "const",
           "constVal": "Kitchen"
+        },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
         }
       },
       "filter": 2
@@ -89710,8 +89830,16 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "alias.0.helper.text"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
+        },
+        "headlinePrefix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
+        },
+        "headlineSuffix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
         },
         "enabled": {
           "type": "const",
@@ -90097,8 +90225,16 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "alias.0.helper.text"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
+        },
+        "headlinePrefix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
+        },
+        "headlineSuffix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
         },
         "enabled": {
           "type": "const",
@@ -90319,6 +90455,14 @@
         "headline": {
           "type": "const",
           "constVal": "Kitchen"
+        },
+        "headlinePrefix": {
+          "type": "const",
+          "constVal": "pre "
+        },
+        "headlineSuffix": {
+          "type": "const",
+          "constVal": " suf"
         }
       },
       "filter": 2
@@ -90892,8 +91036,16 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "alias.0.helper.text"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
+        },
+        "headlinePrefix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
+        },
+        "headlineSuffix": {
+          "type": "state",
+          "dp": "alias.0.helper.text"
         },
         "enabled": {
           "type": "const",
@@ -94084,8 +94236,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "Kitchen"
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
           }
         }
       },
@@ -94532,8 +94694,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "Kitchen"
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
           }
         },
         "enabled": {
@@ -95009,8 +95181,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "Kitchen"
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
           }
         }
       },
@@ -95246,8 +95428,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "alias.0.helper.text"
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
           }
         },
         "enabled": {
@@ -95859,8 +96051,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "alias.0.helper.text"
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
           }
         },
         "enabled": {
@@ -96216,8 +96418,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "Kitchen"
+            "value": {
+              "type": "const",
+              "constVal": "Kitchen"
+            },
+            "prefix": {
+              "type": "const",
+              "constVal": "pre "
+            },
+            "suffix": {
+              "type": "const",
+              "constVal": " suf"
+            }
           }
         }
       },
@@ -96994,8 +97206,18 @@
         },
         "text": {
           "true": {
-            "type": "const",
-            "constVal": "alias.0.helper.text"
+            "value": {
+              "type": "triggered",
+              "dp": "alias.0.helper.text"
+            },
+            "prefix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            },
+            "suffix": {
+              "type": "state",
+              "dp": "alias.0.helper.text"
+            }
           }
         },
         "enabled": {

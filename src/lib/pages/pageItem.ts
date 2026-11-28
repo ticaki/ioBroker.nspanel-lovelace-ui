@@ -864,8 +864,10 @@ export class PageItem extends BaseTriggeredPage {
 
                     message.iconColor =
                         (await tools.getIconEntryColor(item.icon, !!(value ?? true), Color.HMIOff)) ?? Color.HMIOn;
-                    message.displayName = this.library.getTranslation(
-                        (await tools.getEntryTextOnOff(item.headline, !!(value ?? true))) ?? message.displayName ?? '',
+                    message.displayName = await tools.getHeadlineText(
+                        item,
+                        message.displayName ?? '',
+                        (text: string): string => this.library.getTranslation(text),
                     );
                     message.optionalValue = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.text, !!(value ?? true), true)) ?? 'PRESS',
@@ -881,8 +883,10 @@ export class PageItem extends BaseTriggeredPage {
                             message.type = 'fan';
                             //const speed = (await tools.getValueEntryNumber(item.speed, true)) ?? null;
                             const value = (await tools.getValueEntryBoolean(item.entity1)) ?? null;
-                            message.displayName = this.library.getTranslation(
-                                (await tools.getEntryTextOnOff(item.headline, true)) ?? message.displayName ?? '',
+                            message.displayName = await tools.getHeadlineText(
+                                item,
+                                message.displayName ?? '',
+                                (text: string): string => this.library.getTranslation(text),
                             );
                             message.icon = (await tools.getIconEntryValue(item.icon, value, '')) ?? '';
                             message.iconColor = (await tools.getIconEntryColor(item.icon, value, Color.HMIOn)) ?? '';
@@ -2355,8 +2359,8 @@ export class PageItem extends BaseTriggeredPage {
                         : 'entity2' in item
                           ? ((await tools.getValueEntryString(item.entity2)) ?? '')
                           : '';
-                message.headline = this.library.getTranslation(
-                    (item.headline && (await item.headline.getString())) ?? '',
+                message.headline = await tools.getHeadlineText(item, '', (text: string): string =>
+                    this.library.getTranslation(text),
                 );
 
                 const sList =

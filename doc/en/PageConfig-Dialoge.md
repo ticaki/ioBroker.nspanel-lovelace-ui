@@ -76,7 +76,7 @@ The **gear icon** to the right of the field opens the [Value Display Configurati
 
 > **On the thermostat and the media player page the name does not label the slot.** There it is only the **title of the popup** the slot opens; it does not appear below the icon. The dialog says so as helper text under the field: *"On this page only the title of the item's popup – not shown below the icon on the panel."* See [cardThermo2](cardThermo2) and [cardMedia](cardMedia).
 
-The **…** button next to it opens the [dynamic name](#4-dynamic-name) — a label built from a state. Once one is set up, its preview appears as faint placeholder text in the name field.
+The **…** button next to it opens the [dynamic name](#4-dynamic-name) — a label built from a state. Once one is set up, its preview appears as faint placeholder text in the name field; with a typed name as well, the helper text below shows *Panel shows: …* with prefix and suffix.
 
 ### Further fields, depending on the card type
 
@@ -197,7 +197,7 @@ The value is taken over when you **leave the field** or press **Enter** — only
 
 ![The Dynamic name dialog](../Pictures/pageConfigDialoge/dialoge-04-dynamischer-name.png)
 
-The **…** button at the name field opens the dialog **Dynamic name** (tooltip *"Dynamic name (from a state)"*). At the top it says what it does: *"Builds the name of the item from a state, optionally with prefix and suffix (text or state ID). Only used while the Name field is empty."*
+The **…** button at the name field opens the dialog **Dynamic name** (tooltip *"Dynamic name (from a state)"*). At the top it says what it does: *"Builds the name of the item from a state, optionally with prefix and suffix (text or state ID). The state is only used while the Name field is empty. Prefix and suffix are always added, also around a typed name."*
 
 | Field | Meaning |
 |---|---|
@@ -207,7 +207,7 @@ The **…** button at the name field opens the dialog **Dynamic name** (tooltip 
 | **Preview** | Continuously shows the result with the **real current value**; states in prefix and suffix are resolved. The same preview then appears as faint placeholder text in the name field. |
 | **Delete** | Removes the dynamic name again. |
 
-**The typed name wins.** If there is something in the *Name* field, the adapter does not evaluate the dynamic name at all — it is then not stored either.
+**The typed name only replaces the value.** If there is something in the *Name* field, the adapter takes it instead of the value state ID — **prefix and suffix are always put in front and behind**. Without a value state ID but with prefix or suffix, the panel shows prefix and suffix only (not the channel name). The adapter adds no space of its own: if you need one between value and suffix, put it into the suffix (e.g. *" h"*) — the preview joins the parts the same way.
 
 **There is no unit and no date format here.** The adapter does not read them at this place, so the dialog does not show the fields — and it **clears stored old values when opening and when applying**. If you need a unit in the label, put it into the suffix. The unit and date format of the **value** live behind the gear at the channel field ([section 5](#5-value-display-configuration-at-the-channel)).
 
@@ -321,7 +321,7 @@ If states were already detected as missing or duplicated, or the role does not f
 
 - **"Delete" in the dialog at the gear clears the channel ID.** The button does not only remove unit, prefix, suffix and date format, it resets the whole channel ID — the page item then has no device any more and all fields are locked. To get rid of prefix and suffix only, empty the two fields and press *Apply*.
 - **Prefix and suffix at the gear only reach *Entities* and *Schedule*.** The adapter evaluates them on those two card types only. On the three grid variants, on the thermostat and on the media player page the dialog accepts them, stores them and shows them in the preview — on the panel they do not appear. The **unit** is not affected by this, it works everywhere.
-- **The dynamic name only works with an empty name field.** Filling both shows the typed name on the panel; the dynamic name is not even stored. The faint preview in the name field disappears then.
+- **With a typed name prefix and suffix of the dynamic name stay active.** The value state is not read then, prefix and suffix appear around the typed name on the panel. If you do not want them, delete the dynamic name.
 - **Unit and date format at the dynamic name are lost.** An entry from an older version is cleared silently when the dialog opens, because the adapter does not read it there.
 - **The preview does not show what appears on the panel.** At the gear the main value only stands there as `<value>`, and the unit is generally missing from the preview as soon as the value source is not a number — on the panel it is appended all the same.
 - **Up to and including 2.2.0 three things behaved differently.** The Color Options always wrote a scale when applying (removable only via the raw data) and remembered the values of the previous page item; *Is a navigation* and *Custom button* could be ticked at the same time (the adapter then took the navigation); and the *Color Settings* button still showed the verdict of the previous channel while a channel was being checked. The version after 2.2.0 fixes all three.

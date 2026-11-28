@@ -76,7 +76,7 @@ Das **Zahnrad** rechts neben dem Feld öffnet die [Wertanzeige-Konfiguration](#5
 
 > **Auf der Thermostat- und der Mediaplayer-Seite beschriftet der Name die Fläche nicht.** Dort ist er nur die **Überschrift des Popups**, das die Fläche öffnet; unter dem Symbol erscheint er nicht. Der Dialog sagt das als Hilfstext unter dem Feld: *„Auf dieser Seite nur Titel des Popups – wird auf dem Panel nicht unter dem Icon angezeigt."* Siehe [cardThermo2](cardThermo2) und [cardMedia](cardMedia).
 
-Der Knopf **…** daneben öffnet den [dynamischen Namen](#4-dynamischer-name) — eine Beschriftung, die aus einem Datenpunkt entsteht. Ist einer eingerichtet, steht seine Vorschau als blasser Platzhaltertext im Namensfeld.
+Der Knopf **…** daneben öffnet den [dynamischen Namen](#4-dynamischer-name) — eine Beschriftung, die aus einem Datenpunkt entsteht. Ist einer eingerichtet, steht seine Vorschau als blasser Platzhaltertext im Namensfeld; ist zusätzlich ein Name eingetragen, zeigt der Hilfstext darunter *Anzeige am Panel: …* mit Präfix und Suffix.
 
 ### Weitere Felder, je nach Kartentyp
 
@@ -197,7 +197,7 @@ Hier landen auch die Items, die die [Übernahme eines Konfigurationsskripts](Mig
 
 ![Der Dialog Dynamischer Name](../Pictures/pageConfigDialoge/dialoge-04-dynamischer-name.png)
 
-Der Knopf **…** am Namensfeld öffnet den Dialog **Dynamischer Name** (Tooltip *„Dynamischer Name (aus einem State)"*). Oben steht, was er tut: *„Bildet den Namen des Elements aus einem State, optional mit Präfix und Suffix (Text oder State-ID). Wird nur verwendet, solange das Feld Name leer ist."*
+Der Knopf **…** am Namensfeld öffnet den Dialog **Dynamischer Name** (Tooltip *„Dynamischer Name (aus einem State)"*). Oben steht, was er tut: *„Bildet den Namen des Elements aus einem State, optional mit Präfix und Suffix (Text oder State-ID). Der State wird nur verwendet, solange das Feld Name leer ist. Präfix und Suffix werden immer angefügt, auch an einen eingetragenen Namen."*
 
 | Feld | Bedeutung |
 |---|---|
@@ -207,7 +207,7 @@ Der Knopf **…** am Namensfeld öffnet den Dialog **Dynamischer Name** (Tooltip
 | **Vorschau** | Zeigt laufend das Ergebnis mit dem **echten aktuellen Wert**; Datenpunkte in Präfix und Suffix werden aufgelöst. Dieselbe Vorschau steht danach als blasser Platzhaltertext im Namensfeld. |
 | **Löschen** | Entfernt den dynamischen Namen wieder. |
 
-**Der getippte Name hat Vorrang.** Steht im Feld *Name* etwas, wertet der Adapter den dynamischen Namen gar nicht aus — er wird dann auch nicht mitgespeichert.
+**Der getippte Name ersetzt nur den Wert.** Steht im Feld *Name* etwas, nimmt der Adapter ihn statt der Wert-State-ID — **Präfix und Suffix setzt er immer davor und dahinter**. Ist keine Wert-State-ID gesetzt, aber Präfix oder Suffix, zeigt das Panel nur Präfix und Suffix (nicht den Kanalnamen). Ein Leerzeichen setzt der Adapter nicht selbst: Wer eines zwischen Wert und Suffix braucht, schreibt es ins Suffix (z. B. *„ Uhr"*) — die Vorschau setzt genauso zusammen.
 
 **Einheit und Datumsformat gibt es hier nicht.** Der Adapter liest sie an dieser Stelle nicht, deshalb zeigt der Dialog die Felder nicht — und **leert gespeicherte Altwerte beim Öffnen und beim Übernehmen**. Wer eine Einheit in der Beschriftung braucht, schreibt sie ins Suffix. Einheit und Datumsformat des **Werts** stehen hinter dem Zahnrad am Kanalfeld ([Abschnitt 5](#5-wertanzeige-konfiguration-am-kanal)).
 
@@ -321,7 +321,7 @@ Sind schon vorher Datenpunkte als fehlend oder doppelt erkannt oder passt die Ro
 
 - **„Löschen" im Dialog am Zahnrad leert die Kanal-ID.** Der Knopf entfernt nicht nur Einheit, Präfix, Suffix und Datumsformat, sondern setzt die ganze Kanal-ID zurück — das Pageitem hat danach kein Gerät mehr und alle Felder sind gesperrt. Wer nur Präfix und Suffix loswerden will, leert die beiden Felder und drückt *Übernehmen*.
 - **Präfix und Suffix am Zahnrad erreichen nur *Entities* und *Schedule*.** Der Adapter wertet sie ausschließlich auf diesen beiden Kartentypen aus. Auf den drei Grid-Varianten, auf der Thermostat- und auf der Mediaplayer-Seite nimmt der Dialog sie an, speichert sie und zeigt sie in der Vorschau — am Panel erscheinen sie nicht. Die **Einheit** ist davon nicht betroffen, sie wirkt überall.
-- **Der dynamische Name wirkt nur bei leerem Namensfeld.** Wer beides füllt, sieht am Panel den getippten Namen; der dynamische Name wird gar nicht gespeichert. Die blasse Vorschau im Namensfeld verschwindet dann.
+- **Mit eingetragenem Namen bleiben Präfix und Suffix des dynamischen Namens aktiv.** Der Wert-State wird dann nicht gelesen, Präfix und Suffix stehen am Panel um den getippten Namen. Wer sie nicht will, löscht den dynamischen Namen.
 - **Einheit und Datumsformat am dynamischen Namen gehen verloren.** Ein Eintrag aus einer älteren Version wird beim Öffnen des Dialogs stillschweigend geleert, weil der Adapter ihn dort nicht liest.
 - **Die Vorschau zeigt nicht, was am Panel steht.** Am Zahnrad steht der Hauptwert nur als `<value>` da, und die Einheit fehlt in der Vorschau grundsätzlich, sobald die Wertquelle keine Zahl ist — am Panel wird sie trotzdem angehängt.
 - **Bis einschließlich 2.2.0 verhielten sich drei Dinge anders.** Die Farboptionen schrieben beim Übernehmen immer eine Skala (loswerden nur über die Rohdaten) und merkten sich die Werte des vorigen Pageitems; *Ist eine Navigation* und *Benutzerdefinierter Knopf* ließen sich gleichzeitig setzen (der Adapter nahm dann die Navigation); und der Knopf *Farbeinstellungen* zeigte während der Kanalprüfung noch das Urteil des vorigen Kanals. Die Version nach 2.2.0 hat alle drei behoben.

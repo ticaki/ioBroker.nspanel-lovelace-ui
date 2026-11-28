@@ -29,3 +29,31 @@ export function visibleValueConfig(
     }
     return out;
 }
+
+/** The resolved parts of a value preview: prefix, value (with unit) and suffix */
+export interface ValuePreviewParts {
+    prefix: string;
+    value: string;
+    suffix: string;
+}
+
+/**
+ * The dynamic name is in use: a value state id, a prefix or a suffix is set - prefix and suffix are always
+ * appended by the adapter, the channel name is then no longer the default name.
+ *
+ * @param config the dynamic name config of the item
+ */
+export function hasDynamicName(config: Partial<ChannelValueConfig> | undefined): boolean {
+    return !!(config && (config.valueStateId || config.prefix || config.suffix));
+}
+
+/**
+ * The name the panel shows with a dynamic name, joined like the adapter (no automatic space): without a
+ * fixed name prefix + value + suffix, with a fixed name prefix + name + suffix.
+ *
+ * @param name the content of the Name field
+ * @param parts the resolved preview parts of the dynamic name
+ */
+export function dynamicNamePanelText(name: string, parts: ValuePreviewParts): string {
+    return `${parts.prefix}${name === '' ? parts.value : name}${parts.suffix}`;
+}

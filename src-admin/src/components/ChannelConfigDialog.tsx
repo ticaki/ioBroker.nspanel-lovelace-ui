@@ -37,6 +37,7 @@ import { I18n, type ThemeType } from '@iobroker/gui-components';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import { EntitySelector } from './EntitySelector';
+import { dynamicNamePanelText, hasDynamicName, type ValuePreviewParts } from '../channelValueConfig';
 import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ChannelValueDialog from './ChannelValueDialog';
@@ -243,6 +244,8 @@ interface ChannelConfigDialogState {
     valueEntry: ChannelValueConfig | undefined;
     /** Last preview text computed inside ValueEntryDialog – purely for display in the name field */
     valueEntryPreview: string;
+    /** Resolved prefix / value / suffix of the last preview - the panel text with a filled Name field */
+    valueEntryParts: ValuePreviewParts | null;
     /** useValue Checkbox Auswahl */
     useValue: boolean;
     /** Textgröße 0–5 (undefined = Standard) */
@@ -356,6 +359,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelNameSuggestion: '',
             valueEntry: undefined,
             valueEntryPreview: '',
+            valueEntryParts: null,
             useValue: false,
             textSize: undefined,
             // the color button is hidden until checkDatapoints has looked at the channel
@@ -460,6 +464,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             textSize: data?.textSize,
             valueEntry: data?.valueEntry,
             valueEntryPreview: '',
+            valueEntryParts: null,
             scale: data?.scale,
             datapointErrors: [],
             datapointDuplicates: [],
@@ -502,7 +507,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         if (!isNative && channelIdToCheck) {
             void this.checkChannelExists(channelIdToCheck, data?.type === 'custom');
         }
-        if (data?.valueEntry?.valueStateId) {
+        if (data?.valueEntry && hasDynamicName(data.valueEntry)) {
             this.valueEntryDialogRef.current?.triggerPreviewFor(data.valueEntry);
         }
         void this.loadAdapterColorTheme();
@@ -689,9 +694,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
 
     /** Helper text below the Name field: name suggestion / default, plus the popup note where it applies */
     private nameHelperText(): string | undefined {
-        const { name, channelNameSuggestion } = this.state;
-        const base =
-            name === '' && channelNameSuggestion
+        const { name, channelNameSuggestion, valueEntry, valueEntryParts } = this.state;
+        const dynamicName = hasDynamicName(valueEntry);
+        // a fixed name with prefix / suffix of the dynamic name: show what the panel will show
+        const panelText =
+            dynamicName && name !== '' && valueEntryParts && (valueEntryParts.prefix || valueEntryParts.suffix)
+                ? `${I18n.t('channelConfigDialog_namePanelPreview')}: ${dynamicNamePanelText(name, valueEntryParts)}`
+                : undefined;
+        // with a dynamic name the channel name is no longer used - the placeholder shows the panel text
+        const base = panelText
+            ? panelText
+            : dynamicName && name === ''
+              ? undefined
+              : name === '' && channelNameSuggestion
                 ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${channelNameSuggestion}`
                 : name === ''
                   ? I18n.t('channelConfigDialog_defaultName')
@@ -2990,7 +3005,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     onDelete={() => this.setState({ channelId: emptyChannelValueConfig() })}
                 />
 
-                {/* Dynamic name: builds the item name from a state, only used while the Name field is empty */}
+                {/* Dynamic name: the state is the name while the Name field is empty, prefix and suffix always apply */}
                 <ChannelValueDialog
                     ref={this.valueEntryDialogRef}
                     socket={socket}
@@ -3008,8 +3023,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         this.setState({ valueEntry: config });
                         this.valueEntryDialogRef.current?.triggerPreviewFor(config);
                     }}
-                    onDelete={() => this.setState({ valueEntry: undefined, valueEntryPreview: '' })}
-                    onPreviewUpdate={(text: string) => this.setState({ valueEntryPreview: text })}
+                    onDelete={() =>
+                        this.setState({ valueEntry: undefined, valueEntryPreview: '', valueEntryParts: null })
+                    }
+                    onPreviewUpdate={(text: string, parts: ValuePreviewParts) =>
+                        this.setState({ valueEntryPreview: text, valueEntryParts: parts })
+                    }
                     valueStateTypes={['string', 'number']}
                 />
                 {/* CheckPageItemConfig Ergebnis-Dialog */}

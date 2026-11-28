@@ -1167,6 +1167,8 @@ export namespace NSPanel {
         | 'speed'
         | 'text'
         | 'headline'
+        | 'headlinePrefix'
+        | 'headlineSuffix'
         | 'icon'
         | 'entityInSel'
         | 'valueList'
@@ -1331,6 +1333,8 @@ export namespace NSPanel {
         | 'icon'
         | 'color'
         | 'headline'
+        | 'headlinePrefix'
+        | 'headlineSuffix'
         | 'valueList'
         | 'valueList2'
         | 'setList'
@@ -1421,6 +1425,10 @@ export namespace NSPanel {
 
     type PageItemBase = {
         headline?: string;
+        /** input_sel and fan: prefix of the name (`headline`) - text or state, put in front in the row and popup */
+        headlinePrefix?: string;
+        /** input_sel and fan: suffix of the name (`headline`) - text or state, appended in the row and popup */
+        headlineSuffix?: string;
         color?: ColorEntryType;
         icon?: IconEntryType;
         icon1?: IconEntryType;

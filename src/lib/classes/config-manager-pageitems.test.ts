@@ -1111,4 +1111,81 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             expect(data.down).to.include({ type: 'state', dp: `${channel}.SET`, write: 'return false;' });
         });
     });
+
+    describe('dynamic name: prefix and suffix always appended, name as state', () => {
+        const admin = (
+            channel: string,
+            name: string | undefined,
+            valueEntry: { valueStateId: string; prefix: string; suffix: string },
+        ): Record<string, unknown> =>
+            adminPageItemToScriptItem({
+                channelId: { valueStateId: channel },
+                name,
+                valueEntry: { ...valueEntry, unit: '', dateFormat: '' },
+            } as unknown as AdminPageItemConfig) as unknown as Record<string, unknown>;
+        const data = async (item: Record<string, unknown>): Promise<any> => {
+            const result = await run('item', item, PAGES.entities);
+            expect(result.error).to.equal(undefined);
+            return (result.itemConfig as { data: unknown }).data;
+        };
+        const select = DEVICES.full('select');
+        const fan = DEVICES.full('level.mode.fan');
+        const socket = DEVICES.min('socket');
+        const text = 'alias.0.helper.text';
+        const num = 'alias.0.helper.number';
+
+        it('select: a state as name is read (triggered), not shown as its id', async () => {
+            const d = await data({ id: select, name: text });
+            expect(d.headline).to.deep.equal({ type: 'triggered', dp: text });
+        });
+
+        it('select: value state with suffix - name from the state, suffix as headlineSuffix', async () => {
+            const d = await data(admin(select, undefined, { valueStateId: text, prefix: '', suffix: ' Uhr' }));
+            expect(d.headline).to.deep.equal({ type: 'triggered', dp: text });
+            expect(d.headlinePrefix).to.equal(undefined);
+            expect(d.headlineSuffix).to.deep.equal({ type: 'const', constVal: ' Uhr' });
+        });
+
+        it('select: a typed name keeps prefix and suffix of the dynamic name', async () => {
+            const d = await data(admin(select, 'Modus', { valueStateId: text, prefix: 'pre ', suffix: num }));
+            expect(d.headline).to.deep.equal({ type: 'const', constVal: 'Modus' });
+            expect(d.headlinePrefix).to.deep.equal({ type: 'const', constVal: 'pre ' });
+            expect(d.headlineSuffix).to.deep.equal({ type: 'state', dp: num });
+        });
+
+        it('select: without value state only prefix and suffix - no fallback to the channel name', async () => {
+            const d = await data(admin(select, undefined, { valueStateId: '', prefix: num, suffix: num }));
+            expect(d.headline).to.deep.equal({ type: 'const', constVal: '' });
+            expect(d.headlinePrefix).to.deep.equal({ type: 'state', dp: num });
+            expect(d.headlineSuffix).to.deep.equal({ type: 'state', dp: num });
+        });
+
+        it('select: a value of one space (free text) stays the name between prefix and suffix', async () => {
+            const d = await data(admin(select, undefined, { valueStateId: ' ', prefix: num, suffix: num }));
+            expect(d.headline).to.deep.equal({ type: 'const', constVal: ' ' });
+            expect(d.headlinePrefix).to.deep.equal({ type: 'state', dp: num });
+            expect(d.headlineSuffix).to.deep.equal({ type: 'state', dp: num });
+        });
+
+        it('select: without name, prefix and suffix the channel name', async () => {
+            const d = await data({ id: select });
+            expect(d.headline).to.deep.equal({ type: 'const', constVal: 'full select (de)' });
+        });
+
+        it('fan: name as state and prefix / suffix like the select', async () => {
+            const d = await data(admin(fan, undefined, { valueStateId: text, prefix: 'pre ', suffix: '' }));
+            expect(d.headline).to.deep.equal({ type: 'triggered', dp: text });
+            expect(d.headlinePrefix).to.deep.equal({ type: 'const', constVal: 'pre ' });
+            expect(d.headlineSuffix).to.equal(undefined);
+        });
+
+        it('socket: a typed name keeps prefix and suffix, without value state the name part stays empty', async () => {
+            const fixed = await data(admin(socket, 'Steckdose', { valueStateId: text, prefix: '', suffix: ' Uhr' }));
+            expect(fixed.text.true.value).to.deep.equal({ type: 'const', constVal: 'Steckdose' });
+            expect(fixed.text.true.suffix).to.deep.equal({ type: 'const', constVal: ' Uhr' });
+            const empty = await data(admin(socket, undefined, { valueStateId: '', prefix: num, suffix: '' }));
+            expect(empty.text.true.value).to.deep.equal({ type: 'const', constVal: '' });
+            expect(empty.text.true.prefix).to.deep.equal({ type: 'state', dp: num });
+        });
+    });
 });
