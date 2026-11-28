@@ -1108,6 +1108,8 @@ export namespace NSPanel {
         | 'entity1'
         | 'text'
         | 'headline'
+        | 'headlinePrefix'
+        | 'headlineSuffix'
         | 'icon'
         // the state to trigger if internal trigger ends
         | 'setValue1'
@@ -1298,6 +1300,8 @@ export namespace NSPanel {
         | 'entityInSel'
         | 'ct'
         | 'headline'
+        | 'headlinePrefix'
+        | 'headlineSuffix'
         | 'colorMode'
         | 'setValue1'
         | 'setValue2'
@@ -1376,6 +1380,8 @@ export namespace NSPanel {
         | 'icon'
         | 'color'
         | 'headline'
+        | 'headlinePrefix'
+        | 'headlineSuffix'
         | 'valueList'
         | 'setList'
         | 'setValue1'
@@ -1404,6 +1410,8 @@ export namespace NSPanel {
         | 'text1'
         | 'icon'
         | 'headline'
+        | 'headlinePrefix'
+        | 'headlineSuffix'
         | 'entity2'
         | 'entity3'
         | 'entity4'
@@ -1425,9 +1433,9 @@ export namespace NSPanel {
 
     type PageItemBase = {
         headline?: string;
-        /** input_sel and fan: prefix of the name (`headline`) - text or state, put in front in the row and popup */
+        /** prefix of the name (`headline`) - text or state, put in front in the row and the popup headline */
         headlinePrefix?: string;
-        /** input_sel and fan: suffix of the name (`headline`) - text or state, appended in the row and popup */
+        /** suffix of the name (`headline`) - text or state, appended in the row and the popup headline */
         headlineSuffix?: string;
         color?: ColorEntryType;
         icon?: IconEntryType;

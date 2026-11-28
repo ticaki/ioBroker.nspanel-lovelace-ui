@@ -3,22 +3,24 @@ import { PageItem } from './pageItem';
 import { Dataitem } from '../controller/data-item';
 
 /**
- * input_sel item of cardEntities without constructor: name, prefix and suffix of the name as const data items.
+ * Item of cardEntities without constructor: name, prefix and suffix of the name as const data items.
  *
  * @param headline name part, undefined = none
  * @param prefix prefix of the name, undefined = none
  * @param suffix suffix of the name, undefined = none
+ * @param type input_sel, light or shutter
  * @returns the item
  */
 function inSelItem(
     headline: string | undefined,
     prefix: string | number | undefined,
     suffix: string | number | undefined,
+    type: 'input_sel' | 'light' | 'shutter' = 'input_sel',
 ): PageItem {
     const noop = (): void => undefined;
     const log = { debug: noop, warn: noop, error: noop, info: noop, silly: noop };
     const controller = { statesControler: { activateTrigger: async (): Promise<void> => undefined } };
-    const adapter: unknown = { log, controller };
+    const adapter: unknown = { log, controller, config: {} };
     const translations: Record<string, string> = { Mode: 'Modus' };
     const c = (v: string | number): Dataitem =>
         new Dataitem(adapter, { type: 'const', constVal: v }, {} as never, {} as never);
@@ -29,12 +31,13 @@ function inSelItem(
         config: { role: '' },
         adapter,
         library: { getTranslation: (k: string): string => translations[k] ?? k },
-        parent: { card: 'cardEntities' },
+        parent: { card: 'cardEntities', basePanel: { overrideLightPopup: false } },
         isEnabled: async (): Promise<boolean> => true,
         dataItems: {
-            type: 'input_sel',
+            type,
             role: '',
             data: {
+                entity1: { value: c(1) },
                 entityInSel: { value: c(0) },
                 valueList: c('a?b'),
                 text: { true: c('a'), false: undefined },
@@ -57,7 +60,7 @@ async function rowName(item: PageItem): Promise<string> {
     return (await item.getPageItemPayload()).split('~')[4] ?? '';
 }
 
-describe('lib/pages/pageItem - input_sel name with prefix and suffix', () => {
+describe('lib/pages/pageItem - item name with prefix and suffix', () => {
     it('row: prefix + translated name + suffix, joined without a space of its own', async () => {
         expect(await rowName(inSelItem('Mode', 'pre ', ' Uhr'))).to.equal('pre Modus Uhr');
         expect(await rowName(inSelItem('24.11.2026 17:42', '', 'Uhr'))).to.equal('24.11.2026 17:42Uhr');
@@ -80,4 +83,11 @@ describe('lib/pages/pageItem - input_sel name with prefix and suffix', () => {
         expect(popup).to.be.a('string');
         expect((popup ?? '').split('~')).to.include('pre Modus0');
     });
+
+    for (const type of ['light', 'shutter'] as const) {
+        it(`${type} row (name of the popup as well): prefix + name + suffix, empty name part`, async () => {
+            expect(await rowName(inSelItem('Mode', 'pre ', ' suf', type))).to.equal('pre Modus suf');
+            expect(await rowName(inSelItem('', 0, 0, type))).to.equal('00');
+        });
+    }
 });

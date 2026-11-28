@@ -2595,7 +2595,8 @@ export class ConfigManager extends BaseClass {
                     maxBri: undefined,
                     minBri: undefined,
                 },
-                headline: await this.getFieldAsDataItemConfig(item.name || 'Timer', true),
+                headline: await this.getItemNameDataItem(item, 'Timer'),
+                ...(await this.getItemNameHeadlineAffixes(item)),
             },
         };
     }
@@ -2835,7 +2836,8 @@ export class ConfigManager extends BaseClass {
                     textSize:
                         item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
                 };
-                const headline = await getButtonsTextTrue(item, role || '');
+                // name of the row and the popup headline: prefix and suffix of the name always around it
+                const headline = await getButtonsTextTrue(item, role || '', true);
 
                 item.icon2 = item.icon2 || item.icon;
 
@@ -2955,6 +2957,8 @@ export class ConfigManager extends BaseClass {
                                 },
                                 colorMode: { type: 'const', constVal: false },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                                 entity1: {
                                     value: foundedStates[role].ON_ACTUAL,
                                     set: foundedStates[role].SET,
@@ -3014,6 +3018,8 @@ export class ConfigManager extends BaseClass {
                                         : undefined,
                                 },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                                 text1: {
                                     true: {
                                         type: 'const',
@@ -3106,6 +3112,8 @@ export class ConfigManager extends BaseClass {
                                         : undefined,
                                 },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
                                 hue: role !== 'hue' ? undefined : foundedStates[role].HUE,
                                 Red: role !== 'rgb' ? undefined : foundedStates[role].RED,
                                 Green: role !== 'rgb' ? undefined : foundedStates[role].GREEN,
@@ -3276,6 +3284,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
+                                    headlinePrefix: nameAffixes.prefix,
+                                    headlineSuffix: nameAffixes.suffix,
 
                                     entity1: {
                                         value: foundedStates[role].ACTUAL,
@@ -3367,6 +3377,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                     text: { true: { type: 'const', constVal: item.secondRow ?? '' } },
                                     headline: headline,
+                                    headlinePrefix: nameAffixes.prefix,
+                                    headlineSuffix: nameAffixes.suffix,
 
                                     entity1: {
                                         value: foundedStates[role].ACTUAL,
@@ -3516,6 +3528,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                     text: text,
                                     headline: headline,
+                                    headlinePrefix: nameAffixes.prefix,
+                                    headlineSuffix: nameAffixes.suffix,
 
                                     entity1: {
                                         value: foundedStates[role].ACTUAL,
@@ -3995,6 +4009,8 @@ export class ConfigManager extends BaseClass {
                                     false: { type: 'const', constVal: 'lockClosed' },
                                 },
                                 headline: headline,
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
 
                                 entity1: {
                                     value: foundedStates[role].ACTUAL,
@@ -4324,7 +4340,9 @@ export class ConfigManager extends BaseClass {
                                     foundedStates[role].SET,
                                     isAlarm,
                                 ),
-                                headline: await getButtonsTextTrue(item, 'Timer'),
+                                headline: await getButtonsTextTrue(item, 'Timer', true),
+                                headlinePrefix: nameAffixes.prefix,
+                                headlineSuffix: nameAffixes.suffix,
 
                                 setValue1: foundedStates[role].STATE,
                                 setValue2: foundedStates[role].STATUS,
@@ -4485,7 +4503,7 @@ export class ConfigManager extends BaseClass {
                                 },
                                 text: text,
                                 text1: {
-                                    true: headline,
+                                    true: await getButtonsTextTrue(item, role || ''),
                                 },
                                 entity1: {
                                     value: foundedStates[role].STATE,
@@ -6138,6 +6156,19 @@ export class ConfigManager extends BaseClass {
             return { true: value };
         }
         return { true: { value, ...(await this.getItemNameAffixes(item)) } };
+    }
+
+    /**
+     * Prefix and suffix of the item name as `headlinePrefix` / `headlineSuffix` of the page item.
+     *
+     * @param item the script item
+     */
+    async getItemNameHeadlineAffixes(item: ItemNameFields): Promise<{
+        headlinePrefix: NSPanel.DataItemsOptions | undefined;
+        headlineSuffix: NSPanel.DataItemsOptions | undefined;
+    }> {
+        const { prefix, suffix } = await this.getItemNameAffixes(item);
+        return { headlinePrefix: prefix, headlineSuffix: suffix };
     }
 
     async getIconColor(

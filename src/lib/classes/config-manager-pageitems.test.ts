@@ -1187,5 +1187,22 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             expect(empty.text.true.value).to.deep.equal({ type: 'const', constVal: '' });
             expect(empty.text.true.prefix).to.deep.equal({ type: 'state', dp: num });
         });
+
+        for (const role of ['light', 'blind', 'level.timer']) {
+            it(`${role}: the headline (row and popup) gets prefix and suffix, no channel name without value`, async () => {
+                const channel = DEVICES.min(role);
+                const fixed = await data(admin(channel, 'Küche', { valueStateId: text, prefix: 'pre ', suffix: num }));
+                expect(fixed.headline).to.deep.equal({ type: 'const', constVal: 'Küche' });
+                expect(fixed.headlinePrefix).to.deep.equal({ type: 'const', constVal: 'pre ' });
+                expect(fixed.headlineSuffix).to.deep.equal({ type: 'state', dp: num });
+                const empty = await data(admin(channel, undefined, { valueStateId: '', prefix: num, suffix: '' }));
+                expect(empty.headline).to.deep.equal({ type: 'const', constVal: '' });
+                expect(empty.headlinePrefix).to.deep.equal({ type: 'state', dp: num });
+                expect(empty.headlineSuffix).to.equal(undefined);
+                const plain = await data({ id: channel });
+                expect(plain.headline).to.deep.equal({ type: 'const', constVal: `min ${role} (de)` });
+                expect(plain.headlinePrefix).to.equal(undefined);
+            });
+        }
     });
 });
