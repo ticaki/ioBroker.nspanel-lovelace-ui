@@ -301,11 +301,25 @@ How many status icons the page can show is set by the **stage** – the choice *
 | 4–5 columns | up to 10 | icon and value, **no name** |
 | 6–8 columns | up to 16 | **no info lines** – the grid needs all the room |
 
-| no status icons | 1–3 columns |
-|---|---|
-| <img alt="Layout 1 on the EU panel without status icons: two info lines with icon, name and value across the full width" src="../Pictures/device-page/eu-cardDevice1-stage0.png" width="100%"/> | <img alt="Layout 1 on the EU panel with five status icons in three columns, the info lines with a short name" src="../Pictures/device-page/eu-cardDevice1-stage1.png" width="100%"/> |
-| **4–5 columns** | **6–8 columns** |
-| <img alt="Layout 1 on the EU panel with nine status icons in five columns, the info lines only with icon and value" src="../Pictures/device-page/eu-cardDevice1-stage2.png" width="100%"/> | <img alt="Layout 1 on the EU panel with fourteen status icons in seven columns, without info lines" src="../Pictures/device-page/eu-cardDevice1-stage3.png" width="100%"/> |
+**This is how it looks on the panel** (EU panel, pictures of the real display software):
+
+<table>
+<tr>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel without status icons: two info lines with icon, name and value across the full width" src="../Pictures/device-page/hmi/cardDevice1-icons-00.png" width="100%"/><br/>0 icons · no status icons</td>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with two status icons in one column, the info lines with a short name" src="../Pictures/device-page/hmi/cardDevice1-icons-02.png" width="100%"/><br/>2 icons · stage 1–3 columns</td>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with four status icons in two columns, the info lines with a short name" src="../Pictures/device-page/hmi/cardDevice1-icons-04.png" width="100%"/><br/>4 icons · stage 1–3 columns</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with six status icons in three columns, the info lines with a short name" src="../Pictures/device-page/hmi/cardDevice1-icons-06.png" width="100%"/><br/>6 icons · stage 1–3 columns</td>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with eight status icons in four columns, the info lines only with icon and value" src="../Pictures/device-page/hmi/cardDevice1-icons-08.png" width="100%"/><br/>8 icons · stage 4–5 columns</td>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with ten status icons in five columns, the info lines only with icon and value" src="../Pictures/device-page/hmi/cardDevice1-icons-10.png" width="100%"/><br/>10 icons · stage 4–5 columns</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with twelve status icons in six columns, without info lines" src="../Pictures/device-page/hmi/cardDevice1-icons-12.png" width="100%"/><br/>12 icons · stage 6–8 columns</td>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with fourteen status icons in seven columns, without info lines" src="../Pictures/device-page/hmi/cardDevice1-icons-14.png" width="100%"/><br/>14 icons · stage 6–8 columns</td>
+<td align="center" width="33%"><img alt="Layout 1 on the EU panel with sixteen status icons in eight columns, without info lines" src="../Pictures/device-page/hmi/cardDevice1-icons-16.png" width="100%"/><br/>16 icons · stage 6–8 columns</td>
+</tr>
+</table>
 
 **Layout 3 – Values:** the grid has one row and stands in the first row of info tiles.
 
@@ -315,9 +329,25 @@ How many status icons the page can show is set by the **stage** – the choice *
 | 1–4 | up to 4 | the **first** info tile (slot 1) |
 | 5–8 | up to 8 | the **first two** info tiles (slots 1 and 2) |
 
-| no status icons | 1–4 | 5–8 |
-|---|---|---|
-| <img alt="Layout 3 on the EU panel without status icons: six info tiles" src="../Pictures/device-page/eu-cardDevice3-stage0.png" width="100%"/> | <img alt="Layout 3 on the EU panel with four status icons in the place of the first info tile" src="../Pictures/device-page/eu-cardDevice3-stage1.png" width="100%"/> | <img alt="Layout 3 on the EU panel with seven status icons in the place of the first two info tiles" src="../Pictures/device-page/eu-cardDevice3-stage2.png" width="100%"/> |
+**This is how it looks on the panel** (EU panel, pictures of the real display software):
+
+<table>
+<tr>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel without status icons: six info tiles" src="../Pictures/device-page/hmi/cardDevice3-icons-0.png" width="100%"/><br/>0 icons · no status icons</td>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with one status icon in the place of the first info tile" src="../Pictures/device-page/hmi/cardDevice3-icons-1.png" width="100%"/><br/>1 icon · stage 1–4</td>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with two status icons in the place of the first info tile" src="../Pictures/device-page/hmi/cardDevice3-icons-2.png" width="100%"/><br/>2 icons · stage 1–4</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with three status icons in the place of the first info tile" src="../Pictures/device-page/hmi/cardDevice3-icons-3.png" width="100%"/><br/>3 icons · stage 1–4</td>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with four status icons in the place of the first info tile" src="../Pictures/device-page/hmi/cardDevice3-icons-4.png" width="100%"/><br/>4 icons · stage 1–4</td>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with five status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/cardDevice3-icons-5.png" width="100%"/><br/>5 icons · stage 5–8</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with six status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/cardDevice3-icons-6.png" width="100%"/><br/>6 icons · stage 5–8</td>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with seven status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/cardDevice3-icons-7.png" width="100%"/><br/>7 icons · stage 5–8</td>
+<td align="center" width="33%"><img alt="Layout 3 on the EU panel with eight status icons in the place of the first two info tiles" src="../Pictures/device-page/hmi/cardDevice3-icons-8.png" width="100%"/><br/>8 icons · stage 5–8</td>
+</tr>
+</table>
 
 Layout 2 has no status icons.
 

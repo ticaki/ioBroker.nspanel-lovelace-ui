@@ -6,7 +6,8 @@ Admin-Bilder der Status-Icon-Stufen liegen in [../device-page-stages/](../device
 
 Stand: 2026-11-28 – Geräteseite auf allen fünf Modellen, Status-Icons in Stufen (TFT `device13`, siehe
 [Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28)); die Nutzer-Doku zeigt die Admin-Bedienung der Stufen
-mit den Bildern aus `../device-page-stages/`.
+mit den Bildern aus `../device-page-stages/` und das EU-Panel je Icon-Anzahl mit Tims Aufnahmen der echten HMI
+(`hmi/`, siehe [Aufnahmen der echten HMI](#aufnahmen-der-echten-hmi-device13-2026-11-28)).
 
 ## Überblick
 
@@ -16,11 +17,13 @@ mit den Bildern aus `../device-page-stages/`.
 | automatisch (Puppeteer, Web-Panel) | Stufen der Status-Icons (cardDevice1 4, cardDevice3 3 je Modell) | 21 (eu 7, us-p 7, web-l 7) | **aufgenommen und angesehen** (2026-11-28) |
 | automatisch (Puppeteer, Admin) | Dialoge | 8 (`admin-overview.png` mit dem früheren 2×2-Raster ist gelöscht, ersetzt durch `../device-page-stages/layout3-stage0.png`) | **aufgenommen und angesehen** |
 | automatisch (Puppeteer, Admin) | Stufen der Status-Icons im Dialog (`../device-page-stages/`) | 11 | **aufgenommen und angesehen** (2026-11-28, mit bereinigten Testdaten neu aufgenommen, ohne rote Hinweise), Prüftabelle in [../device-page-stages/README.md](../device-page-stages/README.md) |
+| **Tim (Nextion-Simulator, echte HMI `device13` EU)** | Status-Icons je Anzahl: cardDevice1 mit 0, 2 … 16, cardDevice3 mit 0–8 Icons (`hmi/`) | 18 | **aufgenommen** (2026-11-28) **und angesehen**, [Abgleich](#device13-stufen-gegen-die-echte-hmi-2026-11-28) |
 | **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) | – |
 
 Das Web-Panel zeichnet jedes Modell: die Hardware-Modelle eu, us-l und us-p wie die HMI, dazu web-l und web-p.
-Deshalb kommen alle Panel-Bilder aus dem Web-Panel. Dass die Web-Bilder der HMI entsprechen, zeigt der
-[Abgleich Web ↔ HMI](#abgleich-web--hmi) gegen Tims echte Aufnahmen.
+Deshalb kommen die Panel-Bilder aus dem Web-Panel – mit einer Ausnahme: die Übersicht je Icon-Anzahl in der
+Nutzer-Doku (Abschnitt „Die Stufe“) zeigt Tims Aufnahmen der echten EU-HMI aus `hmi/`. Dass die Web-Bilder der HMI
+entsprechen, zeigt der [Abgleich Web ↔ HMI](#abgleich-web--hmi) gegen Tims echte Aufnahmen.
 
 Entfallen sind `web-cardDevice1.png`, `web-cardDevice1-plain.png`, `web-cardDevice2.png` und `web-cardDevice3.png`
 (eu mit den Beispieldaten des HMI-Werkzeugs): `eu-cardDevice*.png` ersetzen sie, es gibt nur noch eine
@@ -174,15 +177,41 @@ ist `true` nach dem Laden der Schrift, keine Antwort 403.
 
 | Dateiname | Modell | Was zu sehen ist | Verwendet in | erledigt |
 |---|---|---|---|---|
-| `eu-cardDevice1-stage0.png` … `-stage3.png` | eu | cardDevice1 in den Stufen 0–3 | Doku §5 Status-Icons; README | ☑ |
-| `eu-cardDevice3-stage0.png` … `-stage2.png` | eu | cardDevice3 in den Stufen 0–2 | Doku §5 Status-Icons; README | ☑ |
+| `eu-cardDevice1-stage0.png` … `-stage3.png` | eu | cardDevice1 in den Stufen 0–3 | README; Abgleich device13. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/cardDevice1-icons-*.png`) | ☑ |
+| `eu-cardDevice3-stage0.png` … `-stage2.png` | eu | cardDevice3 in den Stufen 0–2 | README; Abgleich device13. Seit 2026-11-28 nicht mehr in der Doku – dort stehen die Aufnahmen der echten HMI (`hmi/cardDevice3-icons-*.png`) | ☑ |
 | `us-p-cardDevice1-stage0.png` … `-stage3.png` | us-p | cardDevice1 hochkant (Variante P2): Raster unter dem Haupt-Icon, Satz C rechts daneben | Doku §5 Status-Icons; README | ☑ |
 | `us-p-cardDevice3-stage0.png` … `-stage2.png` | us-p | cardDevice3 hochkant, Raster in der ersten Kachelreihe | Doku §5 Status-Icons; README | ☑ |
 | `web-l-cardDevice1-stage0.png` … `-stage3.png` | web-l | cardDevice1 auf Smartphone quer: Raster wie eu, Info-Zeilen bis zum rechten Rand | Doku §5 Status-Icons; README | ☑ |
 | `web-l-cardDevice3-stage0.png` … `-stage2.png` | web-l | cardDevice3 auf Smartphone quer | Doku §5 Status-Icons; README | ☑ |
 
 Abgleich mit den HMI-Vorschauen `next/hmi-[<modell>-]cardDevice1-stage0..3.png` und `…cardDevice3-stage0..2.png`
-(Beispieldaten des Werkzeugs): Raster, Sätze A/B/C und ausgeblendete Kacheln liegen an denselben Stellen.
+(Beispieldaten des Werkzeugs): Raster, Sätze A/B/C und ausgeblendete Kacheln liegen an denselben Stellen. Für eu
+zusätzlich gegen die echte HMI geprüft: [device13: Stufen gegen die echte HMI](#device13-stufen-gegen-die-echte-hmi-2026-11-28).
+
+## Aufnahmen der echten HMI (device13, 2026-11-28)
+
+Tim hat die EU-HMI mit dem TFT-Stand `device13` (480 × 320) im Nextion-Simulator laufen lassen und je Icon-Anzahl
+eine Aufnahme gemacht (Quelle `/mnt/projekte/nextion-vm/screenshots/hmi-robbi-icons-NN.png` und
+`hmi-id3-icons-N.png`, hierher kopiert und umbenannt). Belegung wie die Referenz: Grundbelegung aus
+`src-web/scripts/examples/ref-cardDevice1-stage0.txt` (**R1p**) bzw. `ref-cardDevice3-stage0.txt` (**R3**), die
+Status-Icons in der Reihenfolge der stage3- bzw. stage2-Referenz (siehe [Belegung je Stufe](#stufen-der-status-icons-2026-11-28)),
+spaltenweise im Raster. Wo die Referenz weniger Icons hat, beginnt die Liste von vorn bzw. geht weiter:
+cardDevice1 mit 16 Icons zeigt auf den Plätzen 15/16 noch einmal `wifi` (cyan) und `trash-can` (grau),
+cardDevice3 mit 8 Icons auf Platz 8 `wifi` (cyan).
+
+| Dateiname | Seite | Icons | Stufe | Was zu sehen ist | Verwendet in | erledigt |
+|---|---|---|---|---|---|---|
+| `hmi/cardDevice1-icons-00.png` | cardDevice1 | 0 | keine | Satz A: Info-Zeilen mit Icon, Name und Wert in voller Breite | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/cardDevice1-icons-02.png`, `-04.png`, `-06.png` | cardDevice1 | 2 / 4 / 6 | 1–3 Spalten | 1 / 2 / 3 Spalten; Satz B: Icon, Name an der Feldgrenze abgeschnitten („Batter“, „Fläche“ bis zur Kante), Wert | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/cardDevice1-icons-08.png`, `-10.png` | cardDevice1 | 8 / 10 | 4–5 Spalten | 4 / 5 Spalten; Satz C: nur Icon und Wert | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/cardDevice1-icons-12.png`, `-14.png`, `-16.png` | cardDevice1 | 12 / 14 / 16 | 6–8 Spalten | 6 / 7 / 8 Spalten, keine Info-Zeilen | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/cardDevice3-icons-0.png` | cardDevice3 | 0 | keine | sechs Info-Kacheln | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/cardDevice3-icons-1.png` … `-4.png` | cardDevice3 | 1–4 | 1–4 | 1–4 Zellen an der Stelle von Kachel 1 (Batterie), Kachel 2 (Reichweite) bleibt | Doku §5 „Die Stufe“; README | ☑ |
+| `hmi/cardDevice3-icons-5.png` … `-8.png` | cardDevice3 | 5–8 | 5–8 | 5–8 Zellen an der Stelle der Kacheln 1 und 2 | Doku §5 „Die Stufe“; README | ☑ |
+
+In jeder Aufnahme erscheinen nur die belegten Spalten bzw. Zellen, jede mit Rahmen, und die rechte Rahmenkante der
+letzten Spalte ist geschlossen. Eine halb belegte letzte Spalte zeigen diese Aufnahmen nicht (cardDevice1 nur mit
+gerader Anzahl, cardDevice3 hat eine Zeile).
 
 ## Admin-Aufnahmen
 
@@ -206,7 +235,8 @@ Die Kommentare `<!-- BILD FOLGT … -->` / `<!-- BILD NEU AUFNEHMEN … -->` in 
 
 ## Hardware-Fotos (Tim)
 
-**Keine.** Jedes Bild der Doku kommt aus dem Web-Panel oder dem Admin:
+**Keine.** Jedes Bild der Doku kommt aus dem Web-Panel, dem Admin oder – für die Übersicht je Icon-Anzahl – aus
+Tims Aufnahmen der EU-HMI im Nextion-Simulator (`hmi/`):
 
 - Aussehen je Modell und Layout: Web-Panel mit dem jeweiligen Modell.
 - Blinken beim langen Druck: zeigt nur die HMI, das Web-Panel nicht. Die Doku beschreibt es im Text; ein Standbild
@@ -261,8 +291,43 @@ auf Layout 3 eine Reihe mit bis zu 8 Status-Icons an der Stelle der Kacheln 1 un
 [Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28)).
 
 Der Abgleich oben stammt vom 2026-11-24 (TFT `device10`/`device12`, 2×2-Raster auf cardDevice1). Für `device13`
-(Raster bis 8×2, Stufen) gibt es noch keine Aufnahme der echten HMI; verglichen sind nur die Web-Bilder mit den
-HMI-Vorschauen des Werkzeugs (siehe oben).
+(Raster bis 8×2, Stufen) folgt der Abgleich gegen die echte HMI im nächsten Abschnitt; us-l und us-p `device13` haben
+noch keine Aufnahme der echten HMI.
+
+### device13: Stufen gegen die echte HMI (2026-11-28)
+
+Verglichen: die eu-Web-Bilder je Stufe mit Tims Aufnahmen aus `hmi/` (beide 480 × 320, ohne Versatz). Gleiche
+Icon-Anzahl gibt es für 0 und 14 Icons (cardDevice1) und für alle Stufen von cardDevice3. Die Web-Bilder mit 5 und 9
+Icons sind gegen die HMI-Aufnahme mit derselben Spaltenzahl verglichen (6 bzw. 10 Icons): dort ist die letzte Zelle
+belegt (`water` bzw. `map-marker`), im Web-Bild leer mit Rahmen. Gemessen wie oben: Rechteck der hellen Pixel je
+Element (x links–rechts / y oben, Web / HMI), Rahmenlinien als Spalten bzw. Zeilen mit grauen Pixeln.
+
+| Web | HMI | Icons Web / HMI | Ergebnis |
+|---|---|---|---|
+| `eu-cardDevice1-stage0.png` | `hmi/cardDevice1-icons-00.png` | 0 / 0 | **deckt sich.** Kein Raster, Satz A: Name ab x 165 / 166, Wert endet bei x 438 / 437. |
+| `eu-cardDevice1-stage1.png` | `hmi/cardDevice1-icons-06.png` | 5 / 6 | **deckt sich.** Rahmen deckungsgleich: Linien x 124, 161, 198, 235, y 71, 115, 159. Satz B: Icon x 253–265 / 251–264, Name x 280–327 / 281–327 – beide an derselben Feldgrenze abgeschnitten („Batter“, „Fläche“ bis zur Kante); Wert endet 438 / 437. |
+| `eu-cardDevice1-stage2.png` | `hmi/cardDevice1-icons-10.png` | 9 / 10 | **deckt sich.** Rahmen bis x 309 deckungsgleich. Satz C: Icon x 327–339 / 325–338, Wert endet 438 / 437, kein Name. |
+| `eu-cardDevice1-stage3.png` | `hmi/cardDevice1-icons-14.png` | 14 / 14 | **deckt sich.** Sieben Spalten, Rahmen bis x 383 deckungsgleich, keine Info-Zeilen. |
+| `eu-cardDevice3-stage0.png` | `hmi/cardDevice3-icons-0.png` | 0 / 0 | **deckt sich.** Sechs Kacheln: Namen beginnen ±1, Werte enden ±0…1. |
+| `eu-cardDevice3-stage1.png` | `hmi/cardDevice3-icons-4.png` | 4 / 4 | **deckt sich.** Rahmen deckungsgleich: Linien x 114, 151, 188, 225, 262, y 67, 118; Kachel 1 fehlt in beiden, Kachel 2 („Reichweite“) steht. |
+| `eu-cardDevice3-stage2.png` | `hmi/cardDevice3-icons-7.png` | 7 / 7 | **deckt sich.** Rahmen bis x 373 deckungsgleich; Kacheln 1 und 2 fehlen in beiden. |
+
+**Abweichungen** (in allen Paaren gleich, sichtbar, aber klein):
+
+| Abweichung | Größe | Bemerkung |
+|---|---|---|
+| Icons im Raster, in den Info-Zeilen, in den Kacheln und die Knopf-Icons liegen im Web 1–2 px weiter rechts (z. B. `wifi` x 131–155 / 130–153, Knopf „Starten“ 44–80 / 43–78) | 1–2 px | wie im Abgleich vom 2026-11-24 (Icon-Schrift im Browser) |
+| Wert „34m²“: im Web reicht die hochgestellte 2 höher (oben y 128 / 131), der Wert beginnt 2 px weiter links (397 / 399) | 2–3 px | Hochzahl in Noto Sans gegen die Nextion-Schrift |
+| Werte „23456km“ und „312km“ (cardDevice3) beginnen im Web 2 px weiter links, enden gleich | 2 px | Schriftbreite |
+| i-Icon im Web 1–2 px weiter rechts (x 411–433 / 409–432) | 1–2 px | – |
+| Schalter „Klima“/„Laden“: Fläche und Farbe gleich (x 176–220 bzw. 392–436); im Knopf zeichnet das Web-Panel ein „I“ mit Serifen (Querstriche oben und unten, hellgrau 208), die HMI einen schlichten senkrechten Strich (grau 189) | Form | sichtbar beim genauen Hinsehen |
+| Textfarbe: HMI (205, 255, 255), Web weiß | Farbe | bekannt, siehe oben |
+| Texte im Web oft 1 px höher (Oberkante, z. B. Knopfbeschriftungen y 250 / 251) | 1 px | Kantenglättung |
+
+Keine Abweichung: Rahmen des Rasters (Lage und Farbe (58, 61, 58) / (57, 60, 57), Rundung), Spaltenzahl je
+Icon-Anzahl, welche Info-Sätze bzw. Kacheln erscheinen, Abschneiden des Namens in Satz B an x 327, Statuszeile in
+beiden mittig (cardDevice1 x 19–391 / 18–392, cardDevice3 x 45–365 / 45–365), Überschrift, Pfeil, Haupt-Icon und
+Gerätename unter dem Haupt-Icon ±1.
 
 ## Bilder, die nur Entwickler-Dokumente verwenden
 

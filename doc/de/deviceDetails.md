@@ -299,11 +299,25 @@ Wie viele Status-Icons die Seite zeigen kann, legt die **Stufe** fest – die Au
 | 4–5 Spalten | bis zu 10 | Icon und Wert, **kein Name** |
 | 6–8 Spalten | bis zu 16 | **keine Info-Zeilen** – das Raster braucht den ganzen Platz |
 
-| keine Status-Icons | 1–3 Spalten |
-|---|---|
-| <img alt="Layout 1 am EU-Panel ohne Status-Icons: zwei Info-Zeilen mit Icon, Name und Wert in voller Breite" src="../Pictures/device-page/eu-cardDevice1-stage0.png" width="100%"/> | <img alt="Layout 1 am EU-Panel mit fünf Status-Icons in drei Spalten, die Info-Zeilen mit kurzem Namen" src="../Pictures/device-page/eu-cardDevice1-stage1.png" width="100%"/> |
-| **4–5 Spalten** | **6–8 Spalten** |
-| <img alt="Layout 1 am EU-Panel mit neun Status-Icons in fünf Spalten, die Info-Zeilen nur mit Icon und Wert" src="../Pictures/device-page/eu-cardDevice1-stage2.png" width="100%"/> | <img alt="Layout 1 am EU-Panel mit vierzehn Status-Icons in sieben Spalten, ohne Info-Zeilen" src="../Pictures/device-page/eu-cardDevice1-stage3.png" width="100%"/> |
+**So sieht es auf dem Panel aus** (EU-Panel, Aufnahmen der echten Display-Software):
+
+<table>
+<tr>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel ohne Status-Icons: zwei Info-Zeilen mit Icon, Name und Wert in voller Breite" src="../Pictures/device-page/hmi/cardDevice1-icons-00.png" width="100%"/><br/>0 Icons · keine Status-Icons</td>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit zwei Status-Icons in einer Spalte, die Info-Zeilen mit kurzem Namen" src="../Pictures/device-page/hmi/cardDevice1-icons-02.png" width="100%"/><br/>2 Icons · Stufe 1–3 Spalten</td>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit vier Status-Icons in zwei Spalten, die Info-Zeilen mit kurzem Namen" src="../Pictures/device-page/hmi/cardDevice1-icons-04.png" width="100%"/><br/>4 Icons · Stufe 1–3 Spalten</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit sechs Status-Icons in drei Spalten, die Info-Zeilen mit kurzem Namen" src="../Pictures/device-page/hmi/cardDevice1-icons-06.png" width="100%"/><br/>6 Icons · Stufe 1–3 Spalten</td>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit acht Status-Icons in vier Spalten, die Info-Zeilen nur mit Icon und Wert" src="../Pictures/device-page/hmi/cardDevice1-icons-08.png" width="100%"/><br/>8 Icons · Stufe 4–5 Spalten</td>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit zehn Status-Icons in fünf Spalten, die Info-Zeilen nur mit Icon und Wert" src="../Pictures/device-page/hmi/cardDevice1-icons-10.png" width="100%"/><br/>10 Icons · Stufe 4–5 Spalten</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit zwölf Status-Icons in sechs Spalten, ohne Info-Zeilen" src="../Pictures/device-page/hmi/cardDevice1-icons-12.png" width="100%"/><br/>12 Icons · Stufe 6–8 Spalten</td>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit vierzehn Status-Icons in sieben Spalten, ohne Info-Zeilen" src="../Pictures/device-page/hmi/cardDevice1-icons-14.png" width="100%"/><br/>14 Icons · Stufe 6–8 Spalten</td>
+<td align="center" width="33%"><img alt="Layout 1 am EU-Panel mit sechzehn Status-Icons in acht Spalten, ohne Info-Zeilen" src="../Pictures/device-page/hmi/cardDevice1-icons-16.png" width="100%"/><br/>16 Icons · Stufe 6–8 Spalten</td>
+</tr>
+</table>
 
 **Layout 3 – Werte:** Das Raster hat eine Zeile und steht in der ersten Reihe der Info-Kacheln.
 
@@ -313,9 +327,25 @@ Wie viele Status-Icons die Seite zeigen kann, legt die **Stufe** fest – die Au
 | 1–4 | bis zu 4 | die **erste** Info-Kachel (Slot 1) |
 | 5–8 | bis zu 8 | die **ersten beiden** Info-Kacheln (Slots 1 und 2) |
 
-| keine Status-Icons | 1–4 | 5–8 |
-|---|---|---|
-| <img alt="Layout 3 am EU-Panel ohne Status-Icons: sechs Info-Kacheln" src="../Pictures/device-page/eu-cardDevice3-stage0.png" width="100%"/> | <img alt="Layout 3 am EU-Panel mit vier Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/eu-cardDevice3-stage1.png" width="100%"/> | <img alt="Layout 3 am EU-Panel mit sieben Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/eu-cardDevice3-stage2.png" width="100%"/> |
+**So sieht es auf dem Panel aus** (EU-Panel, Aufnahmen der echten Display-Software):
+
+<table>
+<tr>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel ohne Status-Icons: sechs Info-Kacheln" src="../Pictures/device-page/hmi/cardDevice3-icons-0.png" width="100%"/><br/>0 Icons · keine Status-Icons</td>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit einem Status-Icon an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/cardDevice3-icons-1.png" width="100%"/><br/>1 Icon · Stufe 1–4</td>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit zwei Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/cardDevice3-icons-2.png" width="100%"/><br/>2 Icons · Stufe 1–4</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit drei Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/cardDevice3-icons-3.png" width="100%"/><br/>3 Icons · Stufe 1–4</td>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit vier Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/hmi/cardDevice3-icons-4.png" width="100%"/><br/>4 Icons · Stufe 1–4</td>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit fünf Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/cardDevice3-icons-5.png" width="100%"/><br/>5 Icons · Stufe 5–8</td>
+</tr>
+<tr>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit sechs Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/cardDevice3-icons-6.png" width="100%"/><br/>6 Icons · Stufe 5–8</td>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit sieben Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/cardDevice3-icons-7.png" width="100%"/><br/>7 Icons · Stufe 5–8</td>
+<td align="center" width="33%"><img alt="Layout 3 am EU-Panel mit acht Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/hmi/cardDevice3-icons-8.png" width="100%"/><br/>8 Icons · Stufe 5–8</td>
+</tr>
+</table>
 
 Layout 2 hat keine Status-Icons.
 

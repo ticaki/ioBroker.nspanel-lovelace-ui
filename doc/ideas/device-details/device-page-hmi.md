@@ -78,8 +78,11 @@ umgesetzt (Konfiguration `statusStage` / `statusSlots`, siehe [README.md, „Ger
 
 **Stand der Prüfung:** EU `device13` ist kompiliert (RAM in der Tabelle unten). Am Panel gemessen bzw. bestätigt:
 `covx` liest führende Ziffern (leer oder ohne Ziffer → 0), `x`/`w`/`h` lassen sich zur Laufzeit nicht ändern
-(Zuweisung liefert 0x1C bzw. 0x1A), die Rahmenkante bleibt nach `vis 0` der Nachbarspalte stehen. **us-l und us-p `device13` sind noch nicht kompiliert und
-nicht getestet** – offen.
+(Zuweisung liefert 0x1C bzw. 0x1A), die Rahmenkante bleibt nach `vis 0` der Nachbarspalte stehen. **Im Nextion-Simulator bestätigt (Tim, 2026-11-28,
+Bilder `doc/Pictures/device-page/hmi/`):** alle Stufen von cardDevice1 (0, 2 … 16 Icons) und cardDevice3 (0–8 Icons)
+sichtbar, Rahmen der Zellen, Info-Sätze A/B/C/keiner, ausgeblendete Kacheln 1 bzw. 1 und 2; Abgleich mit dem
+Web-Panel in [BILDER.md](../../Pictures/device-page/BILDER.md#device13-stufen-gegen-die-echte-hmi-2026-11-28).
+**us-l und us-p `device13` sind noch nicht kompiliert und nicht getestet** – offen.
 
 ```
 for M in "" us-l- us-p-; do
@@ -236,8 +239,9 @@ doppelt so lang (Prüfliste).
 ### device13 im Editor und am Panel prüfen
 
 Stand 2026-11-28: EU kompiliert, RAM gemessen (Punkt 2), `covx` gemessen (Punkt 3, Teil „leeres Element und `0`
-ausgeblendet“), Rahmenkanten nach dem Ausblenden von Spalten bestätigt (Punkt 5). Alles andere ist offen; us-l und
-us-p sind noch nicht kompiliert.
+ausgeblendet“), Rahmenkanten nach dem Ausblenden von Spalten bestätigt (Punkt 5). Im Simulator bestätigt (Bilder
+`doc/Pictures/device-page/hmi/`): Punkt 5 bis auf die halbe letzte Spalte (nur gerade Anzahlen aufgenommen) und
+Punkt 6 (Stufen, Rahmen, Kacheln). Alles andere ist offen; us-l und us-p sind noch nicht kompiliert.
 
 1. Alle drei Dateien öffnen (keine Meldung „resource file damaged“), kompilieren: 0 Fehler, keine „Component
    overlap“. Neu im Code: `covx tTmp.txt,type<k>.val,0,0`, `type<k>.val`, `if(type1.val==0||vStage.val>=3)`, `if(sys2<8&&vCols.val>=8)`, `click` in `if/else` (tValue1/2),
@@ -249,9 +253,12 @@ us-p sind noch nicht kompiliert.
 5. Stufen cardDevice1: Feld 61 = 0/1/2/3, je mit `devIcons` mit 0, 1, 5, 9, 16 belegten Zellen: Spaltenzahl
    (⌈n/2⌉, höchstens 3/5/8), halbe letzte Spalte mit Rahmen, Info-Sätze A/B/C/keiner, Rahmenkanten nach dem Ausblenden
    von Spalten, keine Reste der anderen Sätze. Abschneiden: Name in Satz B (49 px, 15 Byte), Wert in Satz C (87 px, 19
-   Byte; welche Seite fehlt beim rechtsbündigen Wert?).
+   Byte; welche Seite fehlt beim rechtsbündigen Wert?). ✅ EU im Simulator (2026-11-28, `hmi/cardDevice1-icons-NN.png`
+   mit 0, 2 … 16 Icons): Spaltenzahl, Rahmen, Sätze A/B/C/keiner, keine Reste; Name in Satz B an der Feldgrenze
+   abgeschnitten („Batter“). Offen: halbe letzte Spalte, Abschneiden des Werts in Satz C.
 6. Stufen cardDevice3: Feld 73 = 0/1/2 mit 3 bzw. 7 Icons; Kachel 1/2 bleibt aus, auch wenn `entityUpd` sie füllt;
-   Rahmen gegen bMain und Kachel 3; Icon in h 52/51 mittig.
+   Rahmen gegen bMain und Kachel 3; Icon in h 52/51 mittig. ✅ EU im Simulator (2026-11-28,
+   `hmi/cardDevice3-icons-N.png` mit 0–8 Icons).
 7. Tippen, Drück-Feedback, Long-Press-Blinken und Popups für alle Zellen (vaLPCell-Tabelle), die Icons und Texte der
    Sätze B/C und den Wert `tValue1/2` in Stufe 0 und 1 (blinkt das sichtbare Icon?). Popup aus Satz B/C mit vollem
    Namen.
