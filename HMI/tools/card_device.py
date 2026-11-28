@@ -3,18 +3,21 @@
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py <in.HMI> <out.HMI> [--preview <dir>]
                                                               [--geometry <file.json>] [--fields]
---fields prints the bytes of every part of the longest entityUpd (all buffers full / as the adapter builds it).
+--fields prints the bytes of every part of the longest entityUpd and devIcons (all buffers full / as the adapter
+builds it).
 Input: a 6.2.0 project of any model with the pages cardGrid and cardEntities. The output must not exist.
 With --preview the script also writes a true-to-scale mock-up per page, drawn from the objects of each built page
 with example content (robot vacuum, washing machine, car) and the fonts of the project (zilib.py); the area under
-the frame is hatched. File names: EU <dir>/hmi-cardDevice{1,2,3}.png, the other models with their name
-(hmi-us-l-cardDevice1.png, hmi-us-p-cardDevice1.png); cardDevice1 also as ...-plain.png without status icons.
+the frame is hatched. File names: EU <dir>/hmi-cardDevice2.png, the other models with their name
+(hmi-us-l-cardDevice2.png); the pages with a status grid once per stage: hmi-cardDevice1-stage0..3.png,
+hmi-cardDevice3-stage0..2.png (EXAMPLES[..]['stageIcons'] set cells).
 With --geometry the script sets the key of the model ('eu', 'us-l', 'us-p') in the JSON file and keeps the other
 keys: stage size, visible x range and per page every element with its boxes as they are in the built page
 (x, y, w, h, font, alignment, buffer; roles: header prev/heading/next, main icon/name, per slot icon/name/value/
-bar/toggle/cell/touch and the narrow set of an info row, status, info) plus statusWidth, the width of the status
-line in px. doc/ideas/device-details/device-page-geometry.json is that file for the three models; the web panel
-builds its layouts from it.
+bar/toggle/touch and the sets B/C of an info row, status, info, the grid with its cells and the stages) plus
+statusWidth, the width of the status line in px. doc/ideas/device-details/device-page-geometry.json is that file
+for the device12 pages (the web panel builds its layouts from it), device-page-geometry.next.json the one of
+device13.
 
 Models. The model is read from the project (detect_model: pageStartup sends event,startup,<version>,<model>,..),
 never from the file name; the page size of cardGrid must fit it.
@@ -24,18 +27,20 @@ never from the file name; the page size of cardGrid must fit it.
         three differ or do not match the visible area). Everything else is the EU page.
   us-p  320 x 480, all visible: LAYOUTS_PORTRAIT, the same elements in an arrangement of its own (header of
         cardGrid us-p, content x 10..309, status line 262 px wide instead of 390 with the info icon right of it):
-        cardDevice1  icon top left with the name below, the 2 x 2 status block right of it, the two info rows
-                     over the full width, the four buttons as 2 x 2. No second (narrow) set of info rows.
+        cardDevice1  icon top left with the name below, the two info rows over the full width, the four buttons
+                     as 2 x 2; the status grid 8 x 2 over the full width where the info rows are, the info rows
+                     then right of the icon as set C (icon + value). No set B.
         cardDevice2  icon and large value on top, bar over the full width, the three infos as rows, the button
                      over the full width.
-        cardDevice3  icon on top in the middle, 2 x 3 info tiles, the two switches as rows.
+        cardDevice3  icon on top in the middle, 2 x 3 info tiles, the two switches as rows; status cells pitch 36.
 The same on every model (the adapter has constants for it): protocol and field order, number and kind of the slots,
-devStatus, the text buffers and strCommand of every page (943 / 875 / 1019), fonts per role (font ids are the same
-on all models; us-p fonts 0/2 are another face with other widths), touch behaviour. What differs is geometry only -
-the adapter has to measure names, values and the status line with the widths of the model (geometry file).
+devStatus, devIcons, the text buffers and strCommand of every page, fonts per role (font ids are the same on all
+models; us-p fonts 0/2 are another face with other widths), touch behaviour. What differs is geometry only - the
+adapter has to measure names, values and the status line with the widths of the model (geometry file).
 check_area stops when a box (or the hotspot over an element) leaves the visible area or lies on a touch area the
 page keeps from cardGrid - the arrows, the swipe strips, the hidden hotspot mSpecial in the header (on us-p it
-reaches down to y 67) - and reports overlapping boxes of different elements.
+reaches down to y 67) - and reports boxes of different elements that overlap in a stage in which both can be shown
+(shown_stages) and congruent boxes (the editor warns 'Component overlap').
 Copies never keep the editor group of their template (ungroup; us-p has grouped objects on cardGrid/cardEntities).
 
 Each page is a fresh copy of cardGrid: header, arrows, swipe strips, tmSerial (receive, ack/CRC, pageType switch),
@@ -47,17 +52,24 @@ the same pages again (idempotent). New pages are appended behind the last page o
 pageType switch of every page with tmSerial gets 'if(tId.txt=="cardDevice<n>") page cardDevice<n>' behind the
 cardGrid3 branch (added once).
 
-Protocol:
+Protocol (device13):
   pageType~cardDevice<n>
   entityUpd~<heading>~<prev: 6 fields>~<next: 6 fields>~<main>~<slot 1>~..~<slot N>~<info>
   devStatus~<text>              only the status line: tStatus shows the text, nothing else is touched
+  devIcons~<type>~<id>~<icon>~<color> x 16 (cardDevice1) / x 8 (cardDevice3): the status grid, see below
   every element has the 6 fields of a cardGrid cell: type~intName~icon~iconColor~displayName~optionalValue
   element e (main 0, slot k = k, info N+1) starts at field 14 + 6e. N and the kind of every slot are fixed per page:
-    cardDevice1  N=10 info, info, button x 4, status x 4 (info icon from field 80)
+    cardDevice1  N=10 info, info, button x 4, reserved x 4 (info from field 80; the reserved slots 7..10 were the
+                 status slots of device12: their fields stay so that info keeps its place, the page reads nothing
+                 there, the new adapter sends them empty)
     cardDevice2  N=6  value, progress, info, info, info, button
     cardDevice3  N=8  info x 6, switch, switch
-  type 'delete' or empty hides an element completely (main: icon and name; the status line shows field 6 of main
-  in any case, empty = empty line).
+  type      a number (TYPE_NAMES): 0 hidden, 1 only sends (text, button, switch, any other name), 2 shutter,
+            3 shutter2, 4 input_sel, 5 timer (popup at the touch), 6 light, 7 light2, 8 fan, 9 number (popup after
+            500 ms). The parser reads it with covx (measured: leading digits, else 0); 0 -> the name of an older
+            adapter is translated (delete/empty/'0' 0, the names above, every other name 1). type<k>/typeMain are
+            number variables. The navigation keeps its names (button), the info icon is hidden for delete/empty/0.
+  intName   at most 7 bytes ('999?999'), entn* txt_maxl 7; nent1/2 11 (bSubPrev, bSubNext, bUp, bHome).
   main      icon font 4 ('¬<font>' suffix like cardGrid) in iconColor, name below it; optionalValue -> status
             line tStatus at the bottom (font 0, one line, normal text colour, at most 63 bytes).
             A text that does not fit the line is split by the adapter; it sends the parts one after the other
@@ -70,47 +82,63 @@ Protocol:
   button    icon (font 3) with the name below.
   switch    row: icon (font 1), name, switch btOnOff (copy of cardEntities, state = optionalValue 0/1).
             Tap on the switch: event,buttonPress2,<id>,OnOff,<0|1> like cardEntities.
-  status    (cardDevice1 slots 7..10) icon only (font 1, iconColor) in a 2 x 2 block right of the main icon. The
-            cells are text objects with a 1 px border (style 1, colour 14823), neighbours overlap by 1 px so
-            the borders form frame and cross; no drawing, nothing to redraw. All four empty/delete: the block is
-            hidden and the info rows 1-2 show in full width; else an empty cell keeps its border with an empty
-            text, and the info rows switch to a second, narrower set of objects (vis, x/w never change at runtime).
-            displayName is not read (the adapter sends none): a popup opened from a cell has no heading.
-  info      (the last element) small icon bottom right, icon/colour from the payload, hidden for delete/empty;
-            tap: event,buttonPress2,<intName>,button (no long press, it has no type).
+  info      (the last element) small icon bottom right, icon/colour from the payload, hidden for delete/empty/0;
+            tap: event,buttonPress2,<intName>,button (no long press). optionalValue = the STAGE of the status grid
+            (cardDevice1 0..3, cardDevice3 0..2, empty = 0), clamped, kept in vStage.
+  status grid (cardDevice1 16 cells 8 x 2, cardDevice3 8 cells 8 x 1): text cells tStat1..N with a 1 px border
+            (style 1, colour 14823), neighbours overlap by 1 px; cell i belongs to column ceil(i / rows) (devIcons
+            fills column by column: top, bottom, next column). devIcons sets type (covx, no name chain: only a new
+            adapter sends it), id, icon ('¬<font>' suffix) and colour of every cell; type 0 = empty cell (text
+            empty, border stays, no tap). Shown are the columns up to the highest set cell, at most the columns of
+            the stage (cardDevice1 0/3/5/8, cardDevice3 0/4/8): an empty cell in the last column keeps its border.
+            Only columns that change are switched (vCols): first the ones to hide, from the right, then the ones to
+            show. entityUpd hides the columns beyond the stage before it switches info rows or tiles.
+  stage     cardDevice1: the info rows 1/2 come in sets (vis, x/w never change at runtime) - A wide (stage 0, the
+            parser writes it), B icon + short name with the value of A (stage 1), C icon + value (stage 2), none
+            (stage 3); the parser copies icon/font/colour, name and value into the set of the stage.
+            us-p: A in stage 0, C right of the main icon in stages 1-2, none in 3.
+            cardDevice3: tile 1 hidden from stage 1, tile 2 from stage 2, whatever entityUpd holds for them.
+            Without devIcons (older adapter) and without the field the page looks as before the grid (stage 0).
 
-Touch: main and every slot behave like a cell of cardGrid (its down/up code and tmLP/LPState, unchanged):
-  touch     shutter/shutter2/input_sel/timer open their popup at once (no event). A button shows its pressed
-            grey (bco2 14823) by itself; an element without a button gets the same grey from code
-            (add_press_feedback): 'down' of a set status cell / hotspot sets bco=14823 of the cell / of the name
-            field tEntity<k> (the text that blinks on a long press), its 'up' and tc0 'up' set defaultBcoColor
-            back (the value of the 'load' loop, also what the long press restore writes).
-  hold      after 500 ms (tmLP) light/light2/fan/number open their popup (no event); every other type arms the
-            long press (LPState=1) and the background of the element blinks green/grey, 200 ms per phase, until
-            the release (grid_long_press_feedback.add): main/info/button the icon button, status the cell, value/
-            progress/switch (hotspot) the name field tEntity<k> - the bar of progress lies below it and is not
-            redrawn. Type text without an intName does not blink (it sends nothing).
+Touch: main, every slot, every cell and the icons of the sets behave like a cell of cardGrid (its down/up code and
+tmLP/LPState, with the type as a number):
+  touch     types 2..5 open their popup at once (no event). A button shows its pressed grey (bco2 14823) by
+            itself; an element without a button gets the same grey from code (add_press_feedback): 'down' of a set
+            status cell / hotspot sets bco=14823 of the cell / of the name field tEntity<k> (the text that blinks
+            on a long press), its 'up' and tc0 'up' set defaultBcoColor back (the value of the 'load' loop, also
+            what the long press restore writes). 'down' writes the type into vLPType for tmLP (tTmp, which tmLP
+            read before, is overwritten by tmSerial while the finger is down).
+  hold      after 500 ms (tmLP) types 6..9 open their popup (no event); every other type arms the long press
+            (LPState=1) and the background of the element blinks green/grey, 200 ms per phase, until the release
+            (grid_long_press_feedback.add): main/info/button the icon button, a cell itself, value/progress/switch
+            (hotspot) the name field tEntity<k> - the bar of progress lies below it and is not redrawn. Type 1
+            without an intName does not blink (it sends nothing). vaLPCell: cardDevice1 main 1, bEntity1-6 2-7,
+            cells 8-23, set B 24/25, set C 26/27 (us-p C 24/25); cardDevice3 main 1, bEntity1-6 2-7, mSlot7/8 8/9,
+            cells 10-17 (check_long_press_numbers).
   release   event,buttonPress2,<intName>,button - or event,buttonPress3,<intName>,button when the long press was
-            armed. Type text without an intName sends nothing (kinds other than button).
+            armed. Type 1 without an intName sends nothing (kinds other than button).
   The popups get name, id, icon and icon colour in pageIcons.tTmp1/2/3 and tempIconColor; they do not know the
-  calling page, their bExit goes to the adapter, which answers with the pageType of the page.
-  Where the code lives: main/info/button in the icon button (name and value forward with click <button>,1 / ,0);
-  status in the cell text itself; value, progress and the icon+name of a switch under a hotspot mSlot<k> (copy of
-  a swipe strip, no picture) over the union of their objects (progress: name + bar). A hotspot or a status cell
-  stays touchable while its element is empty, so their code checks the type first (delete/empty: nothing).
+  calling page, their bExit goes to the adapter, which answers with the pageType of the page. A cell has no name
+  (the popup has no heading); the icons of the sets give the full name of the row (tEntity<k>).
+  Where the code lives: main/info/button and the set icons in the icon button (name and value forward with
+  click <button>,1 / ,0; the value of set A forwards to the icon of set B in stage 1); a cell in the cell text
+  itself; value, progress and the icon+name of a switch under a hotspot mSlot<k> (copy of a swipe strip, no
+  picture) over the union of their objects (progress: name + bar). A hotspot or a cell stays touchable while its
+  element is empty, so their code checks the type first (0: nothing).
   The switch btOnOff itself and the status line are not touched.
 
-Buffers: ids (entn*) 23 like cardEntities2, names 31, values 31, status 63, icons 10, tSend 63 (longest event
-'event,buttonPress2,' + id + ',OnOff,1'). RAM per page (9 + 7 per object + text buffers) is printed and must stay
-<= 3584 with global.
+Buffers: ids (entn*) 7, nent1/2 11, names 31, values 31, set B name 15, set C value 19, status 63, icons 10
+(cardDevice1 and every cell: 7), tSend 63. RAM per page (9 + 7 per object + text buffers) is printed; it must stay
+<= 3584 with global and should keep RAM_MARGIN (the estimate was 131 bytes too low on cardDevice1).
 
-strCommand is sized per page from its slots (message_fields, str_command_maxl): the longest entityUpd the adapter
-really builds (ids '<page>?<n>' 12 bytes, one icon 4 bytes, colour 5, the longest type of the kind, names and values
-up to their buffers, button/switch value 0/1, status icons without name and value) plus 10 %, rounded up to 4k-1, at
-most 1019 (the display takes 1017 bytes of payload). The other messages of the page (time, date, timeout, dimmode,
-pageType) are far shorter. The receive code copies at most txt_maxl bytes into strCommand (clamp_receive): a longer
-message loses its end, the CRC check, the delete of the frame and the acknowledgement use the whole frame in the
-serial buffer and do not depend on the size of strCommand.
+strCommand is sized per page from its slots (message_fields, str_command_maxl): the longest entityUpd or devIcons
+the new adapter really builds (type as a number, ids 7 bytes, the navigation 'button'/'bSubPrev', one icon 4 bytes
+(devIcons: 7 with the font suffix), colour 5, names and values up to their buffers, button/switch value 0/1, the
+stage 1 byte, the reserved slots of cardDevice1 empty) plus 10 %, rounded up to 4k-1, at most 1019 (the display
+takes 1017 bytes of payload). The other messages of the page (time, date, timeout, dimmode, pageType) are far
+shorter. The receive code copies at most txt_maxl bytes into strCommand (clamp_receive): a longer message (an older
+adapter with names as types, 12 byte ids and the status slots) loses its end, the CRC check, the delete of the
+frame and the acknowledgement use the whole frame in the serial buffer and do not depend on the size of strCommand.
 """
 import json
 import os
@@ -134,13 +162,13 @@ FONT_MARK = '¬'
 FIRST = 14
 FIELDS = 6
 
-ID_LEN = 23
+ID_LEN = 7  # ids '<page>?<n>' of the adapter, at most '999?999' (hmi-type-number.md)
+NAV_ID_LEN = 11  # nent1/2: the adapter sends bSubPrev, bSubNext, bUp, bHome (at most 8, Navigation/Page.getNavigation)
 NAME_LEN = 31
 VALUE_LEN = 31
 STATUS_LEN = 63
 ICON_LEN = 10
 ICON_NEED = 7  # one glyph (at most 4 bytes UTF-8) plus the font suffix '¬<digit>' (2 + 1)
-TYPE_LEN = 10
 TSEND_LEN = 63
 STR_COMMAND_MAX = 1019  # the serial buffer of the display holds 1023 bytes, a payload is at most 1017
 PAYLOAD_MAX = 1017
@@ -148,11 +176,31 @@ STR_COMMAND_RESERVE = 10  # percent on top of the longest real entityUpd
 HEADING_LEN = 40  # tHeading
 TMP_LEN = 10  # tTmp: types of the navigation and of the info icon, numbers
 COLOR_LEN = 5  # 65535
-REAL_ID = 12  # ids of the adapter 'dp_<page index>?<n>'
+REAL_ID = 7  # ids of the adapter '<page index>?<n>', at most '999?999'
+REAL_NAV_ID = 8  # bSubPrev / bSubNext
 REAL_ICON = 4  # one glyph, UTF-8
+REAL_ICON_FONT = 7  # one glyph plus '¬<font>' (devIcons: the longest case)
 RAM_GLOBAL = 436
 RAM_LIMIT = 3584
 RAM_TARGET = 3400
+# the estimate was 131 bytes below the editor on cardDevice1 (device10): keep at least this much below the limit
+RAM_MARGIN = 150
+
+# the type of an element as a number (cardDevice1-3 since device13, hmi-type-number.md); an older adapter sends the
+# name: covx gives 0 for it (measured: leading digits or 0), then TYPE_NAMES translates it, every other name is 1
+TYPE_NAMES = (('shutter', 2), ('shutter2', 3), ('input_sel', 4), ('timer', 5), ('light', 6), ('light2', 7),
+              ('fan', 8), ('number', 9))
+EMPTY_TYPES = ('delete', '', '0')  # -> 0; '0' as well, so that the number 0 stays 0
+TOUCH_POPUPS = (('shutter', 'popupShutter'), ('shutter2', 'popupShutter2'), ('input_sel', 'popupInSel'),
+                ('timer', 'popupTimer'))  # 2..5: popup at the touch
+HOLD_POPUPS = (('light', 'popupLight'), ('light2', 'popupLight2'), ('fan', 'popupFan'),
+               ('number', 'popupSlider'))  # 6..9: popup after 500 ms (tmLP)
+TYPE_NUMBER = dict(TYPE_NAMES, text=1)
+LP_TYPE = 'vLPType'  # number variable: the type of the touched element for tmLP (tTmp is overwritten by tmSerial)
+STAGE_VAR = 'vStage'  # stage of the status icons: field 6 of the info element of entityUpd
+COLS_VAR = 'vCols'  # columns of the status grid that are shown now
+ICONS_COMMAND = 'devIcons'  # devIcons~<type>~<id>~<icon>~<color> per cell: the status icons
+ICON_FIELDS = 4
 
 STATUS_COMMAND = 'devStatus'  # devStatus~<text>: only the status line (the adapter alternates the parts of a long text)
 FIELDS_TABLE = False  # --fields
@@ -200,41 +248,56 @@ def switch_row(x, y, w):
             'switch': (x + w - 50, y, 50, 50)}
 
 
-def narrow_row(x, y, w):
-    """second set of an info row when the status block is shown: value width kept at 110, the name gets shorter;
-    the value lies 1 px lower than the wide one (exactly congruent objects make the editor warn 'Component overlap')"""
-    return {'icon': (x, y, 36, 34, 1), 'name': (x + 38, y + 4, w - 38 - 112, 26, 0, 0),
-            'value': (x + w - 110, y + 5, 110, 26, 0, 2)}
+RESERVED = {'kind': 'reserved'}  # a slot whose fields stay in entityUpd but are not read (cardDevice1 7..10)
 
-
-# status block of cardDevice1: 2 x 2 cells with a 1 px border (text style 1); neighbours share their border line
-# (1 px overlap), so the borders form the outer frame plus the cross in the middle
+# status grid (devIcons): text cells with a 1 px border (text style 1); neighbours overlap by 1 px, so the borders
+# form the outer frame plus the lines in between. The cells are filled column by column (top, bottom, next column);
+# a column is shown when the highest set cell reaches it, at most the columns of the stage.
 # Measured on the zi table: the font 1 icons have their ink in rows 6..28 of the 32 px glyph (median of all 7459
 # icons), so the info row icons (box y 76/120, h 34, ycen) show their ink at y 83..105 and 127..149, pitch 44.
 # A cell of 45 px (1 px overlap -> pitch 44) at y 71/115 puts the status icons on exactly the same lines as the
-# info icons (ink 83..105 / 127..149): one grid row per info row.
-STATUS_CELL_W, STATUS_CELL_H = 38, 45
-STATUS_X, STATUS_Y0 = 124, 71
+# info icons: one grid row per info row (cardDevice1 EU/us-l).
 GRID_COLOR = 14823  # the grey of the pie lines of cardPChart and of the pressed buttons (bco2)
 
 
-def status_cell(i, x0=STATUS_X, y0=STATUS_Y0, w=STATUS_CELL_W, h=STATUS_CELL_H):
-    x = x0 + (w - 1) * (i % 2)
-    y = y0 + (h - 1) * (i // 2)
-    return {'kind': 'status', 'icon': (x, y, w, h, 1)}
+def grid(columns, rows, x0, y0, pitch, w, h, font=1):
+    """the cells of a status grid in the order of devIcons: column by column, top to bottom"""
+    return [(x0 + pitch * c, y0 + (h - 1) * r, w, h, font) for c in range(columns) for r in range(rows)]
+
+
+def info_sets(x_icon_b, x_name_b, w_name_b, x_icon_c, x_value_c, w_value_c, ys):
+    """the narrower sets of the info rows 1/2 of cardDevice1: B icon + short name (the value is tValue<k> of the
+    wide set A), C icon + value (no name); None leaves a set out"""
+    out = {}
+    for k, y in enumerate(ys, 1):
+        sets = {}
+        if x_icon_b is not None:
+            sets['B'] = {'icon': (x_icon_b, y, 36, 34, 1), 'name': (x_name_b, y + 4, w_name_b, 26, 0, 0)}
+        sets['C'] = {'icon': (x_icon_c, y, 36, 34, 1), 'value': (x_value_c, y + 4, w_value_c, 26, 0, 2)}
+        out[k] = sets
+    return out
+
+
+SET_NAME_LEN = 15  # name of set B (49 px hold at most 9 characters)
+SET_VALUE_LEN = 19  # value of set C (87 / 106 px hold at most 17 narrow characters)
 
 
 # landscape (EU; us-l with every x shifted)
 LAYOUTS = {
-    # control: icon top left, two info rows right of it, four buttons, optional 2 x 2 status icons between icon and
-    # info rows (the info rows switch to a narrower second set of objects while the block is shown)
+    # control: icon top left, two info rows right of it, four buttons; status grid up to 8 x 2 between icon and
+    # info rows, the stage (field 6 of info) chooses the set of the info rows:
+    #   stage 0  no grid, set A (wide, as before)          stage 1  up to 3 columns, set B (icon, short name, value)
+    #   stage 2  up to 5 columns, set C (icon, value)       stage 3  up to 8 columns, no info rows
     'cardDevice1': {
         'main': (10, 68, 110, 86, 4), 'mainName': (10, 156, 110, 26, 0, 1), 'statusXcen': 1,
-        # the tightest page: its 14 icon buffers hold exactly what an icon needs (ICON_NEED), 4 bytes less each
+        # the tightest page: its icon buffers hold exactly what an icon needs (ICON_NEED), 4 bytes less each
         'iconLen': ICON_NEED,
         'slots': [info_row(126, 76, 314), info_row(126, 120, 314)] + [button(10 + 108 * k, 190, 104) for k in range(4)]
-        + [status_cell(i) for i in range(4)],
-        'narrow': {1: narrow_row(204, 76, 236), 2: narrow_row(204, 120, 236)},
+        + [RESERVED] * 4,
+        'cells': grid(8, 2, 124, 71, 37, 38, 45), 'gridRows': 2, 'stageColumns': (0, 3, 5, 8),
+        # B: icon 5 px behind column 3 (236), name 2 px behind the icon up to tValue (330); C: behind column 5 (310)
+        'sets': info_sets(241, 279, 49, 315, 353, 87, (76, 120)),
+        'setStages': {'A': (0,), 'B': (1,), 'C': (2,)}, 'sharedValue': 'B',
         'status': STATUS_LINE, 'info': INFO_ICON,
     },
     # progress: icon top left, large value beside it, button top right, bar over the full width, three info tiles
@@ -249,11 +312,14 @@ LAYOUTS = {
         ],
         'status': STATUS_LINE, 'info': INFO_ICON,
     },
-    # values: icon left, 2 x 3 info tiles, two switches
+    # values: icon left, 2 x 3 info tiles, two switches; status grid up to 8 x 1 in the first row of tiles:
+    #   stage 0  no grid       stage 1  up to 4 cells, tile 1 hidden       stage 2  up to 8 cells, tiles 1 and 2 hidden
     'cardDevice3': {
         'main': (10, 67, 100, 82, 4), 'mainName': (10, 151, 100, 26, 0, 1), 'statusXcen': 1,
         'slots': [info_tile(114 + 163 * (k % 2), 67 + 52 * (k // 2), 161) for k in range(6)]
         + [switch_row(10, 228, 213), switch_row(226, 228, 213)],
+        'cells': grid(8, 1, 114, 67, 37, 38, 52), 'gridRows': 1, 'stageColumns': (0, 4, 8),
+        'covered': {1: 1, 2: 2},  # slot: the stage from which the grid covers it
         'status': STATUS_LINE, 'info': INFO_ICON,
     },
 }
@@ -265,15 +331,18 @@ LAYOUTS = {
 PORTRAIT_STATUS = (10, 447, 262, 30)
 PORTRAIT_INFO = (274, 446, 36, 32, 1)
 LAYOUTS_PORTRAIT = {
-    # control: icon top left with the name below, right of it the 2 x 2 status block (72 x 57 cells, as high as
-    # icon + name), two info rows over the full width, the four buttons as 2 x 2 (148 px each).
-    # No second set of info rows: the rows do not depend on the status block (6 objects less than landscape).
+    # control: icon top left with the name below, two info rows over the full width, the four buttons as 2 x 2
+    # (148 px each). Status grid 8 x 2 over the full width where the info rows are (P2 of status-grid-8x2.md); with
+    # a grid (stage 1-2) the info rows move right of the main icon as set C (icon + value, no name), stage 3 hides
+    # them; stage 0 shows the wide rows (set A) as before. No set B.
     'cardDevice1': {
         'main': (10, 70, 150, 86, 4), 'mainName': (10, 158, 150, 26, 0, 1), 'statusXcen': 1,
         'iconLen': ICON_NEED,
         'slots': [info_row(10, 190, 300), info_row(10, 230, 300)]
-        + [button(10 + 152 * (k % 2), 272 + 86 * (k // 2), 148) for k in range(4)]
-        + [status_cell(i, 166, 70, 72, 57) for i in range(4)],
+        + [button(10 + 152 * (k % 2), 272 + 86 * (k // 2), 148) for k in range(4)] + [RESERVED] * 4,
+        'cells': grid(8, 2, 10, 188, 37, 38, 41), 'gridRows': 2, 'stageColumns': (0, 3, 5, 8),
+        'sets': info_sets(None, None, None, 166, 204, 106, (76, 120)),
+        'setStages': {'A': (0,), 'C': (1, 2)}, 'sharedValue': None,
         'status': PORTRAIT_STATUS, 'info': PORTRAIT_INFO,
     },
     # progress: icon top left, large value beside it (icon 34 px, value 172 px in font 4), bar over the full width,
@@ -291,11 +360,13 @@ LAYOUTS_PORTRAIT = {
     },
     # values: icon top in the middle, name below over the full width, 2 x 3 info tiles (148 px), the two switches
     # as rows. Icon and name start at y 68 / 152 as on cardDevice2: mSpecial of us-p (x 174..256) reaches down to
-    # y 67.
+    # y 67. Status grid in the first row of tiles, pitch 36 (4 cells of 37 px fit the 148 px of a tile).
     'cardDevice3': {
         'main': (85, 68, 150, 82, 4), 'mainName': (10, 152, 300, 26, 0, 1), 'statusXcen': 1,
         'slots': [info_tile(10 + 152 * (k % 2), 182 + 52 * (k // 2), 148) for k in range(6)]
         + [switch_row(10, 342, 300), switch_row(10, 394, 300)],
+        'cells': grid(8, 1, 10, 182, 36, 37, 51), 'gridRows': 1, 'stageColumns': (0, 4, 8),
+        'covered': {1: 1, 2: 2},
         'status': PORTRAIT_STATUS, 'info': PORTRAIT_INFO,
     },
 }
@@ -311,7 +382,7 @@ def shift_layout(layout, dx):
         if isinstance(value, list):
             return [move(v) for v in value]
         return value
-    return {k: (move(v) if k in ('main', 'mainName', 'slots', 'narrow', 'status', 'info') else v)
+    return {k: (move(v) if k in ('main', 'mainName', 'slots', 'cells', 'sets', 'status', 'info') else v)
             for k, v in layout.items()}
 
 
@@ -349,24 +420,31 @@ def check_area(page, layout, model):
     """every box of the layout (and every hotspot over an element) lies on the stage, in the visible x range and
     off every touch area the page keeps from cardGrid: the arrows bPrev/bNext, the swipe strips and the hidden
     hotspot mSpecial in the header (us-p: y 1..67, one row lower than on EU and us-l) - SystemExit otherwise.
-    Returns notes about boxes of different elements that overlap (the two sets of an info row and neighbouring
-    status cells are meant to)."""
+    Returns notes about boxes of different elements that overlap and can be shown in the same stage (neighbouring
+    cells of the grid are meant to overlap; the grid, the sets of an info row and covered tiles are never shown
+    together where they overlap, see shown_stages)."""
     width, height = STAGE[model]
     x0, x1 = VISIBLE[model]
     name = page.objs[0].name
-    boxes = [('main', layout['main'][:4]), ('main', layout['mainName'][:4]), ('status', layout['status'][:4]),
-             ('info', layout['info'][:4])]
-    new = {'bMain', 'tMainName', 'tStatus', 'bInfo'}
+    shown = shown_stages(layout)
+    boxes = [('main', 'bMain', layout['main'][:4]), ('main', 'tMainName', layout['mainName'][:4]),
+             ('status', 'tStatus', layout['status'][:4]), ('info', 'bInfo', layout['info'][:4])]
     for k, spec in enumerate(layout['slots'], 1):
-        group = 'status block' if spec['kind'] == 'status' else f'slot {k}'
-        boxes += [(group, spec[n][:4]) for n in ('icon', 'name', 'value', 'bar', 'switch') if n in spec]
-        new |= set(slot_names(k, spec['kind'])[1])
+        if spec['kind'] == 'reserved':
+            continue
+        icon, names = slot_names(k, spec['kind'])
+        objs = dict(zip(('icon', 'name', 'value'), (icon, f'tEntity{k}', f'tValue{k}')))
+        objs.update(switch=f'btOnOff{k}', bar=f'bar{k}')
+        boxes += [(f'slot {k}', objs[n], spec[n][:4]) for n in ('icon', 'name', 'value', 'bar', 'switch') if n in spec]
         if spec['kind'] in HOTSPOT:
-            boxes.append((group, hotspot_rect(spec)))
-            new.add(f'mSlot{k}')
-    for k, spec in layout.get('narrow', {}).items():
-        boxes += [(f'slot {k} narrow', spec[n][:4]) for n in ('icon', 'name', 'value')]
-        new |= set(narrow_names(k))
+            boxes.append((f'slot {k}', f'mSlot{k}', hotspot_rect(spec)))
+    for k, sets in layout.get('sets', {}).items():
+        for letter, spec in sets.items():
+            boxes += [(f'slot {k} set {letter}', obj, spec[part][:4]) for part, obj in set_names(k, letter).items()
+                      if part in spec]
+    for i, cell in enumerate(layout.get('cells', []), 1):
+        boxes.append(('status grid', cell_names(i)[0], cell[:4]))
+    new = {obj for _, obj, _ in boxes}
     # what takes a touch and is not built here: buttons (98) and hotspots (109) of the cardGrid copy
     strips = [(o.name, (o.get('x'), o.get('y'), o.get('w'), o.get('h'))) for o in page.objs
               if o.name not in new and o.has('x') and o.get('type') in (98, 109)]
@@ -375,24 +453,76 @@ def check_area(page, layout, model):
 
     def hit(a, b):
         return a[0] < b[0] + b[2] and b[0] < a[0] + a[2] and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
-    for group, box in boxes:
+    for group, obj, box in boxes:
         if box[0] < x0 or box[0] + box[2] - 1 > x1 or box[1] < 0 or box[1] + box[3] > height or box[0] + box[2] > width:
-            raise SystemExit(f'{name}: {group} {box} is outside of the visible area x {x0}..{x1}, y 0..{height - 1}')
+            raise SystemExit(f'{name}: {group} {obj} {box} is outside of the visible area x {x0}..{x1}, '
+                             f'y 0..{height - 1}')
         for strip, rect in strips:
             if hit(box, rect):
-                raise SystemExit(f'{name}: {group} {box} lies on {strip} {rect}')
+                raise SystemExit(f'{name}: {group} {obj} {box} lies on {strip} {rect}')
     notes = []
-    wide = {f'slot {k}' for k in layout.get('narrow', {})}
-    for i, (ga, a) in enumerate(boxes):
-        for gb, b in boxes[i + 1:]:
+    for i, (ga, oa, a) in enumerate(boxes):
+        for gb, ob, b in boxes[i + 1:]:
+            if a == b and oa != ob:
+                notes.append(f'{oa} and {ob} are congruent {a} (editor: Component overlap)')
             if ga == gb or not hit(a, b):
                 continue
-            # never shown together: a wide info row and the narrow rows / the status block
-            if (ga in wide and (gb.endswith(' narrow') or gb == 'status block')
-                    or gb in wide and (ga.endswith(' narrow') or ga == 'status block')):
-                continue
-            notes.append(f'{ga} {a} / {gb} {b}')
+            together = shown.get(oa, ALL) & shown.get(ob, ALL)
+            if together:
+                notes.append(f'{ga} {oa} {a} / {gb} {ob} {b} (stage {sorted(together)})')
     return notes
+
+
+ALL = frozenset(range(4))
+
+
+def stages(layout):
+    """the stages of the page: 0 = no status grid, 1.. = the grid with up to stageColumns[s] columns"""
+    return range(len(layout.get('stageColumns', (0,))))
+
+
+def shown_stages(layout):
+    """{object: stages in which it can be visible} for the objects that depend on the stage: the cells (their
+    column within stageColumns), the sets of the info rows (setStages; the value of set A is the one of set B as
+    well), tiles covered by the grid (covered); objects not listed are shown in every stage"""
+    out = {}
+    cols = layout.get('stageColumns', ())
+    rows = layout.get('gridRows', 1)
+    for i, _ in enumerate(layout.get('cells', []), 1):
+        out[cell_names(i)[0]] = frozenset(s for s in stages(layout) if cols[s] >= (i - 1) // rows + 1)
+    for k, sets in layout.get('sets', {}).items():
+        spec = layout['slots'][k - 1]
+        icon, names = slot_names(k, spec['kind'])
+        set_a = frozenset(layout['setStages']['A'])
+        for obj in names:
+            out[obj] = set_a
+        if layout.get('sharedValue'):
+            out[f'tValue{k}'] = set_a | frozenset(layout['setStages'][layout['sharedValue']])
+        for letter in sets:
+            for obj in set_names(k, letter).values():
+                out.setdefault(obj, frozenset(layout['setStages'][letter]))
+    for k, first in layout.get('covered', {}).items():
+        spec = layout['slots'][k - 1]
+        for obj in slot_names(k, spec['kind'])[1]:
+            out[obj] = frozenset(s for s in stages(layout) if s < first)
+    return out
+
+
+def cell_names(i):
+    """cell i of the status grid: text, type (number), id"""
+    return f'tStat{i}', f'typeStat{i}', f'entnStat{i}'
+
+
+def set_names(k, letter):
+    """{part: object} of set B / C of info row k; B uses the value of the wide set A"""
+    if letter == 'B':
+        return {'icon': f'bEntityB{k}', 'name': f'tEntityB{k}', 'value': f'tValue{k}'}
+    return {'icon': f'bEntityC{k}', 'value': f'tValueC{k}'}
+
+
+def own_set_names(k, letter):
+    """the objects a set has of its own (without the shared value)"""
+    return [o for part, o in set_names(k, letter).items() if not (letter == 'B' and part == 'value')]
 
 
 TAPPED = ('info', 'button')
@@ -401,31 +531,47 @@ HOTSPOT = ('value', 'progress', 'switch')  # elements without a button: a hotspo
 
 # ---------------------------------------------------------------- size of strCommand
 # the 6 fields of an element in bytes: (type, intName, icon, iconColor, displayName, optionalValue)
-# BUFFER: what the page keeps of every field (txt_maxl of its target, 0 = the field is not read)
-# REAL:   what the adapter really sends (longest type of the kind, id 12, one icon, names/values up to the buffer)
+# BUFFER: what the page keeps of every field (txt_maxl of its target, 0 = the field is not read); the type goes
+#         through tTmp (covx), the stage in field 6 of info as well
+# REAL:   what the adapter really sends: the type as a number (1 byte), id 7, one icon, names/values up to the
+#         buffer, the navigation as text (button, bSubPrev), the reserved slots of cardDevice1 empty
 BUFFER = {
-    'nav': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
-    'main': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, STATUS_LEN),
-    'info': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, VALUE_LEN),
-    'value': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, VALUE_LEN),
-    'progress': (TYPE_LEN, ID_LEN, 0, COLOR_LEN, NAME_LEN, TMP_LEN),
-    'button': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, 0),
-    'switch': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, TMP_LEN),
-    'status': (TYPE_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
-    'infoIcon': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
+    'nav': (TMP_LEN, NAV_ID_LEN, ICON_LEN, COLOR_LEN, 0, 0),
+    'main': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, STATUS_LEN),
+    'info': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'value': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'progress': (TMP_LEN, ID_LEN, 0, COLOR_LEN, NAME_LEN, TMP_LEN),
+    'button': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, 0),
+    'switch': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, NAME_LEN, TMP_LEN),
+    'reserved': (0, 0, 0, 0, 0, 0),
+    'infoIcon': (TMP_LEN, ID_LEN, ICON_LEN, COLOR_LEN, 0, TMP_LEN),
 }
 REAL = {
-    'nav': (len('button'), REAL_ID, REAL_ICON, COLOR_LEN, 0, 0),
-    'main': (len('switch'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, STATUS_LEN),
-    'info': (len('input_sel'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, VALUE_LEN),
-    'value': (len('text'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, VALUE_LEN),
-    'progress': (len('text'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, len('100')),
-    'button': (len('button'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, 1),
-    'switch': (len('switch'), REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, 1),
-    # the adapter sends a status icon without name and value (devicePageStatusIconElement)
-    'status': (len('text'), REAL_ID, REAL_ICON, COLOR_LEN, 0, 0),
-    'infoIcon': (len('button'), REAL_ID, REAL_ICON, COLOR_LEN, 0, 0),
+    'nav': (len('button'), REAL_NAV_ID, REAL_ICON, COLOR_LEN, 0, 0),
+    'main': (1, REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, STATUS_LEN),
+    'info': (1, REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'value': (1, REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, VALUE_LEN),
+    'progress': (1, REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, len('100')),
+    'button': (1, REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, 1),
+    'switch': (1, REAL_ID, REAL_ICON, COLOR_LEN, NAME_LEN, 1),
+    'reserved': (0, 0, 0, 0, 0, 0),  # the new adapter sends ~~~~~
+    'infoIcon': (1, REAL_ID, REAL_ICON, COLOR_LEN, 0, 1),  # field 6: the stage 0..3
 }
+# devIcons: 4 fields per cell (type, id, icon, colour)
+ICON_BUFFER = (TMP_LEN, ID_LEN, ICON_NEED, COLOR_LEN)
+ICON_REAL = (1, REAL_ID, REAL_ICON_FONT, COLOR_LEN)
+
+
+def icons_fields(layout, real):
+    """[(part, bytes of its fields)] of the longest devIcons of the page (every cell set)"""
+    cell = ICON_REAL if real else tuple(max(b, r) for b, r in zip(ICON_BUFFER, ICON_REAL))
+    return [(ICONS_COMMAND, (len(ICONS_COMMAND),))] + [(f'cell {i}', cell)
+                                                      for i in range(1, len(layout.get('cells', [])) + 1)]
+
+
+def icons_len(layout, real):
+    fields = [n for _, part in icons_fields(layout, real) for n in part]
+    return sum(fields) + len(fields) - 1
 
 
 def next_4k1(n):
@@ -455,7 +601,7 @@ def message_len(layout, real):
 
 def str_command_maxl(layout):
     """txt_maxl of strCommand: the longest real entityUpd plus the reserve, 4k-1, at most STR_COMMAND_MAX"""
-    need = -(-message_len(layout, True) * (100 + STR_COMMAND_RESERVE) // 100)
+    need = -(-max(message_len(layout, True), icons_len(layout, True)) * (100 + STR_COMMAND_RESERVE) // 100)
     return min(STR_COMMAND_MAX, next_4k1(need))
 
 
@@ -576,6 +722,24 @@ def cell_down(down1, typ, entn, name, icon, color=None):
                 raise SystemExit(f'{SOURCE}.bEntity1.down: unexpected use of the icon: {line}')
             line = line.replace(line.strip(), fixed[line.strip()])
         out.append(re.sub(r'\b(type1|entn1|tEntity1|bEntity1)\b', lambda m: rename[m.group(1)], line))
+    return numeric(out, typ)
+
+
+def numeric(lines, typ):
+    """the type of the element as a number: tmLP gets it in its own number variable, the popups at the touch
+    compare the number (TYPE_NUMBER)"""
+    out = []
+    for line in lines:
+        ind = line[:len(line) - len(line.lstrip())]
+        code = line.strip()
+        if code == f'tTmp.txt={typ}.txt':
+            line = f'{ind}{LP_TYPE}.val={typ}.val'
+        m = re.fullmatch(rf'if\({typ}\.txt=="(\w+)"\)', code)
+        if m:
+            line = f'{ind}if({typ}.val=={TYPE_NUMBER[m.group(1)]})'
+        if re.search(rf'\b{typ}\.txt\b', line):
+            raise SystemExit(f'{SOURCE}.bEntity1.down: the type is used as text: {code}')
+        out.append(line)
     return out
 
 
@@ -586,15 +750,16 @@ def cell_up(up1, typ, entn, text_guard=True):
     if not text_guard:
         return lines
     body = [x for x in lines[1:] if x.strip() != 'LPState.val=0']
-    return ([lines[0], '// every type sends, type text only with an intName (card_device.py)',
-             f'if({typ}.txt!="text"||{entn}.txt!="")', '{'] + ['  ' + x for x in body] + ['}', 'LPState.val=0'])
+    return ([lines[0], '// every type sends, type 1 (text and the other types that only send) only with an intName '
+             '(card_device.py)', f'if({typ}.val!=1||{entn}.txt!="")', '{'] + ['  ' + x for x in body]
+            + ['}', 'LPState.val=0'])
 
 
 def if_shown(typ, lines, keep_first=0, keep_last=0):
     """lines inside 'the element is not empty' - for objects that stay touchable while their element is empty"""
     end = len(lines) - keep_last
-    return (lines[:keep_first] + ['// an empty element does nothing (card_device.py)',
-                                  f'if({typ}.txt!="delete"&&{typ}.txt!="")', '{']
+    return (lines[:keep_first] + ['// an empty element (type 0) does nothing (card_device.py)',
+                                  f'if({typ}.val!=0)', '{']
             + ['  ' + x for x in lines[keep_first:end]] + ['}'] + lines[end:])
 
 
@@ -612,9 +777,9 @@ def hotspot_rect(spec):
 
 
 def slot_names(k, kind):
-    """display objects of slot k (the ones hidden for delete) and the icon object"""
-    if kind == 'status':
-        return f'tStat{k}', [f'tStat{k}']
+    """display objects of slot k (the ones hidden for delete) and the icon object; a reserved slot has none"""
+    if kind == 'reserved':
+        return None, []
     icon = f'bEntity{k}' if kind in TAPPED else f'tIcon{k}'
     names = {'info': [icon, f'tEntity{k}', f'tValue{k}'], 'value': [icon, f'tEntity{k}', f'tValue{k}'],
              'progress': [f'tEntity{k}'], 'button': [icon, f'tEntity{k}'],
@@ -622,26 +787,37 @@ def slot_names(k, kind):
     return icon, names
 
 
-def narrow_names(k):
-    """the second, narrower set of info row k (status block shown)"""
-    return [f'bEntityS{k}', f'tEntityS{k}', f'tValueS{k}']
+def typed_slots(layout):
+    """the slots with a type and an id variable: every slot but the reserved ones, which must be the last"""
+    ks = [k for k, s in enumerate(layout['slots'], 1) if s['kind'] != 'reserved']
+    if ks != list(range(1, len(ks) + 1)):
+        raise SystemExit('the reserved slots must be the last ones')
+    return ks
 
 
-def status_slots(layout):
-    return [k for k, s in enumerate(layout['slots'], 1) if s['kind'] == 'status']
+def stage_condition(var, values):
+    """if() condition 'var is one of the contiguous values' (Nextion: only && or only ||, no expressions)"""
+    lo, hi = min(values), max(values)
+    if sorted(values) != list(range(lo, hi + 1)):
+        raise SystemExit(f'stages {values} are not contiguous')
+    return f'{var}.val=={lo}' if lo == hi else f'{var}.val>={lo}&&{var}.val<={hi}'
 
 
-def tapped_row(button_t, text_t, down1, up1, k, names, spec):
-    """icon button, name and value of a tappable info row; the type/id are those of slot k"""
-    icon, name_n, value_n = names
-    b = make_button(button_t, icon, spec['icon'])
-    b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', name_n, icon))
+def make_number(template, name):
+    """a number variable (copy of vLPNavState: sta 0, val 0)"""
+    o = ungroup(template.copy())
+    o.set('objname', name)
+    o.set('val', 0)
+    return o
+
+
+def tapped_icon(button_t, down1, up1, k, icon, spec, name):
+    """an icon button with the code of a cardGrid cell for the type/id of slot k; name: the text the popup gets as
+    its heading"""
+    b = make_button(button_t, icon, spec)
+    b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', name, icon))
     b.set_code('up', cell_up(up1, f'type{k}', f'entn{k}'))
-    name = make_text(text_t, name_n, spec['name'], NAME_LEN)
-    value = make_text(text_t, value_n, spec['value'], VALUE_LEN)
-    forward(name, icon)
-    forward(value, icon)
-    return [b, name, value]
+    return b
 
 
 def build_objects(page, layout, switch_template):
@@ -657,15 +833,14 @@ def build_objects(page, layout, switch_template):
     if lp[-1].strip() != 'LPState.val=1' or not any('page popupLight' in x for x in lp):
         raise SystemExit('tmLP: unexpected timer code')
     text_t, button_t, var_t, spot_t = src['tEntity1'], src['bEntity1'], src['type1'], src['mSwipeNext']
+    num_t = src['vLPNavState']
     if spot_t.get('type') != 109:
         raise SystemExit('mSwipeNext is not a hotspot')
+    if num_t.get('type') != 52 or num_t.get('sta') != 0:
+        raise SystemExit('vLPNavState is not a number variable')
+    typed = typed_slots(layout)
+    shared = layout.get('sharedValue')
     hotspots = []
-    if 'narrow' in layout:
-        narrow = []
-        for k, spec in layout['narrow'].items():
-            if layout['slots'][k - 1]['kind'] != 'info':
-                raise SystemExit(f'narrow set for slot {k}, which is no info row')
-            narrow += tapped_row(button_t, text_t, down1, up1, k, narrow_names(k), spec)
 
     main = make_button(button_t, 'bMain', layout['main'])
     main.set_code('down', cell_down(down1, 'typeMain', 'entnMain', 'tMainName', 'bMain'))
@@ -673,23 +848,11 @@ def build_objects(page, layout, switch_template):
     main_name = make_text(text_t, 'tMainName', layout['mainName'], NAME_LEN)
     forward(main_name, 'bMain')
     visible = [main, main_name]
-    variables = [make_var(var_t, 'typeMain', TYPE_LEN), make_var(var_t, 'entnMain', ID_LEN)]
-    for k, spec in enumerate(layout['slots'], 1):
+    variables = [make_number(num_t, 'typeMain'), make_var(var_t, 'entnMain', ID_LEN)]
+    for k in typed:
+        spec = layout['slots'][k - 1]
         kind = spec['kind']
         icon, _ = slot_names(k, kind)
-        if kind == 'status':
-            x, y, w, h, font = spec['icon']
-            cell = make_text(text_t, icon, (x, y, w, h, font, 1), ICON_LEN)
-            cell.set('style', 1)  # border, as the icons of cardPower
-            cell.set('borderw', 1)
-            cell.set('borderc', GRID_COLOR)
-            # the cell is its own touch area; an empty one keeps its border, so the code checks the type
-            # a status icon has no name (the adapter sends none): a popup opened from the cell has no heading
-            cell.set_code('down', if_shown(f'type{k}', cell_down(down1, f'type{k}', f'entn{k}', None, icon)))
-            cell.set_code('up', if_shown(f'type{k}', cell_up(up1, f'type{k}', f'entn{k}'), 1, 1))
-            visible.append(cell)
-            variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN)]
-            continue
         if kind in TAPPED:
             b = make_button(button_t, icon, spec['icon'])
             b.set_code('down', cell_down(down1, f'type{k}', f'entn{k}', f'tEntity{k}', icon))
@@ -700,12 +863,21 @@ def build_objects(page, layout, switch_template):
             visible.append(make_text(text_t, icon, (x, y, w, h, font, 1), ICON_LEN))
         name = make_text(text_t, f'tEntity{k}', spec['name'], NAME_LEN)
         visible.append(name)
+        value = None
         if 'value' in spec:
-            visible.append(make_text(text_t, f'tValue{k}', spec['value'], VALUE_LEN))
+            value = make_text(text_t, f'tValue{k}', spec['value'], VALUE_LEN)
+            visible.append(value)
         if kind in TAPPED:
             forward(name, icon)
-            if 'value' in spec:
-                forward(visible[-1], icon)
+            if value is not None:
+                forward(value, icon)
+                if shared and k in layout.get('sets', {}):
+                    # the value is also the value of set B: in that stage its tap goes to the icon of set B
+                    other = set_names(k, shared)['icon']
+                    cond = stage_condition(STAGE_VAR, layout['setStages'][shared])
+                    for event, state in (('down', 1), ('up', 0)):
+                        value.set_code(event, [f'if({cond})', '{', f'  click {other},{state}', '}else', '{',
+                                               f'  click {icon},{state}', '}'])
         if kind == 'switch':
             sw = ungroup(switch_template.copy())
             sw.set('objname', f'btOnOff{k}')
@@ -723,37 +895,64 @@ def build_objects(page, layout, switch_template):
                 down1, f'type{k}', f'entn{k}', f'tEntity{k}', icon if 'icon' in spec else None, f'tEntity{k}')))
             spot.set_code('up', if_shown(f'type{k}', cell_up(up1, f'type{k}', f'entn{k}'), 1, 1))
             hotspots.append(spot)
-        if f'type{k}' not in src:
-            variables += [make_var(var_t, f'type{k}', TYPE_LEN), make_var(var_t, f'entn{k}', ID_LEN)]
+        variables += [make_number(num_t, f'type{k}')]
+        if f'entn{k}' not in src:
+            variables.append(make_var(var_t, f'entn{k}', ID_LEN))
     visible.append(make_text(text_t, 'tStatus', layout['status'] + (0, layout['statusXcen']), STATUS_LEN))
     info = make_button(button_t, 'bInfo', layout['info'])
     info.set_code('down', [])
     info.set_code('up', send_lines('entnInfo'))
     visible.append(info)
     variables.append(make_var(var_t, 'entnInfo', ID_LEN))
-    if 'narrow' in layout:
-        visible += narrow
+    # status grid: the cells carry the code themselves; an empty cell keeps its border (no tap)
+    cells = []
+    for i, (x, y, w, h, font) in enumerate(layout.get('cells', []), 1):
+        cell_n, typ, entn = cell_names(i)
+        cell = make_text(text_t, cell_n, (x, y, w, h, font, 1), ICON_NEED)
+        cell.set('style', 1)  # border, as the icons of cardPower
+        cell.set('borderw', 1)
+        cell.set('borderc', GRID_COLOR)
+        # a status icon has no name (devIcons carries none): a popup opened from the cell has no heading
+        cell.set_code('down', if_shown(typ, cell_down(down1, typ, entn, None, cell_n)))
+        cell.set_code('up', if_shown(typ, cell_up(up1, typ, entn), 1, 1))
+        cells.append(cell)
+        variables += [make_number(num_t, typ), make_var(var_t, entn, ID_LEN)]
+    # the other sets of the info rows (cardDevice1): B then C, so that their long press numbers follow the cells
+    sets = []
+    for letter in ('B', 'C'):
+        for k, row in layout.get('sets', {}).items():
+            if letter not in row:
+                continue
+            if layout['slots'][k - 1]['kind'] != 'info':
+                raise SystemExit(f'set {letter} for slot {k}, which is no info row')
+            names = set_names(k, letter)
+            # the popup gets the full name of the row (tEntity<k> keeps it while it is hidden)
+            sets.append(tapped_icon(button_t, down1, up1, k, names['icon'], row[letter]['icon'], f'tEntity{k}'))
+            for part, maxl in (('name', SET_NAME_LEN), ('value', SET_VALUE_LEN)):
+                if part in row[letter]:
+                    text = make_text(text_t, names[part], row[letter][part], maxl)
+                    forward(text, names['icon'])
+                    sets.append(text)
+    visible += hotspots + cells + sets
     # the icon buffers of the page (the only buffers of ICON_LEN among the new objects)
     for o in visible:
         if o.has('txt_maxl') and o.get('txt_maxl') == ICON_LEN:
             o.set('txt_maxl', layout.get('iconLen', ICON_LEN))
-    visible += hotspots
-    if status_slots(layout):
-        # number variable (like vLPNavState): 1 while at least one status icon is set
-        flag = ungroup(src['vLPNavState'].copy())
-        flag.set('objname', 'vStatus')
-        variables.append(flag)
+    if cells:
+        variables += [make_number(num_t, STAGE_VAR), make_number(num_t, COLS_VAR)]
+    variables.append(make_number(num_t, LP_TYPE))
 
-    keep = [o for o in page.objs if not REMOVE.fullmatch(o.name)]
+    keep = [o for o in page.objs if not REMOVE.fullmatch(o.name) and not re.fullmatch(r'type\d+', o.name)]
     at = keep.index(src['tc0']) + 1  # the cells of cardGrid start behind tc0, the swipe strips stay on top
     page.objs = keep[:at] + visible + variables + keep[at:]
-    slots = len(layout['slots'])
     for o in page.objs:
         m = re.fullmatch(r'(type|entn)(\d+)', o.name)
-        if m and int(m.group(2)) > slots:
+        if m and int(m.group(2)) > len(typed):
             raise SystemExit(f'{o.name}: more slots in cardGrid than on the page')
         if o.name.startswith('entn'):
             o.set('txt_maxl', ID_LEN)
+    for n in ('nent1', 'nent2'):
+        page.obj(n).set('txt_maxl', NAV_ID_LEN)
     page.obj('tSend').set('txt_maxl', TSEND_LEN)
     page.obj('strCommand').set('txt_maxl', str_command_maxl(layout))
 
@@ -809,45 +1008,139 @@ def bar_lines(ind, field, bar, hidden):
     ]
 
 
-def status_lines(ind, layout):
-    """status icons first (their fields lie behind the info rows): an empty slot keeps its cell (and border) with
-    an empty text, vStatus=1 when at least one is set; the block is shown only then"""
+def type_lines(ind, layout):
+    """the type of main and of every typed slot as a number 0..9 (hmi-type-number.md): covx of the field; 0 (an
+    older adapter sends the name, covx gives 0 for it) -> the name chain: delete/empty/'0' 0, the names of
+    TYPE_NAMES their number, every other name 1. One loop over the elements (fields 14+6e), the result goes to
+    type<k> by element number."""
+    ks = typed_slots(layout)
+    i, j = ind + '  ', ind + '    '
+    targets = ['typeMain'] + [f'type{k}' for k in ks]
+    out = [f'{ind}// type of main and slots 1..{ks[-1]} as a number (card_device.py): 0 hidden, 1 sends only, '
+           f'2..5 popup at the touch, 6..9 popup after 500 ms;',
+           f'{ind}// an older adapter sends the name: covx gives 0, the chain translates it (unknown name -> 1)',
+           f'{ind}for(sys2=0;sys2<{len(targets)};sys2++)', f'{ind}{{',
+           f'{i}spstr strCommand.txt,tTmp.txt,"~",sys2*{FIELDS}+{FIRST}',
+           f'{i}covx tTmp.txt,sys0,0,0',
+           f'{i}if(sys0==0)', f'{i}{{',
+           f'{j}if(' + '&&'.join(f'tTmp.txt!="{t}"' for t in EMPTY_TYPES) + ')', f'{j}{{',
+           f'{j}  sys0=1']
+    for name, number in TYPE_NAMES:
+        out += [f'{j}  if(tTmp.txt=="{name}")', f'{j}  {{', f'{j}    sys0={number}', f'{j}  }}']
+    out += [f'{j}}}', f'{i}}}']
+    for e, t in enumerate(targets):
+        out += [f'{i}if(sys2=={e})', f'{i}{{', f'{j}{t}.val=sys0', f'{i}}}']
+    return out + [f'{ind}}}']
+
+
+def cap_lines(ind, layout):
+    """sys2 (columns) at most the columns of the stage"""
     i = ind + '  '
-    cells = status_slots(layout)
-    out = [f'{ind}// status icons (slots {cells[0]}..{cells[-1]}): vStatus=1 when one is set', f'{ind}vStatus.val=0']
-    for k in cells:
-        first = FIRST + FIELDS * k
-        out += [f'{ind}spstr strCommand.txt,type{k}.txt,"~",{first}',
-                f'{ind}spstr strCommand.txt,entn{k}.txt,"~",{first + 1}',
-                f'{ind}if(type{k}.txt=="delete"||type{k}.txt=="")',
-                f'{ind}{{',
-                f'{i}tStat{k}.txt=""',
-                f'{ind}}}else',
-                f'{ind}{{']
-        out += icon_lines(i, first + 2, f'tStat{k}', layout['slots'][k - 1]['icon'][4])
-        out += [f'{i}vStatus.val=1', f'{ind}}}']
-    out += [f'{ind}if(vStatus.val==0)', f'{ind}{{'] + [f'{i}vis tStat{k},0' for k in cells]
-    out += [f'{ind}}}else', f'{ind}{{'] + [f'{i}vis tStat{k},1' for k in cells] + [f'{ind}}}']
+    out = [f'{ind}sys1=0']
+    for stage, cols in enumerate(layout['stageColumns'][1:], 1):
+        out += [f'{ind}if({STAGE_VAR}.val=={stage})', f'{ind}{{', f'{i}sys1={cols}', f'{ind}}}']
+    return out + [f'{ind}if(sys2>sys1)', f'{ind}{{', f'{i}sys2=sys1', f'{ind}}}']
+
+
+def columns_lines(ind, layout):
+    """show the columns 1..sys2 of the grid: only those that change, first the ones to hide (from the right), then
+    the ones to show; vCols keeps the number shown"""
+    i = ind + '  '
+    rows = layout['gridRows']
+    n = len(layout['cells']) // rows
+    col = {c: [cell_names((c - 1) * rows + r)[0] for r in range(1, rows + 1)] for c in range(1, n + 1)}
+    out = []
+    for c in range(n, 0, -1):
+        out += ([f'{ind}if(sys2<{c}&&{COLS_VAR}.val>={c})', f'{ind}{{'] + [f'{i}vis {x},0' for x in col[c]]
+                + [f'{ind}}}'])
+    for c in range(1, n + 1):
+        out += ([f'{ind}if(sys2>={c}&&{COLS_VAR}.val<{c})', f'{ind}{{'] + [f'{i}vis {x},1' for x in col[c]]
+                + [f'{ind}}}'])
+    return out + [f'{ind}{COLS_VAR}.val=sys2']
+
+
+def stage_lines(ind, layout, info_first):
+    """the stage from field 6 of info (empty: 0), clamped; then the columns beyond it off"""
+    i = ind + '  '
+    top = len(layout['stageColumns']) - 1
+    return [f'{ind}// stage of the status grid = field 6 of info (card_device.py): 0 no grid, 1..{top} up to '
+            + '/'.join(map(str, layout['stageColumns'][1:])) + ' columns; empty (older adapter) 0',
+            f'{ind}spstr strCommand.txt,tTmp.txt,"~",{info_first + 5}',
+            f'{ind}covx tTmp.txt,{STAGE_VAR}.val,0,0',
+            f'{ind}if({STAGE_VAR}.val<0)', f'{ind}{{', f'{i}{STAGE_VAR}.val=0', f'{ind}}}',
+            f'{ind}if({STAGE_VAR}.val>{top})', f'{ind}{{', f'{i}{STAGE_VAR}.val={top}', f'{ind}}}',
+            f'{ind}// the columns beyond the stage off (devIcons shows the set ones), before the info rows / tiles',
+            f'{ind}sys2={COLS_VAR}.val'] + cap_lines(ind, layout) + columns_lines(ind, layout)
+
+
+def icons_lines(ind, layout):
+    """branch devIcons~<type>~<id>~<icon>~<color> x N: cell i from field 1+4(i-1); type 0 = empty cell (border
+    stays); the grid shows the columns up to the highest set cell, at most those of the stage"""
+    i = ind + '  '
+    j = ind + '    '
+    rows = layout['gridRows']
+    out = [f'{ind}if(tInstruction.txt=="{ICONS_COMMAND}")', f'{ind}{{',
+           f'{i}// {ICONS_COMMAND}~<type>~<id>~<icon>~<color> per cell, column by column (card_device.py); '
+           'type 0: empty',
+           f'{i}sys2=0']
+    for n, cell in enumerate(layout['cells'], 1):
+        obj, typ, entn = cell_names(n)
+        f = 1 + ICON_FIELDS * (n - 1)
+        out += [f'{i}spstr strCommand.txt,tTmp.txt,"~",{f}',
+                f'{i}covx tTmp.txt,{typ}.val,0,0',
+                f'{i}spstr strCommand.txt,{entn}.txt,"~",{f + 1}',
+                f'{i}if({typ}.val==0)', f'{i}{{', f'{j}{obj}.txt=""', f'{i}}}else', f'{i}{{']
+        out += icon_lines(j, f + 2, obj, cell[4]) + [f'{j}sys2={n}', f'{i}}}']
+    out.append(f'{i}// columns up to the highest set cell' + (f' ({rows} per column)' if rows > 1 else '')
+               + ', at most those of the stage')
+    if rows > 1:
+        out += [f'{i}sys2=sys2+{rows - 1}', f'{i}sys2=sys2/{rows}']
+    return out + cap_lines(i, layout) + columns_lines(i, layout) + [f'{ind}}}']
+
+
+def set_show_lines(k, layout):
+    """info row k with the sets B/C (cardDevice1): copy icon/name/value of set A into the set of the stage, hide
+    the objects of the other sets, then show the set (the value of set B is the one of set A)"""
+    spec = layout['slots'][k - 1]
+    _, wide = slot_names(k, spec['kind'])
+    row = layout['sets'][k]
+    shared = layout.get('sharedValue')
+    members = {'A': list(wide)}
+    for letter in row:
+        members[letter] = list(set_names(k, letter).values()) if letter == shared else own_set_names(k, letter)
+    every = [o for objs in members.values() for o in objs]
+    out = []
+    for letter, objs in members.items():
+        copy = []
+        if letter != 'A':
+            names = set_names(k, letter)
+            copy = [f'{names["icon"]}.txt=bEntity{k}.txt', f'{names["icon"]}.font=bEntity{k}.font',
+                    f'{names["icon"]}.pco=bEntity{k}.pco']
+            if 'name' in row[letter]:
+                copy.append(f'{names["name"]}.txt=tEntity{k}.txt')
+            if 'value' in row[letter]:
+                copy.append(f'{names["value"]}.txt=tValue{k}.txt')
+        hide = [o for o in dict.fromkeys(every) if o not in objs]
+        out += [f'if({stage_condition(STAGE_VAR, layout["setStages"][letter])})', '{']
+        out += ['  ' + x for x in copy] + [f'  vis {o},0' for o in hide] + [f'  vis {o},1' for o in objs] + ['}']
     return out
 
 
-def narrow_show(k):
-    """info row k with a narrow twin: copy the texts, then show the set that fits the status block"""
-    wide = [f'bEntity{k}', f'tEntity{k}', f'tValue{k}']
-    narrow = narrow_names(k)
-    out = [f'{narrow[0]}.font={wide[0]}.font', f'{narrow[0]}.pco={wide[0]}.pco']
-    out += [f'{n}.txt={w}.txt' for n, w in zip(narrow, wide)]
-    out += ['if(vStatus.val==0)', '{'] + [f'  vis {n},0' for n in narrow] + [f'  vis {w},1' for w in wide]
-    out += ['}else', '{'] + [f'  vis {w},0' for w in wide] + [f'  vis {n},1' for n in narrow] + ['}']
+def set_objects(k, layout):
+    """every object of info row k and its sets"""
+    spec = layout['slots'][k - 1]
+    out = list(slot_names(k, spec['kind'])[1])
+    for letter in layout.get('sets', {}).get(k, {}):
+        out += own_set_names(k, letter)
     return out
 
 
-def element_lines(ind, first, typ, entn, hide, body, hidden_extra=(), show=None):
-    """show: the lines that make the element visible (default: vis 1 for everything in hide)"""
+def element_lines(ind, first, cond, entn, hide, body, hidden_extra=(), show=None):
+    """one element: id, then hidden when cond (type 0, or covered by the stage), else body and show (default:
+    vis 1 for everything in hide)"""
     i = ind + '  '
-    out = [f'{ind}spstr strCommand.txt,{typ}.txt,"~",{first}',
-           f'{ind}spstr strCommand.txt,{entn}.txt,"~",{first + 1}',
-           f'{ind}if({typ}.txt=="delete"||{typ}.txt=="")',
+    out = [f'{ind}spstr strCommand.txt,{entn}.txt,"~",{first + 1}',
+           f'{ind}if({cond})',
            f'{ind}{{']
     out += [f'{i}vis {n},0' for n in hide] + [i + x for x in hidden_extra]
     out += [f'{ind}}}else', f'{ind}{{']
@@ -880,27 +1173,45 @@ def parser_lines(ind, layout):
            f'starts at field {FIRST}+6e; slots: {kinds}',
            f'{ind}// status line = optionalValue of main, also when main is hidden']
     out.append(f'{ind}spstr strCommand.txt,tStatus.txt,"~",{FIRST + 5}')
-    if status_slots(layout):
-        out += status_lines(ind, layout)
+    out += type_lines(ind, layout)
+    if layout.get('cells'):
+        out += stage_lines(ind, layout, info_first)
     body = icon_lines('', FIRST + 2, 'bMain', layout['main'][4])
     body.append(f'spstr strCommand.txt,tMainName.txt,"~",{FIRST + 4}')
-    out += element_lines(ind, FIRST, 'typeMain', 'entnMain', ['bMain', 'tMainName'], body)
-    narrow = layout.get('narrow', {})
+    out += element_lines(ind, FIRST, 'typeMain.val==0', 'entnMain', ['bMain', 'tMainName'], body)
+    sets = layout.get('sets', {})
+    covered = layout.get('covered', {})
     for k, spec in enumerate(slots, 1):
-        if spec['kind'] == 'status':
+        if spec['kind'] == 'reserved':
+            out.append(f'{ind}// slot {k}: reserved (fields kept, not read)')
             continue
         first = FIRST + FIELDS * k
         _, hide = slot_names(k, spec['kind'])
         extra = bar_lines('', first, spec['bar'], True) if spec['kind'] == 'progress' else ()
-        show = narrow_show(k) if k in narrow else None
-        if k in narrow:
-            hide = hide + narrow_names(k)
-        out.append(f'{ind}// slot {k}: {spec["kind"]}' + (' (wide and narrow set)' if k in narrow else ''))
-        out += element_lines(ind, first, f'type{k}', f'entn{k}', hide, slot_body(k, spec, first), extra, show)
+        cond = f'type{k}.val==0'
+        note = ''
+        show = None
+        if k in sets:
+            hide = set_objects(k, layout)
+            show = set_show_lines(k, layout)
+            shown = {s for v in layout['setStages'].values() for s in v}
+            off = [s for s in stages(layout) if s not in shown]
+            if off:
+                if off != list(range(min(off), len(stages(layout)))):
+                    raise SystemExit(f'slot {k}: info rows off in stages {off}')
+                cond += f'||{STAGE_VAR}.val>={min(off)}'
+            note = ' (sets ' + ', '.join(f'{x} stage {"/".join(map(str, v))}'
+                                         for x, v in layout['setStages'].items()) + (f', off from stage {min(off)}'
+                                                                                    if off else '') + ')'
+        if k in covered:
+            cond += f'||{STAGE_VAR}.val>={covered[k]}'
+            note = f' (covered by the status grid from stage {covered[k]})'
+        out.append(f'{ind}// slot {k}: {spec["kind"]}{note}')
+        out += element_lines(ind, first, cond, f'entn{k}', hide, slot_body(k, spec, first), extra, show)
     i = ind + '  '
-    out += [f'{ind}// info icon',
+    out += [f'{ind}// info icon (field 6: the stage)',
             f'{ind}spstr strCommand.txt,tTmp.txt,"~",{info_first}',
-            f'{ind}if(tTmp.txt=="delete"||tTmp.txt=="")',
+            f'{ind}if(' + '||'.join(f'tTmp.txt=="{t}"' for t in EMPTY_TYPES) + ')',
             f'{ind}{{',
             f'{i}vis bInfo,0',
             f'{ind}}}else',
@@ -931,6 +1242,10 @@ def patch_parser(page, layout):
     lines[at:at] = [f'{outer}if(tInstruction.txt=="{STATUS_COMMAND}")', f'{outer}{{',
                     f'{outer}  // {STATUS_COMMAND}~<text>: only the status line (card_device.py)',
                     f'{outer}  spstr strCommand.txt,tStatus.txt,"~",1', f'{outer}}}']
+    if layout.get('cells'):
+        # the status icons: their own branch as well (the other pages have none and only acknowledge it)
+        at = find(lines, 'if(tInstruction.txt=="pageType")', start)
+        lines[at:at] = icons_lines(outer, layout)
     for n, line in enumerate(lines):
         if 'command format: entityUpd' in line:
             lines[n] = (line[:len(line) - len(line.lstrip())] + '// command format: entityUpd,heading,navigation,'
@@ -946,9 +1261,8 @@ def patch_load(page, name, layout):
         raise SystemExit(f'{name}.load: unexpected vis lines')
     hide = ['bMain', 'tMainName', 'bInfo']
     for k, spec in enumerate(layout['slots'], 1):
-        hide += slot_names(k, spec['kind'])[1]
-    for k in layout.get('narrow', {}):
-        hide += narrow_names(k)
+        hide += set_objects(k, layout) if k in layout.get('sets', {}) else slot_names(k, spec['kind'])[1]
+    hide += [cell_names(i)[0] for i in range(1, len(layout.get('cells', [])) + 1)]
     load[j:i + 1] = [f'vis {n},0' for n in hide]
     loops = [n for n, x in enumerate(load) if re.fullmatch(r'for\(sys0=0;sys0<\d+;sys0\+\+\)', x.strip())]
     if len(loops) != 1:
@@ -1007,10 +1321,11 @@ def press_targets(layout):
     hotspot the name field of its element (the same text that blinks for it on a long press)"""
     out = {}
     for k, spec in enumerate(layout['slots'], 1):
-        if spec['kind'] == 'status':
-            out[f'tStat{k}'] = f'tStat{k}'
-        elif spec['kind'] in HOTSPOT:
-            out[f'mSlot{k}'] = f'tEntity{k}'
+        if spec['kind'] in HOTSPOT:
+            out[f'mSlot{k}'] = (f'tEntity{k}', f'type{k}')
+    for i in range(1, len(layout.get('cells', [])) + 1):
+        cell, typ, _ = cell_names(i)
+        out[cell] = (cell, typ)
     return out
 
 
@@ -1021,11 +1336,10 @@ def add_press_feedback(page, layout):
     Runs behind feedback.add (its check allows no other writer of a background); the long press blinking starts
     from the grey (first phase green) and its restore sets the same background."""
     targets = press_targets(layout)
-    for obj, text in targets.items():
+    for obj, (text, typ) in targets.items():
         o = page.obj(obj)
         down = o.code('down')
-        k = re.fullmatch(r'(?:tStat|mSlot)(\d+)', obj).group(1)
-        guard = find(down, f'if(type{k}.txt!="delete"&&type{k}.txt!="")')
+        guard = find(down, f'if({typ}.val!=0)')
         if down[guard + 1].strip() != '{':
             raise SystemExit(f'{obj}.down: unexpected guard')
         down[guard + 2:guard + 2] = ['  ' + PRESS_BEGIN, f'  {text}.bco={GRID_COLOR}', '  ' + PRESS_END]
@@ -1034,11 +1348,11 @@ def add_press_feedback(page, layout):
             raise SystemExit(f'{obj}.up: unexpected first line')
         up[1:1] = [PRESS_BEGIN, f'{text}.bco={BACKGROUND}', PRESS_END]
     lines = []
-    for text in targets.values():
+    for text, _ in targets.values():
         lines += [f'if({text}.bco!={BACKGROUND})', '{', f'  {text}.bco={BACKGROUND}', '}']
     if lines:
         page.obj('tc0').code('up').extend([PRESS_BEGIN] + lines + [PRESS_END])
-    return [f'{o} -> {t}' if o != t else o for o, t in targets.items()]
+    return [f'{o} -> {t}' if o != t else o for o, (t, _) in targets.items()]
 
 
 def build_page(source_bytes, name, switch_template, layout):
@@ -1055,9 +1369,48 @@ def build_page(source_bytes, name, switch_template, layout):
     # field of its element blinks for it
     blink = feedback.add(page, {f'mSlot{k}': [f'tEntity{k}'] for k, s in enumerate(layout['slots'], 1)
                                 if s['kind'] in HOTSPOT})
+    check_long_press_numbers(name, layout, blink)
+    hold_popups_numeric(page)
     press = add_press_feedback(page, layout)
     check_names(page)
+    check_numeric(page)
     return page, layout, blink, press
+
+
+def hold_popups_numeric(page):
+    """tmLP opens the hold popups from its own number variable (the touched element writes its type there)
+    instead of tTmp, which tmSerial overwrites while the finger is down"""
+    timer = page.obj('tmLP').code('timer')
+    for name, popup in HOLD_POPUPS:
+        at = find(timer, f'if(tTmp.txt=="{name}")')
+        if timer[at + 2].strip() != f'page {popup}':
+            raise SystemExit(f'tmLP: unexpected popup for {name}')
+        timer[at] = timer[at].replace(f'tTmp.txt=="{name}"', f'{LP_TYPE}.val=={TYPE_NUMBER[name]}')
+
+
+def check_long_press_numbers(name, layout, blink):
+    """the numbers of vaLPCell (1.. in object order) as in status-grid-8x2.md: main 1, bEntity1-6 2-7, then on
+    cardDevice1 the cells 8-23 and the icons of the sets (B 24/25, C 26/27; us-p only C 24/25), on cardDevice3
+    the hotspots 8/9 and the cells 10-17"""
+    order = [b.split(' ->')[0] for b in blink]
+    cells = [cell_names(i)[0] for i in range(1, len(layout.get('cells', [])) + 1)]
+    if cells:
+        first = order.index(cells[0]) + 1
+        if order[first - 1:first - 1 + len(cells)] != cells or first != {'cardDevice1': 8, 'cardDevice3': 10}[name]:
+            raise SystemExit(f'{name}: long press numbers of the cells start at {first}: {order}')
+    print(f'{name}: vaLPCell ' + ', '.join(f'{n} {o}' for n, o in enumerate(order, 1)))
+
+
+def check_numeric(page):
+    """no code reads a type as text any more (type<k>, typeMain, typeStat<i> are number variables)"""
+    bad = [f'{o.name}.{item[1]}: {line.strip()}' for o in page.objs for item in o.items if item[0] == 'code'
+           for line in item[2] if re.search(r'\btype(Main|Stat\d+|\d+)\.txt\b', line.split('//')[0])]
+    if bad:
+        raise SystemExit('type read as text: ' + '; '.join(bad[:5]))
+    for o in page.objs:
+        if re.fullmatch(r'type(Main|Stat\d+|\d+)|' + '|'.join((LP_TYPE, STAGE_VAR, COLS_VAR)), o.name):
+            if o.get('type') != 52 or o.get('sta') != 0:
+                raise SystemExit(f'{o.name} is not a number variable')
 
 
 # ---------------------------------------------------------------- pageType switch
@@ -1163,12 +1516,29 @@ def main(source, target, preview=None, geometry=None):
               f'{RAM_LIMIT - RAM_GLOBAL - r} bytes of RAM free')
         if real > PAYLOAD_MAX:
             print(f'{name}: note - that message is longer than a payload can be ({PAYLOAD_MAX})')
+        if layout.get('cells'):
+            ihard, ireal = icons_len(layout, False), icons_len(layout, True)
+            print(f'{name}: {ICONS_COMMAND} ({len(layout["cells"])} cells) at most {ihard} bytes with every buffer '
+                  f'full, {ireal} as the adapter builds it (icon with font suffix)')
+            if ireal > maxl:
+                raise SystemExit(f'{name}: {ICONS_COMMAND} does not fit strCommand')
         if FIELDS_TABLE:
+            print(f'  entityUpd: part, fields with every buffer full / as the adapter builds it (+ one ~ between '
+                  f'two fields)')
             for (part, a), (_, b) in zip(message_fields(layout, False), message_fields(layout, True)):
                 print(f'  {part:16} {"+".join(map(str, a)):18} = {sum(a):3}   {"+".join(map(str, b)):16} = {sum(b):3}')
+            if layout.get('cells'):
+                print(f'  {ICONS_COMMAND}: part, fields (type, id, icon, colour) full / real')
+                for (part, a), (_, b) in list(zip(icons_fields(layout, False), icons_fields(layout, True)))[:2]:
+                    print(f'  {part:16} {"+".join(map(str, a)):18} = {sum(a):3}   '
+                          f'{"+".join(map(str, b)):16} = {sum(b):3}')
+                print(f'  ... {len(layout["cells"])} cells')
         if RAM_GLOBAL + r > RAM_LIMIT:
             raise SystemExit(f'{name}: RAM {RAM_GLOBAL + r} > {RAM_LIMIT}')
-        if RAM_GLOBAL + r > RAM_TARGET:
+        if RAM_GLOBAL + r > RAM_LIMIT - RAM_MARGIN:
+            print(f'{name}: WARNING - the estimate leaves less than {RAM_MARGIN} bytes to the limit (it was 131 '
+                  f'bytes too low on cardDevice1)')
+        elif RAM_GLOBAL + r > RAM_TARGET:
             print(f'{name}: note - less than {RAM_LIMIT - RAM_TARGET} bytes of RAM left')
     if main_hmi != hmi.files['main.HMI']:
         changes['main.HMI'] = main_hmi
@@ -1219,8 +1589,14 @@ EXAMPLES = {
                   ('map-marker', FG, 'Fläche', '34 m²'),
                   ('play', color565(0, 220, 0), 'Start', ''), ('pause', FG, 'Pause', ''),
                   ('home-import-outline', FG, 'Dock', ''), ('map-marker', FG, 'Suchen', ''),
-                  ('wifi', color565(0, 220, 0), '', ''), ('trash-can', color565(255, 160, 0), '', ''),
-                  ('air-filter', FG, '', ''), ('alert', color565(255, 40, 40), '', '')],
+                  None, None, None, None],
+        'icons': [('wifi', color565(0, 220, 0)), ('trash-can', color565(255, 160, 0)), ('air-filter', FG),
+                  ('alert', color565(255, 40, 40)), ('battery-charging', color565(0, 220, 0)), ('brush', FG),
+                  ('water-percent', color565(0, 160, 255)), ('lock', FG), ('fan', FG), ('flash', color565(255, 220, 0)),
+                  ('thermometer', FG), ('water', color565(0, 160, 255)), ('lightbulb', color565(255, 220, 0)),
+                  ('power', FG), ('timer-outline', FG), ('signal', color565(0, 220, 0))],
+        # stage: number of set cells shown in the preview of that stage
+        'stageIcons': (0, 5, 9, 16),
     },
     'cardDevice2': {
         'heading': 'Waschküche', 'main': ('washing-machine', color565(0, 160, 255), 'Waschm.'),
@@ -1238,6 +1614,10 @@ EXAMPLES = {
                   ('thermometer', FG, 'Innen', '21,5 °C'), ('lock', color565(0, 220, 0), 'Türen', 'zu'),
                   ('flash', color565(255, 220, 0), 'Laden', '11 kW'), ('gas-station', FG, 'km-Stand', '23.456'),
                   ('fan', FG, 'Klima', '1'), ('flash', color565(255, 220, 0), 'Laden', '1')],
+        'icons': [('lock', color565(0, 220, 0)), ('door-closed', FG), ('car-tire-alert', color565(255, 160, 0)),
+                  ('wifi', color565(0, 220, 0)), ('battery-charging', color565(0, 220, 0)), ('thermometer', FG),
+                  ('alert', color565(255, 40, 40)), ('signal', FG)],
+        'stageIcons': (0, 3, 7),
     },
 }
 
@@ -1298,13 +1678,23 @@ def text_width(fonts, font, s):
     return sum(sum(z.chars[ord(ch)][:3]) for ch in s if ord(ch) in z.chars)
 
 
-def render_page(page, name, layout, model, fonts, icons, plain=False):
-    """plain: the status slots empty (the page without status block)"""
+def clip_bytes(text, maxl):
+    """what a text buffer of txt_maxl keeps (whole UTF-8 characters)"""
+    out = ''
+    for ch in text:
+        if len((out + ch).encode()) > maxl:
+            break
+        out += ch
+    return out
+
+
+def render_page(page, name, layout, model, fonts, icons, stage=0):
+    """the page as the HMI shows it in that stage, with EXAMPLES[name]['stageIcons'][stage] set cells"""
     ex = EXAMPLES[name]
-    if plain:
-        ex = dict(ex, slots=[(None, FG, '', '') if s['kind'] == 'status' else e
-                             for s, e in zip(layout['slots'], ex['slots'])])
-    status_on = any(e[0] for s, e in zip(layout['slots'], ex['slots']) if s['kind'] == 'status')
+    shown = shown_stages(layout)
+    n_icons = ex.get('stageIcons', (0,))[stage]
+    rows = layout.get('gridRows', 1)
+    columns = min(-(-n_icons // rows), layout['stageColumns'][stage]) if layout.get('cells') else 0
     bg, fg = rgb565(BG), rgb565(FG)
     width, height = STAGE[model]
     cv = Canvas(width, height, bg)
@@ -1315,8 +1705,10 @@ def render_page(page, name, layout, model, fonts, icons, plain=False):
         return (o.get('x'), o.get('y'), o.get('w'), o.get('h'))
 
     def put(n, s, color=fg):
+        if stage not in shown.get(n, ALL):
+            return
         o = objs[n]
-        cv.text(fonts, rect(n), o.get('font'), s, color, o.get('xcen'))
+        cv.text(fonts, rect(n), o.get('font'), clip_bytes(s, o.get('txt_maxl')), color, o.get('xcen'))
 
     put('tHeading', ex['heading'])
     put('bPrev', icons['arrow-left-bold'])
@@ -1330,38 +1722,47 @@ def render_page(page, name, layout, model, fonts, icons, plain=False):
         status = ex['statusShort']
     put('tStatus', status)
     put('bInfo', icons['information-outline'], rgb565(FG))
-    for k, (spec, (icon, color, label, value)) in enumerate(zip(layout['slots'], ex['slots']), 1):
+    for k, (spec, example) in enumerate(zip(layout['slots'], ex['slots']), 1):
         kind = spec['kind']
-        icon_obj, _ = slot_names(k, kind)
-        if kind == 'status':
-            if status_on:
-                x, y, w, h = rect(icon_obj)
-                grid = rgb565(GRID_COLOR)
-                cv.fill(x, y, w, 1, grid)
-                cv.fill(x, y + h - 1, w, 1, grid)
-                cv.fill(x, y, 1, h, grid)
-                cv.fill(x + w - 1, y, 1, h, grid)
-                if icon:
-                    put(icon_obj, icons[icon], rgb565(color))
+        if kind == 'reserved':
             continue
-        names = (icon_obj, f'tEntity{k}', f'tValue{k}')
-        if status_on and k in layout.get('narrow', {}):
-            names = narrow_names(k)
-        if icon and names[0] in objs:
-            put(names[0], icons[icon], rgb565(color))
-        put(names[1], label)
-        if names[2] in objs:
-            put(names[2], value)
+        icon, color, label, value = example
+        icon_obj, _ = slot_names(k, kind)
+        if icon and icon_obj in objs:
+            put(icon_obj, icons[icon], rgb565(color))
+        put(f'tEntity{k}', label)
+        if f'tValue{k}' in objs:
+            put(f'tValue{k}', value)
+        for letter in layout.get('sets', {}).get(k, {}):
+            names = set_names(k, letter)
+            put(names['icon'], icons[icon], rgb565(color))
+            if 'name' in names and names['name'] in objs:
+                put(names['name'], label)
+            if letter != 'B':
+                put(names['value'], value)
         if kind == 'progress':
             x, y, w, h = spec['bar']
             cv.fill(x, y, w, h, fg)
             cv.fill(x + 1, y + 1, w - 2, h - 2, bg)
             cv.fill(x + 1, y + 1, (w - 2) * int(value) // 100, h - 2, rgb565(color))
-        if kind == 'switch':
+        if kind == 'switch' and stage in shown.get(f'btOnOff{k}', ALL):
             x, y, w, h = spec['switch']
             on = value == '1'
             cv.fill(x + 3, y + 13, 44, 24, rgb565(color565(0, 200, 0) if on else color565(120, 120, 120)))
             cv.fill(x + (25 if on else 5), y + 15, 20, 20, (255, 255, 255))
+    for i, _ in enumerate(layout.get('cells', []), 1):
+        if (i - 1) // rows + 1 > columns:
+            continue
+        cell = cell_names(i)[0]
+        x, y, w, h = rect(cell)
+        grid_c = rgb565(GRID_COLOR)
+        cv.fill(x, y, w, 1, grid_c)
+        cv.fill(x, y + h - 1, w, 1, grid_c)
+        cv.fill(x, y, 1, h, grid_c)
+        cv.fill(x + w - 1, y, 1, h, grid_c)
+        if i <= n_icons:
+            icon, color = ex['icons'][i - 1]
+            put(cell, icons[icon], rgb565(color))
     # area under the frame
     x0, x1 = VISIBLE[model]
     for yy in range(height):
@@ -1371,9 +1772,9 @@ def render_page(page, name, layout, model, fonts, icons, plain=False):
     return cv
 
 
-def preview_name(model, name, plain=False):
-    """EU keeps its file names, the other models carry theirs: hmi-us-p-cardDevice1.png"""
-    return f'hmi-{"" if model == "eu" else model + "-"}{name}{"-plain" if plain else ""}.png'
+def preview_name(model, name, stage=None):
+    """EU without model in the name, the other models with it: hmi-us-p-cardDevice1-stage2.png"""
+    return f'hmi-{"" if model == "eu" else model + "-"}{name}{"" if stage is None else f"-stage{stage}"}.png'
 
 
 def render_all(hmi, out_dir, model, layouts):
@@ -1382,9 +1783,10 @@ def render_all(hmi, out_dir, model, layouts):
     icons = icon_codes()
     pages = {Page(d).objs[0].name: Page(d) for n, d in hmi.files.items() if n.endswith('.pa')}
     for name in PAGES:
-        for plain in (False, True) if status_slots(layouts[name]) else (False,):
-            path = os.path.join(out_dir, preview_name(model, name, plain))
-            cv = render_page(pages[name], name, layouts[name], model, fonts, icons, plain)
+        variants = list(stages(layouts[name])) if layouts[name].get('cells') else [None]
+        for stage in variants:
+            path = os.path.join(out_dir, preview_name(model, name, stage))
+            cv = render_page(pages[name], name, layouts[name], model, fonts, icons, stage or 0)
             cv.png(path)
             print(f'preview {path}')
             if cv.missing:
@@ -1408,16 +1810,15 @@ def box(objs, name, text=True):
 
 def page_geometry(page, layout):
     """every element of a built device page with its boxes, read from the objects (the bar from the layout: it is
-    drawn by the parser)"""
+    drawn by the parser); stages: per stage the columns of the grid at most and the objects shown only in it"""
     objs = {o.name: o for o in page.objs}
+    shown = shown_stages(layout)
     slots = []
     for k, spec in enumerate(layout['slots'], 1):
         kind = spec['kind']
-        icon, _ = slot_names(k, kind)
         slot = {'slot': k, 'kind': kind}
-        if kind == 'status':
-            slot['cell'] = dict(box(objs, icon), border=objs[icon].get('borderw'))
-        else:
+        if kind != 'reserved':
+            icon, _ = slot_names(k, kind)
             if 'icon' in spec:
                 slot['icon'] = box(objs, icon)
             slot['name'] = box(objs, f'tEntity{k}')
@@ -1429,11 +1830,14 @@ def page_geometry(page, layout):
                 slot['toggle'] = box(objs, f'btOnOff{k}', False)
             if kind in HOTSPOT:
                 slot['touch'] = box(objs, f'mSlot{k}', False)
-            if k in layout.get('narrow', {}):
-                # the second set of the row, shown instead of icon/name/value while the status block is shown
-                slot['narrow'] = dict(zip(('icon', 'name', 'value'), (box(objs, n) for n in narrow_names(k))))
+            if k in layout.get('sets', {}):
+                # the other sets of the row; set B shows the value of the wide set
+                slot['sets'] = {letter: {part: box(objs, o) for part, o in set_names(k, letter).items()}
+                                for letter in layout['sets'][k]}
+            if k in layout.get('covered', {}):
+                slot['hiddenFromStage'] = layout['covered'][k]
         slots.append(slot)
-    return {
+    out = {
         'slotCount': len(slots), 'statusWidth': objs['tStatus'].get('w'),
         'strCommand': objs['strCommand'].get('txt_maxl'),
         'header': {'prev': box(objs, 'bPrev'), 'heading': box(objs, 'tHeading'), 'next': box(objs, 'bNext')},
@@ -1441,6 +1845,19 @@ def page_geometry(page, layout):
         'slots': slots,
         'status': box(objs, 'tStatus'), 'info': box(objs, 'bInfo'),
     }
+    if layout.get('cells'):
+        rows = layout['gridRows']
+        out['grid'] = {
+            'rows': rows, 'columns': len(layout['cells']) // rows,
+            'cells': [dict(box(objs, cell_names(i)[0]), cell=i, column=(i - 1) // rows + 1, row=(i - 1) % rows + 1,
+                           border=objs[cell_names(i)[0]].get('borderw'))
+                      for i in range(1, len(layout['cells']) + 1)],
+        }
+        out['stages'] = [{'stage': st, 'columns': layout['stageColumns'][st],
+                          'infoSet': next((x for x, v in layout.get('setStages', {}).items() if st in v), None),
+                          'hiddenSlots': [k for k, f in layout.get('covered', {}).items() if st >= f]}
+                         for st in stages(layout)]
+    return out
 
 
 def dump_json(value, indent=0):

@@ -21,8 +21,9 @@ Fix, per page:
   new variable     vaLPCell (number, copy of LPState, appended as the last object): the number 1..n of the held
                    cell (every object that starts tmLP gets one), 0: nothing blinks.
   cell 'down'      behind 'tmLP.en=1': vaLPCell.val=<k>. Where 'up' sends nothing for type text without an
-                   intName (device pages), 'down' sets 0 for that case: no feedback for a press that reports
-                   nothing.
+                   intName (device pages: if(type<k>.txt!="text"||entn<k>.txt!=""), or with the type as a number
+                   since device13 if(type<k>.val!=1||...)), 'down' sets 0 for that case: no feedback for a press
+                   that reports nothing.
   what blinks      a button (type 98): its own background, bco and bco2 (as the arrows write pco and pco2:
                    whichever of the two the display uses for a held button shows the colour). A text with touch
                    code (type 116, the status cells): its bco. Any other object (a hotspot): the texts under it
@@ -75,7 +76,9 @@ OLD_TIMER = [x for t, p in (('light', 'popupLight'), ('light2', 'popupLight2'), 
                             ('number', 'popupSlider'))
              for x in (f'if(tTmp.txt=="{t}")', '{', f'  page {p}', '}')] + [f'{STATE}.val=1']
 TIMER_USE = re.compile(rf'\b{TIMER}\b')
-TEXT_GUARD = re.compile(r'if\((\w+)\.txt!="text"\|\|(\w+)\.txt!=""\)')
+# 'type text without an intName sends nothing': the type as a name (cardGrid copies) or as a number, 1 = text and
+# every other type that only sends (card_device.py since device13)
+TEXT_GUARD = re.compile(r'if\((\w+)\.(txt!="text"|val!=1)\|\|(\w+)\.txt!=""\)')
 BCO_WRITE = re.compile(r'^\s*(?:covx\s+[^,]+,\s*)?[\w\[\]]+\.bco2?\s*(?:=(?!=)|,)')
 LOAD_LOOP = re.compile(r'for\(sys0=0;sys0<(\d+);sys0\+\+\)')
 
@@ -231,7 +234,8 @@ def add(page, targets=None):
         ind = down[start][:len(down[start]) - len(down[start].lstrip())]
         lines = [f'{CELL}.val={k}']
         if guard:
-            lines += [f'if({guard.group(1)}.txt=="text"&&{guard.group(2)}.txt=="")', '{', f'  {CELL}.val=0', '}']
+            same = 'txt=="text"' if guard.group(2).startswith('txt') else 'val==1'
+            lines += [f'if({guard.group(1)}.{same}&&{guard.group(3)}.txt=="")', '{', f'  {CELL}.val=0', '}']
         down[start + 1:start + 1] = marked(ind, 'which cell blinks', lines)
         up = obj.code('up')
         up[1:1] = restore_lines(cells, '', False)

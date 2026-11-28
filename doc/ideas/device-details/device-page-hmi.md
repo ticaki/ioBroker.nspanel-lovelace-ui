@@ -38,8 +38,10 @@ auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main un
 `device8` (Lauftext wieder entfernt, neue Kurz-Nachricht `devStatus` für die Statuszeile), `device9` (Statuszeile
 auf allen drei Seiten mittig: `tStatus.xcen` 0 → 1 auf cardDevice1 und 3, sonst wie `device8`), `device10`
 (Long-Press-Blinken auf cardGrid, cardGrid2, cardGrid3 und den drei Geräteseiten, sonst wie `device9`), `device12`
-(Drück-Feedback der Status-Zellen `tStat7–10` und der Hotspots `mSlot1/2`, `mSlot7/8`, sonst wie `device11` –
-aktuell, alle drei Modelle; alle in `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
+(Drück-Feedback der Status-Zellen `tStat7–10` und der Hotspots `mSlot1/2`, `mSlot7/8`, sonst wie `device11`, alle drei
+Modelle), `device13` (Typ als Zahl, `entn` 7, Status-Raster bis 8×2 bzw. 8×1 per `devIcons`, Stufe in Feld 6 von info –
+aktuell, alle drei Modelle, siehe [„device13“](#device13-typzahl-status-raster-devicons); alle in
+`/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
 cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
@@ -56,6 +58,201 @@ cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
   (36 Seiten; pageTest hat keinen Umschalter, wie bisher).
 - Idempotent: Läuft das Werkzeug auf seiner eigenen Ausgabe, baut es die drei Seiten in ihren Abschnitten neu und
   ändert sonst nichts (geprüft).
+
+## device13: Typzahl, Status-Raster, devIcons
+
+Stand 2026-11-28. Umsetzung von [../hmi-type-number.md](../hmi-type-number.md) und
+[status-grid-8x2.md](status-grid-8x2.md) mit Tims Entscheidungen vom 2026-11-28. Die Abschnitte weiter unten
+beschreiben `device12`; was hier steht, geht ihnen für `device13` vor. Nur die HMI ist umgesetzt, Adapter, Admin und
+Web-Panel folgen.
+
+```
+for M in "" us-l- us-p-; do
+  PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /home/tim/device-page-hmi/nspanel-${M}v6.2.0.device12.HMI \
+    /home/tim/device-page-hmi/nspanel-${M}v6.2.0.device13.HMI --fields --preview doc/Pictures/device-page/next \
+    --geometry doc/ideas/device-details/device-page-geometry.next.json
+done
+```
+
+- Eingabe sind die `device12`-Dateien (das Werkzeug baut die drei Seiten aus cardGrid neu). Verglichen mit `device12`
+  ändern sich in allen drei Modellen nur die Abschnitte cardDevice1, cardDevice2 und cardDevice3 (Skript-Vergleich
+  aller lebenden Abschnitte). Ein zweiter Lauf auf `device13` liefert dieselben Abschnitte (idempotent).
+- Geometrie: [device-page-geometry.next.json](device-page-geometry.next.json). Die bisherige
+  [device-page-geometry.json](device-page-geometry.json) bleibt der Stand `device12`, gegen sie vergleichen die Tests
+  von Adapter und Web-Panel.
+- Vorschau je Stufe: `doc/Pictures/device-page/next/hmi-[<modell>-]cardDevice1-stage0..3.png`,
+  `…cardDevice3-stage0..2.png`, `…cardDevice2.png`.
+
+### Protokoll device13
+
+```
+pageType~cardDevice1                    (bzw. cardDevice2 / cardDevice3)
+entityUpd~<heading>~<prev>~<next>~<main>~<slot 1>~…~<slot N>~<info>      Feldpositionen wie device12
+devStatus~<text>                        unverändert
+devIcons~<typ>~<id>~<icon>~<farbe>~…    nur cardDevice1 (16 Zellen) und cardDevice3 (8 Zellen)
+```
+
+**Typ als Zahl** (alle drei Seiten, alle Elemente außer Navigation und info-Icon):
+
+| Zahl | alter Name | Verhalten |
+|---|---|---|
+| 0 | `delete`, leer, `0` | Element ausgeblendet, Tipp tut nichts |
+| 1 | `text`, `button`, `switch`, jeder andere Name | nur senden; ohne intName (außer Knopf-Slot) kein Senden, kein Blinken |
+| 2 / 3 / 4 / 5 | `shutter` / `shutter2` / `input_sel` / `timer` | Popup beim Berühren |
+| 6 / 7 / 8 / 9 | `light` / `light2` / `fan` / `number` | Popup nach 500 ms |
+
+- Der Parser liest den Typ von main und den Slots in einer Schleife (`for(sys2…)`, Feld `sys2*6+14`) mit
+  `covx tTmp.txt,sys0,0,0`. Ergibt das 0, übersetzt eine Vergleichskette den alten Namen (älterer Adapter):
+  `delete`/leer/`0` → 0, die Namen oben → ihre Zahl, sonst → 1. Danach steht der Typ in der Zahlvariable
+  `type<k>`/`typeMain`.
+- **Abweichung:** Auch der Text `0` gilt in der Kette als 0 (Tims Liste nennt nur `delete`/leer). Sonst würde aus der
+  Zahl 0 über die Kette eine 1.
+- `down` schreibt den Typ in die neue Zahlvariable `vLPType`, `tmLP` öffnet die Popups 6–9 daraus (vorher `tTmp`, das
+  ein `entityUpd` während des Haltens überschrieb). Popups 2–5 vergleichen `type<k>.val`.
+- Navigation (Felder 2 und 8) bleibt Text (`button`), Vergleich wie bisher. Das info-Icon wird bei `delete`, leer
+  **und `0`** ausgeblendet (Annahme: der neue Adapter schickt dort die Zahl).
+- `entn*` (auch `entnMain`, `entnInfo`, `entnStat<i>`) txt_maxl **7**. `nent1/2` txt_maxl **11**: der Adapter schickt
+  dort nur `bSubPrev`, `bSubNext`, `bUp`, `bHome` (`Navigation.buildNavigationString`, `Page.getNavigation`), höchstens
+  8 Zeichen.
+
+**cardDevice1, Felder von entityUpd** (unverändert gegenüber device12):
+
+| Element | Felder | device13 |
+|---|---|---|
+| main | 14–19 | wie bisher, Typ als Zahl |
+| Slot 1–2 (info), 3–6 (button) | 20–55 | wie bisher, Typ als Zahl |
+| Slot 7–10 | 56–79 | **reserviert**: die HMI liest dort nichts, der neue Adapter schickt sie leer (`~~~~~`) |
+| info | 80–85 | Typ, ID, Icon, Farbe wie bisher; **Feld 85 = Stufe** 0–3 |
+
+cardDevice3: info 68–73, **Feld 73 = Stufe** 0–2. cardDevice2: keine Stufe, kein `devIcons`.
+
+Ein älterer Adapter schickt kein `devIcons` und lässt die Stufe leer (`covx` → 0): die Seite zeigt Stufe 0 ohne
+Raster, die Status-Slots 7–10 werden ignoriert.
+
+**Stufe** (Feld 6 von info, leer = 0, auf 0…max begrenzt, steht in `vStage`):
+
+| Seite | Stufe | Raster-Spalten höchstens | Info-Zeilen / Kacheln |
+|---|---|---|---|
+| cardDevice1 | 0 | 0 | Satz A (breit, wie bisher) |
+| | 1 | 3 | Satz B: Icon, Name schmal, Wert = `tValue1/2` von A |
+| | 2 | 5 | Satz C: Icon, Wert 87 px (us-p 106 px), kein Name |
+| | 3 | 8 | keine (auch wenn entityUpd Info-Daten enthält) |
+| cardDevice3 | 0 | 0 | alle Kacheln |
+| | 1 | 4 | Kachel 1 aus (auch wenn entityUpd sie füllt) |
+| | 2 | 8 | Kacheln 1 und 2 aus |
+
+us-p cardDevice1 (Variante P2): Stufe 0 Satz A (volle Zeilen wie bisher), Stufe 1 **und** 2 Satz C rechts vom
+Haupt-Icon, Stufe 3 keine Info-Zeilen. Einen Satz B gibt es auf us-p nicht.
+
+Der Parser schreibt Icon, Name und Wert in Satz A und kopiert sie (Text, Schrift, Farbe) in den Satz der Stufe; er
+blendet erst die anderen Sätze aus und dann den eigenen ein. Der heutige schmale Satz `bEntityS/tEntityS/tValueS` ist
+entfallen.
+
+**devIcons:** `devIcons~<typ 1>~<id 1>~<icon 1>~<farbe 1>~…`, Zelle i in den Feldern 1 + 4·(i−1) bis 4·i,
+spaltenweise (Zelle 2c−1 oben, 2c unten; cardDevice3 eine Zeile). Typ per `covx` ohne Namenskette, leer = `0~~~` oder
+`~~~`. Icon mit `¬<Font>` wie überall.
+
+- Typ 0: Zelle leer (Text leer, Rahmen bleibt, kein Tipp). Sonst Icon, Schrift und Farbe.
+- Spalten: bis zur höchsten belegten Zelle (cardDevice1 ⌈i/2⌉, cardDevice3 i), höchstens die Spalten der Stufe. Eine
+  halb belegte letzte Spalte behält ihre leere Zelle mit Rahmen.
+- Umgeschaltet werden nur Spalten, die sich ändern (`vCols`): erst die auszublendenden (von rechts), dann die
+  einzublendenden. `entityUpd` blendet vor den Info-Sätzen bzw. Kacheln die Spalten jenseits der Stufe aus.
+- Reihenfolge beim Öffnen: erst `entityUpd` (Stufe), dann `devIcons`. Kommt `devIcons` vor dem ersten `entityUpd`,
+  gilt Stufe 0 und das Raster bleibt leer, bis das nächste `devIcons` kommt.
+- Andere Seiten haben keinen Zweig und quittieren `devIcons` nur.
+
+**Tippen und Long-Press:** jede Zelle und jedes Icon der Sätze B/C hat den Code der cardGrid-Zelle (Popup, Senden,
+Drück-Feedback grau bei den Zellen, Long-Press-Blinken). Der Wert `tValue1/2` leitet in Stufe 1 an `bEntityB1/2` weiter,
+sonst an `bEntity1/2`. Ein Popup aus einer Zelle hat keine Überschrift, eines aus Satz B/C den vollen Namen
+(`tEntity1/2`).
+
+| `vaLPCell` | cardDevice1 EU/us-l | cardDevice1 us-p | cardDevice3 |
+|---|---|---|---|
+| 1 | bMain | bMain | bMain |
+| 2–7 | bEntity1–6 | bEntity1–6 | bEntity1–6 |
+| 8–9 | Zellen 1–2 | Zellen 1–2 | mSlot7/8 |
+| 10–17 | Zellen 3–10 | Zellen 3–10 | Zellen 1–8 |
+| 18–23 | Zellen 11–16 | Zellen 11–16 | – |
+| 24/25 | bEntityB1/2 | bEntityC1/2 | – |
+| 26/27 | bEntityC1/2 | – | – |
+
+### Geometrie device13
+
+| Seite / Modell | Zellen (Abstand, w × h) | x Spalte 1 … 8 | y | Satz B | Satz C |
+|---|---|---|---|---|---|
+| cardDevice1 EU | 37, 38 × 45 | 124 … 383 (rechte Kante 421) | 71 / 115 | Icon 241, Name 279 w 49 (txt_maxl 15), Wert = tValue 330 w 110 | Icon 315, Wert 353 w 87 (txt_maxl 19) |
+| cardDevice1 us-l | wie EU | 139 … 398 (436) | 71 / 115 | Icon 256, Name 294, Wert 345 | Icon 330, Wert 368 w 87 |
+| cardDevice1 us-p (P2) | 37, 38 × 41 | 10 … 269 (307) | 188 / 228 | – | Icon 166 (y 76/120), Wert 204 w 106 (y 80/124) |
+| cardDevice3 EU | 37, 38 × 52 | 114 … 373 (411) | 67 | – | – |
+| cardDevice3 us-l | wie EU | 129 … 388 (426) | 67 | – | – |
+| cardDevice3 us-p | 36, 37 × 51 | 10 … 262 (299) | 182 | – | – |
+
+Satz B/C: Icon 36 × 34 (Font 1, y 76/120), Texte h 26 (y 80/124), Wert rechtsbündig. Zellen: Text mit Rahmen
+(`style` 1, `borderw` 1, `borderc` 14823), Font 1, mittig, txt_maxl 7. us-p: das Raster endet bei y 268 über den
+Knöpfen (ab 272); Satz C liegt neben dem Haupt-Icon (x 10–159) innerhalb von y 76–153. `check_area` prüft
+sichtbaren Bereich, Tippflächen und Überschneidungen je Stufe: keine Meldungen.
+
+### Puffer, strCommand, RAM device13
+
+| Seite | `entityUpd` Größtfall voll / neuer Adapter | `devIcons` voll / neuer Adapter | `strCommand` device12 → device13 |
+|---|---|---|---|
+| cardDevice1 | 794 / **663** | 536 / **392** | 943 → **731** |
+| cardDevice2 | 857 / **701** | – | 875 → **775** |
+| cardDevice3 | 1072 / **869** | 272 / **200** | 1019 → **959** |
+
+- „Neuer Adapter“ (`--fields`): Typ 1 Byte, ID 7, Navigation `button`/`bSubPrev`, ein Icon 4 Byte (devIcons 7 mit
+  `¬<Font>`), Farbe 5, Namen und Werte bis zum Puffer, Stufe 1 Byte, reservierte Felder leer. `strCommand` = das
+  Größere aus `entityUpd` und `devIcons` + 10 %, 4k−1.
+- Die Analyse (status-grid-8x2.md Abschnitt 3) hatte für cardDevice1 die Status-Felder **weggelassen** (639 Byte,
+  txt_maxl 703). Mit den reservierten Feldern sind es 24 Trenner mehr: 663 Byte, txt_maxl **731**.
+- Die Begrenzung beim Empfang bleibt. Ein **älterer Adapter** (Typnamen, Status-Slots gefüllt) schickt bis 856 / 793 /
+  994 Byte: davon fällt das Ende weg, also die reservierten Felder und das info-Icon (cardDevice3 auch Teile von
+  Schalter 8).
+
+RAM (Schätzung des Werkzeugs mit global 436; „Prognose“ = gemessener device10-Wert + Änderung der Schätzung):
+
+| Seite | Modell | Schätzung device12 → device13 | Prognose (Editor) | frei (Prognose) |
+|---|---|---|---|---|
+| cardDevice1 | EU | 3201 → 3073 | 3204 | 380 |
+| cardDevice1 | us-l | 3201 → 3073 | 3180 | 404 |
+| cardDevice1 | us-p | 3015 → 2997 | 3058 | 526 |
+| cardDevice2 | EU | 2785 → 2456 | 2495 | 1089 |
+| cardDevice2 | us-l / us-p | 2785 → 2456 | 2471 | 1113 |
+| cardDevice3 | EU | 3264 → 3229 | 3317 | 267 |
+| cardDevice3 | us-l / us-p | 3264 → 3229 | 3293 | 291 |
+
+Alle Schätzungen liegen mehr als 150 Byte unter 3584 (größte: cardDevice3 3229). Neu je Seite: Zahlvariablen
+`vLPType` (alle), `vStage`, `vCols` (cardDevice1/3); Typvariablen als Zahl statt Text.
+
+**Code:** Die Rücksetzkette des Long-Press-Blinkens steht in jedem `up` und in `tc0` und hat auf cardDevice1 jetzt
+27 Einträge (vorher 13), der Zweig `devIcons` 16 Zellen. Das kostet kein RAM, macht aber den Code der Seite gut
+doppelt so lang (Prüfliste).
+
+### device13 im Editor und am Panel prüfen
+
+1. Alle drei Dateien öffnen (keine Meldung „resource file damaged“), kompilieren: 0 Fehler, keine „Component
+   overlap“. Neu im Code: `for(sys2=0;sys2<7;sys2++)` mit `spstr …,sys2*6+14`, `covx tTmp.txt,sys0,0,0`,
+   `type<k>.val`, `if(type1.val==0||vStage.val>=3)`, `if(sys2<8&&vCols.val>=8)`, `click` in `if/else` (tValue1/2),
+   `if(vStage.val>=1&&vStage.val<=2)` (us-p). Der Code der Seiten ist deutlich länger: übersetzt der Editor ihn?
+2. RAM je Seite und Modell melden (Tabelle oben).
+3. Typzahl: `entityUpd` mit Zahlen 0–9 in main und Slots: 0 blendet aus, 2–5 Popup sofort, 6–9 nach 500 ms, 1 sendet
+   (ohne ID nicht, Knopf-Slot doch). Altes Payload mit Namen (`shutter`, `light`, `text`, `delete`, leer): gleiches
+   Verhalten wie device12.
+4. Long-Press während eines `entityUpd`: das Popup eines Typs 6–9 öffnet trotzdem (`vLPType`).
+5. Stufen cardDevice1: Feld 85 = 0/1/2/3, je mit `devIcons` mit 0, 1, 5, 9, 16 belegten Zellen: Spaltenzahl
+   (⌈n/2⌉, höchstens 3/5/8), halbe letzte Spalte mit Rahmen, Info-Sätze A/B/C/keiner, Rahmenkanten nach dem Ausblenden
+   von Spalten, keine Reste der anderen Sätze. Abschneiden: Name in Satz B (49 px, 15 Byte), Wert in Satz C (87 px, 19
+   Byte; welche Seite fehlt beim rechtsbündigen Wert?).
+6. Stufen cardDevice3: Feld 73 = 0/1/2 mit 3 bzw. 7 Icons; Kachel 1/2 bleibt aus, auch wenn `entityUpd` sie füllt;
+   Rahmen gegen bMain und Kachel 3; Icon in h 52/51 mittig.
+7. Tippen, Drück-Feedback, Long-Press-Blinken und Popups für alle Zellen (vaLPCell-Tabelle), die Icons und Texte der
+   Sätze B/C und den Wert `tValue1/2` in Stufe 0 und 1 (blinkt das sichtbare Icon?). Popup aus Satz B/C mit vollem
+   Namen.
+8. Zwei Nachrichten direkt nacheinander (`entityUpd`, `devIcons` mit 392 Byte): beide quittiert. `devIcons` auf
+   cardDevice2 oder einer anderen Seite: nur Quittung.
+9. Kürzen beim Kopieren: `tEntityB1.txt=tEntity1.txt` (31 → 15 Byte) und `tValueC1.txt=tValue1.txt` (31 → 19):
+   schneidet die Nextion ab, ohne Fehler?
+10. us-p cardDevice1: Raster 8 × 2 unter dem Haupt-Icon, Satz C rechts daneben (Stufe 1/2), Stufe 0 volle Zeilen.
 
 ## Protokoll
 
