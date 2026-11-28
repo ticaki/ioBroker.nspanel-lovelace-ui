@@ -637,7 +637,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       }
       await this.onMqttConnect();
-      await this.delay(1e3);
+      await this.delay(1);
       for (const id in states) {
         if (id.endsWith(".info.isOnline") && !(0, import_virtual_panel_manager.legacyWebPanelTree)(id.replace(`${this.namespace}.`, ""))) {
           await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);

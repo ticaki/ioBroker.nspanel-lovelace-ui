@@ -858,7 +858,7 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.cmd.mainNavigationPoint
       );
     }
-    await this.adapter.delay(100);
+    await this.adapter.delay(1);
     const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
     const scs = this.pages.filter((a) => a && globals.isScreenSaverCardType(a.card));
     const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === "admin";
@@ -2289,7 +2289,7 @@ class Panel extends import_library.BaseClass {
       this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
       this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
       this.sendRules();
-      await this.adapter.delay(100);
+      await this.adapter.delay(1);
     }
     await this.writeInfo();
     this.sendDimmode();
