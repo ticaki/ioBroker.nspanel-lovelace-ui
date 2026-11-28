@@ -110,7 +110,7 @@ Aufnahmen der echten EU-HMI `device13` im Nextion-Simulator (2026-11-28), je Ico
 | ![](web-l-cardDevice1.png) ![](web-l-cardDevice2.png) ![](web-l-cardDevice3.png) | web-l mit Web-Panel-Elementen (6 Knöpfe; 4 Infos + 3 Knöpfe; 8 Infos + 3 Schalter) | Reihenfolge und Lage der zusätzlichen Elemente |
 | ![](web-p-cardDevice1-plain.png) ![](web-p-cardDevice2-plain.png) ![](web-p-cardDevice3-plain.png) | web-p ohne Web-Panel-Elemente | Zeilen teilen sich die Höhe, kein Loch über der Statuszeile |
 | ![](web-p-cardDevice1.png) ![](web-p-cardDevice2.png) ![](web-p-cardDevice3.png) | web-p mit Web-Panel-Elementen | dritte Knopfreihe, vierte Info-Zeile und drei Knöpfe in einer Reihe, vierte Kachelreihe und dritter Schalter |
-| ![](hmi-cardDevice1.png) ![](hmi-cardDevice1-plain.png) ![](hmi-cardDevice2.png) ![](hmi-cardDevice3.png) | HMI-Vorschauen eu des Werkzeugs `card_device.py` für `device12` (2×2-Raster; Beispieldaten des Werkzeugs, Einheiten dort mit Leerzeichen) | nur für die Entwickler-Dokumente; `hmi-us-l-*.png` und `hmi-us-p-*.png` ebenso. Die Vorschauen von `device13` je Stufe liegen in `next/` |
+| ![](hmi-cardDevice1.png) ![](hmi-cardDevice1-plain.png) ![](hmi-cardDevice2.png) ![](hmi-cardDevice3.png) | HMI-Vorschauen eu des Werkzeugs `card_device.py` für `device12` (2×2-Raster; Beispieldaten des Werkzeugs, Einheiten dort mit Leerzeichen) | nur für die Entwickler-Dokumente; `hmi-us-l-*.png` und `hmi-us-p-*.png` ebenso. Die Vorschauen von `device14` je Stufe liegen in `next/` |
 
 ## Was Tim prüfen soll
 

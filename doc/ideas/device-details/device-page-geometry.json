@@ -27,13 +27,13 @@
             "value": {"object": "tValue1", "x": 330, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
             "sets": {
               "B": {
-                "icon": {"object": "bEntityB1", "x": 241, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "name": {"object": "tEntityB1", "x": 279, "y": 80, "w": 49, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "icon": {"object": "bEntityB1", "x": 247, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB1", "x": 285, "y": 80, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
                 "value": {"object": "tValue1", "x": 330, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
               },
               "C": {
-                "icon": {"object": "bEntityC1", "x": 315, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "value": {"object": "tValueC1", "x": 353, "y": 80, "w": 87, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+                "icon": {"object": "bEntityC1", "x": 321, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC1", "x": 359, "y": 80, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
               }
             }
           },
@@ -45,13 +45,13 @@
             "value": {"object": "tValue2", "x": 330, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
             "sets": {
               "B": {
-                "icon": {"object": "bEntityB2", "x": 241, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "name": {"object": "tEntityB2", "x": 279, "y": 124, "w": 49, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "icon": {"object": "bEntityB2", "x": 247, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB2", "x": 285, "y": 124, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
                 "value": {"object": "tValue2", "x": 330, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
               },
               "C": {
-                "icon": {"object": "bEntityC2", "x": 315, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "value": {"object": "tValueC2", "x": 353, "y": 124, "w": 87, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+                "icon": {"object": "bEntityC2", "x": 321, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC2", "x": 359, "y": 124, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
               }
             }
           },
@@ -333,13 +333,13 @@
             "value": {"object": "tValue1", "x": 345, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
             "sets": {
               "B": {
-                "icon": {"object": "bEntityB1", "x": 256, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "name": {"object": "tEntityB1", "x": 294, "y": 80, "w": 49, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "icon": {"object": "bEntityB1", "x": 262, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB1", "x": 300, "y": 80, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
                 "value": {"object": "tValue1", "x": 345, "y": 80, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
               },
               "C": {
-                "icon": {"object": "bEntityC1", "x": 330, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "value": {"object": "tValueC1", "x": 368, "y": 80, "w": 87, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+                "icon": {"object": "bEntityC1", "x": 336, "y": 76, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC1", "x": 374, "y": 80, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
               }
             }
           },
@@ -351,13 +351,13 @@
             "value": {"object": "tValue2", "x": 345, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31},
             "sets": {
               "B": {
-                "icon": {"object": "bEntityB2", "x": 256, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "name": {"object": "tEntityB2", "x": 294, "y": 124, "w": 49, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
+                "icon": {"object": "bEntityB2", "x": 262, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "name": {"object": "tEntityB2", "x": 300, "y": 124, "w": 43, "h": 26, "font": 0, "align": "left", "maxBytes": 15},
                 "value": {"object": "tValue2", "x": 345, "y": 124, "w": 110, "h": 26, "font": 0, "align": "right", "maxBytes": 31}
               },
               "C": {
-                "icon": {"object": "bEntityC2", "x": 330, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
-                "value": {"object": "tValueC2", "x": 368, "y": 124, "w": 87, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
+                "icon": {"object": "bEntityC2", "x": 336, "y": 120, "w": 36, "h": 34, "font": 1, "align": "center", "maxBytes": 7},
+                "value": {"object": "tValueC2", "x": 374, "y": 124, "w": 81, "h": 26, "font": 0, "align": "right", "maxBytes": 19}
               }
             }
           },

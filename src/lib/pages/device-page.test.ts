@@ -365,8 +365,8 @@ describe('lib/types/deviceDetails - device page configuration', () => {
         ).to.equal(false);
         expect(devicePageHasStatusIcons({ layout: 2, statusStage: 1, statusSlots: [ref('door')] })).to.equal(false);
         expect(devicePageSlotFields(1, 'info', 0)).to.deep.equal({ name: 164, value: 110 });
-        expect(devicePageSlotFields(1, 'info', 1)).to.deep.equal({ name: 49, value: 110 });
-        expect(devicePageSlotFields(1, 'info', 2)).to.deep.equal({ name: 0, value: 87 });
+        expect(devicePageSlotFields(1, 'info', 1)).to.deep.equal({ name: 43, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 2)).to.deep.equal({ name: 0, value: 81 });
         expect(devicePageSlotFields(1, 'button', 1)).to.deep.equal({ name: 104 });
         expect(devicePageSlotFields(1, 'status', 1)).to.equal(undefined);
         expect(devicePageSlotFields(3, 'info', 1)).to.deep.equal({ name: 125, value: 125 });

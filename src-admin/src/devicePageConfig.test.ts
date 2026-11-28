@@ -611,8 +611,8 @@ describe('devicePageConfig - device page of the page item dialog', () => {
                 .sort((a, b) => a - b);
         // layout 1: the info rows wide / set B / set C / none, the grid 0 / 3 / 5 / 8 columns of 2 cells
         expect(devicePagePreviewAreas(1, 0).find(a => a.slot === 1)).to.deep.include({ x: 126, w: 314 });
-        expect(devicePagePreviewAreas(1, 1).find(a => a.slot === 1)).to.deep.include({ x: 241, w: 199 });
-        expect(devicePagePreviewAreas(1, 2).find(a => a.slot === 2)).to.deep.include({ x: 315, y: 120, w: 125 });
+        expect(devicePagePreviewAreas(1, 1).find(a => a.slot === 1)).to.deep.include({ x: 247, w: 193 });
+        expect(devicePagePreviewAreas(1, 2).find(a => a.slot === 2)).to.deep.include({ x: 321, y: 120, w: 119 });
         expect(slotsOf(1, 3)).to.deep.equal([3, 4, 5, 6]);
         expect(cells(1, 0)).to.have.length(0);
         expect(cells(1, 1)).to.have.length(6);

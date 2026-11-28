@@ -403,9 +403,9 @@ export const DEVICE_PAGE_FIELDS: Readonly<Record<DevicePageLayout, DevicePageLay
         mainName: 110,
         status: 390,
         slots: { info: { name: 164, value: 110 }, button: { name: 104 } },
-        // the status grid right of the big icon: stage 1 set B (icon, name 49 px, the value of set A), stage 2 set C
-        // (icon and value 87 px, no name), stage 3 no info rows
-        slotsByStage: { 1: { info: { name: 49, value: 110 } }, 2: { info: { name: 0, value: 87 } } },
+        // the status grid right of the big icon: stage 1 set B (icon, name 43 px, the value of set A), stage 2 set C
+        // (icon and value 81 px, no name), stage 3 no info rows
+        slotsByStage: { 1: { info: { name: 43, value: 110 } }, 2: { info: { name: 0, value: 81 } } },
     },
     2: {
         mainName: 96,
@@ -464,15 +464,15 @@ export const DEVICE_PAGE_FIELDS_US_P: Readonly<Record<DevicePageLayout, DevicePa
  * stand side by side, which are 4 px narrower to keep a gap between two names. Rows that hold a varying number of
  * elements are given with their narrowest field: the buttons of layout 1 have 104 px, six in a row 100 px; the buttons
  * of layout 2 have 100 px, two or three in a row 96 px. The status icon grid and its stages are those of eu; the info
- * rows of layout 1 reach the right edge in every set: set B with the name up to the value (239 px, the HMI copies at
- * most 15 bytes of it), set C with the value from its icon to the right edge (277 px, at most 19 bytes).
+ * rows of layout 1 reach the right edge in every set: set B with the name up to the value (233 px, the HMI copies at
+ * most 15 bytes of it), set C with the value from its icon to the right edge (271 px, at most 19 bytes).
  */
 export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
     1: {
         mainName: 110,
         status: 580,
         slots: { info: { name: 354, value: 110 }, button: { name: 100 } },
-        slotsByStage: { 1: { info: { name: 239, value: 110 } }, 2: { info: { name: 0, value: 277 } } },
+        slotsByStage: { 1: { info: { name: 233, value: 110 } }, 2: { info: { name: 0, value: 271 } } },
     },
     2: {
         mainName: 96,

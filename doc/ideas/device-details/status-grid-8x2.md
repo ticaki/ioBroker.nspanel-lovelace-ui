@@ -22,6 +22,10 @@ die Abschnitte 1–10 sind die Analyse davor und an den markierten Stellen über
 - RAM EU `device13` (Editor): cardDevice1 **3216** (368 frei), cardDevice2 **2492** (1092 frei), cardDevice3 **3328**
   (256 frei). us-l und us-p `device13` sind noch **nicht kompiliert und nicht getestet**.
 
+**`device14` (2026-11-28):** Satz B und C von cardDevice1 (EU, us-l) 6 px weiter rechts – das Icon stand mit dem
+Abstand der Raster-Icons hinter dem Raster und sah aus wie eine weitere Spalte. Name B 49 → **43 px**, Wert C 87 →
+**81 px**, rechte Kante unverändert (Abschnitt „Info-Zeilen je Stufe“; [device-page-hmi.md, „device14“](device-page-hmi.md#device14-satz-bc-6-px-nach-rechts)).
+
 ## Umsetzung in der HMI: device13 (2026-11-28)
 
 Umgesetzt mit `HMI/tools/card_device.py` in `/home/tim/device-page-hmi/nspanel-*v6.2.0.device13.HMI` (EU, us-l, us-p),
@@ -81,8 +85,8 @@ Diese Entscheidungen gehen den Abschnitten unten vor. Diese sind daran angepasst
 spricht, ist durch die feste Stufe ersetzt.
 
 1. **Stufen auf cardDevice1:** A = 0 Spalten, B = 1–3, C = 4–5, D = 6–8. In Stufe D gibt es keine Info-Zeilen. Die
-   Info-Zeilen verschwinden also schon ab 6 Spalten, damit der Wert in C breiter bleibt (C neu: Wert **87 px**,
-   Abschnitt 1).
+   Info-Zeilen verschwinden also schon ab 6 Spalten, damit der Wert in C breiter bleibt (C neu: Wert **87 px**, seit
+   `device14` 81 px, Abschnitt 1).
 2. **Die Stufe ist eine Admin-Einstellung, kein Laufzeitwert.**
 
    | Seite | Auswahl im Admin |
@@ -174,23 +178,23 @@ sichtbaren Bereichs (EU bis 449, us-l 15–464).
 ### Info-Zeilen je Stufe
 
 Die Zeilen liegen bei y 80 und y 124, das Icon jeweils 4 px höher (y 76/120, h 34), die Texte haben h 26. Das Icon steht
-5 px hinter der Rasterkante, der Text 2 px hinter dem Icon. Das ist dasselbe Maß wie beim heutigen schmalen Satz
-(Rasterende 199, Icon 204, Name 242).
+seit `device14` **11 px** hinter der Rasterkante (in `device13` 5 px wie beim früheren schmalen Satz – Rasterende 199,
+Icon 204, Name 242 –, das sah aus wie eine weitere Spalte), der Text 2 px hinter dem Icon.
 
 | Stufe | Rasterende | Icon x (w 36) | Name x / w | Wert x / w | EU-Objekte |
 |---|---|---|---|---|---|
 | A | – | 126 | 164 / 164 | 330 / 110 | bEntity1/2, tEntity1/2, tValue1/2 (heute) |
-| B | 236 (Spalte 3) | 241 | 279 / **49** | 330 / 110 | neu: Icon + Name; **Wert = tValue1/2** (deckungsgleich mit A) |
-| C (neu, 4–5 Spalten) | 310 (Spalte 5) | 315 | – | 353 / **87** (bis 440) | neu: Icon + Wert |
-| C′ (Variante) | 310 | 315 | – | 353 / **96** (bis 449, Rand des Sichtbaren) | wie C |
+| B | 236 (Spalte 3) | 247 | 285 / **43** | 330 / 110 | neu: Icon + Name; **Wert = tValue1/2** (deckungsgleich mit A) |
+| C (neu, 4–5 Spalten) | 310 (Spalte 5) | 321 | – | 359 / **81** (bis 440) | neu: Icon + Wert |
+| C′ (Variante, nicht umgesetzt) | 310 | 321 | – | 359 / **90** (bis 449, Rand des Sichtbaren) | wie C |
 | D (6–8 Spalten) | 347 / 384 / 421 | – | – | – | alles aus |
 
 Die frühere Stufe C mit 4–6 Spalten hatte Icon 352 und Wert 390/50 bzw. 387/53 und ist entfallen. Ein gemeinsames
 Wertfeld mit A/B (tValue1/2 bei 330) geht in C nicht: Zwischen der Rasterkante 310 und x 330 sind nur 20 px frei, das Icon
 braucht 36.
 
-Für us-l sind alle x um +15 verschoben: A 141/179/345, B 256/294/345, C Icon 330 und Wert 368/87 (bis 455), C′ bis 464
-(w 96). Die Breiten sind gleich.
+Für us-l sind alle x um +15 verschoben: A 141/179/345, B 262/300/345, C Icon 336 und Wert 374/81 (bis 455), C′ bis 464
+(w 90). Die Breiten sind gleich.
 
 ### Was in die Felder passt
 
@@ -205,11 +209,11 @@ Breiten in Font 0 (EU = us-l):
 | `Ein` / `Aus` | 26 / 31 | `offen` | 46 |
 | `Licht` / `Akku` / `Strom` | 41 / 42 / 51 | `Batterie` | 68 |
 
-- **Name in B (49 px):** etwa 5 Zeichen (a–z im Mittel 9,5 px, i 5, A 11, W 16). Es passen `Licht`, `Akku`, `offen`,
-  aber nicht `Strom` (51) und nicht `Batterie`.
-- **Wert in C neu (87 px):** Es passen `80%` (35), `100%` (45), `21,5°C` (54), `21,5 °C` (59), `-61dBm` (65),
-  `-61 dBm` (70), `1234 W` (61) und `12,3kWh` (72). `12,34 kWh` (87) passt genau auf Kante. Mit C′ (96 px) bleibt dafür
-  Luft. Das sind etwa 9 Zeichen.
+- **Name in B (43 px, `device13` 49 px):** etwa 4 Zeichen (a–z im Mittel 9,5 px, i 5, A 11, W 16). Es passen `Licht`
+  (41) und `Akku` (42), seit `device14` nicht mehr `offen` (46); `Strom` (51) und `Batterie` passen nicht.
+- **Wert in C (81 px, `device13` 87 px):** Es passen `80%` (35), `100%` (45), `21,5°C` (54), `21,5 °C` (59), `-61dBm` (65),
+  `-61 dBm` (70), `1234 W` (61) und `12,3kWh` (72); `12,34 kWh` (87) passt seit `device14` nicht mehr. Das sind etwa
+  8 Zeichen.
 - **Frühere Stufe C mit 50/53 px (entfallen):** Dort passten `21,5°C` und `-61dBm` nicht.
 - **Abschneiden:** Ein zu langer Wert wird an der Feldkante abgeschnitten (am Panel bestätigt). Bei rechtsbündigem Wert
   (`xcen 2`) ist noch zu prüfen, welche Seite fehlt (Prüfliste, offen).
@@ -265,9 +269,9 @@ Code kostet kein RAM.
 
 **Puffergrößen, günstig gewählt:**
 
-- **Name B mit txt_maxl 15:** 49 px fassen höchstens 9 Zeichen (`i` 5 px). 15 Byte reichen auch mit Umlauten
+- **Name B mit txt_maxl 15:** 43 px fassen höchstens 8 Zeichen (`i` 5 px). 15 Byte reichen auch mit Umlauten
   (2 Byte je Umlaut).
-- **Wert C (neu 87 px) mit txt_maxl 19:** 87 px fassen höchstens 17 schmale Zeichen (`i`, `,` je 5 px). `21,5°C` sind
+- **Wert C (81 px, `device13` 87) mit txt_maxl 19:** 81 px fassen höchstens 16 schmale Zeichen (`i`, `,` je 5 px). `21,5°C` sind
   7 Byte (° hat 2 Byte). txt_maxl 15 (26 statt 30 Byte) reicht für alle realen Werte, schneidet aber eher als die Kante.
 - **Kürzen:** Die Texte werden beim Kopieren aus tEntity1/tValue1 auf txt_maxl gekürzt. Das betrifft nur, was ohnehin
   hinter der Feldkante läge.
@@ -388,7 +392,7 @@ in zwei Fällen:
 - falls leere Zellen einzeln ausgeblendet werden (offene Frage). *(Entschieden: es werden ganze Spalten nach der
   Belegung ausgeblendet; die Spalten ändern sich also auch, wenn sich die Belegung ändert.)*
 
-Das Icon von Satz C (x 315) liegt hinter Spalte 5 (bis 310), Spalte 6 ab 309 ist in C immer aus. Trotzdem erst die
+Das Icon von Satz C (x 321, `device13` 315) liegt hinter Spalte 5 (bis 310), Spalte 6 ab 309 ist in C immer aus. Trotzdem erst die
 Spalten schalten, dann die Info-Sätze.
 
 ## 6. Tippen und Long-Press der 16 Zellen

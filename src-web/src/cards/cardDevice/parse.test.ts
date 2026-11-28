@@ -498,8 +498,8 @@ describe('cardDevice status icon grid (devIcons, stage)', () => {
     it('the geometry follows the stage: info rows in set A / B / C / none, tiles 1 and 2 of cardDevice3', () => {
         const info = (stage: 0 | 1 | 2 | 3): unknown => deviceGeometry(1, 'eu', [], stage).slots[0];
         expect(info(0)).toMatchObject({ icon: { x: 126 }, name: { x: 164, w: 164 }, value: { x: 330, w: 110 } });
-        expect(info(1)).toMatchObject({ icon: { x: 241 }, name: { x: 279, w: 49 }, value: { x: 330, w: 110 } });
-        expect(info(2)).toMatchObject({ icon: { x: 315 }, value: { x: 353, w: 87 } });
+        expect(info(1)).toMatchObject({ icon: { x: 247 }, name: { x: 285, w: 43 }, value: { x: 330, w: 110 } });
+        expect(info(2)).toMatchObject({ icon: { x: 321 }, value: { x: 359, w: 81 } });
         expect(info(2)).not.toHaveProperty('name');
         expect(info(3)).toBeUndefined();
         // buttons do not move

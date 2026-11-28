@@ -132,7 +132,7 @@ const VALUE_L = 520;
 
 /**
  * An info row of web-l cardDevice1 in the set of the stage: the icon where eu has it (5 px right of the grid of the
- * stage), sets A and B with the name up to the value, set C with the value from the icon to the right edge (no
+ * stage in set A, 11 px in sets B and C), sets A and B with the name up to the value, set C with the value from the icon to the right edge (no
  * name).
  *
  * @param y top of the icon
@@ -143,15 +143,15 @@ function info1L(y: number, stage: DeviceStage): InfoSlotGeometry {
         case 1:
             return {
                 kind: 'info',
-                icon: box(241, y, 36, 34),
-                name: { ...box(279, y + 4, VALUE_L - 2 - 279, 26), maxBytes: SET_B_NAME_BYTES },
+                icon: box(247, y, 36, 34),
+                name: { ...box(285, y + 4, VALUE_L - 2 - 285, 26), maxBytes: SET_B_NAME_BYTES },
                 value: box(VALUE_L, y + 4, RIGHT - VALUE_L, 26),
             };
         case 2:
             return {
                 kind: 'info',
-                icon: box(315, y, 36, 34),
-                value: { ...box(353, y + 4, RIGHT - 353, 26), maxBytes: SET_C_VALUE_BYTES },
+                icon: box(321, y, 36, 34),
+                value: { ...box(359, y + 4, RIGHT - 359, 26), maxBytes: SET_C_VALUE_BYTES },
             };
         default:
             return {

@@ -16,7 +16,7 @@ keys: stage size, visible x range and per page every element with its boxes as t
 (x, y, w, h, font, alignment, buffer; roles: header prev/heading/next, main icon/name, per slot icon/name/value/
 bar/toggle/touch and the sets B/C of an info row, status, info, the grid with its cells and the stages) plus
 statusWidth, the width of the status line in px. doc/ideas/device-details/device-page-geometry.json is that file
-for the device13 pages (the web panel builds its layouts from it, adapter and web panel test against it).
+for the device14 pages (the web panel builds its layouts from it, adapter and web panel test against it).
 
 Models. The model is read from the project (detect_model: pageStartup sends event,startup,<version>,<model>,..),
 never from the file name; the page size of cardGrid must fit it.
@@ -273,8 +273,8 @@ def info_sets(x_icon_b, x_name_b, w_name_b, x_icon_c, x_value_c, w_value_c, ys):
     return out
 
 
-SET_NAME_LEN = 15  # name of set B (49 px hold at most 9 characters)
-SET_VALUE_LEN = 19  # value of set C (87 / 106 px hold at most 17 narrow characters)
+SET_NAME_LEN = 15  # name of set B (43 px)
+SET_VALUE_LEN = 19  # value of set C (81 px eu/us-l, 106 px us-p)
 
 
 # landscape (EU; us-l with every x shifted)
@@ -289,8 +289,10 @@ LAYOUTS = {
         'iconLen': ICON_NEED,
         'slots': [info_row(126, 76, 314), info_row(126, 120, 314)] + [button(10 + 108 * k, 190, 104) for k in range(4)],
         'cells': grid(8, 2, 124, 71, 37, 38, 45), 'gridRows': 2, 'stageColumns': (0, 3, 5, 8),
-        # B: icon 5 px behind column 3 (236), name 2 px behind the icon up to tValue (330); C: behind column 5 (310)
-        'sets': info_sets(241, 279, 49, 315, 353, 87, (76, 120)),
+        # B: icon 11 px behind column 3 (236), name 2 px behind the icon up to tValue (330); C: icon 11 px behind
+        # column 5 (310), value up to 440. 11 px, not the 5 px between grid and icon: with the pitch of the grid the
+        # icon of the row looked like one more column
+        'sets': info_sets(247, 285, 43, 321, 359, 81, (76, 120)),
         'setStages': {'A': (0,), 'B': (1,), 'C': (2,)}, 'sharedValue': 'B',
         'status': STATUS_LINE, 'info': INFO_ICON,
     },

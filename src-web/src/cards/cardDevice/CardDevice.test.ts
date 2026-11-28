@@ -457,11 +457,11 @@ describe('cardDevice status icon grid rendering', () => {
         expect(tag(a, 'slot-1')).toContain('left:126px;top:76px');
         expect(a).toContain('Name 1<');
         const b = html('cardDevice1', 1, 3);
-        expect(tag(b, 'slot-1')).toContain('left:241px;top:76px');
+        expect(tag(b, 'slot-1')).toContain('left:247px;top:76px');
         expect(b).toContain('Name 1<');
         expect(b).toContain('Wert 1<');
         const c = html('cardDevice1', 2, 9);
-        expect(tag(c, 'slot-1')).toContain('left:315px;top:76px');
+        expect(tag(c, 'slot-1')).toContain('left:321px;top:76px');
         expect(c).not.toContain('Name 1<');
         expect(c).toContain('Wert 1<');
         const none = html('cardDevice1', 3, 16);

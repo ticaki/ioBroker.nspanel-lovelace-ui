@@ -336,7 +336,7 @@ Gerätename unter dem Haupt-Icon ±1.
 `doc/ideas/device-details/device-page-hmi.md`. Die Nutzer-Doku verwendet sie nicht (ihre Beispieldaten zeigen
 Einheiten mit Leerzeichen, der Adapter schreibt sie ohne).
 
-`next/` – Vorschauen für `device13` (`--preview doc/Pictures/device-page/next`), je Modell eu (ohne Präfix), us-l und
+`next/` – Vorschauen für `device14` (bis auf Satz B/C von cardDevice1 eu/us-l = `device13`; `--preview doc/Pictures/device-page/next`), je Modell eu (ohne Präfix), us-l und
 us-p, beschrieben in [device-page-hmi.md, „device13“](../../ideas/device-details/device-page-hmi.md#device13-typzahl-status-raster-devicons):
 
 | Modell | cardDevice1 | cardDevice2 | cardDevice3 |

@@ -2,11 +2,13 @@
 
 Drei neue Seiten für **ein** Gerät (Saugroboter, Waschmaschine, Pkw …): großes Geräte-Icon, feste Anzahl Slots mit
 festen Elementarten, Statuszeile unten, info-Icon unten rechts. Gebaut mit `HMI/tools/card_device.py`, Vorschau des
-aktuellen Stands `device13` je Stufe unter `doc/Pictures/device-page/next/`; die älteren Vorschauen
+aktuellen Stands `device14` je Stufe unter `doc/Pictures/device-page/next/`; die älteren Vorschauen
 `doc/Pictures/device-page/hmi-cardDevice{1,2,3}.png` (cardDevice1 mit 2×2-Status-Block, ohne:
 `hmi-cardDevice1-plain.png`) zeigen `device12`.
 
-> **Aktueller Stand ist `device13`** (Abschnitt [„device13“](#device13-typzahl-status-raster-devicons)). Die Abschnitte ab
+> **Aktueller Stand ist `device14`** = `device13` mit Satz B/C 6 px weiter rechts (Abschnitt
+> [„device14“](#device14-satz-bc-6-px-nach-rechts)); sonst gilt der Abschnitt
+> [„device13“](#device13-typzahl-status-raster-devicons). Die Abschnitte ab
 > [„Protokoll“](#protokoll) beschreiben `device12`; wo sie dem Abschnitt „device13“ widersprechen, sind sie
 > **überholt** – vor allem: cardDevice1 hat in `entityUpd` 6 Slots (nicht 10), die Status-Icons kommen per `devIcons`
 > in ein Raster bis 8×2 (nicht der 2×2-Block `tStat7–10`), cardDevice3 hat ein Raster bis 8×1, der schmale Satz
@@ -68,6 +70,37 @@ cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
   (36 Seiten; pageTest hat keinen Umschalter, wie bisher).
 - Idempotent: Läuft das Werkzeug auf seiner eigenen Ausgabe, baut es die drei Seiten in ihren Abschnitten neu und
   ändert sonst nichts (geprüft).
+
+## device14: Satz B/C 6 px nach rechts
+
+Stand 2026-11-28. Tims Wunsch: Das Icon der Info-Zeilen in Satz B (Stufe 1) und C (Stufe 2) von cardDevice1 stand
+mit demselben Abstand hinter dem Raster wie die Raster-Icons untereinander und sah deshalb aus wie eine weitere
+Spalte. Satz B und C liegen jetzt **6 px weiter rechts** (Icon 11 statt 5 px hinter der Rasterkante); die rechte Kante
+bleibt, der Text wird 6 px schmaler:
+
+| Modell | Satz B (Icon, Name, Wert) | Satz C (Icon, Wert) |
+|---|---|---|
+| EU | Icon 247, Name 285 w **43**, Wert = tValue 330 w 110 | Icon 321, Wert 359 w **81** (bis 440) |
+| us-l (+15) | Icon 262, Name 300 w 43, Wert 345 w 110 | Icon 336, Wert 374 w 81 (bis 455) |
+
+us-p (Satz C neben dem Haupt-Icon), Stufe 0 und 3, cardDevice2 und cardDevice3 sind unverändert. Puffer, Code,
+Objektzahl und RAM-Schätzung bleiben (cardDevice1 3045 mit global), `check_area` meldet nichts.
+
+```
+for M in "" us-l- us-p-; do
+  PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /home/tim/device-page-hmi/nspanel-${M}v6.2.0.device13.HMI \
+    /home/tim/device-page-hmi/nspanel-${M}v6.2.0.device14.HMI --preview doc/Pictures/device-page/next \
+    --geometry doc/ideas/device-details/device-page-geometry.json
+done
+```
+
+- Eingabe sind die von Tim kompilierten `device13`-Dateien. Skript-Vergleich aller lebenden Abschnitte
+  `device13` → `device14`: EU und us-l ändern nur `x`/`endx` von `bEntityB1/2`, `bEntityC1/2` und `x`/`w` von
+  `tEntityB1/2`, `tValueC1/2` auf cardDevice1; us-p ist identisch. Ein zweiter Lauf auf `device14` liefert dieselben
+  Abschnitte (idempotent). Kopien in `/mnt/projekte/nextion-vm/`.
+- Adapter (`DEVICE_PAGE_FIELDS`: Name B 43, Wert C 81; web-l: Name B 233, Wert C 271), Web-Panel
+  (`geometryHmi.ts`, web-l in `geometryWeb.ts`, das die x-Werte von eu übernimmt) und Admin-Vorschau sind angeglichen;
+  web-p folgt us-p und bleibt.
 
 ## device13: Typzahl, Status-Raster, devIcons
 
@@ -145,7 +178,7 @@ Die Status-Slots 7–10 von cardDevice1 gibt es in `entityUpd` nicht mehr, die S
 |---|---|---|---|
 | cardDevice1 | 0 | 0 | Satz A (breit, wie bisher) |
 | | 1 | 3 | Satz B: Icon, Name schmal, Wert = `tValue1/2` von A |
-| | 2 | 5 | Satz C: Icon, Wert 87 px (us-p 106 px), kein Name |
+| | 2 | 5 | Satz C: Icon, Wert 81 px (`device13` 87; us-p 106 px), kein Name |
 | | 3 | 8 | keine (auch wenn entityUpd Info-Daten enthält) |
 | cardDevice3 | 0 | 0 | alle Kacheln |
 | | 1 | 4 | Kachel 1 aus (auch wenn entityUpd sie füllt) |
@@ -188,10 +221,13 @@ sonst an `bEntity1/2`. Ein Popup aus einer Zelle hat keine Überschrift, eines a
 
 ### Geometrie device13
 
+(Satz B/C in `device14` 6 px weiter rechts, siehe [„device14“](#device14-satz-bc-6-px-nach-rechts); die Tabelle zeigt die
+`device14`-Werte.)
+
 | Seite / Modell | Zellen (Abstand, w × h) | x Spalte 1 … 8 | y | Satz B | Satz C |
 |---|---|---|---|---|---|
-| cardDevice1 EU | 37, 38 × 45 | 124 … 383 (rechte Kante 421) | 71 / 115 | Icon 241, Name 279 w 49 (txt_maxl 15), Wert = tValue 330 w 110 | Icon 315, Wert 353 w 87 (txt_maxl 19) |
-| cardDevice1 us-l | wie EU | 139 … 398 (436) | 71 / 115 | Icon 256, Name 294, Wert 345 | Icon 330, Wert 368 w 87 |
+| cardDevice1 EU | 37, 38 × 45 | 124 … 383 (rechte Kante 421) | 71 / 115 | Icon 247, Name 285 w 43 (txt_maxl 15), Wert = tValue 330 w 110 | Icon 321, Wert 359 w 81 (txt_maxl 19) |
+| cardDevice1 us-l | wie EU | 139 … 398 (436) | 71 / 115 | Icon 262, Name 300 w 43, Wert 345 | Icon 336, Wert 374 w 81 |
 | cardDevice1 us-p (P2) | 37, 38 × 41 | 10 … 269 (307) | 188 / 228 | – | Icon 166 (y 76/120), Wert 204 w 106 (y 80/124) |
 | cardDevice3 EU | 37, 38 × 52 | 114 … 373 (411) | 67 | – | – |
 | cardDevice3 us-l | wie EU | 129 … 388 (426) | 67 | – | – |
@@ -252,8 +288,8 @@ Punkt 6 (Stufen, Rahmen, Kacheln). Alles andere ist offen; us-l und us-p sind no
 4. Long-Press während eines `entityUpd`: das Popup eines Typs 6–9 öffnet trotzdem (`vLPType`).
 5. Stufen cardDevice1: Feld 61 = 0/1/2/3, je mit `devIcons` mit 0, 1, 5, 9, 16 belegten Zellen: Spaltenzahl
    (⌈n/2⌉, höchstens 3/5/8), halbe letzte Spalte mit Rahmen, Info-Sätze A/B/C/keiner, Rahmenkanten nach dem Ausblenden
-   von Spalten, keine Reste der anderen Sätze. Abschneiden: Name in Satz B (49 px, 15 Byte), Wert in Satz C (87 px, 19
-   Byte; welche Seite fehlt beim rechtsbündigen Wert?). ✅ EU im Simulator (2026-11-28, `hmi/cardDevice1-icons-NN.png`
+   von Spalten, keine Reste der anderen Sätze. Abschneiden: Name in Satz B (49 px, `device14` 43 px, 15 Byte), Wert in Satz C (87 px,
+   `device14` 81 px, 19 Byte; welche Seite fehlt beim rechtsbündigen Wert?). ✅ EU im Simulator (2026-11-28, `hmi/cardDevice1-icons-NN.png`
    mit 0, 2 … 16 Icons): Spaltenzahl, Rahmen, Sätze A/B/C/keiner, keine Reste; Name in Satz B an der Feldgrenze
    abgeschnitten („Batter“). Offen: halbe letzte Spalte, Abschneiden des Werts in Satz C.
 6. Stufen cardDevice3: Feld 73 = 0/1/2 mit 3 bzw. 7 Icons; Kachel 1/2 bleibt aus, auch wenn `entityUpd` sie füllt;
@@ -537,7 +573,7 @@ Font 0 ist 24 px hoch; die Breite eines Texts liefert `src/lib/const/text-width.
 
 | Seite | main-Name | Statuszeile | Slot-Name | Slot-Wert |
 |---|---|---|---|---|
-| cardDevice1 | 110 px | 390 px, 1 Zeile, links | info: 164 px, mit Status-Icons 86 px (`device12`; **`device13`:** Satz B 49 px / 15 Byte, Satz C kein Name); button: 104 px | info: 110 px (rechtsbündig; `device13` Satz C 87 px / 19 Byte) |
+| cardDevice1 | 110 px | 390 px, 1 Zeile, links | info: 164 px, mit Status-Icons 86 px (`device12`; **`device14`:** Satz B 43 px / 15 Byte, Satz C kein Name); button: 104 px | info: 110 px (rechtsbündig; `device14` Satz C 81 px / 19 Byte) |
 | cardDevice2 | 96 px | 390 px, 1 Zeile, mittig | value: 190 px; progress: 429 px; info: 104 px; button: 100 px | value: 190 px **Font 4**; info: 104 px |
 | cardDevice3 | 100 px | 390 px, 1 Zeile, links | info: 125 px; switch: 125 px | info: 125 px |
 

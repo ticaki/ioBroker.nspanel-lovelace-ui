@@ -408,7 +408,7 @@ describe('device page geometry: eu', () => {
             name: { x: 10, y: 244, w: 104, h: 26 },
         });
         expect(DEVICE_GEOMETRY[1].slots.slice(2, 6).map(s => slotBoxes(s)[0].x)).toEqual([10, 118, 226, 334]);
-        // the info rows per stage: set A, B (name 49 px, 15 bytes, the value of A), C (no name, value 87 px, 19
+        // the info rows per stage: set A, B (name 43 px, 15 bytes, the value of A), C (no name, value 81 px, 19
         // bytes), none
         const info1 = (stage: DeviceStage): SlotGeometry | undefined => deviceGeometry(1, 'eu', [], stage).slots[0];
         expect(info1(0)).toEqual({
@@ -419,14 +419,14 @@ describe('device page geometry: eu', () => {
         });
         expect(info1(1)).toEqual({
             kind: 'info',
-            icon: { x: 241, y: 76, w: 36, h: 34 },
-            name: { x: 279, y: 80, w: 49, h: 26, maxBytes: 15 },
+            icon: { x: 247, y: 76, w: 36, h: 34 },
+            name: { x: 285, y: 80, w: 43, h: 26, maxBytes: 15 },
             value: { x: 330, y: 80, w: 110, h: 26 },
         });
         expect(info1(2)).toEqual({
             kind: 'info',
-            icon: { x: 315, y: 76, w: 36, h: 34 },
-            value: { x: 353, y: 80, w: 87, h: 26, maxBytes: 19 },
+            icon: { x: 321, y: 76, w: 36, h: 34 },
+            value: { x: 359, y: 80, w: 81, h: 26, maxBytes: 19 },
         });
         expect(info1(3)).toBeUndefined();
         // the grid: 8 x 2 cells of 38 x 45 from x 124, rows at y 71 / 115; cardDevice3 8 x 1 of 38 x 52 from x 114
@@ -506,8 +506,8 @@ describe('device page geometry: us-l', () => {
         }
         expect(US_L_GEOMETRY[1].status).toEqual({ x: 25, y: 289, w: 390, h: 30 });
         expect(US_L_GEOMETRY[1].info).toEqual({ x: 419, y: 288, w: 36, h: 32 });
-        expect(deviceGeometry(1, 'us-l', [], 1).slots[0]).toMatchObject({ icon: { x: 256, y: 76 } });
-        expect(deviceGeometry(1, 'us-l', [], 2).slots[0]).toMatchObject({ icon: { x: 330, y: 76 } });
+        expect(deviceGeometry(1, 'us-l', [], 1).slots[0]).toMatchObject({ icon: { x: 262, y: 76 } });
+        expect(deviceGeometry(1, 'us-l', [], 2).slots[0]).toMatchObject({ icon: { x: 336, y: 76 } });
         expect(deviceGeometry(1, 'us-l').slots[0]).toMatchObject({ icon: { x: 141, y: 76 } });
         expect(deviceGeometry(2, 'us-l').extras).toEqual([]);
     });
@@ -655,14 +655,14 @@ describe('device page geometry: web-l', () => {
         // bytes; stage 3: no info rows
         expect(geometry(1, 0, 1).slots[1]).toEqual({
             kind: 'info',
-            icon: { x: 241, y: 120, w: 36, h: 34 },
-            name: { x: 279, y: 124, w: 239, h: 26, maxBytes: 15 },
+            icon: { x: 247, y: 120, w: 36, h: 34 },
+            name: { x: 285, y: 124, w: 233, h: 26, maxBytes: 15 },
             value: { x: 520, y: 124, w: 110, h: 26 },
         });
         expect(geometry(1, 0, 2).slots[1]).toEqual({
             kind: 'info',
-            icon: { x: 315, y: 120, w: 36, h: 34 },
-            value: { x: 353, y: 124, w: 277, h: 26, maxBytes: 19 },
+            icon: { x: 321, y: 120, w: 36, h: 34 },
+            value: { x: 359, y: 124, w: 271, h: 26, maxBytes: 19 },
         });
         expect(geometry(1, 0, 3).slots.slice(0, 2)).toEqual([undefined, undefined]);
         // main and the grid are those of eu

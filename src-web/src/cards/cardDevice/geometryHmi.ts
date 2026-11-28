@@ -35,7 +35,7 @@ export const SET_B_NAME_BYTES = 15;
 export const SET_C_VALUE_BYTES = 19;
 
 /**
- * An info row of cardDevice1 in set B (stage 1, right of 3 columns of the grid): icon, the name 49 px wide, the value
+ * An info row of cardDevice1 in set B (stage 1, right of 3 columns of the grid): icon, the name 43 px wide, the value
  * of set A (`tValue1/2`).
  *
  * @param y top of the icon
@@ -43,8 +43,8 @@ export const SET_C_VALUE_BYTES = 19;
 function info1B(y: number): InfoSlotGeometry {
     return {
         kind: 'info',
-        icon: box(241, y, 36, 34),
-        name: { ...box(279, y + 4, 49, 26), maxBytes: SET_B_NAME_BYTES },
+        icon: box(247, y, 36, 34),
+        name: { ...box(285, y + 4, 43, 26), maxBytes: SET_B_NAME_BYTES },
         value: box(330, y + 4, 110, 26),
     };
 }
@@ -57,8 +57,8 @@ function info1B(y: number): InfoSlotGeometry {
 function info1C(y: number): InfoSlotGeometry {
     return {
         kind: 'info',
-        icon: box(315, y, 36, 34),
-        value: { ...box(353, y + 4, 87, 26), maxBytes: SET_C_VALUE_BYTES },
+        icon: box(321, y, 36, 34),
+        value: { ...box(359, y + 4, 81, 26), maxBytes: SET_C_VALUE_BYTES },
     };
 }
 

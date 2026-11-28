@@ -119,10 +119,10 @@ describe('lib/types/deviceDetails - models of the device page', () => {
             }
         }
         expect(devicePageFields(1, 'eu').status).to.equal(390);
-        // the stages of the status grid: set B (short name), set C (no name, value 87 px)
+        // the stages of the status grid: set B (short name), set C (no name, value 81 px)
         expect(devicePageSlotFields(1, 'info', 0)).to.deep.equal({ name: 164, value: 110 });
-        expect(devicePageSlotFields(1, 'info', 1)).to.deep.equal({ name: 49, value: 110 });
-        expect(devicePageSlotFields(1, 'info', 2)).to.deep.equal({ name: 0, value: 87 });
+        expect(devicePageSlotFields(1, 'info', 1)).to.deep.equal({ name: 43, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 2)).to.deep.equal({ name: 0, value: 81 });
         expect(devicePageSlotFields(1, 'button', 3)).to.deep.equal({ name: 104 });
         expect(devicePageSlotFields(3, 'info', 2)).to.deep.equal({ name: 125, value: 125 });
     });
@@ -147,8 +147,8 @@ describe('lib/types/deviceDetails - models of the device page', () => {
         // the names of buttons that stand side by side are 4 px narrower (a gap between two names)
         expect(devicePageSlotFields(1, 'info', 0, 'web-l')).to.deep.equal({ name: 354, value: 110 });
         // web-l: the stages of eu, the info rows reach the right edge in every set
-        expect(devicePageSlotFields(1, 'info', 1, 'web-l')).to.deep.equal({ name: 239, value: 110 });
-        expect(devicePageSlotFields(1, 'info', 2, 'web-l')).to.deep.equal({ name: 0, value: 277 });
+        expect(devicePageSlotFields(1, 'info', 1, 'web-l')).to.deep.equal({ name: 233, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 2, 'web-l')).to.deep.equal({ name: 0, value: 271 });
         expect(devicePageSlotFields(2, 'progress', 0, 'web-l')).to.deep.equal({ name: 620 });
         for (const layout of LAYOUTS) {
             const web = DEVICE_PAGE_FIELDS_WEB_L[layout];

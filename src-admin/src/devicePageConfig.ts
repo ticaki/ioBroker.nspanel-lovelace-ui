@@ -636,8 +636,8 @@ const STATUS_GRID: Readonly<Record<DevicePageLayout, { x: number; y: number; w: 
  */
 const LAYOUT1_INFO_ROW_X: Readonly<Record<DevicePageStatusStage, number | null>> = {
     0: 126,
-    1: 241,
-    2: 315,
+    1: 247,
+    2: 321,
     3: null,
 };
 
