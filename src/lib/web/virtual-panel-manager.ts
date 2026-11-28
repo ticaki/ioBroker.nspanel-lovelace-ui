@@ -254,6 +254,7 @@ export class VirtualPanelManager extends BaseClass {
                           panel.info.nspanel.model,
                           this.adapter.config.panels.find(p => p.topic === entry.topic)?.webButtons,
                       ),
+            extensions: panel.webExtensionsAllowed,
             ...(build ? { build } : {}),
         });
         this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);

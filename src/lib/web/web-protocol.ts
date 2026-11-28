@@ -21,6 +21,11 @@ export type HelloFrame = {
     /** show the two virtual hardware buttons below the display (always true for a clone) */
     buttons: boolean;
     /**
+     * the web panel may use extensions over the hardware panel (instance option webAllowExtensions, see
+     * `Panel.webExtensionsAllowed`); false = it draws like the HMI, e.g. the rows of cardSchedule
+     */
+    extensions: boolean;
+    /**
      * build id of the served web bundle (meta {@link WEB_BUILD_META} of www/index.html) - a browser
      * running another bundle reloads once; missing when it cannot be read
      */

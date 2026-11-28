@@ -15,6 +15,8 @@ export interface EntityListProps {
     top: number;
     /** the card draws compact rows on the hardware models (cardSchedule) */
     compact?: boolean;
+    /** rows like the cardSchedule HMI: icon and name, value only for text, the row is the touch area */
+    hmiRows?: boolean;
     press: (id: string, action: string, value?: string | number) => void;
     /** sends a raw display event (the long press of a navigation arrow) */
     send: (event: string) => void;
@@ -134,6 +136,8 @@ export class EntityList extends React.Component<EntityListProps> {
                             valueWidth={valueWidth}
                             fit={fit}
                             margin={margin}
+                            hmiRow={this.props.hmiRows}
+                            panelModel={global.model}
                             press={press}
                             openPopup={this.props.openPopup}
                         />

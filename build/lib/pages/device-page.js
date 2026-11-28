@@ -69,7 +69,7 @@ var import_device_details = require("./device-details");
 function devicePageName(pageName, deviceId) {
   return `device-${pageName}-${deviceId}`;
 }
-const CARD_DEVICE_MIN_TFT = "6.2.0";
+const CARD_DEVICE_MIN_TFT = "6.3.0";
 const CARD_DEVICE_MODELS = /* @__PURE__ */ new Set([
   "eu",
   "us-l",
