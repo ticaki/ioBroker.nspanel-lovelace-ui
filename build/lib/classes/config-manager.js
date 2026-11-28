@@ -2238,7 +2238,8 @@ class ConfigManager extends import_library.BaseClass {
           maxBri: void 0,
           minBri: void 0
         },
-        headline: await this.getFieldAsDataItemConfig(item.name || "Timer", true)
+        headline: await this.getItemNameDataItem(item, "Timer"),
+        ...await this.getItemNameHeadlineAffixes(item)
       }
     };
   }
@@ -2408,7 +2409,7 @@ class ConfigManager extends import_library.BaseClass {
           },
           textSize: item.fontSize || item.fontSize == 0 ? { type: "const", constVal: item.fontSize } : void 0
         };
-        const headline = await getButtonsTextTrue(item, role || "");
+        const headline = await getButtonsTextTrue(item, role || "", true);
         item.icon2 = item.icon2 || item.icon;
         const iconTextDefaults = {
           unit: item.unit ? { type: "const", constVal: item.unit } : void 0,
@@ -2505,6 +2506,8 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 colorMode: { type: "const", constVal: false },
                 headline,
+                headlinePrefix: nameAffixes.prefix,
+                headlineSuffix: nameAffixes.suffix,
                 entity1: {
                   value: foundedStates[role].ON_ACTUAL,
                   set: foundedStates[role].SET
@@ -2552,6 +2555,8 @@ class ConfigManager extends import_library.BaseClass {
                   minScale: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
                 },
                 headline,
+                headlinePrefix: nameAffixes.prefix,
+                headlineSuffix: nameAffixes.suffix,
                 text1: {
                   true: {
                     type: "const",
@@ -2627,6 +2632,8 @@ class ConfigManager extends import_library.BaseClass {
                   minScale: item.minValueBrightness ? { type: "const", constVal: item.minValueBrightness } : void 0
                 },
                 headline,
+                headlinePrefix: nameAffixes.prefix,
+                headlineSuffix: nameAffixes.suffix,
                 hue: role !== "hue" ? void 0 : foundedStates[role].HUE,
                 Red: role !== "rgb" ? void 0 : foundedStates[role].RED,
                 Green: role !== "rgb" ? void 0 : foundedStates[role].GREEN,
@@ -2763,6 +2770,8 @@ class ConfigManager extends import_library.BaseClass {
                   },
                   text: { true: { type: "const", constVal: (_f = item.secondRow) != null ? _f : "" } },
                   headline,
+                  headlinePrefix: nameAffixes.prefix,
+                  headlineSuffix: nameAffixes.suffix,
                   entity1: {
                     value: foundedStates[role].ACTUAL,
                     minScale: { type: "const", constVal: (_g = item.minValueLevel) != null ? _g : 0 },
@@ -2829,6 +2838,8 @@ class ConfigManager extends import_library.BaseClass {
                   },
                   text: { true: { type: "const", constVal: (_n = item.secondRow) != null ? _n : "" } },
                   headline,
+                  headlinePrefix: nameAffixes.prefix,
+                  headlineSuffix: nameAffixes.suffix,
                   entity1: {
                     value: foundedStates[role].ACTUAL,
                     minScale: { type: "const", constVal: (_o = item.minValueLevel) != null ? _o : 0 },
@@ -2961,6 +2972,8 @@ class ConfigManager extends import_library.BaseClass {
                   },
                   text,
                   headline,
+                  headlinePrefix: nameAffixes.prefix,
+                  headlineSuffix: nameAffixes.suffix,
                   entity1: {
                     value: foundedStates[role].ACTUAL
                   },
@@ -3357,6 +3370,8 @@ class ConfigManager extends import_library.BaseClass {
                   false: { type: "const", constVal: "lockClosed" }
                 },
                 headline,
+                headlinePrefix: nameAffixes.prefix,
+                headlineSuffix: nameAffixes.suffix,
                 entity1: {
                   value: foundedStates[role].ACTUAL
                 },
@@ -3565,7 +3580,9 @@ class ConfigManager extends import_library.BaseClass {
                   foundedStates[role].SET,
                   isAlarm
                 ),
-                headline: await getButtonsTextTrue(item, "Timer"),
+                headline: await getButtonsTextTrue(item, "Timer", true),
+                headlinePrefix: nameAffixes.prefix,
+                headlineSuffix: nameAffixes.suffix,
                 setValue1: foundedStates[role].STATE,
                 setValue2: foundedStates[role].STATUS
               }
@@ -3708,7 +3725,7 @@ class ConfigManager extends import_library.BaseClass {
                 },
                 text,
                 text1: {
-                  true: headline
+                  true: await getButtonsTextTrue(item, role || "")
                 },
                 entity1: {
                   value: foundedStates[role].STATE
@@ -5112,6 +5129,15 @@ class ConfigManager extends import_library.BaseClass {
       return { true: value };
     }
     return { true: { value, ...await this.getItemNameAffixes(item) } };
+  }
+  /**
+   * Prefix and suffix of the item name as `headlinePrefix` / `headlineSuffix` of the page item.
+   *
+   * @param item the script item
+   */
+  async getItemNameHeadlineAffixes(item) {
+    const { prefix, suffix } = await this.getItemNameAffixes(item);
+    return { headlinePrefix: prefix, headlineSuffix: suffix };
   }
   async getIconColor(item, def = void 0) {
     if (isIconScaleElement(item)) {
