@@ -137,7 +137,6 @@ describe('lib/types/deviceDetails - models of the device page', () => {
             expect(devicePageFields(layout, 'web-p').status).to.equal(262);
         }
         // us-p: the info rows of layout 1 go right of the big icon as set C in stages 1 and 2 (no set B)
-        expect(DEVICE_PAGE_FIELDS_US_P[1].slotsWithStatus).to.equal(undefined);
         expect(devicePageSlotFields(1, 'info', 0, 'us-p')).to.deep.equal({ name: 156, value: 104 });
         expect(devicePageSlotFields(1, 'info', 1, 'us-p')).to.deep.equal({ name: 0, value: 106 });
         expect(devicePageSlotFields(1, 'info', 2, 'us-p')).to.deep.equal({ name: 0, value: 106 });
@@ -147,7 +146,9 @@ describe('lib/types/deviceDetails - models of the device page', () => {
         // web-l: eu on the full width - info rows and bar reach the right edge, the rest keeps the eu widths; only
         // the names of buttons that stand side by side are 4 px narrower (a gap between two names)
         expect(devicePageSlotFields(1, 'info', 0, 'web-l')).to.deep.equal({ name: 354, value: 110 });
-        expect(devicePageSlotFields(1, 'info', 1, 'web-l')).to.deep.equal({ name: 276, value: 110 });
+        // web-l: the stages of eu, the info rows reach the right edge in every set
+        expect(devicePageSlotFields(1, 'info', 1, 'web-l')).to.deep.equal({ name: 239, value: 110 });
+        expect(devicePageSlotFields(1, 'info', 2, 'web-l')).to.deep.equal({ name: 0, value: 277 });
         expect(devicePageSlotFields(2, 'progress', 0, 'web-l')).to.deep.equal({ name: 620 });
         for (const layout of LAYOUTS) {
             const web = DEVICE_PAGE_FIELDS_WEB_L[layout];
@@ -167,9 +168,8 @@ describe('lib/types/deviceDetails - models of the device page', () => {
         expect(devicePageSlotFields(2, 'button', 0, 'web-l')).to.deep.equal({ name: 96 });
         // web-p: us-p with the extra slots - only the buttons of layout 2 share a row (three: 100 px like eu, their
         // names 4 px narrower)
-        // the web panel has no status grid yet: us-p without the stages
-        const { slotsByStage: _stages, ...usP1 } = DEVICE_PAGE_FIELDS_US_P[1];
-        expect(DEVICE_PAGE_FIELDS_WEB_P[1]).to.deep.equal(usP1);
+        // layout 1 with the stages of us-p (set C right of the big icon)
+        expect(DEVICE_PAGE_FIELDS_WEB_P[1]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[1]);
         expect(DEVICE_PAGE_FIELDS_WEB_P[3]).to.deep.equal(DEVICE_PAGE_FIELDS_US_P[3]);
         expect(DEVICE_PAGE_FIELDS_WEB_P[2]).to.deep.equal({
             ...DEVICE_PAGE_FIELDS_US_P[2],
@@ -179,7 +179,7 @@ describe('lib/types/deviceDetails - models of the device page', () => {
             (devicePageSlotFields(2, 'button', 0, 'eu')?.name ?? 0) - 4,
         );
     });
-    it('the fields of eu, us-l and us-p are the boxes of the HMI pages (device-page-geometry.next.json, device13)', () => {
+    it('the fields of eu, us-l and us-p are the boxes of the HMI pages (device-page-geometry.json, device13)', () => {
         type Box = { w: number; font?: number };
         type InfoSet = { name?: Box; value: Box };
         type Slot = { kind: string; name?: Box | number; value?: Box | number; sets?: Record<string, InfoSet> };
@@ -194,7 +194,7 @@ describe('lib/types/deviceDetails - models of the device page', () => {
             grid?: { cells: unknown[] };
             stages?: Stage[];
         };
-        const file = path.join(__dirname, '../../../doc/ideas/device-details/device-page-geometry.next.json');
+        const file = path.join(__dirname, '../../../doc/ideas/device-details/device-page-geometry.json');
         const geometry = JSON.parse(fs.readFileSync(file, 'utf8')) as Record<
             string,
             { pages: Record<string, HmiPage> }

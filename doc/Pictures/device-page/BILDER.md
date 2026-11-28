@@ -3,13 +3,15 @@
 Alle Bilder, die die Nutzer-Doku ([doc/de/deviceDetails.md](../../de/deviceDetails.md),
 [doc/en/deviceDetails.md](../../en/deviceDetails.md)) und die [README dieses Ordners](README.md) verwenden.
 
-Stand: 2026-11-24, nach der Integration (Geräteseite auf allen fünf Modellen).
+Stand: 2026-11-24, nach der Integration (Geräteseite auf allen fünf Modellen). Ergänzt 2026-11-28: Status-Icons
+und Stufen (TFT `device13`), siehe [Stufen der Status-Icons](#stufen-der-status-icons-2026-11-28).
 
 ## Überblick
 
 | Wer | Was | Anzahl | Stand |
 |---|---|---|---|
 | automatisch (Puppeteer, Web-Panel) | Geräteseiten je Modell und die Detailseite | 23 (eu 5, us-l 3, us-p 3, web-l 6, web-p 6) | **aufgenommen und angesehen** |
+| automatisch (Puppeteer, Web-Panel) | Stufen der Status-Icons (cardDevice1 4, cardDevice3 3 je Modell) | 21 (eu 7, us-p 7, web-l 7) | **aufgenommen und angesehen** (2026-11-28) |
 | automatisch (Puppeteer, Admin) | Dialoge | 9 (2 vorhanden, 3 neu aufgenommen, 4 neu) | **aufgenommen und angesehen** |
 | **Tim (echte Hardware)** | – | **0 – die Liste ist leer**, siehe [Hardware-Fotos](#hardware-fotos-tim) | – |
 
@@ -28,8 +30,8 @@ Icons, die der Adapter von sich aus wählt, und Einheiten ohne Leerzeichen, wie 
 
 | Kürzel | Seite | Belegung |
 |---|---|---|
-| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon nach Füllstand (hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“ (`numeric`), „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (`gesture-tap-button`), „Pause“ (`pause`), „Laden“, „Suchen“ (`gesture-tap-button`), alle cyan. Status-Icons 7–10: `wifi` (cyan), `trash-can` (grau), `air-filter` (weiß), `alert` (grau). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
-| **R1p** | cardDevice1 ohne Status-Icons | wie R1, Slots 7–10 leer. |
+| **R1** | cardDevice1 mit Status-Icons | Überschrift „Robbi“; links Pfeil hoch, rechts kein Pfeil. Haupt-Icon `robot-vacuum` (cyan), Name „Robbi“. Slot 1 Info: Batterie-Icon nach Füllstand (hellgelb), „Batterie“, „80%“. Slot 2 Info: Icon „123“ (`numeric`), „Fläche“, „34m²“. Knöpfe 3–6: „Starten“ (`gesture-tap-button`), „Pause“ (`pause`), „Laden“, „Suchen“ (`gesture-tap-button`), alle cyan. Vier Status-Icons (Stufe 1–3 Spalten, per `devIcons`): `wifi` (cyan), `trash-can` (grau), `air-filter` (weiß), `alert` (grau). Statuszeile „Reinigt Wohnzimmer, noch 12 min (Wischen)“. i-Icon. |
+| **R1p** | cardDevice1 ohne Status-Icons | wie R1, Stufe „keine Status-Icons“. |
 | **R2** | cardDevice2 | Überschrift und Gerätename „Waschmaschine“; Haupt-Icon `washing-machine` (cyan). Slot 1 großer Wert „1:23“, Name „Restzeit“, kleines Icon `information-outline`. Slot 2 Balken „Fortschritt“, 62 %, weiß. Slot 3 „Programm“ / „Baumwolle“ (`format-list-bulleted`). Slot 4 „Temperatur“ / „60°C“ (`thermometer`). Slot 5 „Schleudern“ / „1400U/min“ (`numeric`). Slot 6 Knopf „Pause“ (`toggle-switch`, grau). Statuszeile „Schleudern, noch 23 min - Fertig um 14:35“. i-Icon. |
 | **R3** | cardDevice3 | Überschrift und Gerätename „ID.3“; Haupt-Icon `car` (cyan). Slots 1–6: „Batterie“ / „78%“, „Reichweite“ / „312km“, „Temperatur“ / „21,5°C“, „Verriegelt“ / „an“ (`toggle-switch`, cyan), „Ladeleistung“ / „11kW“, „Kilometer“ / „23456km“. Schalter 7 „Klima“ an, Schalter 8 „Laden“ an. Statuszeile „Lädt an Wallbox, 11 kW - voll um 17:40“. i-Icon. |
 | **R4** | Detailseite (cardEntities) | Überschrift „Robbi“; links Pfeil hoch, rechts Pfeil runter (blättern). Zeilen: „Batterie“ / „80%“, „Signal“ / „-58dBm“ (`wifi`, cyan), „Firmware“ / „4.3.2“ (`chip`), „Fläche“ / „34m²“ (`numeric`). |
@@ -122,7 +124,7 @@ nur in den Notizen, nicht im Repo.
 | `us-l-cardDevice1.png` | us-l | cardDevice1, **R1**, Inhalt 15 px weiter rechts | Doku §8 US-Querformat; README | ☑ |
 | `us-l-cardDevice2.png` | us-l | cardDevice2, **R2** | Doku §8 US-Querformat; README | ☑ |
 | `us-l-cardDevice3.png` | us-l | cardDevice3, **R3** | Doku §8 US-Querformat; README | ☑ |
-| `us-p-cardDevice1.png` | us-p | cardDevice1 hochkant, **R1**: Haupt-Icon oben links, 2×2-Status-Icons daneben, Info-Zeilen volle Breite, Knöpfe 2×2 | Doku §8 US-Hochformat; README | ☑ |
+| `us-p-cardDevice1.png` | us-p | cardDevice1 hochkant, **R1**: Haupt-Icon oben links, Info-Zeilen (Satz C) daneben, darunter vier Status-Icons in zwei Spalten, Knöpfe 2×2 (neu aufgenommen 2026-11-28) | Doku §8 US-Hochformat; README | ☑ |
 | `us-p-cardDevice2.png` | us-p | cardDevice2 hochkant, **R2**: Infos als Zeilen, Knopf über die volle Breite | Doku §8 US-Hochformat; README | ☑ |
 | `us-p-cardDevice3.png` | us-p | cardDevice3 hochkant, **R3**: Haupt-Icon mittig, Schalter als Zeilen | Doku §8 US-Hochformat; README | ☑ |
 | `web-l-cardDevice1-plain.png` | web-l | cardDevice1, **R1**, ohne Web-Panel-Elemente: vier Knöpfe über 640 px | Doku §8 Smartphone quer; README; SMARTPHONE.md | ☑ |
@@ -137,6 +139,46 @@ nur in den Notizen, nicht im Repo.
 | `web-p-cardDevice1.png` | web-p | cardDevice1, **R1 +X**: drei Knopfreihen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 | `web-p-cardDevice2.png` | web-p | cardDevice2, **R2 +X**: vier Info-Zeilen, drei Knöpfe in einer Reihe | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
 | `web-p-cardDevice3.png` | web-p | cardDevice3, **R3 +X**: vier Kachelreihen, drei Schalterzeilen | Doku §8 Smartphone hochkant; README; SMARTPHONE.md | ☑ |
+
+## Stufen der Status-Icons (2026-11-28)
+
+Seit TFT `device13` kommen die Status-Icons per `devIcons~…`, die Stufe steht in Feld 6 des info-Elements, die Typen
+sind Zahlen. Alle Eingabedateien unter `src-web/scripts/examples/` sind auf dieses Protokoll umgestellt (cardDevice1
+ohne die Slots 7–10; wo die alte Datei Status-Icons hatte, folgt eine `devIcons`-Zeile, Stufe 1). Die Bilder mit
+cardDevice1 (`eu-`, `us-l-`, `us-p-cardDevice1.png`, `web-l-` und `web-p-cardDevice1[-plain].png`) sind damit neu
+aufgenommen; `eu-cardDevice1-plain.png` ist unverändert (gleiche Pixel). Die übrigen Bilder sind gleich geblieben.
+
+**Belegung je Stufe** (Eingabedateien `ref-cardDevice<n>-stage<s>.txt` für eu und web-l,
+`ref-portrait-cardDevice<n>-stage<s>.txt` für us-p; erzeugt aus **R1p** bzw. **R3**):
+
+| Seite | Stufe | Status-Icons (Reihenfolge = spaltenweise im Raster) | Was die Stufe verdeckt |
+|---|---|---|---|
+| cardDevice1 | 0 (keine) | – | – |
+| | 1 (1–3 Spalten) | 5: `wifi` cyan, `trash-can` grau, `air-filter` weiß, `alert` grau, `battery-charging` grün | – (Info-Zeilen Satz B: kurzer Name) |
+| | 2 (4–5 Spalten) | 9: dazu `water` cyan, `brush` weiß, `lock` grau, `fan` cyan | – (Satz C: kein Name) |
+| | 3 (6–8 Spalten) | 14: dazu `map-marker` weiß, `home-import-outline` grau, `weather-night` grau, `volume-high` weiß, `update` grau | Info-Zeilen 1 und 2 (der Adapter schickt sie leer) |
+| cardDevice3 | 0 (keine) | – | – |
+| | 1 (1–4) | 4: `car-door-lock` cyan, `ev-plug-type2` grün, `snowflake` cyan, `car-tire-alert` gelb | Kachel 1 (Batterie) |
+| | 2 (5–8) | 7: dazu `car-light-high` grau, `map-marker` weiß, `car-battery` grün | Kacheln 1 und 2 (Batterie, Reichweite) |
+
+Die halb belegte letzte Spalte (5 bzw. 9 Icons) zeigt das leere Kästchen mit Rahmen, und 14 Icons in Stufe 3 zeigen,
+dass nur die belegten Spalten erscheinen.
+
+**Aufnahme:** wie oben mit `scripts/screenshot.mjs --scale 1 --buttons 0`, Vite mit eigener Konfiguration
+(`server.fs.strict: false`, Port 4374, nicht im Repo); vorher geprüft: `document.fonts.check("24px 'Noto Sans'")`
+ist `true` nach dem Laden der Schrift, keine Antwort 403.
+
+| Dateiname | Modell | Was zu sehen ist | Verwendet in | erledigt |
+|---|---|---|---|---|
+| `eu-cardDevice1-stage0.png` … `-stage3.png` | eu | cardDevice1 in den Stufen 0–3 | Doku §5 Status-Icons | ☑ |
+| `eu-cardDevice3-stage0.png` … `-stage2.png` | eu | cardDevice3 in den Stufen 0–2 | Doku §5 Status-Icons | ☑ |
+| `us-p-cardDevice1-stage0.png` … `-stage3.png` | us-p | cardDevice1 hochkant (Variante P2): Raster unter dem Haupt-Icon, Satz C rechts daneben | Doku §5 Status-Icons | ☑ |
+| `us-p-cardDevice3-stage0.png` … `-stage2.png` | us-p | cardDevice3 hochkant, Raster in der ersten Kachelreihe | Doku §5 Status-Icons | ☑ |
+| `web-l-cardDevice1-stage0.png` … `-stage3.png` | web-l | cardDevice1 auf Smartphone quer: Raster wie eu, Info-Zeilen bis zum rechten Rand | Doku §5 Status-Icons | ☑ |
+| `web-l-cardDevice3-stage0.png` … `-stage2.png` | web-l | cardDevice3 auf Smartphone quer | Doku §5 Status-Icons | ☑ |
+
+Abgleich mit den HMI-Vorschauen `next/hmi-[<modell>-]cardDevice1-stage0..3.png` und `…cardDevice3-stage0..2.png`
+(Beispieldaten des Werkzeugs): Raster, Sätze A/B/C und ausgeblendete Kacheln liegen an denselben Stellen.
 
 ## Admin-Aufnahmen
 

@@ -12,14 +12,13 @@ import { Pressable } from '../cardEntities/shared/Pressable';
 import { HmiTextBox, Toggle } from '../cardEntities/shared/widgets';
 import {
     BOX_STYLES,
+    DEVICE_GRID_ROWS,
     STATUS_FRAME_COLOR,
     deviceGeometry,
     progressPercent,
-    statusBlockVisible,
     type Box,
     type BoxStyle,
     type SlotGeometry,
-    type StatusSlotGeometry,
 } from './layout';
 import type { CardDeviceModel } from './parse';
 
@@ -41,8 +40,11 @@ const POPUP_ON_HOLD: ReadonlySet<string> = new Set(['light', 'light2', 'fan', 'n
  */
 export type DeviceTapKind = 'main' | 'info' | 'value' | 'progress' | 'button' | 'switch' | 'status';
 
-/** The elements the HMI draws as buttons: they dim while pressed. Texts and hotspots show no press effect. */
-const PRESS_EFFECT: ReadonlySet<DeviceTapKind> = new Set<DeviceTapKind>(['main', 'info', 'button']);
+/**
+ * The elements that show the press effect: the HMI draws them as buttons, or greys the cells of the status icon
+ * grid while they are pressed (since device12). The other hotspots and texts show none.
+ */
+const PRESS_EFFECT: ReadonlySet<DeviceTapKind> = new Set<DeviceTapKind>(['main', 'info', 'button', 'status']);
 
 /** What a touch of main or a slot does */
 export type DeviceTouch =
@@ -85,6 +87,30 @@ export function deviceTouch(element: DeviceTapKind, entity: { type: string; id: 
 }
 
 /**
+ * A text as the HMI copies it into a component with a smaller buffer (`txt_maxl`): at most `maxBytes` bytes
+ * (UTF-8), whole characters. No ellipsis - the text is only shorter.
+ *
+ * @param text the text
+ * @param maxBytes the bytes of the buffer, unlimited when missing
+ */
+export function cutToBytes(text: string, maxBytes: number | undefined): string {
+    if (maxBytes === undefined) {
+        return text;
+    }
+    const encoder = new TextEncoder();
+    let out = '';
+    let bytes = 0;
+    for (const char of text) {
+        bytes += encoder.encode(char).length;
+        if (bytes > maxBytes) {
+            break;
+        }
+        out += char;
+    }
+    return out;
+}
+
+/**
  * The smallest box around the given boxes.
  *
  * @param boxes the boxes, at least one
@@ -99,8 +125,9 @@ function unionBox(boxes: readonly Box[]): Box {
 
 /**
  * cardDevice1 / cardDevice2 / cardDevice3: the page of one device - big icon (main), fixed slots
- * (info, value, progress, button, switch, status), the status line (field 6 of main, replaced by
- * `devStatus`) and the info icon at the bottom right. main and every slot are touched like a grid tile
+ * (info, value, progress, button, switch), on cardDevice1 / cardDevice3 the status icon grid of the stage (cells
+ * from `devIcons`), the status line (field 6 of main, replaced by `devStatus`) and the info icon at the bottom
+ * right. main, every slot and every filled cell are touched like a grid tile
  * ({@link deviceTouch}). The boxes come from the geometry of the model ({@link deviceGeometry}): eu, us-l and
  * us-p are rebuilt from the HMI pixel by pixel, web-l and web-p have layouts of their own on the full stage with
  * additional slots behind the standard ones (same kinds, same touch). Texts are cut at the border of their
@@ -164,7 +191,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
         return (
             <HmiTextBox
                 key={key}
-                field={field}
+                field={cutToBytes(field, b.maxBytes)}
                 color={color}
                 x={b.x - origin.x}
                 y={b.y - origin.y}
@@ -242,25 +269,15 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
     }
 
     /**
-     * A cell of the status block (cardDevice1 slots 7-10): the icon only, centred in a 1 px grey frame; an
-     * empty slot of a visible block keeps its frame and takes no touch. A filled cell is tappable like every
-     * other place, without press effect.
+     * A cell of the status icon grid: the icon only, centred in a 1 px grey frame that it shares with its
+     * neighbours; an empty cell of a shown column keeps its frame and takes no touch. A filled cell is tappable like
+     * every other place, it greys while pressed.
      *
-     * @param entity the slot
-     * @param slot its cell
-     * @param role data-role of the slot
-     * @param visible the block is shown (at least one status slot is filled)
+     * @param entity the cell (type, id, icon, colour)
+     * @param cell its box
+     * @param role data-role of the cell
      */
-    private renderStatusCell(
-        entity: Entity6,
-        slot: StatusSlotGeometry,
-        role: string,
-        visible: boolean,
-    ): React.JSX.Element | null {
-        if (!visible) {
-            return null;
-        }
-        const { cell } = slot;
+    private renderCell(entity: Entity6, cell: Box, role: string): React.JSX.Element {
         return (
             <div
                 key={role}
@@ -289,7 +306,7 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                                   'icon',
                                   entity.icon,
                                   cell,
-                                  BOX_STYLES.status.cell,
+                                  BOX_STYLES.cell,
                                   color565ToCss(entity.iconColor),
                                   cell,
                               ),
@@ -302,34 +319,26 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
      * A standard or additional slot in its boxes; an empty one (or one the page has no place for) draws nothing.
      *
      * @param entity the slot
-     * @param slot its boxes, `undefined`: no place on this page
+     * @param slot its boxes, `undefined`: no place on this page (in this stage)
      * @param role data-role of the slot (`slot-<k>`, `extra-<j>`)
-     * @param statusVisible the status block is shown
      */
-    private renderSlot(
-        entity: Entity6,
-        slot: SlotGeometry | undefined,
-        role: string,
-        statusVisible: boolean,
-    ): React.JSX.Element | null {
-        if (slot === undefined) {
-            return null;
-        }
-        if (slot.kind === 'status') {
-            return this.renderStatusCell(entity, slot, role, statusVisible);
-        }
-        if (isEmptySlot(entity)) {
+    private renderSlot(entity: Entity6, slot: SlotGeometry | undefined, role: string): React.JSX.Element | null {
+        if (slot === undefined || isEmptySlot(entity)) {
             return null;
         }
         const fg = theme.foreground;
         const iconColor = color565ToCss(entity.iconColor);
         switch (slot.kind) {
-            case 'info':
-                return this.tapArea(role, 'info', entity, [slot.icon, slot.name, slot.value], o => [
+            case 'info': {
+                // set C of cardDevice1 has no name
+                const { name } = slot;
+                const boxes = name ? [slot.icon, name, slot.value] : [slot.icon, slot.value];
+                return this.tapArea(role, 'info', entity, boxes, o => [
                     this.text('icon', entity.icon, slot.icon, BOX_STYLES.info.icon, iconColor, o),
-                    this.text('name', entity.displayName, slot.name, BOX_STYLES.info.name, fg, o),
+                    name ? this.text('name', entity.displayName, name, BOX_STYLES.info.name, fg, o) : null,
                     this.text('value', entity.optionalValue, slot.value, BOX_STYLES.info.value, fg, o),
                 ]);
+            }
             case 'button':
                 return this.tapArea(role, 'button', entity, [slot.icon, slot.name], o => [
                     this.text('icon', entity.icon, slot.icon, BOX_STYLES.button.icon, iconColor, o),
@@ -403,8 +412,9 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
 
     render(): React.JSX.Element {
         const { model, ctx, global, press } = this.props;
-        const geometry = deviceGeometry(model.layout, model.slots, global.model, model.extras);
-        const statusVisible = statusBlockVisible(model.layout, model.slots);
+        const geometry = deviceGeometry(model.layout, global.model, model.extras, model.stage);
+        // the columns of the status icon grid that are shown, both cells of a column (also an empty one)
+        const cells = geometry.grid.slice(0, model.columns * DEVICE_GRID_ROWS[model.layout]);
         const { main, info } = model;
         const mainBoxes = [geometry.main.icon, geometry.main.name];
         return (
@@ -461,11 +471,12 @@ export class CardDevice extends React.Component<CardProps<CardDeviceModel>> {
                               mainBoxes,
                           )}
                     {geometry.slots.map((slot, i) =>
-                        this.renderSlot(model.slots[i] ?? emptyEntity(), slot, `slot-${i + 1}`, statusVisible),
+                        this.renderSlot(model.slots[i] ?? emptyEntity(), slot, `slot-${i + 1}`),
                     )}
                     {geometry.extras.map((slot, j) =>
-                        this.renderSlot(model.extras[j] ?? emptyEntity(), slot, `extra-${j + 1}`, statusVisible),
+                        this.renderSlot(model.extras[j] ?? emptyEntity(), slot, `extra-${j + 1}`),
                     )}
+                    {cells.map((cell, i) => this.renderCell(model.icons[i] ?? emptyEntity(), cell, `cell-${i + 1}`))}
                     <div data-role="status">
                         {this.text(
                             'status',

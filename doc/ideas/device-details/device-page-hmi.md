@@ -71,16 +71,15 @@ Web-Panel folgen.
 for M in "" us-l- us-p-; do
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py /home/tim/device-page-hmi/nspanel-${M}v6.2.0.device12.HMI \
     /home/tim/device-page-hmi/nspanel-${M}v6.2.0.device13.HMI --fields --preview doc/Pictures/device-page/next \
-    --geometry doc/ideas/device-details/device-page-geometry.next.json
+    --geometry doc/ideas/device-details/device-page-geometry.json
 done
 ```
 
 - Eingabe sind die `device12`-Dateien (das Werkzeug baut die drei Seiten aus cardGrid neu). Verglichen mit `device12`
   ändern sich in allen drei Modellen nur die Abschnitte cardDevice1, cardDevice2 und cardDevice3 (Skript-Vergleich
   aller lebenden Abschnitte). Ein zweiter Lauf auf `device13` liefert dieselben Abschnitte (idempotent).
-- Geometrie: [device-page-geometry.next.json](device-page-geometry.next.json). Die bisherige
-  [device-page-geometry.json](device-page-geometry.json) bleibt der Stand `device12`, gegen sie vergleichen die Tests
-  von Adapter und Web-Panel.
+- Geometrie: [device-page-geometry.json](device-page-geometry.json) (bis 2026-11-28 als `device-page-geometry.next.json`
+  neben dem Stand `device12`; seitdem ersetzt sie ihn). Gegen sie vergleichen die Tests von Adapter und Web-Panel.
 - Vorschau je Stufe: `doc/Pictures/device-page/next/hmi-[<modell>-]cardDevice1-stage0..3.png`,
   `…cardDevice3-stage0..2.png`, `…cardDevice2.png`.
 

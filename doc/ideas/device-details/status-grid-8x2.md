@@ -30,7 +30,7 @@ Admin und Web-Panel (Abschnitte 7, 9 „Folgearbeiten“ und 10) sind **nicht** 
 - ✅ Tippen, Long-Press, Drück-Feedback, Blinken für alle Zellen und die Icons der Sätze B/C; vaLPCell-Nummern wie in
   Abschnitt 6 bzw. 9 (us-p cardDevice1: Satz C auf 24/25, es gibt keinen Satz B).
 - ✅ us-p cardDevice1 Variante P2, us-p cardDevice3 Abstand 36.
-- ✅ Geometrie in `device-page-geometry.next.json`, Vorschau je Stufe in `doc/Pictures/device-page/next/`.
+- ✅ Geometrie in `device-page-geometry.json` (zuerst als `.next.json`), Vorschau je Stufe in `doc/Pictures/device-page/next/`.
 
 **Abweichungen und Ergänzungen:**
 

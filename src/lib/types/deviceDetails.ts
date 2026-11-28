@@ -342,17 +342,11 @@ export type DevicePageLayoutFields = {
     /** the fields of the kinds of slots the layout has (`status` shows no text) */
     slots: Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>;
     /**
-     * the fields that change with the stage of the status icon grid (layout 1 of the HMI models: the info rows in set
-     * B with a short name, in set C without name - `name` 0); missing stages and kinds keep
-     * {@link DevicePageLayoutFields.slots}. In stage 3 of layout 1 the info rows are not shown at all
-     * ({@link DEVICE_PAGE_STAGE_HIDDEN_SLOTS}).
+     * the fields that change with the stage of the status icon grid (layout 1: the info rows in set B with a short
+     * name, in set C without name - `name` 0); missing stages and kinds keep {@link DevicePageLayoutFields.slots}. In
+     * stage 3 of layout 1 the info rows are not shown at all ({@link DEVICE_PAGE_STAGE_HIDDEN_SLOTS}).
      */
     slotsByStage?: Partial<Record<DevicePageStatusStage, Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>>>;
-    /**
-     * web models only, until the web panel gets the status grid: the fields while the old 2x2 status block is shown
-     * (layout 1: narrower info rows); missing kinds keep {@link DevicePageLayoutFields.slots}
-     */
-    slotsWithStatus?: Partial<Record<DevicePageSlotKind, DevicePageSlotFields>>;
 };
 
 /** font of the names, values and the status line of the device page: font 0 (Noto Sans 24) */
@@ -433,8 +427,8 @@ export const DEVICE_PAGE_FIELDS: Readonly<Record<DevicePageLayout, DevicePageLay
 /**
  * The text fields of the device pages of the us-p HMI (`doc/ideas/device-details/device-page-geometry.json`, key
  * `us-p`; a test compares the tables of eu, us-l and us-p with that file). Portrait, 320 px wide: the status line has
- * 262 px. Layout 1 has the status icons right of the big icon and the info rows below it - the rows do not get narrower
- * with status icons (no `slotsWithStatus`); the one button of layout 2 has the width of the page.
+ * 262 px. Layout 1 has the status icon grid where the info rows are, the rows go right of the big icon as set C (no
+ * set B); the one button of layout 2 has the width of the page.
  */
 export const DEVICE_PAGE_FIELDS_US_P: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
     1: {
@@ -469,14 +463,16 @@ export const DEVICE_PAGE_FIELDS_US_P: Readonly<Record<DevicePageLayout, DevicePa
  * right edge; every other field is as wide as on eu (more elements, not more text) - except the names of buttons that
  * stand side by side, which are 4 px narrower to keep a gap between two names. Rows that hold a varying number of
  * elements are given with their narrowest field: the buttons of layout 1 have 104 px, six in a row 100 px; the buttons
- * of layout 2 have 100 px, two or three in a row 96 px.
+ * of layout 2 have 100 px, two or three in a row 96 px. The status icon grid and its stages are those of eu; the info
+ * rows of layout 1 reach the right edge in every set: set B with the name up to the value (239 px, the HMI copies at
+ * most 15 bytes of it), set C with the value from its icon to the right edge (277 px, at most 19 bytes).
  */
 export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
     1: {
         mainName: 110,
         status: 580,
         slots: { info: { name: 354, value: 110 }, button: { name: 100 } },
-        slotsWithStatus: { info: { name: 276, value: 110 } },
+        slotsByStage: { 1: { info: { name: 239, value: 110 } }, 2: { info: { name: 0, value: 277 } } },
     },
     2: {
         mainName: 96,
@@ -498,17 +494,13 @@ export const DEVICE_PAGE_FIELDS_WEB_L: Readonly<Record<DevicePageLayout, DeviceP
 /**
  * The text fields of the device pages of the web panel on `web-p` (320x640, `geometryWeb.ts`,
  * `webPortraitGeometry`): the layout of us-p with the extra slots, every field as wide as on us-p, the status line
- * 262 px. Narrowest case of the fields that vary: the name of main of layout 1 has 300 px without status icons (main
- * then stands in the middle), the buttons of layout 2 share one row - one button 300 px, two 148 px, three stand side
+ * 262 px. Narrowest case of the fields that vary: the name of main of layout 1 has 150 px in stages 1 and 2 (set C
+ * stands right of main) and 300 px in stages 0 and 3 (main stands in the middle), the buttons of layout 2 share one row - one button 300 px, two 148 px, three stand side
  * by side in 100 px each (the width of this button on eu) with a name of 96 px, which keeps 4 px between two names.
+ * Layout 1 has the status icon grid and the stages of us-p (set C right of the big icon in stages 1 and 2).
  */
 export const DEVICE_PAGE_FIELDS_WEB_P: Readonly<Record<DevicePageLayout, DevicePageLayoutFields>> = {
-    // the web panel has no status grid yet: us-p without the stages
-    1: {
-        mainName: DEVICE_PAGE_FIELDS_US_P[1].mainName,
-        status: DEVICE_PAGE_FIELDS_US_P[1].status,
-        slots: DEVICE_PAGE_FIELDS_US_P[1].slots,
-    },
+    1: DEVICE_PAGE_FIELDS_US_P[1],
     2: {
         ...DEVICE_PAGE_FIELDS_US_P[2],
         slots: { ...DEVICE_PAGE_FIELDS_US_P[2].slots, button: { name: 96 } },
@@ -566,8 +558,7 @@ export function devicePageHasStatusIcons(config: {
 /**
  * @param layout the layout
  * @param kind the kind of the slot
- * @param stage the stage of the status icon grid ({@link devicePageStageOf}); on a web model any stage above 0 is the
- * old 2x2 status block of the web panel
+ * @param stage the stage of the status icon grid ({@link devicePageStageOf})
  * @param model the model of the panel, default `eu`
  * @returns the text fields of the kind, undefined for a kind without text
  */
@@ -579,7 +570,7 @@ export function devicePageSlotFields(
 ): DevicePageSlotFields | undefined {
     const fields = devicePageFields(layout, model);
     if (stage > 0) {
-        const staged = fields.slotsByStage?.[stage]?.[kind] ?? fields.slotsWithStatus?.[kind];
+        const staged = fields.slotsByStage?.[stage]?.[kind];
         if (staged) {
             return staged;
         }

@@ -31,6 +31,10 @@ class PageDevice extends import_Page.Page {
   layout;
   /** index of the slots (0 = slot 1) that show an alias channel */
   channelSlots;
+  /** the stage of the status icon grid, 0 = none */
+  statusStage;
+  /** the last `devIcons` sent since the page became visible, '' = none */
+  lastIcons = "";
   /** the status text the parts were made of; undefined until the page has sent one since it became visible */
   statusText = void 0;
   /** the parts of the status text, shown one after the other */
@@ -52,6 +56,7 @@ class PageDevice extends import_Page.Page {
     this.headline = headline.type === "const" && typeof headline.constVal === "string" ? headline.constVal : "";
     this.slotCount = import_deviceDetails.DEVICE_PAGE_LAYOUTS[this.layout].length;
     this.channelSlots = new Set((_a = card.channelSlots) != null ? _a : []);
+    this.statusStage = (0, import_deviceDetails.devicePageStageOf)(this.layout, card.statusStage);
     this.minUpdateInterval = 1e3;
   }
   /**
@@ -152,6 +157,7 @@ class PageDevice extends import_Page.Page {
       this.stopStatusRotation();
     }
     this.statusText = void 0;
+    this.lastIcons = "";
     await super.onVisibilityChange(val);
   }
   async delete() {
@@ -172,28 +178,64 @@ class PageDevice extends import_Page.Page {
     for (let slot = 0; slot < this.slotCount; slot++) {
       elements.push(await this.slotElement(slot, kinds[slot], onOff));
     }
-    elements.push((0, import_device_page.devicePageClampElement)(await this.elementAt(this.slotCount + 1)));
+    const infoItem = this.itemAt(this.slotCount + 1);
+    elements.push(
+      (0, import_device_page.devicePageInfoElement)(infoItem ? await infoItem.getPageItemPayload() : "", this.layout, this.statusStage)
+    );
     const extraKinds = this.extraKinds();
     for (let extra = 0; extra < extraKinds.length; extra++) {
       elements.push(await this.slotElement(this.slotCount + extra, extraKinds[extra], onOff));
     }
-    this.sendToPanel(
-      (0, import_device_page.devicePagePayload)(
-        (0, import_tools.getPayload)(
-          (0, import_tools.getPayloadRemoveTilde)("entityUpd", this.shortHeadline(this.library.getTranslation(this.headline))),
-          this.getNavigation()
-        ),
-        mainItem ? await mainItem.getPageItemPayload() : "",
-        elements,
-        this.statusPartOf(status),
-        this.layout,
-        this.basePanel.info.nspanel.model
+    const entityUpd = (0, import_device_page.devicePagePayload)(
+      (0, import_tools.getPayload)(
+        (0, import_tools.getPayloadRemoveTilde)("entityUpd", this.shortHeadline(this.library.getTranslation(this.headline))),
+        this.getNavigation()
       ),
-      false
+      mainItem ? await mainItem.getPageItemPayload() : "",
+      elements,
+      this.statusPartOf(status),
+      this.layout,
+      this.basePanel.info.nspanel.model
     );
+    const icons = await this.iconsMessage();
+    if (!this.isLastMessage(entityUpd)) {
+      this.sendToPanel(entityUpd, false);
+      if (icons) {
+        this.sendIcons(icons);
+      }
+    } else if (icons && icons !== this.lastIcons) {
+      this.sendIcons(icons);
+    }
   }
   /**
-   * A long press on an element: a slot (also an extra slot of a web model) runs the long press of its page item (the
+   * @returns the `devIcons` message of the status icon grid, '' without grid (stage 0, cardDevice2)
+   */
+  async iconsMessage() {
+    const count = import_deviceDetails.DEVICE_PAGE_STATUS_SLOTS[this.layout];
+    if (this.statusStage === 0 || count === 0) {
+      return "";
+    }
+    const cells = [];
+    for (let place = 0; place < count; place++) {
+      cells.push(
+        (0, import_device_page.devicePageStatusIconElement)(await this.elementAt((0, import_device_page.devicePageStatusItemIndex)(this.layout, place)))
+      );
+    }
+    return (0, import_device_page.devicePageIconsMessage)(cells, this.layout);
+  }
+  /**
+   * Sends the cells of the status icon grid the way `devStatus` goes (not through sendToPanel: the duplicate filter
+   * keeps comparing with the last entityUpd).
+   *
+   * @param icons the `devIcons` message
+   */
+  sendIcons(icons) {
+    this.lastIcons = icons;
+    this.sendToPanelClass(icons, false);
+  }
+  /**
+   * A long press on an element: a slot (also an extra slot of a web model, a status icon) runs the long press of its
+   * page item (the
    * action configured for the slot, a channel item what it does on cardGrid). main and the info icon have none -
    * they keep the device part of the item, whose long press would open the detail page from here. Without an action
    * nothing happens: the press is always handled, the caller (Panel) never treats it as a tap.
@@ -209,8 +251,10 @@ class PageDevice extends import_Page.Page {
     const index = typeof id === "number" ? id : parseInt(id);
     const firstExtra = (0, import_device_page.devicePageSlotItemIndex)(this.layout, this.slotCount);
     const isSlot = index >= 1 && index <= this.slotCount;
+    const firstStatus = (0, import_device_page.devicePageStatusItemIndex)(this.layout, 0);
+    const isStatusIcon = index >= firstStatus && index < firstStatus + import_deviceDetails.DEVICE_PAGE_STATUS_SLOTS[this.layout];
     const isExtraSlot = index >= firstExtra && index < firstExtra + this.extraKinds().length;
-    if (isSlot || isExtraSlot) {
+    if (isSlot || isStatusIcon || isExtraSlot) {
       await super.onButtonPress3(id, popup, action, value, event);
     }
     return true;

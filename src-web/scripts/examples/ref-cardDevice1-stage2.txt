@@ -1,0 +1,6 @@
+# cardDevice1 "Robbi" in stage 2 with 9 status icons (TFT device13): reference assignment of the docs (doc/Pictures/device-page/BILDER.md)
+# eu, web-l: doc/Pictures/device-page/<model>-cardDevice1-stage2.png
+pageType~cardDevice1
+entityUpd~Robbi~button~bUp~~17299~~~~~~~~~1~9?0~~2047~Robbi~Reinigt Wohnzimmer, noch 12 min (Wischen)~1~9?1~~65363~Batterie~80%~1~9?2~~65535~Fläche~34m²~1~9?3~~2047~Starten~1~1~9?4~~2047~Pause~1~1~9?5~~2047~Laden~1~1~9?6~~2047~Suchen~1~1~9?info~~65535~~2
+devIcons~1~9?c1~~2047~1~9?c2~~35921~1~9?c3~~65535~1~9?c4~~35921~1~9?c5~~2016~1~9?c6~~2047~1~9?c7~~65535~1~9?c8~~35921~1~9?c9~~2047~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@sleep 300

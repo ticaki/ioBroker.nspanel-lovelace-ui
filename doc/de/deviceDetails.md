@@ -248,17 +248,69 @@ Steht unter der Zeile rot **Zielseite nicht gefunden**, gibt es die Seite nicht 
 
 ### Status-Icons
 
-Nur Layout 1 hat vier Plätze der Art **Status-Icon** (Slots 7–10): kleine Icons in einem 2×2-Raster direkt neben dem großen Icon, z. B. für WLAN, Behälter voll, Filter, Fehler.
+Layout 1 und Layout 3 können eine Reihe kleiner **Status-Icons** zeigen, z. B. für WLAN, Behälter voll, Filter, Fehler. Die Icons stehen in einem Raster aus Kästchen mit dünnem grauem Rahmen.
 
 - Ein Status-Icon zeigt **nur ein Icon in seiner Farbe**, ohne Name und Wert.
 - Das Icon kommt automatisch (dasselbe wie in einer Info-Zeile mit diesem Wert); ein eigenes wählst du über **…**, z. B. `delete-empty` für „Behälter leeren“.
 - Die Farbe kommt automatisch: An/Aus-Werte in den Farben *aktiviert* / *deaktiviert* des [Farbthemas](colorTheme), andere Werte in der Farbe ihrer Gruppe.
-- Sind alle vier leer, sieht die Seite aus wie ohne sie. Ist **mindestens eines** belegt, erscheint das ganze Raster; leere Felder bleiben als leere Kästchen stehen.
-- Am **EU-Panel**, im **US-Querformat** und bei **Smartphone quer** stehen die Status-Icons zwischen dem großen Icon und den Info-Zeilen: Sobald das Raster erscheint, werden die beiden Info-Zeilen **schmaler** – lange Namen werden dann früher abgeschnitten. Der Dialog weist unter den Slots darauf hin. Im **US-Hochformat** und bei **Smartphone hochkant** stehen die Info-Zeilen unter dem Raster und bleiben immer gleich breit.
+- Ein Status-Icon lässt sich antippen und lange drücken wie jedes andere Element der Seite.
 
-| Mit Status-Icons | Ohne Status-Icons |
+#### Die Stufe: wie viel Platz das Raster bekommt
+
+Wie viele Status-Icons die Seite zeigen kann, legt die **Stufe** fest. Du wählst sie im Admin beim Einrichten der Geräteseite (siehe [Die Geräteseite einrichten](#5-die-geräteseite-einrichten)). Je größer die Stufe, desto mehr Icons passen hinein – und desto mehr anderes muss Platz machen. Die Stufe gilt fest für die Seite: Am Panel taucht dabei nichts auf und verschwindet nichts, wenn sich ein Wert ändert.
+
+**Layout 1 – Steuern:** Das Raster hat zwei Zeilen und steht neben dem großen Icon (im US-Hochformat und bei Smartphone hochkant darunter). Es wächst nach rechts in die Info-Zeilen hinein.
+
+| Stufe | Status-Icons | Was die beiden Info-Zeilen zeigen |
+|---|---|---|
+| keine Status-Icons | – | Icon, Name und Wert in voller Breite |
+| 1–3 Spalten | bis zu 6 | Icon, **kurzer Name**, Wert – der Name ist schmal und wird früher abgeschnitten (im US-Hochformat: wie bei 4–5 Spalten) |
+| 4–5 Spalten | bis zu 10 | Icon und Wert, **kein Name** |
+| 6–8 Spalten | bis zu 16 | **keine Info-Zeilen** – das Raster braucht den ganzen Platz |
+
+| keine Status-Icons | 1–3 Spalten |
 |---|---|
-| <img alt="Layout 1 am EU-Panel mit vier Status-Icons im Raster neben dem großen Icon, die Info-Zeilen sind schmal" src="../Pictures/device-page/eu-cardDevice1.png" width="100%"/> | <img alt="Layout 1 am EU-Panel ohne Status-Icons, die Info-Zeilen nutzen die ganze Breite" src="../Pictures/device-page/eu-cardDevice1-plain.png" width="100%"/> |
+| <img alt="Layout 1 am EU-Panel ohne Status-Icons: zwei Info-Zeilen mit Icon, Name und Wert in voller Breite" src="../Pictures/device-page/eu-cardDevice1-stage0.png" width="100%"/> | <img alt="Layout 1 am EU-Panel mit fünf Status-Icons in drei Spalten, die Info-Zeilen mit kurzem Namen" src="../Pictures/device-page/eu-cardDevice1-stage1.png" width="100%"/> |
+| **4–5 Spalten** | **6–8 Spalten** |
+| <img alt="Layout 1 am EU-Panel mit neun Status-Icons in fünf Spalten, die Info-Zeilen nur mit Icon und Wert" src="../Pictures/device-page/eu-cardDevice1-stage2.png" width="100%"/> | <img alt="Layout 1 am EU-Panel mit vierzehn Status-Icons in sieben Spalten, ohne Info-Zeilen" src="../Pictures/device-page/eu-cardDevice1-stage3.png" width="100%"/> |
+
+**Layout 3 – Werte:** Das Raster hat eine Zeile und steht in der ersten Reihe der Info-Kacheln.
+
+| Stufe | Status-Icons | Was wegfällt |
+|---|---|---|
+| keine Status-Icons | – | nichts, alle sechs Info-Kacheln |
+| 1–4 | bis zu 4 | die **erste** Info-Kachel (Slot 1) |
+| 5–8 | bis zu 8 | die **ersten beiden** Info-Kacheln (Slots 1 und 2) |
+
+| keine Status-Icons | 1–4 | 5–8 |
+|---|---|---|
+| <img alt="Layout 3 am EU-Panel ohne Status-Icons: sechs Info-Kacheln" src="../Pictures/device-page/eu-cardDevice3-stage0.png" width="100%"/> | <img alt="Layout 3 am EU-Panel mit vier Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/eu-cardDevice3-stage1.png" width="100%"/> | <img alt="Layout 3 am EU-Panel mit sieben Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/eu-cardDevice3-stage2.png" width="100%"/> |
+
+Layout 2 hat keine Status-Icons.
+
+**Was du am Panel siehst:**
+
+- Es erscheinen nur so viele Spalten, wie belegt sind – höchstens so viele, wie die Stufe erlaubt. Sind in der Stufe 6–8 nur fünf Icons belegt, stehen drei Spalten da; die Info-Zeilen bleiben trotzdem weg, denn das richtet sich nach der Stufe, nicht nach der Zahl der Icons.
+- Die Icons füllen das Raster **spaltenweise**: oben, unten, dann die nächste Spalte. Leere Plätze rücken auf, es entsteht keine Lücke. Ist die letzte Spalte nur halb belegt, bleibt ihr leeres Kästchen mit Rahmen stehen.
+- Was die Stufe verdeckt (die Info-Zeilen von Layout 1 in der Stufe 6–8, die ersten Info-Kacheln von Layout 3), zeigt das Panel nicht – auch wenn der Slot belegt ist.
+
+**Beim Verkleinern geht nichts verloren.** Stellst du eine kleinere Stufe ein, bleiben die Belegungen der Status-Icons, Info-Zeilen und Info-Kacheln, die dann nicht mehr zu sehen sind, gespeichert. Mit einer größeren Stufe sind sie wieder da.
+
+So sieht es in den anderen Formaten aus:
+
+| | keine Status-Icons | 1–3 Spalten | 4–5 Spalten | 6–8 Spalten |
+|---|---|---|---|---|
+| **US-Hochformat** | <img alt="US-Hochformat, Layout 1 ohne Status-Icons: Info-Zeilen unter dem großen Icon" src="../Pictures/device-page/us-p-cardDevice1-stage0.png" width="100%"/> | <img alt="US-Hochformat, Layout 1 mit fünf Status-Icons unter dem großen Icon, die Info-Zeilen rechts daneben nur mit Icon und Wert" src="../Pictures/device-page/us-p-cardDevice1-stage1.png" width="100%"/> | <img alt="US-Hochformat, Layout 1 mit neun Status-Icons, die Info-Zeilen rechts neben dem großen Icon" src="../Pictures/device-page/us-p-cardDevice1-stage2.png" width="100%"/> | <img alt="US-Hochformat, Layout 1 mit vierzehn Status-Icons, ohne Info-Zeilen" src="../Pictures/device-page/us-p-cardDevice1-stage3.png" width="100%"/> |
+| **Smartphone quer** | <img alt="Smartphone quer, Layout 1 ohne Status-Icons" src="../Pictures/device-page/web-l-cardDevice1-stage0.png" width="100%"/> | <img alt="Smartphone quer, Layout 1 mit fünf Status-Icons, die Info-Zeilen mit breiterem kurzem Namen" src="../Pictures/device-page/web-l-cardDevice1-stage1.png" width="100%"/> | <img alt="Smartphone quer, Layout 1 mit neun Status-Icons, die Info-Zeilen nur mit Icon und Wert" src="../Pictures/device-page/web-l-cardDevice1-stage2.png" width="100%"/> | <img alt="Smartphone quer, Layout 1 mit vierzehn Status-Icons, ohne Info-Zeilen" src="../Pictures/device-page/web-l-cardDevice1-stage3.png" width="100%"/> |
+
+| | keine Status-Icons | 1–4 | 5–8 |
+|---|---|---|---|
+| **US-Hochformat** | <img alt="US-Hochformat, Layout 3 ohne Status-Icons" src="../Pictures/device-page/us-p-cardDevice3-stage0.png" width="100%"/> | <img alt="US-Hochformat, Layout 3 mit vier Status-Icons an der Stelle der ersten Info-Kachel" src="../Pictures/device-page/us-p-cardDevice3-stage1.png" width="100%"/> | <img alt="US-Hochformat, Layout 3 mit sieben Status-Icons an der Stelle der ersten beiden Info-Kacheln" src="../Pictures/device-page/us-p-cardDevice3-stage2.png" width="100%"/> |
+| **Smartphone quer** | <img alt="Smartphone quer, Layout 3 ohne Status-Icons" src="../Pictures/device-page/web-l-cardDevice3-stage0.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 mit vier Status-Icons" src="../Pictures/device-page/web-l-cardDevice3-stage1.png" width="100%"/> | <img alt="Smartphone quer, Layout 3 mit sieben Status-Icons" src="../Pictures/device-page/web-l-cardDevice3-stage2.png" width="100%"/> |
+
+- **US-Hochformat** und **Smartphone hochkant:** Das Raster von Layout 1 steht unter dem großen Icon, wo sonst die Info-Zeilen sind; die Info-Zeilen rücken in den Stufen 1–3 und 4–5 rechts neben das große Icon (nur Icon und Wert). Bei Smartphone hochkant steht das große Icon in der Mitte, solange nichts daneben steht (keine Status-Icons, 6–8 Spalten).
+- **US-Querformat:** wie das EU-Panel, etwas nach rechts versetzt.
+- **Smartphone quer:** wie das EU-Panel; die Info-Zeilen reichen bis zum rechten Rand, der kurze Name ist dadurch breiter. Mehr Status-Icons als am EU-Panel gibt es nicht.
 
 ### i-Icon anzeigen
 
@@ -270,7 +322,7 @@ Die Modelle **Smartphone quer** (`web-l`) und **Smartphone hochkant** (`web-p`) 
 
 | Layout | auf jedem Panel | zusätzlich auf Smartphone-Web-Panels | Slot-Nummern | dort zusammen |
 |---|---|---|---|---|
-| **1 – Steuern** | 2 Info-Zeilen, 4 Knöpfe, 4 Status-Icons | 2 Knöpfe | 11–12 | 6 Knöpfe |
+| **1 – Steuern** | 2 Info-Zeilen, 4 Knöpfe, bis zu 16 Status-Icons | 2 Knöpfe | 11–12 | 6 Knöpfe |
 | **2 – Fortschritt** | großer Wert, Fortschrittsbalken, 3 Info-Zeilen, 1 Knopf | 1 Info-Zeile, 2 Knöpfe | 7 (Info-Zeile), 8–9 (Knöpfe) | 4 Info-Zeilen, 3 Knöpfe |
 | **3 – Werte** | 6 Info-Zeilen, 2 Schalter | 2 Info-Zeilen, 1 Schalter | 9–10 (Info-Zeilen), 11 (Schalter) | 8 Info-Zeilen, 3 Schalter |
 
@@ -296,7 +348,7 @@ Für Geräte, die man startet und stoppt: Saugroboter, Rasenmäher.
 
 - 2 **Info-Zeilen** neben dem Icon (Slots 1–2),
 - 4 **Knöpfe** darunter (Slots 3–6),
-- 4 **Status-Icons** im 2×2-Raster neben dem großen Icon (Slots 7–10), siehe [Status-Icons](#status-icons).
+- bis zu 16 **Status-Icons** im Raster neben dem großen Icon, je nach Stufe, siehe [Status-Icons](#status-icons).
 
 ![Layout 1 – Steuern: Saugroboter mit Batterie und Fläche als Info-Zeilen, den Knöpfen Starten, Pause, Laden und Suchen und vier Status-Icons](../Pictures/device-page/eu-cardDevice1.png)
 
@@ -359,7 +411,7 @@ Dieselbe Anordnung wie am EU-Panel. Der Inhalt sitzt 15 Pixel weiter rechts, wei
 
 Hochkant sind die Elemente neu angeordnet:
 
-- **Layout 1:** das Haupt-Icon oben links mit dem Namen darunter, rechts daneben die Status-Icons als 2×2-Block. Darunter die zwei Info-Zeilen über die volle Breite, dann die vier Knöpfe als 2×2-Block (Slot 3 oben links, 4 oben rechts, 5 unten links, 6 unten rechts). Die Info-Zeilen sind hier immer gleich breit; ohne Status-Icons bleibt der Platz neben dem Haupt-Icon frei.
+- **Layout 1:** das Haupt-Icon oben links mit dem Namen darunter. Darunter die zwei Info-Zeilen über die volle Breite – oder, mit Status-Icons, deren Raster; die Info-Zeilen stehen dann rechts neben dem Haupt-Icon (siehe [Status-Icons](#status-icons)). Dann die vier Knöpfe als 2×2-Block (Slot 3 oben links, 4 oben rechts, 5 unten links, 6 unten rechts).
 - **Layout 2:** Haupt-Icon und großer Wert oben, darunter der Fortschrittsbalken. Die drei Infos sind volle Zeilen (Name links, Wert rechts) statt Kacheln, der Knopf liegt darunter über die volle Breite.
 - **Layout 3:** das Haupt-Icon oben in der Mitte, sein Name darunter über die volle Breite. Die sechs Info-Kacheln in zwei Spalten, die zwei Schalter als Zeilen untereinander.
 
@@ -367,7 +419,7 @@ Die Statuszeile ist hier schmaler (262 statt 390 Pixel). Die Statustexte der Bei
 
 | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|
-| <img alt="US-Panel im Hochformat, Layout 1: Haupt-Icon oben links, Status-Icons daneben, Info-Zeilen über die volle Breite, Knöpfe als 2×2-Block, Statuszeile unten" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 2: Haupt-Icon und Restzeit oben, Fortschrittsbalken, drei Info-Zeilen und der Knopf über die volle Breite" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 3: Haupt-Icon oben in der Mitte, sechs Info-Kacheln in zwei Spalten und zwei Schalterzeilen" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
+| <img alt="US-Panel im Hochformat, Layout 1: Haupt-Icon oben links, die Info-Zeilen rechts daneben, darunter die Status-Icons, Knöpfe als 2×2-Block, Statuszeile unten" src="../Pictures/device-page/us-p-cardDevice1.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 2: Haupt-Icon und Restzeit oben, Fortschrittsbalken, drei Info-Zeilen und der Knopf über die volle Breite" src="../Pictures/device-page/us-p-cardDevice2.png" width="100%"/> | <img alt="US-Panel im Hochformat, Layout 3: Haupt-Icon oben in der Mitte, sechs Info-Kacheln in zwei Spalten und zwei Schalterzeilen" src="../Pictures/device-page/us-p-cardDevice3.png" width="100%"/> |
 
 ### Smartphone quer (`web-l`)
 
@@ -380,7 +432,7 @@ Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (640 × 
 
 ### Smartphone hochkant (`web-p`)
 
-Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (320 × 640). Die Anordnung ist die des US-Hochformats; die zusätzliche Höhe tragen die [zusätzlichen Elemente](#zusätzliche-elemente-für-smartphone-web-panels) als weitere Zeilen: in Layout 1 eine dritte Reihe mit zwei Knöpfen, in Layout 2 eine vierte Info-Zeile und bis zu drei Knöpfe in einer Reihe, in Layout 3 eine vierte Reihe Info-Kacheln und eine dritte Schalterzeile. Ohne sie verteilen sich die Zeilen mit größeren Abständen über die Höhe. Ohne Status-Icons steht das Haupt-Icon von Layout 1 in der Mitte. Die Statuszeile ist wie im US-Hochformat 262 Pixel breit.
+Ein eigenständiges Web-Panel mit diesem Modell nutzt die ganze Fläche (320 × 640). Die Anordnung ist die des US-Hochformats; die zusätzliche Höhe tragen die [zusätzlichen Elemente](#zusätzliche-elemente-für-smartphone-web-panels) als weitere Zeilen: in Layout 1 eine dritte Reihe mit zwei Knöpfen, in Layout 2 eine vierte Info-Zeile und bis zu drei Knöpfe in einer Reihe, in Layout 3 eine vierte Reihe Info-Kacheln und eine dritte Schalterzeile. Ohne sie verteilen sich die Zeilen mit größeren Abständen über die Höhe. Das Haupt-Icon von Layout 1 steht in der Mitte, solange nichts daneben steht (keine Status-Icons oder 6–8 Spalten). Die Statuszeile ist wie im US-Hochformat 262 Pixel breit.
 
 | | 1 – Steuern | 2 – Fortschritt | 3 – Werte |
 |---|---|---|---|
@@ -427,12 +479,14 @@ Wird ein Element ohne Popup gehalten, blinkt am Hardware-Panel sein Hintergrund 
 
   | Modell | Statuszeile | Layout 1 | Layout 2 | Layout 3 |
   |---|---|---|---|---|
-  | **EU-Querformat**, **US-Querformat** | 390 | Gerätename 110 · Info-Zeile 164 / 110, **mit Status-Icons 86 / 110** · Knopf 104 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 429 · Info-Zeile 104 / 104 · Knopf 100 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
-  | **US-Hochformat** | 262 | Gerätename 150 · Info-Zeile 156 / 104 (auch mit Status-Icons) · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
-  | **Smartphone quer** | 580 | Gerätename 110 · Info-Zeile 354 / 110, mit Status-Icons 276 / 110 · Knopf 104, zu sechst je 100 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 620 · Info-Zeile 104 / 104 · Knopf 100, zu zweit oder dritt je 96 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
-  | **Smartphone hochkant** | 262 | Gerätename 150 (ohne Status-Icons 300) · Info-Zeile 156 / 104 · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300, zu zweit je 148, zu dritt je 96 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
+  | **EU-Querformat**, **US-Querformat** | 390 | Gerätename 110 · Info-Zeile 164 / 110, **mit 1–3 Spalten Status-Icons 49 / 110, mit 4–5 Spalten – / 87** · Knopf 104 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 429 · Info-Zeile 104 / 104 · Knopf 100 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
+  | **US-Hochformat** | 262 | Gerätename 150 · Info-Zeile 156 / 104, mit 1–5 Spalten Status-Icons – / 106 · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
+  | **Smartphone quer** | 580 | Gerätename 110 · Info-Zeile 354 / 110, mit 1–3 Spalten Status-Icons 239 / 110, mit 4–5 Spalten – / 277 · Knopf 104, zu sechst je 100 | Gerätename 96 · großer Wert 190 · Fortschrittsbalken 620 · Info-Zeile 104 / 104 · Knopf 100, zu zweit oder dritt je 96 | Gerätename 100 · Info-Zeile 125 / 125 · Schalter 125 |
+  | **Smartphone hochkant** | 262 | Gerätename 150 (ohne Status-Icons und mit 6–8 Spalten 300) · Info-Zeile 156 / 104, mit 1–5 Spalten Status-Icons – / 106 · Knopf 148 | Gerätename 90 · großer Wert 172 · Fortschrittsbalken 300 · Info-Zeile 156 / 104 · Knopf 300, zu zweit je 148, zu dritt je 96 | Gerätename 300 · Info-Zeile 112 / 112 · Schalter 212 |
 
   Der große Wert steht in der großen Schrift: Eine Ziffer braucht dort 33 Pixel, „12:34“ 149 Pixel.
+
+  Neben dem Raster der Status-Icons übernimmt das Panel den Namen einer Info-Zeile mit höchstens **15 Byte** (1–3 Spalten) und den Wert mit höchstens **19 Byte** (4–5 Spalten); das gilt auf allen Modellen.
 - **Einheiten stehen ohne Leerzeichen am Wert** („80%“, „34m²“, „60°C“). Das ist Absicht und spart Platz.
 - **Der große Wert** hat eine eigene Schrift mit Ziffern, Buchstaben (auch ä, ö, ü) und den Zeichen `: % ° , . - /`. Ein **€** kann sie nicht zeigen.
 - **Die Statuszeile** hat eine Zeile; ihre Breite steht in der Tabelle oben. Längerer Text wechselt in bis zu drei Abschnitten (jeder höchstens 63 Byte), siehe [Bedienung am Panel](#9-bedienung-am-panel).
@@ -447,8 +501,8 @@ Die technischen Einzelheiten (Protokoll, Maße) stehen für Entwickler in [doc/i
 - **Statt der Geräteseite kommt die Detailseite.** Die TFT des Panels ist zu alt, siehe [Grenzen](#10-grenzen).
 - **Auf der Entities-Seite passiert beim Tipp links nichts.** Auch das braucht die neue TFT. Der Schalter rechts in der Zeile funktioniert unabhängig davon.
 - **Ein Slot bleibt am Panel leer.** Der Datenpunkt oder Kanal existiert nicht (mehr) oder passt nicht zur Art des Slots – im Dialog ist die Zeile dann rot. Bei einem Kanal steht beim Start des Adapters eine Warnung im Log (*Page '…', page item …: Device page slot …*).
-- **Die Info-Zeilen in Layout 1 schneiden plötzlich früher ab.** Ein Status-Icon ist belegt; am EU-Panel, im US-Querformat und bei Smartphone quer sind die beiden Info-Zeilen dann schmaler (am EU-Panel der Name 86 statt 164 Pixel).
-- **Nach einem Layoutwechsel fehlen Slots.** Die Slots bleiben nach ihrer Nummer. Layout 2 hat nur 6 Slots: Wer von Layout 1 dorthin und wieder zurück wechselt, hat die Status-Icons 7–10 verloren. Von den zusätzlichen Slots der Smartphone-Web-Panels geht beim Wechsel auf Layout 1 der dritte verloren.
+- **Die Info-Zeilen in Layout 1 sind kürzer oder fehlen.** Das macht die [Stufe der Status-Icons](#status-icons): Mit 1–3 Spalten ist der Name kurz, mit 4–5 Spalten fehlt er, mit 6–8 Spalten fehlen die Info-Zeilen ganz. In Layout 3 fehlen ebenso die ersten Info-Kacheln. Die Belegung bleibt gespeichert; mit einer kleineren Stufe ist sie wieder zu sehen.
+- **Nach einem Layoutwechsel fehlen Slots.** Die Slots bleiben nach ihrer Nummer. Von den zusätzlichen Slots der Smartphone-Web-Panels geht beim Wechsel auf Layout 1 der dritte verloren.
 - **Die zusätzlichen Elemente fehlen am Panel.** Sie erscheinen nur auf eigenständigen Web-Panels mit den Modellen *Smartphone quer* und *Smartphone hochkant* – und nur, solange das Häkchen **Web-Panel-Elemente (web-l / web-p)** gesetzt ist.
 - **Im Web-Panel blinkt beim langen Druck nichts.** Das Blinken zeigt nur das Hardware-Panel; ausgelöst wird im Web-Panel trotzdem beim Loslassen.
 - **Ein langer Druck auf einen Knopf der Geräteseite tut nichts.** Für das Element ist kein **Langer Druck** eingestellt. Das ist Absicht: Ein langer Druck wird nie als kurzer Tipp gewertet.

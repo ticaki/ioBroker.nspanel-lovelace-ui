@@ -2,22 +2,27 @@ import type { Entity6 } from '../../protocol/types';
 import { isEmptySlot } from '../cardEntities/shared/menuParse';
 import {
     box,
-    statusBlockVisible,
     type ButtonSlotGeometry,
     type DeviceGeometry,
     type DeviceGeometryBuilder,
+    type DeviceStage,
     type InfoSlotGeometry,
     type SwitchSlotGeometry,
 } from './geometry';
 import {
     EU_GEOMETRY,
+    SET_B_NAME_BYTES,
+    SET_C_VALUE_BYTES,
     portraitButton,
+    portraitGrid1,
+    portraitGrid3,
     portraitInfoRow,
     portraitInfoTile,
     portraitMain1,
     portraitMain2,
     portraitMain3,
     portraitProgress,
+    portraitSetC,
     portraitSwitchRow,
 } from './geometryHmi';
 
@@ -30,6 +35,10 @@ import {
  * the filled ones of a kind follow the standard slots in their order without a gap ({@link filledExtras}).
  * Where the boxes of a row of buttons stand side by side, the name fields keep the 4 px between them that the
  * buttons of eu have ({@link button}).
+ *
+ * The status icon grid has the cells, columns and stages of the HMI model (web-l: eu, web-p: us-p in variant P2);
+ * the info rows of cardDevice1 follow the sets of the stages (A, B with the name cut to the bytes of the HMI, C without
+ * name, none in stage 3).
  */
 
 /** web-l: content x 10-629 (the stage is 640 wide and has no frame), y as on eu */
@@ -118,31 +127,62 @@ export function spread(count: number, width: number, left = LEFT, right = RIGHT)
     return Array.from({ length: count }, (_, i) => Math.round(left + i * (width + gap)));
 }
 
+/** web-l cardDevice1: the info rows end at the right edge, the value of sets A and B takes the last 110 px (eu) */
+const VALUE_L = 520;
+
 /**
- * web-l cardDevice1: main, status block and the two info rows like eu, the values at the right edge;
- * below them one row of 4-6 buttons (2 additional). Six buttons stand side by side: their names get 100 px.
+ * An info row of web-l cardDevice1 in the set of the stage: the icon where eu has it (5 px right of the grid of the
+ * stage), sets A and B with the name up to the value, set C with the value from the icon to the right edge (no
+ * name).
  *
- * @param slots the standard slots
- * @param extras the additional slots: button, button
+ * @param y top of the icon
+ * @param stage the stage of the status icon grid
  */
-function landscape1(slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+function info1L(y: number, stage: DeviceStage): InfoSlotGeometry {
+    switch (stage) {
+        case 1:
+            return {
+                kind: 'info',
+                icon: box(241, y, 36, 34),
+                name: { ...box(279, y + 4, VALUE_L - 2 - 279, 26), maxBytes: SET_B_NAME_BYTES },
+                value: box(VALUE_L, y + 4, RIGHT - VALUE_L, 26),
+            };
+        case 2:
+            return {
+                kind: 'info',
+                icon: box(315, y, 36, 34),
+                value: { ...box(353, y + 4, RIGHT - 353, 26), maxBytes: SET_C_VALUE_BYTES },
+            };
+        default:
+            return {
+                kind: 'info',
+                icon: box(126, y, 36, 34),
+                name: box(164, y + 4, VALUE_L - 2 - 164, 26),
+                value: box(VALUE_L, y + 4, RIGHT - VALUE_L, 26),
+            };
+    }
+}
+
+/**
+ * web-l cardDevice1: main, the status icon grid and the two info rows like eu (the set of the stage), the values at
+ * the right edge; below them one row of 4-6 buttons (2 additional). Six buttons stand side by side: their names get
+ * 100 px.
+ *
+ * @param extras the additional slots: button, button
+ * @param stage the stage of the status icon grid
+ */
+function landscape1(extras: readonly Entity6[], stage: DeviceStage): DeviceGeometry {
     const eu = EU_GEOMETRY[1];
-    // next to a visible status block the rows start further right, like on eu
-    const x = statusBlockVisible(1, slots) ? 204 : 126;
-    const info = (y: number): InfoSlotGeometry => ({
-        kind: 'info',
-        icon: box(x, y, 36, 34),
-        name: box(x + 38, y + 4, 518 - (x + 38), 26),
-        value: box(520, y + 4, 110, 26),
-    });
+    const info = (y: number): InfoSlotGeometry => info1L(y, stage);
     const filled = filledExtras(extras, [0, 1]);
     const xs = spread(4 + filled.length, 104);
     const dense = isDense(xs, 104);
     const place = (n: number): ButtonSlotGeometry => button(xs[n], 104, 190, 52, 244, dense);
     return {
         main: eu.main,
-        slots: [info(76), info(120), place(0), place(1), place(2), place(3), ...eu.slots.slice(6)],
+        slots: [info(76), info(120), place(0), place(1), place(2), place(3)],
         extras: [0, 1].map(index => placed(filled, index, n => place(4 + n))),
+        grid: eu.grid,
         status: STATUS_L,
         statusAlign: 1,
         info: INFO_L,
@@ -154,10 +194,9 @@ function landscape1(slots: readonly Entity6[], extras: readonly Entity6[]): Devi
  * over the width, below it one row of 3-4 info tiles (1 additional). Two or three buttons stand side by side:
  * their names get 96 px.
  *
- * @param _slots the standard slots
  * @param extras the additional slots: info, button, button
  */
-function landscape2(_slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+function landscape2(extras: readonly Entity6[]): DeviceGeometry {
     const eu = EU_GEOMETRY[2];
     const filledButtons = filledExtras(extras, [1, 2]);
     const buttons = 1 + filledButtons.length;
@@ -195,6 +234,7 @@ function landscape2(_slots: readonly Entity6[], extras: readonly Entity6[]): Dev
             placed(filledButtons, 1, n => place(1 + n)),
             placed(filledButtons, 2, n => place(1 + n)),
         ],
+        grid: [],
         status: STATUS_L,
         statusAlign: 1,
         info: INFO_L,
@@ -203,12 +243,12 @@ function landscape2(_slots: readonly Entity6[], extras: readonly Entity6[]): Dev
 
 /**
  * web-l cardDevice3: main like eu, the six info tiles in the two columns of eu (row by row) and a third
- * column for the 2 additional ones (from the top), below them one row of 2-3 switches (1 additional).
+ * column for the 2 additional ones (from the top), below them one row of 2-3 switches (1 additional). The status
+ * icon grid of eu in the first row of tiles: tile 1 (stage 1) or tiles 1 and 2 (stage 2) give way to it.
  *
- * @param _slots the standard slots
  * @param extras the additional slots: info, info, switch
  */
-function landscape3(_slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+function landscape3(extras: readonly Entity6[]): DeviceGeometry {
     const eu = EU_GEOMETRY[3];
     const filledInfos = filledExtras(extras, [0, 1]);
     // tiles of 161 px right of main (x 114-629): two columns share the width, three are spread over it
@@ -254,6 +294,7 @@ function landscape3(_slots: readonly Entity6[], extras: readonly Entity6[]): Dev
             placed(filledInfos, 1, n => info(2, n)),
             placed(filledSwitches, 2, n => toggle(2 + n)),
         ],
+        grid: eu.grid,
         status: STATUS_L,
         statusAlign: 1,
         info: INFO_L,
@@ -302,29 +343,35 @@ function group(count: number, h: number): { h: number; gap: number }[] {
     return Array.from({ length: count }, (_, i) => ({ h, gap: i === 0 ? GROUP_GAP : ROW_GAP }));
 }
 
+/** Height of the status icon grid of web-p cardDevice1: two rows of cells 41 px high that share their frame */
+const GRID_P_HEIGHT = 81;
+
 /**
- * web-p cardDevice1: main with the status block and the two info rows like us-p, below them 2 or 3 rows of
- * two buttons (2 additional; a single one stands at the left of the third row). Without status icons main stands
- * in the middle (us-p leaves the place of the block empty).
+ * web-p cardDevice1 after us-p in variant P2: in stage 0 main in the middle (nothing stands beside it) with the two
+ * info rows below it; in stages 1 and 2 main at the left with the info rows as set C right of it, in stage 3 main in
+ * the middle without info rows - from stage 1 on the status icon grid stands below main. Then 2 or 3 rows of two
+ * buttons (2 additional; a single one stands at the left of the third row).
  *
- * @param slots the standard slots
  * @param extras the additional slots: button, button
+ * @param stage the stage of the status icon grid
  */
-function portrait1(slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+function portrait1(extras: readonly Entity6[], stage: DeviceStage): DeviceGeometry {
     const filled = filledExtras(extras, [0, 1]);
     const buttonRows = filled.length > 0 ? 3 : 2;
-    const ys = stack(70, [{ h: 114, gap: 0 }, ...group(2, 34), ...group(buttonRows, 80)]);
-    const withBlock = portraitMain1(ys[0]);
-    const { cells } = withBlock;
-    const main = statusBlockVisible(1, slots)
-        ? withBlock.main
-        : { icon: box(85, ys[0], 150, 86), name: box(10, ys[0] + 88, 300, 26) };
+    // below main: the info rows of set A, or the grid
+    const middle = stage === 0 ? group(2, 34) : [{ h: GRID_P_HEIGHT, gap: GROUP_GAP }];
+    const ys = stack(70, [{ h: 114, gap: 0 }, ...middle, ...group(buttonRows, 80)]);
+    const firstButtons = 1 + middle.length;
+    const beside = stage === 1 || stage === 2;
+    const main = beside ? portraitMain1(ys[0]) : { icon: box(85, ys[0], 150, 86), name: box(10, ys[0] + 88, 300, 26) };
+    const infos = beside ? portraitSetC(ys[0]) : [portraitInfoRow(ys[1]), portraitInfoRow(ys[2])];
     const place = (n: number): ButtonSlotGeometry =>
-        portraitButton(n % 2 === 0 ? 10 : 162, ys[3 + Math.floor(n / 2)], 148);
+        portraitButton(n % 2 === 0 ? 10 : 162, ys[firstButtons + Math.floor(n / 2)], 148);
     return {
         main,
-        slots: [portraitInfoRow(ys[1]), portraitInfoRow(ys[2]), place(0), place(1), place(2), place(3), ...cells],
+        slots: [...infos, place(0), place(1), place(2), place(3)],
         extras: [0, 1].map(index => placed(filled, index, n => place(4 + n))),
+        grid: portraitGrid1(ys[1]),
         status: STATUS_P,
         statusAlign: 1,
         info: INFO_P,
@@ -336,10 +383,9 @@ function portrait1(slots: readonly Entity6[], extras: readonly Entity6[]): Devic
  * row of 1-3 buttons (2 additional) that share the width: 300 px like us-p, 2 x 148 or 3 x 100 px (the width of
  * this button on eu). Three buttons stand side by side: their names get 96 px.
  *
- * @param _slots the standard slots
  * @param extras the additional slots: info, button, button
  */
-function portrait2(_slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+function portrait2(extras: readonly Entity6[]): DeviceGeometry {
     const filledInfos = filledExtras(extras, [0]);
     const filledButtons = filledExtras(extras, [1, 2]);
     const infos = 3 + filledInfos.length;
@@ -366,6 +412,7 @@ function portrait2(_slots: readonly Entity6[], extras: readonly Entity6[]): Devi
             placed(filledButtons, 1, n => place(1 + n)),
             placed(filledButtons, 2, n => place(1 + n)),
         ],
+        grid: [],
         status: STATUS_P,
         statusAlign: 1,
         info: INFO_P,
@@ -374,12 +421,12 @@ function portrait2(_slots: readonly Entity6[], extras: readonly Entity6[]): Devi
 
 /**
  * web-p cardDevice3: main like us-p, 3 or 4 rows of two info tiles (2 additional; a single one stands at the left
- * of the fourth row), below them 2 or 3 switch rows (1 additional).
+ * of the fourth row), below them 2 or 3 switch rows (1 additional). The status icon grid of us-p in the first row
+ * of tiles.
  *
- * @param _slots the standard slots
  * @param extras the additional slots: info, info, switch
  */
-function portrait3(_slots: readonly Entity6[], extras: readonly Entity6[]): DeviceGeometry {
+function portrait3(extras: readonly Entity6[]): DeviceGeometry {
     const filledInfos = filledExtras(extras, [0, 1]);
     const filledSwitches = filledExtras(extras, [2]);
     const infoRows = filledInfos.length > 0 ? 4 : 3;
@@ -395,6 +442,7 @@ function portrait3(_slots: readonly Entity6[], extras: readonly Entity6[]): Devi
             placed(filledInfos, 1, n => tile(6 + n)),
             placed(filledSwitches, 2, n => toggle(2 + n)),
         ],
+        grid: portraitGrid3(ys[1]),
         status: STATUS_P,
         statusAlign: 1,
         info: INFO_P,
@@ -406,17 +454,17 @@ function portrait3(_slots: readonly Entity6[], extras: readonly Entity6[]): Devi
  * the height of the stage ({@link stack}).
  *
  * @param layout the page
- * @param slots the standard slots of the model
  * @param extras the additional slots of the model
+ * @param stage the stage of the status icon grid
  */
-export const webPortraitGeometry: DeviceGeometryBuilder = (layout, slots, extras) => {
+export const webPortraitGeometry: DeviceGeometryBuilder = (layout, extras, stage) => {
     switch (layout) {
         case 1:
-            return portrait1(slots, extras);
+            return portrait1(extras, stage);
         case 2:
-            return portrait2(slots, extras);
+            return portrait2(extras);
         case 3:
-            return portrait3(slots, extras);
+            return portrait3(extras);
     }
 };
 
@@ -424,16 +472,16 @@ export const webPortraitGeometry: DeviceGeometryBuilder = (layout, slots, extras
  * web-l (stage 640x320): the three device pages on the full width.
  *
  * @param layout the page
- * @param slots the standard slots of the model
  * @param extras the additional slots of the model
+ * @param stage the stage of the status icon grid
  */
-export const webLandscapeGeometry: DeviceGeometryBuilder = (layout, slots, extras) => {
+export const webLandscapeGeometry: DeviceGeometryBuilder = (layout, extras, stage) => {
     switch (layout) {
         case 1:
-            return landscape1(slots, extras);
+            return landscape1(extras, stage);
         case 2:
-            return landscape2(slots, extras);
+            return landscape2(extras);
         case 3:
-            return landscape3(slots, extras);
+            return landscape3(extras);
     }
 };

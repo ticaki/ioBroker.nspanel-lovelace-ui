@@ -204,16 +204,20 @@ function element(kind: string, id: string): string {
  *
  * @param layout the page
  * @param mask the filled additional slots
- * @param statusIcons false: the status slots of cardDevice1 are empty
+ * @param stage the stage of the status icon grid (field 6 of info)
  */
-function entityUpd(layout: DeviceLayout, mask: number, statusIcons = true): string {
-    const slots = DEVICE_SLOT_KINDS[layout].map((kind, i) =>
-        kind === 'status' && !statusIcons ? EMPTY : element(kind, `s${i + 1}`),
-    );
+function entityUpd(layout: DeviceLayout, mask: number, stage = 0): string {
+    const slots = DEVICE_SLOT_KINDS[layout].map((kind, i) => element(kind, `s${i + 1}`));
     const extras = DEVICE_EXTRA_KINDS[layout].map((kind, j) => ((mask >> j) & 1 ? element(kind, `x${j + 1}`) : EMPTY));
-    return ['entityUpd', 'Title', NAV, 'text~m~M~65535~Main~Status', ...slots, 'button~info~i~65535~~', ...extras].join(
-        '~',
-    );
+    return [
+        'entityUpd',
+        'Title',
+        NAV,
+        'text~m~M~65535~Main~Status',
+        ...slots,
+        `button~info~i~65535~~${stage > 0 ? stage : ''}`,
+        ...extras,
+    ].join('~');
 }
 
 /**
@@ -222,12 +226,15 @@ function entityUpd(layout: DeviceLayout, mask: number, statusIcons = true): stri
  * @param model the model of the hello frame
  * @param layout the page
  * @param mask the filled additional slots of the message
- * @param statusIcons false: the status slots of cardDevice1 are empty
+ * @param stage the stage of the status icon grid; above 0 a `devIcons` with four cells `c1`…`c4` follows
  */
-function show(model: PanelModel, layout: DeviceLayout, mask: number, statusIcons = true): { panel: Panel; tree: Tree } {
+function show(model: PanelModel, layout: DeviceLayout, mask: number, stage = 0): { panel: Panel; tree: Tree } {
     const panel = startPanel(model);
     panel.dispatch(`pageType~cardDevice${layout}`);
-    panel.dispatch(entityUpd(layout, mask, statusIcons));
+    panel.dispatch(entityUpd(layout, mask, stage));
+    if (stage > 0) {
+        panel.dispatch(['devIcons', ...[1, 2, 3, 4].map(i => `1~c${i}~X~2047`), '~~~'].join('~'));
+    }
     return { panel, tree: panel.page() };
 }
 
@@ -496,9 +503,9 @@ describe('device pages: main is touched in its icon and its name only (bMain, tM
     function main(
         model: PanelModel,
         layout: DeviceLayout,
-        statusIcons: boolean,
+        stage: number,
     ): { panel: Panel; tree: Tree; boxes: Omit<Area, 'touch'>[] } {
-        const { panel, tree } = show(model, layout, 0, statusIcons);
+        const { panel, tree } = show(model, layout, 0, stage);
         const boxes = boxesOf(
             tree,
             tree.touches.find(t => t.role === 'main'),
@@ -511,7 +518,7 @@ describe('device pages: main is touched in its icon and its name only (bMain, tM
             ['us-p', 68],
             ['web-p', 67],
         ] as const) {
-            const { panel, tree, boxes } = main(model, 3, true);
+            const { panel, tree, boxes } = main(model, 3, 1);
             expect(boxes, model).toEqual([
                 { x: 85, y, w: 150, h: 82 },
                 { x: 10, y: y + 84, w: 300, h: 26 },
@@ -532,8 +539,8 @@ describe('device pages: main is touched in its icon and its name only (bMain, tM
         }
     });
 
-    it('web-p cardDevice1 without status icons: main in the middle, the room beside the icon sends nothing', () => {
-        const { panel, tree, boxes } = main('web-p', 1, false);
+    it('web-p cardDevice1 in stage 0: main in the middle, the room beside the icon sends nothing', () => {
+        const { panel, tree, boxes } = main('web-p', 1, 0);
         expect(boxes).toEqual([
             { x: 85, y: 70, w: 150, h: 86 },
             { x: 10, y: 158, w: 300, h: 26 },
@@ -542,13 +549,18 @@ describe('device pages: main is touched in its icon and its name only (bMain, tM
         expect(touchPoint(panel, tree, 280, 110)).toEqual(NOTHING);
         expect(touchPoint(panel, tree, 160, 110)).toEqual(MAIN);
         expect(touchPoint(panel, tree, 20, 170)).toEqual(MAIN);
-        // with status icons the icon stands at the left, its name below it: the cells beside it are their own
-        const withIcons = main('web-p', 1, true);
+        // in stage 1 the icon stands at the left, its name below it: set C beside it and the cells of the grid
+        // below it are their own
+        const withIcons = main('web-p', 1, 1);
         expect(withIcons.boxes).toEqual([
             { x: 10, y: 70, w: 150, h: 86 },
             { x: 10, y: 158, w: 150, h: 26 },
         ]);
-        expect(touchPoint(withIcons.panel, withIcons.tree, 200, 90).tap).toEqual(['event,buttonPress2,s7,button']);
+        expect(touchPoint(withIcons.panel, withIcons.tree, 200, 90).tap).toEqual(['event,buttonPress2,s1,button']);
+        expect(touchPoint(withIcons.panel, withIcons.tree, 20, 245).tap).toEqual(['event,buttonPress2,c1,button']);
+        expect(touchPoint(withIcons.panel, withIcons.tree, 60, 285).hold).toEqual(['event,buttonPress3,c4,button']);
+        // beyond the filled columns there is no cell
+        expect(touchPoint(withIcons.panel, withIcons.tree, 100, 245)).toEqual(NOTHING);
     });
 
     it('eu, us-l, web-l: icon and name have the same width - only the 2 px between them send nothing', () => {
@@ -563,7 +575,7 @@ describe('device pages: main is touched in its icon and its name only (bMain, tM
         ];
         for (const [model, layout, icon] of pages) {
             const at = `${model} cardDevice${layout}`;
-            const { panel, tree, boxes } = main(model, layout, false);
+            const { panel, tree, boxes } = main(model, layout, 0);
             const name = { x: icon.x, y: icon.y + icon.h + 2, w: icon.w, h: 26 };
             expect(boxes, at).toEqual([icon, name]);
             const x = icon.x + icon.w / 2;
