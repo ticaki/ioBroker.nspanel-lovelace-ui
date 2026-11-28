@@ -808,7 +808,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 return;
             }
             await this.onMqttConnect();
-            await this.delay(1000);
+            // 1 ms: only gives the event loop some air, no need to wait longer
+            await this.delay(1);
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
                 if (id.endsWith('.info.isOnline') && !legacyWebPanelTree(id.replace(`${this.namespace}.`, ''))) {

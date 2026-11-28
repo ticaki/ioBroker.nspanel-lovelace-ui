@@ -1028,7 +1028,8 @@ export class Panel extends BaseClass {
             );
         }
 
-        await this.adapter.delay(100);
+        // 1 ms: only gives the event loop some air, no need to wait longer
+        await this.adapter.delay(1);
 
         const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
 
@@ -2640,8 +2641,10 @@ export class Panel extends BaseClass {
             this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
             this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
             this.sendRules();
-            // wait 0.1s to have tasmota time to be ready
-            await this.adapter.delay(100);
+            // the answers from tasmota (STATUS0, STATUS10, SENSOR, nlui_driver_version, POWER) write their info
+            // themselves when they arrive (writeInfo or their own state), so we don't wait for them here -
+            // 1 ms only gives the event loop some air
+            await this.adapter.delay(1);
         }
         await this.writeInfo();
 
