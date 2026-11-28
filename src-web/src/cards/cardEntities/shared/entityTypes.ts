@@ -1,7 +1,7 @@
 import { glyphToName } from '../../../icons/iconData';
 import { drawableField } from '../../../protocol/fonts';
 import { toNumber } from '../../../protocol/split';
-import type { Entity6 } from '../../../protocol/types';
+import type { Entity6, PanelModel } from '../../../protocol/types';
 
 /**
  * Popup the display opens for an entity type (`event,pageOpenDetail,<popup>,<id>`), `undefined`
@@ -27,6 +27,46 @@ export function popupForType(type: string): string | undefined {
             return 'popupInSel';
         case 'timer':
             return 'popupTimer';
+        default:
+            return undefined;
+    }
+}
+
+/** What a tap on a row of cardSchedule does on the HMI, see {@link scheduleRowAction} */
+export type ScheduleRowAction =
+    /** opens the popup locally and sends `event,pageOpenDetail,<popup>,<id>` */
+    | { kind: 'popup'; popup: string }
+    /** sends `event,buttonPress2,<id>,button` */
+    | { kind: 'press' };
+
+/**
+ * The tap on a row of cardSchedule as the HMI does it (v6.2.0, touch areas `m0` ... `m5`, `codesdown`):
+ * shutter, shutter2, light, light2, fan, input_sel and timer open their popup, number and text send
+ * `buttonPress2,<id>,button`, every other type (switch, button, ...) does nothing. The us-p HMI has no
+ * branch for shutter2, a tap on it does nothing there.
+ *
+ * @param type the entity type of the row
+ * @param model the panel model
+ */
+export function scheduleRowAction(type: string, model: PanelModel): ScheduleRowAction | undefined {
+    switch (type) {
+        case 'number':
+        case 'text':
+            return { kind: 'press' };
+        case 'shutter2':
+            if (model === 'us-p') {
+                return undefined;
+            }
+            return { kind: 'popup', popup: 'popupShutter2' };
+        case 'shutter':
+        case 'light':
+        case 'light2':
+        case 'fan':
+        case 'input_sel':
+        case 'timer': {
+            const popup = popupForType(type);
+            return popup ? { kind: 'popup', popup } : undefined;
+        }
         default:
             return undefined;
     }

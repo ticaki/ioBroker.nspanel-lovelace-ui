@@ -6,7 +6,7 @@ import { DeviceFrame } from './components/DeviceFrame';
 import { loadIconPaths } from './icons/iconData';
 import { hardwareButtonEvent } from './protocol/commands';
 import type { ConnectionStatus, HelloFrame, PanelModel } from './protocol/types';
-import { helloShowsButtons, isPanelModel } from './protocol/types';
+import { helloAllowsExtensions, helloShowsButtons, isPanelModel } from './protocol/types';
 import { PanelStore, type StoreSnapshot } from './store/PanelStore';
 import type { PanelTransport } from './transport/Transport';
 import { WsTransport } from './transport/WsTransport';
@@ -34,6 +34,8 @@ export interface AppProps {
     mockModel?: PanelModel;
     /** `buttons` of the mock hello (`?buttons=0` hides the hardware buttons), default true */
     mockButtons?: boolean;
+    /** `extensions` of the mock hello (`?extensions=1` allows the web panel extensions), default false */
+    mockExtensions?: boolean;
 }
 
 interface AppState {
@@ -101,6 +103,12 @@ export function mockButtonsFromLocation(location: Location = window.location): b
     return buttons !== '0' && buttons !== 'false';
 }
 
+/** `?extensions=1` (or `true`) - the mock hello allows the web panel extensions, off by default like the option */
+export function mockExtensionsFromLocation(location: Location = window.location): boolean {
+    const extensions = new URLSearchParams(location.search).get('extensions');
+    return extensions === '1' || extensions === 'true';
+}
+
 export class App extends React.Component<AppProps, AppState> {
     private readonly transport: PanelTransport;
     private readonly store: PanelStore;
@@ -134,6 +142,7 @@ export class App extends React.Component<AppProps, AppState> {
                 tftVersion: '5.1.1',
                 kind: 'web',
                 buttons: props.mockButtons ?? true,
+                extensions: props.mockExtensions ?? false,
             };
             window.__panel = {
                 dispatch: (raw: string, seq?: number): void => this.store.dispatch(raw, seq),
@@ -166,7 +175,7 @@ export class App extends React.Component<AppProps, AppState> {
     private onHello(hello: HelloFrame): void {
         const model = isPanelModel(hello.model) ? hello.model : 'eu';
         // resets to the startup page and sends the startup event (tftVersion may be 1.0.0)
-        this.store.reset(model, hello.tftVersion);
+        this.store.reset(model, hello.tftVersion, helloAllowsExtensions(hello));
         this.setState({ hello, byeReason: undefined, snapshot: this.store.getSnapshot() });
     }
 

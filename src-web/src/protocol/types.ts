@@ -71,6 +71,11 @@ export interface GlobalState {
      * as an indicator press while awake.
      */
     awake: boolean;
+    /**
+     * the web panel may use extensions over the hardware panel (instance option webAllowExtensions, `extensions`
+     * of the `hello`); false = it draws like the HMI, e.g. the rows of cardSchedule without controls
+     */
+    extensions: boolean;
 }
 
 export interface ParsedCommand {
@@ -107,6 +112,11 @@ export interface HelloFrame {
      */
     buttons?: boolean;
     /**
+     * the web panel may use extensions over the hardware panel (instance option webAllowExtensions);
+     * missing (older adapter) = not allowed, read it with {@link helloAllowsExtensions}
+     */
+    extensions?: boolean;
+    /**
      * build id of the web bundle the adapter serves (meta `nspanel-web-build` of its index.html);
      * missing with an older adapter or when the adapter cannot read it
      */
@@ -121,6 +131,16 @@ export interface HelloFrame {
  */
 export function helloShowsButtons(hello: Pick<HelloFrame, 'buttons'> | undefined): boolean {
     return hello?.buttons !== false;
+}
+
+/**
+ * `true` when the web panel may use extensions over the hardware panel: only an explicit
+ * `extensions: true` in the `hello`, otherwise it draws like the HMI (the default of the option).
+ *
+ * @param hello the hello frame, `undefined` before it arrived
+ */
+export function helloAllowsExtensions(hello: Pick<HelloFrame, 'extensions'> | undefined): boolean {
+    return hello?.extensions === true;
 }
 export interface CmdFrame {
     t: 'cmd';

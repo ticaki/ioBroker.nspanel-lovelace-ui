@@ -329,12 +329,16 @@ Server → Client:
 
 ```jsonc
 { "t": "hello", "model": "eu", "topic": "…", "name": "…",
-  "friendlyName": "…", "tftVersion": "5.1.1", "kind": "clone" | "web", "buttons": true }
+  "friendlyName": "…", "tftVersion": "5.1.1", "kind": "clone" | "web", "buttons": true,
+  "extensions": false }
 // topic = Topic des Endpoints (echtes Panel bzw. eigenständiges Web-Panel), name = Name des
 // Panels (= id), tftVersion = bekannte TFT-Version des Modells, sonst "1.0.0"
 // buttons = die zwei virtuellen Hardware-Tasten unter dem Display zeigen: bei Klonen immer true,
 // bei eigenständigen Web-Panels die Option `webButtons` des Tabelleneintrags, ohne Option nach
 // Modell (eu/us-l/us-p true, web-p/web-l false)
+// extensions = Instanz-Option `webAllowExtensions` (`Panel.webExtensionsAllowed`): false = das
+// Web-Panel zeichnet wie die HMI (z. B. cardSchedule-Zeilen nur Icon + Name, Wert nur bei text),
+// true = Erweiterungen (Schalter/Wert/Bedienelemente); fehlt das Feld, gilt false
 { "t": "cmd", "p": "entityUpd~…", "seq": 17 }   // CustomSend-Payload, unverändert
 { "t": "buzzer", "p": "1,1,1" }                 // Tasmota-Buzzer-Argument, unverändert
 { "t": "bye", "reason": "…" }
@@ -670,11 +674,11 @@ Adapters ein). Das Skript gibt am Ende aus, welche Events das Frontend gesendet 
 (`ack`, `event,…`).
 
 `--frame` nimmt den ganzen Geräterahmen samt Hardware-Tasten auf, `--buttons 0` öffnet den Mock
-ohne Tasten.
+ohne Tasten, `--extensions 1` mit erlaubten Web-Panel-Erweiterungen (`?extensions=1`).
 
 Mock-Modus: `http://localhost:4174/<topic>?mock=1` öffnet keinen WebSocket; stattdessen gibt
 es `window.__panel = { dispatch(raw), sent, hello }` (Hello-Default: Modell `eu`,
-TFT 5.1.1). Damit lässt sich eine Karte auch von Hand in der Browser-Konsole füttern.
+TFT 5.1.1, `extensions` false). Damit lässt sich eine Karte auch von Hand in der Browser-Konsole füttern.
 
 ## 4. Build und Qualität
 

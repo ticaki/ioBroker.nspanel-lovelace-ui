@@ -1,9 +1,17 @@
 import React from 'react';
 import { color565ToCss } from '../../../protocol/color';
-import type { Entity6 } from '../../../protocol/types';
+import type { Entity6, PanelModel } from '../../../protocol/types';
 import { theme } from '../../../style/theme';
-import { hasToggle, isOn, parseNumberOptions, parseShutterOptions, popupForType } from './entityTypes';
+import {
+    hasToggle,
+    isOn,
+    parseNumberOptions,
+    parseShutterOptions,
+    popupForType,
+    scheduleRowAction,
+} from './entityTypes';
 import { isEmptySlot } from './menuParse';
+import { Pressable } from './Pressable';
 import { EntityIcon, NumberSlider, ShutterButtons, TextButton, Toggle } from './widgets';
 
 /**
@@ -198,6 +206,13 @@ export interface EntityRowProps {
     fit?: boolean;
     /** empty strip at the right of the stage, 33 px on the hardware (default), 0 on the web models */
     margin?: number;
+    /**
+     * draw the row like the cardSchedule HMI (web panel extensions off): icon and name, the value only
+     * for `text`, no controls; the whole row is the touch area ({@link scheduleRowAction})
+     */
+    hmiRow?: boolean;
+    /** the panel model, decides the tap of an `hmiRow` (us-p: shutter2 does nothing); default eu */
+    panelModel?: PanelModel;
     press: (id: string, action: string, value?: string | number) => void;
     openPopup: (popup: string, id: string, title?: string, icon?: string, iconColor?: number) => void;
 }
@@ -213,6 +228,9 @@ export interface EntityRowProps {
  * - input_sel: text -> `pageOpenDetail,popupInSel`; timer: text -> `pageOpenDetail,popupTimer`
  * - text: nothing
  *
+ * `hmiRow` (cardSchedule without web panel extensions): like the cardSchedule HMI only icon and name, the
+ * value only for text, the row is one touch area - see {@link scheduleRowAction}.
+ *
  * No long press: on the HMI (v5.1.1 / v6.0.2) only the items of cardGrid / cardGrid2 / cardGrid3 send
  * `event,buttonPress3,<id>,button`. The rows of cardEntities / cardSchedule have no long press timer, they send
  * `buttonPress2` already on touch-down (`codesdown`, `codesup-0`), so holding a row is the same as tapping it.
@@ -225,6 +243,17 @@ export class EntityRow extends React.Component<EntityRowProps> {
             openPopup(popup, entity.id, entity.displayName, entity.icon, entity.iconColor);
         }
     }
+
+    /** tap on an `hmiRow` (touch areas `m0` ... `m5` of the cardSchedule HMI) */
+    private readonly onRowPress = (): void => {
+        const { entity, press, openPopup } = this.props;
+        const action = scheduleRowAction(entity.type, this.props.panelModel ?? 'eu');
+        if (action?.kind === 'popup') {
+            openPopup(action.popup, entity.id, entity.displayName, entity.icon, entity.iconColor);
+        } else if (action?.kind === 'press') {
+            press(entity.id, 'button');
+        }
+    };
 
     private readonly onIconPress = (): void => {
         const { entity, press } = this.props;
@@ -252,6 +281,10 @@ export class EntityRow extends React.Component<EntityRowProps> {
      */
     private renderControl(fontSize: number, geometry: RowGeometry): EntityControl | null {
         const { entity, press, compact } = this.props;
+        if (this.props.hmiRow && entity.type !== 'text') {
+            // the cardSchedule HMI shows the value (bText) only for text, no controls
+            return null;
+        }
         if (hasToggle(entity.type)) {
             return {
                 lift: 0,
@@ -367,10 +400,13 @@ export class EntityRow extends React.Component<EntityRowProps> {
         const iconCenter = compact ? COMPACT_ICON_CENTER : ROW_ICON_CENTER;
         const nameLeft = compact ? COMPACT_NAME_LEFT : ROW_NAME_LEFT;
         const color = color565ToCss(entity.iconColor);
-        const pressableIcon = ['light', 'light2', 'fan', 'shutter', 'shutter2', 'number', 'button', 'switch'].includes(
-            entity.type,
-        );
-        const geometry = rowGeometry(entity.type, {
+        const hmiRow = this.props.hmiRow === true;
+        const pressableIcon =
+            !hmiRow &&
+            ['light', 'light2', 'fan', 'shutter', 'shutter2', 'number', 'button', 'switch'].includes(entity.type);
+        const rowAction = hmiRow ? scheduleRowAction(entity.type, this.props.panelModel ?? 'eu') : undefined;
+        // an hmiRow keeps the fixed name box of the HMI (tEntity ends before bText) for every type
+        const geometry = rowGeometry(hmiRow ? 'text' : entity.type, {
             compact: compact === true,
             fit: this.props.fit === true,
             valueWidth: this.props.valueWidth,
@@ -446,6 +482,14 @@ export class EntityRow extends React.Component<EntityRowProps> {
                     >
                         {control.node}
                     </div>
+                ) : null}
+                {rowAction ? (
+                    <Pressable
+                        data-role="row-touch"
+                        data-id={entity.id}
+                        onPress={this.onRowPress}
+                        style={{ position: 'absolute', inset: 0 }}
+                    />
                 ) : null}
             </div>
         );

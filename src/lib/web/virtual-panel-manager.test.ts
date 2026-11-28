@@ -22,6 +22,7 @@ type FakePanel = {
     topic: string;
     isVirtual: boolean;
     isClone: boolean;
+    webExtensionsAllowed: boolean;
     unload: boolean;
     isOnline: boolean;
     info: { nspanel: { model: string } };
@@ -86,6 +87,9 @@ function fakeController(adapter: any, realPanels: Partial<panelConfigPartial>[])
                 topic: config.topic!,
                 isVirtual: config.kind === 'web',
                 isClone: config.kind === 'web' && !!config.sourceTopic,
+                get webExtensionsAllowed(): boolean {
+                    return config.kind === 'web' && adapter.config.webAllowExtensions === true;
+                },
                 unload: false,
                 isOnline: true,
                 info: { nspanel: { model: config.model ?? 'eu' } },
@@ -159,6 +163,7 @@ function setup(): { adapter: any; ctrl: any; manager: VirtualPanelManager; real:
         topic: REAL_TOPIC,
         isVirtual: false,
         isClone: false,
+        webExtensionsAllowed: false,
         unload: false,
         isOnline: true,
         info: { nspanel: { model: 'eu' } },
@@ -197,6 +202,7 @@ describe('lib/web/virtual-panel-manager - clones', () => {
             tftVersion: '5.1.1',
             kind: 'clone',
             buttons: true,
+            extensions: false,
         });
         expect(b.frames[0]).to.deep.equal(a.frames[0]);
         expect(manager.listPanels()).to.deep.equal([
@@ -409,6 +415,7 @@ describe('lib/web/virtual-panel-manager - standalone web panels', () => {
             tftVersion: '1.0.0',
             kind: 'web',
             buttons: true,
+            extensions: false,
         });
         await channel.publish(`${WEB_TOPIC}/cmnd/CustomSend`, 'pageType~pageStartup');
         expect(a.frames[1]).to.deep.equal({ t: 'cmd', p: 'pageType~pageStartup', seq: 1 });
@@ -441,6 +448,25 @@ describe('lib/web/virtual-panel-manager - virtual hardware buttons in hello', ()
         const b = client();
         await manager.attach(WEB_TOPIC, b);
         expect(b.frames[0]).to.include({ t: 'hello', buttons: true });
+    });
+});
+
+describe('lib/web/virtual-panel-manager - web panel extensions in hello', () => {
+    it('sends the instance option webAllowExtensions as the panel decides it', async () => {
+        const { adapter, ctrl, manager } = setup();
+        const channel = manager.channelFor(WEB_TOPIC);
+        await ctrl.createPanel(
+            { name: WEB_ID, friendlyName: 'Webtest', topic: WEB_TOPIC, kind: 'web', model: 'eu' },
+            channel,
+        );
+        const a = client();
+        await manager.attach(WEB_TOPIC, a);
+        expect(a.frames[0]).to.include({ t: 'hello', extensions: false });
+
+        adapter.config.webAllowExtensions = true;
+        const b = client();
+        await manager.attach(WEB_TOPIC, b);
+        expect(b.frames[0]).to.include({ t: 'hello', extensions: true });
     });
 });
 

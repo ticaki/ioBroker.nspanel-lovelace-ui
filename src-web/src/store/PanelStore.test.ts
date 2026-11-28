@@ -90,6 +90,15 @@ describe('PanelStore', () => {
         expect(store.getSnapshot().page.pageType).toBe('pageStartup');
     });
 
+    it('takes the extensions flag of the hello, off by default', () => {
+        const { store } = makeStore();
+        expect(store.getSnapshot().global.extensions).toBe(false);
+        store.reset('eu', '1.0.0', true);
+        expect(store.getSnapshot().global.extensions).toBe(true);
+        store.reset('eu', '1.0.0');
+        expect(store.getSnapshot().global.extensions).toBe(false);
+    });
+
     it('acks a numbered frame with its seq', () => {
         const { store, sent } = makeStore();
         store.dispatch('pageType~cardGrid', 17);
