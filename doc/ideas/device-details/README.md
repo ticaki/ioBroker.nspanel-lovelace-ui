@@ -821,8 +821,8 @@ Layouts der Web-Modelle: [SMARTPHONE.md, „Geräteseiten“](../../web-panel/SM
 ### Rückfall auf die Detailseite
 
 `supportsCardDevice`: jedes Modell (`CARD_DEVICE_MODELS`: eu, us-l, us-p, web-l, web-p); ein Web-Panel (web-l, web-p,
-Web-Klon eines Hardware-Panels) immer, ein Hardware-Panel ab `CARD_DEVICE_MIN_TFT` (vorerst `6.2.0` wie popupNotify3 –
-**zum Release anheben**). Eine ältere oder unbekannte TFT öffnet die Detailseite wie bisher.
+Web-Klon eines Hardware-Panels) immer, ein Hardware-Panel ab `CARD_DEVICE_MIN_TFT` (`6.3.0`; die
+veröffentlichte TFT 6.2.0 hat die Seiten nicht, `card_device.py` hebt `tRelease` auf 6.3.0). Eine ältere oder unbekannte TFT öffnet die Detailseite wie bisher.
 
 ## Offen
 

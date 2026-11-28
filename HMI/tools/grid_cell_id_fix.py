@@ -1,4 +1,4 @@
-"""HMI 6.2.0 (stays 6.2.0): us-p cardGrid3 - cell 4 reports the id of cell 3.
+"""HMI 6.3.0 (tRelease stays, card_device.py raises it): us-p cardGrid3 - cell 4 reports the id of cell 3.
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_cell_id_fix.py HMI/us-p/nspanel-us-p-v6.2.0.HMI <out.HMI>

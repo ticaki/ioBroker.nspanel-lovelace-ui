@@ -24,7 +24,7 @@ Grundlage sind die HMIs `/home/tim/device-page-hmi/nspanel-*v6.2.0.device12.HMI`
    nötig, weil die Seite sonst nicht funktioniert.
    **Umsetzung:** Der Adapter schickt die Zahl auf cardDevice1–3 immer, an jedes Modell (auch web-l/web-p). Eine eigene
    Versionsgrenze gibt es nicht, weil die Geräteseite noch nicht veröffentlicht ist; Hardware-Panels bekommen die
-   Geräteseite nur ab `CARD_DEVICE_MIN_TFT` (vorläufig 6.2.0, wird zum Release angehoben).
+   Geräteseite nur ab `CARD_DEVICE_MIN_TFT` (6.3.0).
 4. `entn` der Geräteseiten bekommt txt_maxl 7 (Puffer 8). Laut Korrektur gilt die ID-Grenze `999?999`, also höchstens
    7 Zeichen.
 
@@ -182,7 +182,7 @@ Panel gemessen). Ein leeres Element (`~~~~~`) und die Zahl 0 sind damit gleichwe
   Der spätere `switch(type)` gehört **hinter** diese Funktionen, zum Beispiel als ein Schritt in `devicePagePayload` über
   main und alle Elemente. Davor arbeiten mehrere Funktionen noch mit dem Typnamen.
 - **Versionsgrenze:**
-  - Heute gilt `CARD_DEVICE_MIN_TFT = '6.2.0'` mit `supportsCardDevice()` (`device-page.ts:78/112`). Pro Panel gibt es
+  - Heute gilt `CARD_DEVICE_MIN_TFT = '6.3.0'` mit `supportsCardDevice()` (`device-page.ts:78/112`). Pro Panel gibt es
     `Panel.meetsVersion()` (`panel.ts:422`).
   - Web-Panels melden die TFT-Version, die ihnen der Adapter im `hello` gibt
     (`src/lib/web/virtual-panel-manager.ts:520`):

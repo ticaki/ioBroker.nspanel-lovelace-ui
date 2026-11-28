@@ -66,7 +66,7 @@ anstehender Termin, Internet weg.
   - Hausgeräte gestört: `washing-machine-alert`, `tumble-dryer-alert`, `dishwasher-alert`, `fridge-alert`,
     `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`
   - Gefahr: `water-alert`, `smoke-detector-alert`, `fire-alert`
-  - Erweiterung (32), erst mit der TFT nach 6.2.0 (zusammen mit der Geräteseite); auf älterer TFT bleibt das
+  - Erweiterung (32), erst mit der TFT 6.3.0 (zusammen mit der Geräteseite); auf älterer TFT bleibt das
     Symbol leer:
     `garage-variant`, `garage-open-variant`, `chevron-triple-up`, `chevron-triple-down`,
     `chevron-triple-left`, `chevron-triple-right`, `school`, `gate-open`, `door-sliding-open`, `lock-open-alert`,

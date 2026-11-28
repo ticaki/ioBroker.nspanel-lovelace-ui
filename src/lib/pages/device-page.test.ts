@@ -486,6 +486,8 @@ describe('lib/pages/device-page - panel support', () => {
         for (const model of ['eu', 'us-l', 'us-p'] as const) {
             expect(t(model, false, CARD_DEVICE_MIN_TFT), model).to.equal(true);
             expect(t(model, false, '9.9.9'), model).to.equal(true);
+            expect(t(model, false, '6.3.1'), model).to.equal(true);
+            expect(t(model, false, '6.2.0'), model).to.equal(false); // published beta without the device pages
             expect(t(model, false, '6.1.1'), model).to.equal(false);
             expect(t(model, false, ''), model).to.equal(false);
         }
@@ -2627,6 +2629,7 @@ describe('lib/pages/pageItem - device page', () => {
     });
     for (const [model, version, virtual] of [
         ['us-l', '6.1.1', false],
+        ['us-p', '6.2.0', false],
         ['us-p', '', false],
         ['eu', '6.1.1', false],
         ['eu', '', false],

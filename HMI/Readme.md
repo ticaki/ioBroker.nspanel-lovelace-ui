@@ -2665,8 +2665,8 @@ The pie chart of `HMI/nspanel-v6.0.7.screensaver5.HMI` and the us-l and us-p fil
 
 ### cardDevice1, cardDevice2, cardDevice3 (device pages)
 
-Pages for one device (robot vacuum, washing machine, car …), part of the HMI since the test build `device13` (the
-release version follows). cardDevice1 "control", cardDevice2 "progress", cardDevice3 "values". Details and geometry:
+Pages for one device (robot vacuum, washing machine, car …), part of the HMI from 6.3.0 on (protocol as in the test
+build `device13`). cardDevice1 "control", cardDevice2 "progress", cardDevice3 "values". Details and geometry:
 [doc/ideas/device-details/device-page-hmi.md](../doc/ideas/device-details/device-page-hmi.md).
 
 `entityUpd~heading~navigation~main~[slot]*~info`

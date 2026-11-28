@@ -1,4 +1,5 @@
-"""HMI 6.2.0 (EU): cardEntities2 gets five rows, a tap on the left side of a row without popup sends buttonPress3.
+"""HMI 6.3.0 (EU; tRelease stays, card_device.py raises it): cardEntities2 gets five rows, a tap on the left side
+of a row without popup sends buttonPress3.
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/entities2_five_rows.py <in.HMI> <out.HMI>

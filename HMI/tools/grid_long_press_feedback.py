@@ -1,4 +1,5 @@
-"""HMI 6.2.0 (stays 6.2.0): the background of a held grid cell blinks green/grey while its long press is armed.
+"""HMI 6.3.0 (tRelease stays, card_device.py raises it): the background of a held grid cell blinks green/grey while
+its long press is armed.
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/grid_long_press_feedback.py <in.HMI> <out.HMI> [<ref.tft>]

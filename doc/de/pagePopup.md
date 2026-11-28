@@ -230,7 +230,7 @@ Diese Symbole kennt das Panel als großes Symbol (Namen der Material Design Icon
 `dishwasher-alert`, `fridge-alert`, `water-boiler-alert`, `robot-vacuum-alert`, `radiator-off`, `water-alert`,
 `smoke-detector-alert`, `fire-alert`
 
-Diese Symbole kommen erst mit der TFT nach 6.2.0 (zusammen mit der Geräteseite) dazu; auf älterer TFT bleibt das
+Diese Symbole kommen erst mit der TFT 6.3.0 (zusammen mit der Geräteseite) dazu; auf älterer TFT bleibt das
 Symbol leer:
 `garage-variant`, `garage-open-variant`, `chevron-triple-up`, `chevron-triple-down`, `chevron-triple-left`,
 `chevron-triple-right`, `school`, `gate-open`, `door-sliding-open`, `lock-open-alert`, `car-door`,

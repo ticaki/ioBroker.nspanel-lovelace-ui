@@ -1,11 +1,14 @@
-"""HMI 6.2.0 (EU, us-l, us-p): the device pages cardDevice1 'control', cardDevice2 'progress' and cardDevice3 'values'.
+"""HMI 6.3.0 (EU, us-l, us-p): the device pages cardDevice1 'control', cardDevice2 'progress' and cardDevice3 'values'.
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/card_device.py <in.HMI> <out.HMI> [--preview <dir>]
                                                               [--geometry <file.json>] [--fields]
 --fields prints the bytes of every part of the longest entityUpd and devIcons (all buffers full / as the adapter
 builds it).
-Input: a 6.2.0 project of any model with the pages cardGrid and cardEntities. The output must not exist.
+Input: a 6.2.0 project of any model with the pages cardGrid and cardEntities (or the output of this script, 6.3.0).
+The output must not exist.
+Version: pageStartup tRelease 6.2.0 -> 6.3.0 (event,startup,<tVersion>,<model>,<tRelease>), 6.3.0 stays - the device
+pages are the feature of 6.3.0, the adapter opens them from CARD_DEVICE_MIN_TFT (src/lib/pages/device-page.ts) on.
 With --preview the script also writes a true-to-scale mock-up per page, drawn from the objects of each built page
 with example content (robot vacuum, washing machine, car) and the fonts of the project (zilib.py); the area under
 the frame is hatched. File names: EU <dir>/hmi-cardDevice2.png, the other models with their name
@@ -198,6 +201,8 @@ STAGE_VAR = 'vStage'  # stage of the status icons: field 6 of the info element o
 COLS_VAR = 'vCols'  # columns of the status grid that are shown now
 ICONS_COMMAND = 'devIcons'  # devIcons~<type>~<id>~<icon>~<color> per cell: the status icons
 ICON_FIELDS = 4
+
+OLD_RELEASE, NEW_RELEASE = '6.2.0', '6.3.0'  # pageStartup.tRelease
 
 STATUS_COMMAND = 'devStatus'  # devStatus~<text>: only the status line (the adapter alternates the parts of a long text)
 FIELDS_TABLE = False  # --fields
@@ -1417,6 +1422,20 @@ def main_entries(main_hmi, kind):
     return out
 
 
+def patch_release(page):
+    """pageStartup.tRelease OLD_RELEASE -> NEW_RELEASE; True if changed (NEW_RELEASE stays: idempotent)"""
+    o = page.obj('tRelease')
+    txt = o.get('txt')
+    if txt == NEW_RELEASE:
+        return False
+    if txt != OLD_RELEASE:
+        raise SystemExit(f'tRelease is {txt!r}, expected {OLD_RELEASE} or {NEW_RELEASE}')
+    if len(NEW_RELEASE.encode()) > o.get('txt_maxl'):
+        raise SystemExit('tRelease too short')
+    o.set('txt', NEW_RELEASE)
+    return True
+
+
 def main(source, target, preview=None, geometry=None):
     if os.path.exists(target):
         raise SystemExit(f'{target} exists')
@@ -1437,6 +1456,8 @@ def main(source, target, preview=None, geometry=None):
     source_bytes = hmi.files[sections[SOURCE]]
     model = detect_model(pages)
     layouts, shift = model_layouts(model, pages[SOURCE])
+    released = patch_release(pages['pageStartup'])
+    print(f'pageStartup tRelease {OLD_RELEASE} -> {NEW_RELEASE}' if released else f'pageStartup tRelease {NEW_RELEASE}')
     print(f'model {model} (pageStartup): stage {STAGE[model][0]}x{STAGE[model][1]}, visible x {VISIBLE[model][0]}..'
           f'{VISIBLE[model][1]}, ' + ('portrait layouts' if shift is None else
                                       f'landscape layouts shifted by {shift} px (header of {SOURCE})'))
@@ -1503,7 +1524,7 @@ def main(source, target, preview=None, geometry=None):
     print(f'pageType branches added on {len(switched)} pages: {", ".join(sorted(switched)) or "-"}')
     print(f'pages with tmSerial without {SWITCH_AFTER} branch: {", ".join(sorted(without)) or "-"}')
     for name, page in pages.items():
-        if name in PAGES or name in switched:
+        if name in PAGES or name in switched or (released and name == 'pageStartup'):
             data = page.bytes()
             Page(data)  # round trip
             if sections[name] in hmi.files:

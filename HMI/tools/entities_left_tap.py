@@ -1,5 +1,5 @@
-"""HMI 6.2.0 (EU, us-l, us-p; stays 6.2.0): cardEntities - a tap on the left side of a row without popup sends
-buttonPress3.
+"""HMI 6.3.0 (EU, us-l, us-p; tRelease stays, card_device.py raises it): cardEntities - a tap on the left side of a
+row without popup sends buttonPress3.
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/entities_left_tap.py HMI/us-l/nspanel-us-l-v6.2.0.HMI <out.HMI>

@@ -80,10 +80,10 @@ export function devicePageName(pageName: string, deviceId: string): string {
 }
 
 /**
- * first TFT version with the pages cardDevice1..3.
- * TODO: raise to the TFT version of the release that brings the device pages (the test HMI still says 6.2.0).
+ * first TFT version with the pages cardDevice1..3 (HMI/tools/card_device.py raises pageStartup.tRelease to it); the
+ * published TFT 6.2.0 has no device pages.
  */
-export const CARD_DEVICE_MIN_TFT = '6.2.0';
+export const CARD_DEVICE_MIN_TFT = '6.3.0';
 
 /**
  * models that have the device pages: every model - the HMIs of eu, us-l and us-p and the web panel in the layouts of
