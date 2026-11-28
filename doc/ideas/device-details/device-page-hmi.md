@@ -37,8 +37,9 @@ auch bei Typ `text`), `device5` (Long-Press `buttonPress3` und Popups in main un
 `device7` (Lauftext auch auf cardDevice1, dafür Status-Icons ohne Popup-Überschrift und kürzere Icon-Puffer),
 `device8` (Lauftext wieder entfernt, neue Kurz-Nachricht `devStatus` für die Statuszeile), `device9` (Statuszeile
 auf allen drei Seiten mittig: `tStatus.xcen` 0 → 1 auf cardDevice1 und 3, sonst wie `device8`), `device10`
-(Long-Press-Blinken auf cardGrid, cardGrid2, cardGrid3 und den drei Geräteseiten, sonst wie `device9` – aktuell; alle
-in `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
+(Long-Press-Blinken auf cardGrid, cardGrid2, cardGrid3 und den drei Geräteseiten, sonst wie `device9`), `device12`
+(Drück-Feedback der Status-Zellen `tStat7–10` und der Hotspots `mSlot1/2`, `mSlot7/8`, sonst wie `device11` –
+aktuell, alle drei Modelle; alle in `/mnt/projekte/nspanel emu/`). Die dortige `device5` hat Tim im Editor geöffnet, ein Lauftext-Objekt `g0` auf
 cardDevice1 gelegt und gespeichert (siehe „Verworfen: Lauftext“).
 
 - Basis: `nspanel-v6.2.0.entities5.HMI` (= `HMI/nspanel-v6.2.0.HMI` + `entities2_five_rows.py`, geprüft: nur cardEntities,
@@ -157,11 +158,13 @@ Der Code ist der der cardGrid-Zelle (`bEntity1` der Basis-HMI 6.2.0: `down`, `up
 `LPState`), nur mit den Namen des jeweiligen Platzes. Ablauf:
 
 1. **Berühren** (`down`): `tmLP` startet; Name, ID, Icon und Icon-Farbe gehen nach `pageIcons.tTmp1/2/3` und
-   `tempIconColor`. Typ `shutter`, `shutter2`, `input_sel`, `timer`: das Popup öffnet **sofort**.
+   `tempIconColor`. Typ `shutter`, `shutter2`, `input_sel`, `timer`: das Popup öffnet **sofort**. Das berührte
+   Element wird grau (14823, das `bco2` gedrückter Knöpfe): ein Knopf von selbst, eine Status-Zelle bzw. das
+   Namensfeld unter einem Hotspot per Code (seit `device12`, siehe „Drück-Feedback ohne Knopf“).
 2. **Halten** (`tmLP`, nach 500 ms): Typ `light`, `light2`, `fan`, `number`: das Popup öffnet. Jeder andere Typ:
    `LPState=1` (Long-Press scharf), und der Hintergrund des gehaltenen Elements **blinkt grün/grau** im
    200-ms-Takt (seit `device10`, siehe „Rückmeldung beim Long-Press“).
-3. **Loslassen** (`up`): das Blinken endet, die Farben sind wieder die normalen. `LPState` 0 →
+3. **Loslassen** (`up`): das Blinken bzw. das Grau endet, die Farben sind wieder die normalen. `LPState` 0 →
    `event,buttonPress2,<intName>,button`, sonst `event,buttonPress3,<intName>,button`; `LPState` zurück auf 0. Der
    Long-Press wird also **beim Loslassen** gesendet (wie cardGrid).
 
@@ -181,14 +184,26 @@ Je Slot-Art:
 | main | `bMain`, `tMainName` → `bMain` | ja (Knopf, `bco2` 14823) | wie Tabelle oben | Typ `text` mit leerem intName sendet nichts |
 | info | `bEntity<k>`, `tEntity<k>`/`tValue<k>` → `bEntity<k>` (cardDevice1 Slot 1–2 auch `bEntityS<k>`, `tEntityS<k>`, `tValueS<k>`) | ja | wie Tabelle oben | wie main |
 | button | `bEntity<k>`, `tEntity<k>` → `bEntity<k>` | ja | wie Tabelle oben | sendet immer (auch `text` ohne intName), exakt der cardGrid-Code |
-| value | Hotspot `mSlot1` (110/67, 226×110) über `tIcon1`, `tValue1`, `tEntity1` (cardDevice2) | nein | wie Tabelle oben | wie main; leeres Element sendet nichts |
-| progress | Hotspot `mSlot2` (10/179, 429×42) über `tEntity2` und dem Balken (cardDevice2) | nein | wie Tabelle oben | wie value; das Popup bekommt kein Icon (leer), Farbe = Textfarbe des Namens |
-| switch: Icon und Name | Hotspot `mSlot7`/`mSlot8` (10 bzw. 226/236, 161×34) über `tIcon<k>`, `tEntity<k>` (cardDevice3) | nein | wie Tabelle oben | wie value |
+| value | Hotspot `mSlot1` (110/67, 226×110) über `tIcon1`, `tValue1`, `tEntity1` (cardDevice2) | ja (per Code: `tEntity1.bco` 14823) | wie Tabelle oben | wie main; leeres Element sendet nichts |
+| progress | Hotspot `mSlot2` (10/179, 429×42) über `tEntity2` und dem Balken (cardDevice2) | ja (per Code: `tEntity2.bco`) | wie Tabelle oben | wie value; das Popup bekommt kein Icon (leer), Farbe = Textfarbe des Namens |
+| switch: Icon und Name | Hotspot `mSlot7`/`mSlot8` (10 bzw. 226/236, 161×34) über `tIcon<k>`, `tEntity<k>` (cardDevice3) | ja (per Code: `tEntity<k>.bco`) | wie Tabelle oben | wie value |
 | switch: Schalter | `btOnOff<k>` | Bildwechsel | `event,buttonPress2,<intName>,OnOff,<0\|1>` beim Berühren, kein Long-Press (unverändert) | – |
-| status | `tStat7–10` (cardDevice1), Code in der Zelle | nein | wie Tabelle oben | wie main; leere Zelle (Rahmen sichtbar) sendet nichts; ein Popup aus der Zelle hat **keine Überschrift** (`pageIcons.tTmp1` leer) |
+| status | `tStat7–10` (cardDevice1), Code in der Zelle | ja (per Code: `bco` der Zelle 14823, Rahmen bleibt) | wie Tabelle oben | wie main; leere Zelle (Rahmen sichtbar) sendet nichts; ein Popup aus der Zelle hat **keine Überschrift** (`pageIcons.tTmp1` leer) |
 | info-Icon | `bInfo` | ja | immer `event,buttonPress2,<intName>,button` | kein Long-Press, kein Popup (unverändert) |
 | Statuszeile | `tStatus` | nein | – | kein Touch |
 
+- **Drück-Feedback ohne Knopf** (seit `device12`, `add_press_feedback` in `card_device.py`): Knöpfe zeigen ihr
+  `bco2` (14823) selbst; Status-Zellen und Hotspots sind Textfelder bzw. haben keinen Hintergrund und bekommen
+  dasselbe Grau per Code – auf allen drei Modellen dieselben Elemente: cardDevice1 `tStat7–10` (die Zelle selbst),
+  cardDevice2 `mSlot1` → `tEntity1`, `mSlot2` → `tEntity2`, cardDevice3 `mSlot7` → `tEntity7`, `mSlot8` → `tEntity8`
+  (das Namensfeld, dasselbe Objekt, das beim Long-Press blinkt; Icon, Wert und Balken bleiben). `down` setzt
+  innerhalb von `if(type<k>.txt!="delete"&&type<k>.txt!="")` – also nur bei belegtem Element – `bco=14823`; `up`
+  setzt direkt hinter `tmLP.en=0` immer `bco=defaultBcoColor` zurück, `tc0` `up` (bekommt jedes Loslassen, auch eins,
+  das das Element nicht erreicht) ebenso, dort nur bei `if(<obj>.bco!=defaultBcoColor)` (kein Neuzeichnen bei jedem
+  Tipp). `defaultBcoColor` ist der Wert der Lade-Schleife (`b[sys0].bco=defaultBcoColor` für alle Knöpfe und Texte)
+  und des Long-Press-Restores; das Blinken beginnt vom Grau aus (erste Phase Grün). Popup-Typen verlassen die Seite,
+  die Lade-Schleife stellt beim Zurückkommen her. Kein neues Objekt, kein RAM; Zeilen zwischen
+  `// >> press feedback (card_device.py)` und `// << press feedback`.
 - Ausgeblendete Elemente (`vis 0`) nehmen keinen Tipp an. Hotspots und Status-Zellen bleiben dagegen berührbar, wenn
   ihr Element leer ist; ihr Code beginnt deshalb mit `if(type<k>.txt!="delete"&&type<k>.txt!="")`.
 - Die Bedingung im Loslassen-Code (alle außer button) lautet `if(type<k>.txt!="text"||entn<k>.txt!="")`.
@@ -217,8 +232,8 @@ auslöst, zeigt die HMI, sobald er erkannt ist – auf den Grid-Seiten blinkt de
   | Element | Objekt, das blinkt | Attribut |
   |---|---|---|
   | Grid-Zelle, main, info, button (Knopf, auch die schmalen `bEntityS1/2`) | der Icon-Knopf selbst | `bco` **und** `bco2` |
-  | status (cardDevice1) | die Zelle `tStat7–10` (Textfeld, Rahmen bleibt) | `bco` |
-  | value, progress (cardDevice2), Icon+Name eines Schalters (cardDevice3) – Hotspot `mSlot<k>` | das Namensfeld `tEntity<k>` unter dem Hotspot | `bco` |
+  | status (cardDevice1) | die Zelle `tStat7–10` (Textfeld, Rahmen bleibt; kurzer Druck: Grau, siehe „Drück-Feedback ohne Knopf“) | `bco` |
+  | value, progress (cardDevice2), Icon+Name eines Schalters (cardDevice3) – Hotspot `mSlot<k>` | das Namensfeld `tEntity<k>` unter dem Hotspot (kurzer Druck: Grau) | `bco` |
 
   Das Namensfeld gibt es bei allen drei Hotspot-Arten, es ist breit (190, 429 bzw. 125 px) und liegt bei progress
   **über** dem gezeichneten Balken (y 179–204, Balken ab 207): der Balken wird nicht übermalt und muss nicht neu
@@ -943,6 +958,11 @@ Die Schritte gelten für die EU-Datei; für us-l und us-p zusätzlich die Liste 
      value und progress (es blinkt das Namensfeld; der Balken bleibt stehen); cardDevice3 Icon/Name eines Schalters
      (Namensfeld blinkt, der Schalter daneben nicht). Jeweils Loslassen → normal und `buttonPress3`.
    - Gegenprobe: Typ `text` **ohne** intName (nicht button) blinkt nicht und sendet nichts; `bInfo` blinkt nicht.
+   - **Drück-Feedback (`device12`):** kurzer Tipp auf eine belegte Status-Zelle (cardDevice1), auf value/progress
+     (cardDevice2) und Icon/Name eines Schalters (cardDevice3): grau, solange der Finger liegt (Zelle bzw.
+     Namensfeld), Loslassen → normal, `buttonPress2`. Leere Zelle/leeres Element: bleibt normal. Halten → Blinken,
+     Loslassen → normal. Berühren und herunterziehen → nach dem Loslassen normal. Popup-Typ antippen und zurück →
+     normal. Helles Thema bzw. schwarzer Hintergrund: kein grauer Rest.
 
 ## Bekannte Unsicherheiten / Abweichungen
 

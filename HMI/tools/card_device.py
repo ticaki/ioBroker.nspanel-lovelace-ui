@@ -80,7 +80,11 @@ Protocol:
             tap: event,buttonPress2,<intName>,button (no long press, it has no type).
 
 Touch: main and every slot behave like a cell of cardGrid (its down/up code and tmLP/LPState, unchanged):
-  touch     shutter/shutter2/input_sel/timer open their popup at once (no event)
+  touch     shutter/shutter2/input_sel/timer open their popup at once (no event). A button shows its pressed
+            grey (bco2 14823) by itself; an element without a button gets the same grey from code
+            (add_press_feedback): 'down' of a set status cell / hotspot sets bco=14823 of the cell / of the name
+            field tEntity<k> (the text that blinks on a long press), its 'up' and tc0 'up' set defaultBcoColor
+            back (the value of the 'load' loop, also what the long press restore writes).
   hold      after 500 ms (tmLP) light/light2/fan/number open their popup (no event); every other type arms the
             long press (LPState=1) and the background of the element blinks green/grey, 200 ms per phase, until
             the release (grid_long_press_feedback.add): main/info/button the icon button, status the cell, value/
@@ -993,6 +997,50 @@ def check_names(page):
         raise SystemExit('unknown objects in code: ' + ', '.join(sorted(missing)))
 
 
+PRESS_BEGIN = '// >> press feedback (card_device.py)'
+PRESS_END = '// << press feedback'
+BACKGROUND = 'defaultBcoColor'  # what the 'load' loop gives every button and text (b[sys0].bco)
+
+
+def press_targets(layout):
+    """{touched object: text that shows the pressed grey}: the elements without a button - a status cell itself, a
+    hotspot the name field of its element (the same text that blinks for it on a long press)"""
+    out = {}
+    for k, spec in enumerate(layout['slots'], 1):
+        if spec['kind'] == 'status':
+            out[f'tStat{k}'] = f'tStat{k}'
+        elif spec['kind'] in HOTSPOT:
+            out[f'mSlot{k}'] = f'tEntity{k}'
+    return out
+
+
+def add_press_feedback(page, layout):
+    """tap feedback for the elements without a button (a button shows its bco2 by itself): 'down' of a set element
+    paints the text grey (GRID_COLOR, bco2 of the pressed buttons), 'up' gives it the background of the 'load' loop
+    back, and so does tc0 'up' (every release, also one the element does not get), there only where it is grey.
+    Runs behind feedback.add (its check allows no other writer of a background); the long press blinking starts
+    from the grey (first phase green) and its restore sets the same background."""
+    targets = press_targets(layout)
+    for obj, text in targets.items():
+        o = page.obj(obj)
+        down = o.code('down')
+        k = re.fullmatch(r'(?:tStat|mSlot)(\d+)', obj).group(1)
+        guard = find(down, f'if(type{k}.txt!="delete"&&type{k}.txt!="")')
+        if down[guard + 1].strip() != '{':
+            raise SystemExit(f'{obj}.down: unexpected guard')
+        down[guard + 2:guard + 2] = ['  ' + PRESS_BEGIN, f'  {text}.bco={GRID_COLOR}', '  ' + PRESS_END]
+        up = o.code('up')
+        if up[0] != 'tmLP.en=0':
+            raise SystemExit(f'{obj}.up: unexpected first line')
+        up[1:1] = [PRESS_BEGIN, f'{text}.bco={BACKGROUND}', PRESS_END]
+    lines = []
+    for text in targets.values():
+        lines += [f'if({text}.bco!={BACKGROUND})', '{', f'  {text}.bco={BACKGROUND}', '}']
+    if lines:
+        page.obj('tc0').code('up').extend([PRESS_BEGIN] + lines + [PRESS_END])
+    return [f'{o} -> {t}' if o != t else o for o, t in targets.items()]
+
+
 def build_page(source_bytes, name, switch_template, layout):
     page = Page(source_bytes)
     feedback.remove(page)  # the cells are built from the plain long press code of cardGrid
@@ -1007,8 +1055,9 @@ def build_page(source_bytes, name, switch_template, layout):
     # field of its element blinks for it
     blink = feedback.add(page, {f'mSlot{k}': [f'tEntity{k}'] for k, s in enumerate(layout['slots'], 1)
                                 if s['kind'] in HOTSPOT})
+    press = add_press_feedback(page, layout)
     check_names(page)
-    return page, layout, blink
+    return page, layout, blink, press
 
 
 # ---------------------------------------------------------------- pageType switch
@@ -1087,7 +1136,7 @@ def main(source, target, preview=None, geometry=None):
     main_hmi = hmi.files['main.HMI']
     numbers = [int(s[:-3]) for s in sections.values()]
     for name in PAGES:
-        page, layout, blink = build_page(source_bytes, name, switch_template, layouts[name])
+        page, layout, blink, press = build_page(source_bytes, name, switch_template, layouts[name])
         for note in check_area(page, layout, model):
             print(f'{name}: note - boxes overlap: {note}')
         if name in sections:
@@ -1106,6 +1155,7 @@ def main(source, target, preview=None, geometry=None):
               f'(the copy of {SOURCE} it is built from: page {before}, with global {RAM_GLOBAL + before}); '
               f'status line {layout["status"][2]} px')
         print(f'{name}: long press feedback (blinking background): {", ".join(blink)}')
+        print(f'{name}: press feedback (grey background while touched): {", ".join(press) or "-"}')
         hard, real = message_len(layout, False), message_len(layout, True)
         maxl = page.obj('strCommand').get('txt_maxl')
         print(f'{name}: entityUpd at most {hard} bytes with every buffer full, {real} as the adapter builds it; '
