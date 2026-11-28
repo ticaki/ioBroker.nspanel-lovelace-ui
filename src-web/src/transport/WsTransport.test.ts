@@ -9,7 +9,7 @@ import {
     WsTransport,
 } from './WsTransport';
 import type { HelloFrame } from '../protocol/types';
-import { helloShowsButtons } from '../protocol/types';
+import { helloAllowsExtensions, helloShowsButtons } from '../protocol/types';
 
 /** minimal WebSocket stand-in: the test opens, closes and feeds messages by hand */
 class FakeWebSocket {
@@ -139,6 +139,21 @@ describe('WsTransport', () => {
         expect(hellos.map(h => h.buttons)).toEqual([false, true, undefined]);
         expect(hellos.map(h => helloShowsButtons(h))).toEqual([false, true, true]);
         expect(helloShowsButtons(undefined)).toBe(true);
+    });
+
+    it('passes the extensions flag of the hello on, missing means not allowed', () => {
+        const { transport } = make();
+        const hellos: HelloFrame[] = [];
+        transport.onHello(hello => hellos.push(hello));
+        transport.connect();
+        const ws = FakeWebSocket.instances[0];
+        ws.open();
+        const base = { t: 'hello', model: 'eu', topic: 't', name: 'n', friendlyName: 'f', tftVersion: '1.0.0' };
+        ws.message({ ...base, kind: 'web', extensions: true });
+        ws.message({ ...base, kind: 'clone', extensions: false });
+        ws.message({ ...base, kind: 'web' });
+        expect(hellos.map(h => helloAllowsExtensions(h))).toEqual([true, false, false]);
+        expect(helloAllowsExtensions(undefined)).toBe(false);
     });
 
     it('delivers frames with their seq and sends ack/recv as json', () => {

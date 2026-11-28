@@ -7,7 +7,12 @@ import type { CardScheduleModel } from './parse';
 export const SCHEDULE_TOP = 79;
 export const SCHEDULE_ROW_HEIGHT = 35;
 
-/** cardSchedule: like cardEntities, but 6 tighter rows */
+/**
+ * cardSchedule: like cardEntities, but 6 tighter rows. Without web panel extensions (`global.extensions`,
+ * instance option webAllowExtensions) the rows are drawn like the HMI: icon and name, the value only for
+ * text, a tap on the row does what the HMI does (`scheduleRowAction`); with extensions the rows of
+ * cardEntities with their controls.
+ */
 export class CardSchedule extends React.Component<CardProps<CardScheduleModel>> {
     render(): React.JSX.Element {
         const { model, ctx, global, press, openPopup } = this.props;
@@ -19,6 +24,7 @@ export class CardSchedule extends React.Component<CardProps<CardScheduleModel>> 
                 top={SCHEDULE_TOP}
                 rowHeight={SCHEDULE_ROW_HEIGHT}
                 compact
+                hmiRows={!global.extensions}
                 press={press}
                 send={this.props.send}
                 openPopup={openPopup}

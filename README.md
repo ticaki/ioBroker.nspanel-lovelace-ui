@@ -168,6 +168,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Selection popups: an empty value or list entry is no longer sent as "error"
 - (ticaki) panel setup, berry/TFT install, restart and reset of tasmota: the log shows the cause of network errors (e.g. `ECONNREFUSED`, `EHOSTUNREACH`) instead of only "fetch failed"
 - (ticaki) panel setup: clear hint in the admin if the panel does not answer (Tasmota HTTP API off since 15.4.0.2, enable with SetOption128 1)
+- (ticaki) Web panel: the schedule page (cardSchedule) is drawn like on the hardware panel unless the instance option "Web panel: allow extensions over the hardware panel" is on - only icon and name, the value only for text rows (no switch, no selection value), a tap on the row does what the panel does
 - (ticaki) dependencies updated
 - (ticaki) alarm/unlock page: the PIN lockout is now enforced in the adapter – every attempt during the lockout is rejected and extends the wait – a page with shared status shares the lockout across all panels
 - (ticaki) Admin: screensaver indicators can be pinned to their slot - a hidden pinned item leaves its slot empty and the other indicators do not move up onto it
