@@ -176,6 +176,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) cardGrid, cardGrid2, cardGrid3 and device pages: reaching the long press of a cell (0.5 s) lets its background blink green/grey until the finger is lifted (needs TFT 6.3.0, eu)
 - (ticaki) us-p cardSchedule: a tap on a row of type shutter2 opens popupShutter2 like on eu and us-l (needs TFT 6.3.0)
 - (ticaki) cardEntities, cardGrid, cardGrid2, cardGrid3, cardSchedule, cardThermo2, cardMedia: closing a popup no longer jumps back to the first items, the page stays where it was scrolled to
+- (ticaki) Page items: prefix and suffix of the dynamic name are always added - also to a typed name and without a value state, in the row and in the popup headline of all roles; a select (and fan) shows a state as name with its value instead of the state ID
 - (ticaki) NSPanel settings: new button on the panel card converts the configuration of the old standalone script NSPanelTs.ts (javascript adapter, v4.4 up to v5.1.1.x) into a new, disabled configuration script of the adapter - what the adapter can do almost the same way is taken over (with a short note), only what has no counterpart is kept as TODO comment
 - (ticaki) Media page (alexa2): option to not move the playing music to the new Echo when switching the speaker
 - (ticaki) Media page (alexa2): optional toolbar item "Timer" for the Alexa timers of the currently selected Echo device - while a timer runs it shows the remaining time (as on the screensaver) instead of the icon

@@ -162,8 +162,12 @@ export function adminPageItemToScriptItem(
                 preItem.textSize || preItem.textSize == 0
                     ? (Number(preItem.textSize) as typeof preItem.textSize)
                     : undefined;
-            if (!item.name && preItem.valueEntry) {
-                item.name = preItem.valueEntry.valueStateId;
+            if (preItem.valueEntry) {
+                // dynamic name: the value state id is the name while the Name field is empty - prefix and suffix
+                // are always appended, also to a fixed name and without a value state id
+                if (!item.name) {
+                    item.name = preItem.valueEntry.valueStateId || undefined;
+                }
                 item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;
                 item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : undefined;
             }
