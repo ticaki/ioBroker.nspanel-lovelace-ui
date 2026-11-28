@@ -1258,9 +1258,7 @@ class ConfigManager extends import_library.BaseClass {
               constVal: "press"
             }
           },
-          text: {
-            true: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" }
-          }
+          text: await this.getItemNameTextEntry(item, commonName || "Info")
         }
       };
     }
@@ -1274,17 +1272,11 @@ class ConfigManager extends import_library.BaseClass {
       true: await getButtonsTextTrue(item, "press"),
       false: await getButtonsTextFalse(item, "press")
     };
+    const naviName = await this.getItemNameDataItem(item, commonName || "Info");
+    const naviNameAffixes = await this.getItemNameAffixes(item);
     const text = {
-      true: {
-        value: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
-        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
-        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
-      },
-      false: {
-        value: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" },
-        prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
-        suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
-      },
+      true: { value: naviName, ...naviNameAffixes },
+      false: { value: naviName, ...naviNameAffixes },
       textSize: item.fontSize || item.fontSize == 0 ? { type: "const", constVal: item.fontSize } : void 0
     };
     const iconTextDefaults = {
@@ -2330,9 +2322,7 @@ class ConfigManager extends import_library.BaseClass {
                       constVal: "press"
                     }
                   },
-                  text: {
-                    true: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" }
-                  }
+                  text: await this.getItemNameTextEntry(item, commonName || "Info")
                 }
               }
             };
@@ -2369,9 +2359,7 @@ class ConfigManager extends import_library.BaseClass {
                     constVal: "press"
                   }
                 },
-                text: {
-                  true: item.name ? await this.getFieldAsDataItemConfig(item.name, true) : commonName ? { type: "const", constVal: commonName } : { type: "const", constVal: "Info" }
-                }
+                text: await this.getItemNameTextEntry(item, commonName || "Info")
               }
             }
           };
@@ -2402,22 +2390,21 @@ class ConfigManager extends import_library.BaseClass {
         this.log.debug(
           `page: '${page.type}' Item: '${item.id}', role: '${role}', valueDisplayRole: '${valueDisplayRole}', useValue: ${item.useValue}`
         );
-        const getButtonsTextTrue = async (item2, def1) => {
-          return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1, true);
+        const getButtonsTextTrue = async (item2, def1, withNameAffixes = false) => {
+          return item2.buttonText ? await this.getFieldAsDataItemConfig(item2.buttonText, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXT`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXT` } : withNameAffixes && !item2.name && (item2.prefixName || item2.suffixName) ? { type: "const", constVal: "" } : await this.getFieldAsDataItemConfig(item2.name || commonName || def1, true);
         };
-        const getButtonsTextFalse = async (item2, def1) => {
-          return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : await getButtonsTextTrue(item2, def1);
+        const getButtonsTextFalse = async (item2, def1, withNameAffixes = false) => {
+          return item2.buttonTextOff ? await this.getFieldAsDataItemConfig(item2.buttonTextOff, true) : item2.id && await this.existsState(`${item2.id}.BUTTONTEXTOFF`) ? { type: "triggered", dp: `${item2.id}.BUTTONTEXTOFF` } : await getButtonsTextTrue(item2, def1, withNameAffixes);
         };
+        const nameAffixes = await this.getItemNameAffixes(item);
         const text = {
           true: {
-            value: await getButtonsTextTrue(item, role || ""),
-            prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
-            suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+            value: await getButtonsTextTrue(item, role || "", true),
+            ...nameAffixes
           },
           false: {
-            value: await getButtonsTextFalse(item, role || ""),
-            prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
-            suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+            value: await getButtonsTextFalse(item, role || "", true),
+            ...nameAffixes
           },
           textSize: item.fontSize || item.fontSize == 0 ? { type: "const", constVal: item.fontSize } : void 0
         };
@@ -3327,7 +3314,9 @@ class ConfigManager extends import_library.BaseClass {
                     }
                   }
                 },
-                headline: { type: "const", constVal: item.name || commonName || role }
+                headline: await this.getItemNameDataItem(item, commonName || role),
+                headlinePrefix: nameAffixes.prefix,
+                headlineSuffix: nameAffixes.suffix
               }
             };
             break;
@@ -3467,7 +3456,7 @@ class ConfigManager extends import_library.BaseClass {
                 zero3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].zeroValue ? { type: "const", constVal: item.sliderItems[2].zeroValue } : void 0,
                 steps3: item.sliderItems && item.sliderItems[2] && item.sliderItems[2].stepValue ? { type: "const", constVal: item.sliderItems[2].stepValue } : void 0,
                 text: {
-                  true: { type: "const", constVal: item.name || "slider" },
+                  ...await this.getItemNameTextEntry(item, "slider"),
                   false: void 0
                 }
               }
@@ -3624,7 +3613,9 @@ class ConfigManager extends import_library.BaseClass {
                   value: foundedStates[role].SPEED,
                   maxScale: { type: "const", constVal: item.maxValueLevel || 100 }
                 },
-                headline: { type: "const", constVal: item.name || commonName || role },
+                headline: await this.getItemNameDataItem(item, commonName || role),
+                headlinePrefix: nameAffixes.prefix,
+                headlineSuffix: nameAffixes.suffix,
                 text: { true: { type: "const", constVal: "Speed" }, false: void 0 },
                 //entityInSel: { value: { type: 'const', constVal: '2' } },
                 entityInSel: { value: foundedStates[role].MODE },
@@ -5079,6 +5070,48 @@ class ConfigManager extends import_library.BaseClass {
       }
     }
     return { type: "const", constVal: possibleId };
+  }
+  /**
+   * The name part of an item text: `name` (text or state id - a state is read and triggers), without a name
+   * `fallback` (channel name, role, ...). While prefix or suffix of the name is set the name part stays empty
+   * instead of the fallback - the text is then built from prefix and suffix only.
+   *
+   * @param item the script item
+   * @param fallback name used without `name`, prefix and suffix
+   */
+  async getItemNameDataItem(item, fallback) {
+    if (item.name) {
+      return await this.getFieldAsDataItemConfig(item.name, true);
+    }
+    if (item.prefixName || item.suffixName) {
+      return { type: "const", constVal: "" };
+    }
+    return { type: "const", constVal: fallback };
+  }
+  /**
+   * Prefix and suffix of the item name (text or state id each), always appended to the name.
+   *
+   * @param item the script item
+   */
+  async getItemNameAffixes(item) {
+    return {
+      prefix: item.prefixName ? await this.getFieldAsDataItemConfig(item.prefixName) : void 0,
+      suffix: item.suffixName ? await this.getFieldAsDataItemConfig(item.suffixName) : void 0
+    };
+  }
+  /**
+   * The `text` of an item from its name: without prefix and suffix only the name part, else the name part with
+   * prefix and suffix of the name.
+   *
+   * @param item the script item
+   * @param fallback name used without `name`, prefix and suffix
+   */
+  async getItemNameTextEntry(item, fallback) {
+    const value = await this.getItemNameDataItem(item, fallback);
+    if (!item.prefixName && !item.suffixName) {
+      return { true: value };
+    }
+    return { true: { value, ...await this.getItemNameAffixes(item) } };
   }
   async getIconColor(item, def = void 0) {
     if (isIconScaleElement(item)) {
